@@ -446,7 +446,7 @@ Similar to software programs, neural networks have desirable properties to ensur
 \chapter{Verification of Neural Networks}\label{sec:verification}
 
 
-\section{The Neural Network Verification Problem and Its Formalization}
+\section{The Neural Network Verification (NNV) Problem}\label{sec:nnv-problem}
 \paragraph{DNN Verification} Given a DNN \(N\) and a property $\phi$, the \emph{DNN verification problem} asks if $\phi$ is a valid property of $N$.
 Typically, $\phi$ is a formula of the form $\phi_{in} \Rightarrow \phi_{out}$, where $\phi_{in}$ is a property over the inputs of $N$ and $\phi_{out}$ is a property over the outputs of $N$.
 %This form of properties has been used to encode safety and security requirements of DNNs, e.g., safety specifications to avoid collision in unmanned aircraft~\cite{kochenderfer2012next} and \emph{adversarial robustness}~\cite{katz2017towards} properties desired by all DNNs, in which a small input perturbation does not cause major spikes in the DNN's outputs.
@@ -462,8 +462,10 @@ A DNN verifier attempts to find a \emph{counterexample} input to $N$ that satisf
 
 
 
-\paragraph{Example} A valid property for the DNN in \autoref{fig:dnn} is that the output is $x_5 \le 0$ for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$. An invalid property for this network is that $x_5 > 0$ for those similar inputs.
-A counterexample showing this property violation is $\{x_1=-1, x_2=2\}$, from which the network evaluates to $x_5=-3.5$. Such properties can capture \emph{safety requirements} (e.g., a rule in an  collision avoidance system in~\cite{kochenderfer2012next,katz2017reluplex} is ``if the intruder is distant and significantly slower than us, then we stay below a certain threshold'') or \emph{local robustness}~\cite{katz2017towards} conditions (a form of adversarial robustness stating that small perturbations of a given input all yield the same output).
+\paragraph{Example} A valid property for the DNN in \autoref{fig:dnn} is that the output is $x_5 \le 0$ for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$. An invalid property is that $x_5 > 0$ for those similar inputs.
+A counterexample showing this property violation is $\{x_1=-1, x_2=2\}$, from which the DNN evaluates to $x_5=-3.5$. 
+
+%Such properties can capture \emph{safety requirements} (e.g., a rule in an  collision avoidance system in~\cite{kochenderfer2012next,katz2017reluplex} is ``if the intruder is distant and significantly slower than us, then we stay below a certain threshold'') or \emph{local robustness}~\cite{katz2017towards} conditions (a form of adversarial robustness stating that small perturbations of a given input all yield the same output).
 
 
 \section{Satisfiability and Activation Pattern Search} As with traditional software, DNN verification is often represented as a satisfiability problem.
@@ -1311,7 +1313,6 @@ Future work will explore tuning $N$ to a given verification problem.
 
 
 \section{Evaluation}\label{sec:evaluation}  
-\section{Evaluation}\label{sec:eval}
 Our goals are to understand how checking of \nnproofformat{}s performs, how it can be optimized, and how robust checking is to
 verification optimizations.
 We focus our evaluation on the following research questions:
@@ -1763,6 +1764,13 @@ the vast majority of those arising from the benchmarks.
 
 \chapter{Conclusion}
 
+\appendix
+\chapter{Logics and Linear Programming}\label{app:logics}
+
+\section{Logics and Satisfiability}\label{app:logics}
+\section{Linear Programming}\label{app:lp}
+
+\tvn{Hai, give some LP background here.}
 
 \bibliographystyle{abbrv}
 \bibliography{book.bib}
