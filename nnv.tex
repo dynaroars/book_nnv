@@ -246,8 +246,8 @@
         {\fontsize{24}{24} \selectfont {{for Deep Neural Networks}}} \\[1in]    
         %{\fontsize{18}{18} \selectfont {{A Handbook for International Students}}} \\[1.in]
 
-    {\fontsize{14}{19.2} \selectfont \textcolor{ForestGreen}{ \bf ThanhVu (Vu) Nguyen}}\\[0.1in]
-    \today{} (latest version available on  \href{https://github.com/nguyenthanhvuh/phd-cs-us}{Github})
+    %{\fontsize{14}{19.2} \selectfont \textcolor{ForestGreen}{ \bf ThanhVu (Vu) Nguyen}}\\[0.1in]
+    \today{} (latest version available on  \href{https://github.com/nguyenthanhvuh/book_nnv}{Github})
     };
     \end{tikzpicture}
 
@@ -325,7 +325,7 @@ ReLU is the most popular activation function in DNNs.\\
 For DNN verification, these non-linear activation functions make verification difficult because it introduces multiple possible outcomes for any input, making it hard to reason about the output of the network. For example, ReLU has two possible outputs for any input: 0 if the input is less than zero, and the input itself otherwise, and Sigmoid has a smooth curve with infinite possible outputs for any input.
 
 
-\section{Example} 
+\subsection{Example} 
 Fig.~\ref{fig:dnn} shows a simple DNN with two inputs $x_1,x_2$, two hidden neurons $x_3,x_4$, and one output $x_5$. The weights of a neuron are shown on its incoming edges , and the bias is shown above or below each neuron. The outputs of the hidden neurons  are computed the affine transformation and ReLU, e.g., $x_3 = ReLU(-0.5x_1+0.5x_2+1.0)$. The output neuron is computed with just the affine transformation, i.e., $x_5=-x_3+x_4-1$.
 
 
@@ -696,8 +696,11 @@ An interval abstraction is a simple and widely-used abstraction technique in DNN
 \section{Zotope}
 \section{Polytope}
 
-\chapter{Popular Techniques and Tools}
 \chapter{Verifying the Verifiers}
+
+\chapter{A Survey of Popular Techniques and Tools}
+
+
 \chapter{Conclusion}
 
 
