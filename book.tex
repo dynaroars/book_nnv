@@ -491,70 +491,9 @@ Modern DNN verification techniques~\cite{bunel2020branch,wang2021beta,ferrari202
 
 \section{Complexity}
 
-\part{Constraint Solving and Abstraction}
+\chapter{Common Search Algorithms}
 
-
-\chapter{Constraint Solving}
-
-
-\section{Symbolic Execution and SMT Solving}\label{sec:se-smt}
-
-As mentioned \autoref{sec:satisfiability-and-activation-pattern-search}, the DNN verification problem can be represented as a satisfiability problem as shown in~\autoref{eq:prob}.  Specifically, we can encode the DNN as a logical formula and use an SMT solver to check that it satisfies the property of interest.
-
-A straightforward way to do this encoding is using \emph{symbolic execution} (SE)~\cite{FIXME}, a well-known software testing technique for finding bugs.  SE executes a program on symbolic inputs, i.e., inputs represented as symbols rather than concrete values, and tracks the reachability of program state as symbolic expressions, i.e., logical formulae over symbolic inputs. The satisfiability of these formulae is then checked using an SMT solver, and satisfying assignments represent inputs leading to the undesirable (buggy) program state.
-
-\subsection{Symbolic Execution}\label{sec:se}
-We can adapt traditional SE to our problem by treating the DNN as a program and neurons as variables and executing the DNN on symbolic inputs. Affine transformations can easily be represented as logical formulae because they are linear functions. Activation functions such as ReLUs are translated to disjunctions of linear functions or if-then-else statements, i.e., $ReLU(x) = \max(x,0) \equiv x \ge 0 \land x \lor 0 \land \neg x$.
-
-
-For example, for the DNN in \autoref{fig:dnn}, we can symbolically execute the DNN on symbolic inputs $x_1,x_2$ and return the symbolic output $x_5$ as 
-
-\begin{equation}
-    \begin{split}
-x_5 &= -x_3 + x_4 - 1 ~\land \\
-x_3 &= \max(-0.5x_1 + 0.5x_2 + 1.0, 0) ~\land \\
-x_4 &= \max(0.5x_1 - 0.5x_2 - 1.0, 0)
-    \end{split}
-\end{equation}
-
-
-\subsection{SMT Solving}\lbel{sec:smt}
-We can then use an SMT solver to check that the formula $x_5 \le 0$ is satisfiable for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$.
-
-
-\subsection{Limitations}\label{sec:smt-limitations} 
-%mention the work that treat DNN as a Java program and apply JPF.  
-\section{MILP}
-
-As mentioned in~\autoref{sec:smt-limitations}, using a generic, off-the-shelf SMT solver to verify DNNs can be inefficient because the computed formulae can be large and complex due to disjunctions representing non-linear activation functions.  This can lead to an explosion in the number of paths to explore, especially for large DNNs with many neurons.
-To address this, we can use a Mixed Integer Linear Programming (MILP) solver, which is specialized for solving linear constraints and is more efficient for DNN verification. Indeed, many modern DNN verification tools~\cite{wang2018efficient,katz2017reluplex,henriksen2020efficient} use industrial-strength MILP solvers such as Gurobi to help verify DNNs.
-
-We can encode the DNN as a set of linear constraints and use an MILP solver to check that the constraints are satisfiable. For example, the DNN in \autoref{fig:dnn} can be encoded as a set of linear constraints as follows:\tvn{Hai, fill out this section on MILP}
-
-
-\subsubsection{Limitations}\label{sec:milp-limitations}
-
-
-
-\chapter{Abstraction}
-
-\section{Interval}
-
-An interval abstraction is a simple and widely-used abstraction technique in DNN verification. It approximates the range of values that a neuron can take by using a lower and upper bound $[l, u]$. The interval abstraction is efficient and easy to implement, but it can be imprecise, especially for non-linear activation functions like ReLU. 
-
-\paragraph{Example}: For the DNN in \autoref{fig:dnn}, the interval abstraction for the input layer is $x_1 \in [-1, 1]$ and $x_2 \in [-2, 2]$. The interval abstraction for the hidden layer is $x_3 \in [0, 2]$ because $x_3 = [ReLU(-0.5x_1 + 0.5x_2 + 1.0), ReLU(-0.5x_1 + 0.5x_2 + 1.0)] = [ReLU(-0.5 \times -1 + 0.5 \times -2 + 1.0), ReLU(-0.5 \times 1 + 0.5 \times 2 + 1.0)] = [0, 2]$. Similarly, $x_4 \in [0, 2]$. The interval abstraction for the output layer is $x_5 \in [-3, 3]$.
-
-
-
-
-\section{Zotope}
-\section{Polytope}
-
-
-
-\part{DNN Verification Algorithms}
-\chapter{Search Algorithms}
-
+\section{Symbolic Search and Constraint solving}
 \section{Branch-and-Bound (BnB)}
 
 \begin{algorithm}[t]
@@ -675,7 +614,7 @@ An interval abstraction is a simple and widely-used abstraction technique in DNN
 
 
     $\problems \leftarrow \{ \emptyset \}$ \tcp{initialize verification problems} 
-    $\prooftree \gets \{ ~ \}$ \tcp{initialize proof tree}\label{line:prooftree}
+    % $\prooftree \gets \{ ~ \}$ \tcp{initialize proof tree}\label{line:prooftree}
     
     \While(\tcp*[h]{main loop}){$\problems$}{\label{line:dpllstart}
         % \tcp{$\sigma_i$ is the activation pattern of problem $i$-th}
@@ -700,16 +639,16 @@ An interval abstraction is a simple and widely-used abstraction technique in DNN
     }\label{line:dpllend}
     \Return{\unsat}
     
-    \caption{The \dd{} algorithm with proof generation.}\label{fig:alg}
+    \caption{The \dd{} algorithm.}\label{fig:alg}
 \end{algorithm}
 
-Most modern DNN verifiers adopt the branch-and-bound (BnB) approach to search for activation patterns for DNN verification. A BnB search consists of two main components: (branch) splitting into the problem smaller subproblems 
+Most modern DNN verifiers adopt the branch-and-bound (BaB) approach to search for activation patterns for DNN verification. A BaB search consists of two main components: (branch) splitting into the problem smaller subproblems 
 by using \emph{neuron splitting}, which decides boolean values representing neuron activation status, 
 and (bound) using abstraction and LP solving to approximate bounds on neuron values to determine 
 the satisfiability of the partial activation pattern formed by the split.
 
 
-\autoref{fig:alg} shows \dd{}, a reference BnB architecture~\cite{nakagawa2014consolidating} for modern DNN verifiers. \dd{} takes as input a ReLU-based DNN $\mathcal{N}$ and a formulae $\phi_{in}\Rightarrow \phi_{out}$ representing the property of interest.
+\autoref{fig:alg} shows \dd{}, a reference BaB architecture~\cite{nakagawa2014consolidating} for modern DNN verifiers. \dd{} takes as input a ReLU-based DNN $\mathcal{N}$ and a formulae $\phi_{in}\Rightarrow \phi_{out}$ representing the property of interest.
 \dd{} iterates between (i) branching (\autoref{line:decide}), which \emph{decides} (assigns) an activation status value for a neuron, and (ii) bounding (\autoref{line:deduce}), which \emph{deduces} or checks the feasibility of the current activation pattern. 
 %To add proof generation capability, \dd{} is instrumented with a proof tree (\texttt{proof}) variable (\autoref{line:prooftree}) to record these branching decisions. The proof is represented as a binary tree structure, where each node represents a neuron and its left and right edges represent its activation decision (active or inactive). %The proof tree is then used to generate a proof in the \nnproofformat{} format (\autoref{sec:proof-format}).
 
