@@ -268,7 +268,7 @@
         {\fontsize{24}{24} \selectfont {{for Deep Neural Networks}}} \\[1in]    
         %{\fontsize{18}{18} \selectfont {{A Handbook for International Students}}} \\[1.in]
 
-    {\fontsize{14}{19.2} \selectfont \textcolor{ForestGreen}{ \bf ThanhVu (Vu) Nguyen}}\\[0.1in]
+    {\fontsize{14}{19.2} \selectfont \textcolor{ForestGreen}{ \bf ThanhVu Nguyen and Hai Duong}}\\[0.1in]
     \today{} (latest version available on  \href{https://github.com/nguyenthanhvuh/phd-cs-us}{Github})
     };
     \end{tikzpicture}
@@ -290,6 +290,7 @@
 \newpage
 \tableofcontents
 
+\part{Basic of Neural Networks and Verification}
 \chapter{Basic of Neural Network}\label{sec:basic}
 
 A \emph{neural network} (\textbf{NN})~\cite{Goodfellow-et-al-2016} consists of an input layer, multiple hidden layers, and an output layer. Each layer has a number of neurons, each connected to neurons in the next layer through a predefined set of weights (derived by training the network with data). A \emph{Deep Neural Network} (\textbf{DNN}) is an NN with two or more hidden layers. 
@@ -348,7 +349,7 @@ For DNN verification, these non-linear activation functions make verification di
 
 
 \section{Example} 
-Fig.~\ref{fig:dnn} shows a simple DNN with two inputs $x_1,x_2$, two hidden neurons $x_3,x_4$, and one output $x_5$. The weights of a neuron are shown on its incoming edges , and the bias is shown above or below each neuron. The outputs of the hidden neurons  are computed the affine transformation and ReLU, e.g., $x_3 = ReLU(-0.5x_1+0.5x_2+1.0)$. The output neuron is computed with just the affine transformation, i.e., $x_5=-x_3+x_4-1$.
+Fig.~\ref{fig:dnn} shows a simple DNN with two inputs $x_1,x_2$, two hidden neurons $x_3,x_4$, and one output $x_5$. The weights of a neuron are shown on its incoming edges, and the bias is shown above or below each neuron. The outputs of the hidden neurons  are computed the affine transformation and ReLU, e.g., $x_3 = ReLU(-0.5x_1+0.5x_2+1.0)$. The output neuron is computed with just the affine transformation, i.e., $x_5=-x_3+x_4-1$.
 
 
 \begin{figure}
@@ -468,7 +469,9 @@ A counterexample showing this property violation is $\{x_1=-1, x_2=2\}$, from wh
 %Such properties can capture \emph{safety requirements} (e.g., a rule in an  collision avoidance system in~\cite{kochenderfer2012next,katz2017reluplex} is ``if the intruder is distant and significantly slower than us, then we stay below a certain threshold'') or \emph{local robustness}~\cite{katz2017towards} conditions (a form of adversarial robustness stating that small perturbations of a given input all yield the same output).
 
 
-\section{Satisfiability and Activation Pattern Search} As with traditional software, DNN verification is often represented as a satisfiability problem.
+\section{Satisfiability and Activation Pattern Search}\label{sec:satisfiability-and-activation-pattern-search}
+
+ As with traditional software, DNN verification is often represented as a satisfiability problem.
 We thus need to define a formula to represent the network. Typically this formula is a conjunction of constraints representing the affine transformation and activation function of each neuron in the network.
 For a network with $L$ layers, $N$ neurons per layer, and ReLU activations this formula is:
 \begin{align*}
@@ -488,9 +491,70 @@ Modern DNN verification techniques~\cite{bunel2020branch,wang2021beta,ferrari202
 
 \section{Complexity}
 
-\chapter{Common Search Algorithms}
+\part{Constraint Solving and Abstraction}
 
-\section{Symbolic Search and Constraint solving}
+
+\chapter{Constraint Solving}
+
+
+\section{Symbolic Execution and SMT Solving}\label{sec:se-smt}
+
+As mentioned \autoref{sec:satisfiability-and-activation-pattern-search}, the DNN verification problem can be represented as a satisfiability problem as shown in~\autoref{eq:prob}.  Specifically, we can encode the DNN as a logical formula and use an SMT solver to check that it satisfies the property of interest.
+
+A straightforward way to do this encoding is using \emph{symbolic execution} (SE)~\cite{FIXME}, a well-known software testing technique for finding bugs.  SE executes a program on symbolic inputs, i.e., inputs represented as symbols rather than concrete values, and tracks the reachability of program state as symbolic expressions, i.e., logical formulae over symbolic inputs. The satisfiability of these formulae is then checked using an SMT solver, and satisfying assignments represent inputs leading to the undesirable (buggy) program state.
+
+\subsection{Symbolic Execution}\label{sec:se}
+We can adapt traditional SE to our problem by treating the DNN as a program and neurons as variables and executing the DNN on symbolic inputs. Affine transformations can easily be represented as logical formulae because they are linear functions. Activation functions such as ReLUs are translated to disjunctions of linear functions or if-then-else statements, i.e., $ReLU(x) = \max(x,0) \equiv x \ge 0 \land x \lor 0 \land \neg x$.
+
+
+For example, for the DNN in \autoref{fig:dnn}, we can symbolically execute the DNN on symbolic inputs $x_1,x_2$ and return the symbolic output $x_5$ as 
+
+\begin{equation}
+    \begin{split}
+x_5 &= -x_3 + x_4 - 1 ~\land \\
+x_3 &= \max(-0.5x_1 + 0.5x_2 + 1.0, 0) ~\land \\
+x_4 &= \max(0.5x_1 - 0.5x_2 - 1.0, 0)
+    \end{split}
+\end{equation}
+
+
+\subsection{SMT Solving}\lbel{sec:smt}
+We can then use an SMT solver to check that the formula $x_5 \le 0$ is satisfiable for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$.
+
+
+\subsection{Limitations}\label{sec:smt-limitations} 
+%mention the work that treat DNN as a Java program and apply JPF.  
+\section{MILP}
+
+As mentioned in~\autoref{sec:smt-limitations}, using a generic, off-the-shelf SMT solver to verify DNNs can be inefficient because the computed formulae can be large and complex due to disjunctions representing non-linear activation functions.  This can lead to an explosion in the number of paths to explore, especially for large DNNs with many neurons.
+To address this, we can use a Mixed Integer Linear Programming (MILP) solver, which is specialized for solving linear constraints and is more efficient for DNN verification. Indeed, many modern DNN verification tools~\cite{wang2018efficient,katz2017reluplex,henriksen2020efficient} use industrial-strength MILP solvers such as Gurobi to help verify DNNs.
+
+We can encode the DNN as a set of linear constraints and use an MILP solver to check that the constraints are satisfiable. For example, the DNN in \autoref{fig:dnn} can be encoded as a set of linear constraints as follows:\tvn{Hai, fill out this section on MILP}
+
+
+\subsubsection{Limitations}\label{sec:milp-limitations}
+
+
+
+\chapter{Abstraction}
+
+\section{Interval}
+
+An interval abstraction is a simple and widely-used abstraction technique in DNN verification. It approximates the range of values that a neuron can take by using a lower and upper bound $[l, u]$. The interval abstraction is efficient and easy to implement, but it can be imprecise, especially for non-linear activation functions like ReLU. 
+
+\paragraph{Example}: For the DNN in \autoref{fig:dnn}, the interval abstraction for the input layer is $x_1 \in [-1, 1]$ and $x_2 \in [-2, 2]$. The interval abstraction for the hidden layer is $x_3 \in [0, 2]$ because $x_3 = [ReLU(-0.5x_1 + 0.5x_2 + 1.0), ReLU(-0.5x_1 + 0.5x_2 + 1.0)] = [ReLU(-0.5 \times -1 + 0.5 \times -2 + 1.0), ReLU(-0.5 \times 1 + 0.5 \times 2 + 1.0)] = [0, 2]$. Similarly, $x_4 \in [0, 2]$. The interval abstraction for the output layer is $x_5 \in [-3, 3]$.
+
+
+
+
+\section{Zotope}
+\section{Polytope}
+
+
+
+\part{DNN Verification Algorithms}
+\chapter{Search Algorithms}
+
 \section{Branch-and-Bound (BnB)}
 
 \begin{algorithm}[t]
@@ -689,24 +753,14 @@ Finally, \dd{} has an empty \texttt{ActPatterns}, stops the search, and returns 
 
 
 
-\chapter{Constraint Solving}
+
+\part{Optimizations and Strategies}
 
 
-\section{SMT}
-\section{MILP}
-\chapter{Abstraction}
-
-\section{Interval}
-
-An interval abstraction is a simple and widely-used abstraction technique in DNN verification. It approximates the range of values that a neuron can take by using a lower and upper bound $[l, u]$. The interval abstraction is efficient and easy to implement, but it can be imprecise, especially for non-linear activation functions like ReLU. 
-
-\paragraph{Example}: For the DNN in \autoref{fig:dnn}, the interval abstraction for the input layer is $x_1 \in [-1, 1]$ and $x_2 \in [-2, 2]$. The interval abstraction for the hidden layer is $x_3 \in [0, 2]$ because $x_3 = [ReLU(-0.5x_1 + 0.5x_2 + 1.0), ReLU(-0.5x_1 + 0.5x_2 + 1.0)] = [ReLU(-0.5 \times -1 + 0.5 \times -2 + 1.0), ReLU(-0.5 \times 1 + 0.5 \times 2 + 1.0)] = [0, 2]$. Similarly, $x_4 \in [0, 2]$. The interval abstraction for the output layer is $x_5 \in [-3, 3]$.
+\chapter{GPU and Multicore Parallelism}
 
 
-
-
-\section{Zotope}
-\section{Polytope}
+\part{Survey of DNN Verification Tools}
 
 \chapter{Popular Techniques and Tools}
 \chapter{Verifying the Verifiers}\label{sec:verifying-verifiers}
@@ -715,7 +769,8 @@ An interval abstraction is a simple and widely-used abstraction technique in DNN
 
 
 
-Advances in DNN verification as discussed in previous sections have made it possible to reason about the safety and robustness of complex DNNs. However, as DNN tools become more complex (e.g., SOTA tools have 20K LoCs), they are more prone to bugs. The 2023 Neural Network Verification competition VNN-COMP'23~\cite{brix2023fourth} showed that 3 of the top 7 participants produced unsound results, incorrectly claiming unsafe DNNs are safe. This undesirable behavior defeats the purpose of DNN verification and hinders its practical adoption.
+As discussed in previous chapters, advances in DNN verification have made it possible to reason about the safety and robustness of complex 
+DNNs. However, as DNN tools become more complex (e.g., SOTA tools have 20K LoCs), they are more prone to bugs. The 2023 Neural Network Verification competition VNN-COMP'23~\cite{brix2023fourth} showed that 3 of the top 7 participants produced unsound results, incorrectly claiming unsafe DNNs are safe. This undesirable behavior defeats the purpose of DNN verification and hinders its practical adoption.
 
 While all DNN verifiers can provide correct counterexamples for invalid properties, certifying valid results---proving no counterexample exists---is far more challenging, and no current verifiers can do this. This would require verifiers to track their decision steps, which are often complex and large. Moreover, each verification technique (e.g., branch and bound, conflict-driven learning, abstraction and refinement) would need a different proof generation approach, making it difficult to standardize and compare results across different tools.
 This is unlike SAT solving, where most tools adopt the standard DPLL framework and thus allows for unified techniques in proof generation and checking (e.g., the DRAT family of algorithms for UNSAT proofs).
@@ -727,6 +782,8 @@ This is unlike SAT solving, where most tools adopt the standard DPLL framework a
 
 
 %\paragraph{Preliminary and Proposed Work}  We have developed \tool{}, a conflict-driven DNN verification tool that won the New Comer Award in VNN-COMP'23. Recently, we have added a proof generation technique, called \prooftool{}, to \tool{} to produce proofs for its validity  results. This proposal builds on these ideas to develop a comprehensive proof certification technique for DNN verifiers, making them trustworthy and reliable for safety-critical applications.
+
+\part{Proof Generation and Checking}
 
 \section{Proof Generation}\label{sec:proofgen}
 
