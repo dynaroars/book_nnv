@@ -763,49 +763,27 @@ Finally, \dd{} has an empty \texttt{ActPatterns}, stops the search, and returns 
 \part{Survey of DNN Verification Tools}
 
 \chapter{Popular Techniques and Tools}
-\chapter{Verifying the Verifiers}\label{sec:verifying-verifiers}
 
 
 
 
+\part{Proof Generation and Checking}\label{part:proof}
 
-As discussed in previous chapters, advances in DNN verification have made it possible to reason about the safety and robustness of complex 
+Advances in DNN verification have made it possible to reason about the safety and robustness of complex 
 DNNs. However, as DNN tools become more complex (e.g., SOTA tools have 20K LoCs), they are more prone to bugs. The 2023 Neural Network Verification competition VNN-COMP'23~\cite{brix2023fourth} showed that 3 of the top 7 participants produced unsound results, incorrectly claiming unsafe DNNs are safe. This undesirable behavior defeats the purpose of DNN verification and hinders its practical adoption.
 
 While all DNN verifiers can provide correct counterexamples for invalid properties, certifying valid results---proving no counterexample exists---is far more challenging, and no current verifiers can do this. This would require verifiers to track their decision steps, which are often complex and large. Moreover, each verification technique (e.g., branch and bound, conflict-driven learning, abstraction and refinement) would need a different proof generation approach, making it difficult to standardize and compare results across different tools.
 This is unlike SAT solving, where most tools adopt the standard DPLL framework and thus allows for unified techniques in proof generation and checking (e.g., the DRAT family of algorithms for UNSAT proofs).
 
 
-
-
-
-
-
-%\paragraph{Preliminary and Proposed Work}  We have developed \tool{}, a conflict-driven DNN verification tool that won the New Comer Award in VNN-COMP'23. Recently, we have added a proof generation technique, called \prooftool{}, to \tool{} to produce proofs for its validity  results. This proposal builds on these ideas to develop a comprehensive proof certification technique for DNN verifiers, making them trustworthy and reliable for safety-critical applications.
-
-\part{Proof Generation and Checking}
-
 \section{Proof Generation}\label{sec:proofgen}
 
+To successfully deploy DNN verification tools in safety-critical applications, it is essential to provide guarantees that the verification results are correct, i.e., it won't claim an unsafe DNN as safe. One way to achieve this is to generate proofs of the verification results, i.e., a sequence of logical steps that demonstrates the validity of the verification result.
+Ideally, the proof generation process should be automated and integrated into the verification tool, so that the proof can be generated and checked automatically. The challenge is that there are many different DNN verification techniques, each with its own decision-making process, making it difficult to standardize proof generation across different tools. 
 
-Despite being well-tested, DNN verification tools are complex and may contain bugs. We propose a proof generation approach that can be used to generate a proof of the verification result. 
-All of the major DNN verification approaches including: \crown{}~\cite{wang2021beta}, \neuralsat{}~\cite{duong2023dpllt}, \mnbab{}~\cite{ferrari2022complete}, \ovalnnv{}~\cite{ovalbab}, \nnenum{}~\cite{bak2021nnenum}, and \marabou{}~\cite{katz2019marabou}, share a common ``branch and bound'' (BaB) search structure: (i) (branch) split into smaller subproblems by using \emph{neuron splitting}, which decides boolean values representing neuron activation status, and (ii) (bound) use abstraction and LP solving to approximate bounds on neuron values to determine the satisfiability of the partial activation pattern formed by the split.
-We leverage this commonality to bring proof generation capabilities with minimal overhead to existing DNN verification tools.
+This section presents an approach to generate proofs for DNN verification results, focusing on the branch-and-bound (BaB) search structure common to many DNN verification tools. We are mainly interested in proofs of unsatisfiability (unsat). A counterexample, $c$, returned by a verifier is an input that is purported to violate the property. This constitutes a proof of satisfiability (sat)  which can easily be checked by evaluating $\phi(c,N(c))$.
+In fact, VNN-COMP already requires competing DNN verification tools to return counterexamples demonstrating satisfiability.  In contrast, the proof of an unsatisfiability result (which explains why \emph{no possible inputs} can violate the property) is inherently more complex to generate (\autoref{sec:proofgen}), requires a more sophisticated encoding (\autoref{sec:prooflang}), and an efficient checking algorithm (\autoref{sec:proofchecking}).
 
-We focus on checking proofs of unsatisfiability (unsat) in this paper. 
-A counterexample, $c$, returned by a verifier is an input that is purported to violate
-the property.
-This constitutes a proof of satisfiability (sat) 
-which can easily be checked by evaluating $\phi(c,N(c))$.
-In fact, VNN-COMP already requires competing DNN verification tools to return counterexamples demonstrating satisfiability.  In contrast, the proof of an unsatisfiability result (which explains why \emph{no possible inputs} can violate the property) is inherently more complex to generate (\autoref{sec:proof-gen}), requires a more sophisticated encoding (\autoref{sec:proof-format}), and an efficient checking algorithm (\autoref{sec:proof-checker}).
-
-%\nnproofgen{} exploits 
-
-
-
-%While multiple DNN verification approaches exist (e.g., simplex-based~\cite{katz2017reluplex,katz2022reluplex}, ~\cite{bunel2020branch,wang2021beta,ferrari2022complete}, and others ~\autoref{sec:related}), they all share a common structure: they use \emph{neuron splitting} (or \emph{case splitting}) to split the problem into smaller subproblems (like a search tree). %More specifically, they iteratively assign boolean values to neurons (true means active and false means inactive) and check the satisfiability of the DNN problem with the boolean assignment.
-%For example, the ``branch'' in the popular class of  branch-and-bound (BaB)-based DNN verification techniques~\cite{bunel2020branch,wang2021beta,ferrari2022complete,duong2024harnessing,duong2023dpllt,ovalbab} refers to neuron splitting (while the ``bound'' refers to abstraction to approximate neural bounds).  
-%\nnproofchecker{} is designed for neuron-splitting approaches and give these tools the ability to generate certified results with minimal overhead.
 
 
 
@@ -947,7 +925,13 @@ In fact, VNN-COMP already requires competing DNN verification tools to return co
 
 %Recently, an approach based on the DPLL(T) algorithm in SAT/SMT solving has shown much promise~\cite{duong2023dpllt}. For example, in its debut year, the DPLL(T)-based \neuralsat{} DNN verifier~\cite{duong2023dpllt} won the New Comer Award at VNN-COMP'23~\cite{brix2023fourth} and outperformed other state-of-the-art DNN verification tools, especially for very large networks~\cite{duong2024harnessing}. More importantly, DPLL(T) approach maintains \emph{implication graph}, an internal data structure to keep track of assignments, which essentially represent a  proof of the verification result. In other words, proofs are a built-in feature of DPLL(T) approach, and thus can be generated with minimal (in fact, \emph{zero}) overhead.
 
-\subsection{Neuron-Splitting DNN Verification}\label{sec:bab}
+\subsection{Proof Generation for Branch and Bound (BaB) Algorithms}\label{sec:proogen}
+
+All of the major DNN verification approaches including: \crown{}~\cite{wang2021beta}, \neuralsat{}~\cite{duong2023dpllt}, \mnbab{}~\cite{ferrari2022complete}, \ovalnnv{}~\cite{ovalbab}, \nnenum{}~\cite{bak2021nnenum}, and \marabou{}~\cite{katz2019marabou}, share a common ``branch and bound'' (BaB) search structure: (i) (branch) split into smaller subproblems by using \emph{neuron splitting}, which decides boolean values representing neuron activation status, and (ii) (bound) use abstraction and LP solving to approximate bounds on neuron values to determine the satisfiability of the partial activation pattern formed by the split.
+We leverage this commonality to bring proof generation capabilities with minimal overhead to existing DNN verification tools.
+
+
+
 \autoref{fig:alg} shows \dd{}, a reference architecture~\cite{nakagawa2014consolidating} 
 for modern DNN verifiers that we use to illustrate our observations.  
 \dd{} takes as input a ReLU-based DNN $\mathcal{N}$ and a formulae $\phi_{in}\Rightarrow \phi_{out}$ representing the property of interest.
@@ -1126,7 +1110,7 @@ The \nnproofformat{} language is intentionally designed to (a) not explicitly in
 The DNN weight and bias terms are readily available in the ONNX~\cite{onnx} format, which can be accessed by any \nnproofformat{} checker like the one we describe next.
 
 
-\section{Proof Checker}\label{sec:proofchecker}
+\section{Proof Checker}\label{sec:proofchecking}
 Finally, we need to check that the generated proof is correct and that the original DNN verification problem is indeed unsatisfiable. The checker must be efficient to handle large proofs and trusted of its results (if it verifies the proof, then the original DNNV problem is proved).
 To achieve this, we will develop a proof checker call \proofcheck{} to validate \prooflang{} proofs.
 \proofcheck{} will be verifier-independent and support \prooflang{} proofs generated by different verification tools. 
@@ -1818,6 +1802,7 @@ the vast majority of those arising from the benchmarks.
 \end{tcolorbox}
 
 
+\chapter{Benchmarks Generation}\label{chap:benchmarks-generation}
 
 \chapter{Conclusion}
 
