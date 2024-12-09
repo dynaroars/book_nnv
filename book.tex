@@ -63,6 +63,11 @@
 \SetKwData{layer}{layer}
 \SetKwData{layer}{layer}
 \SetKwData{layerbounds}{layer\_bounds}
+\DontPrintSemicolon
+
+
+
+
 
 \SetAlgoCaptionSeparator{.}
 \SetAlCapFnt{\footnotesize\rm}
@@ -170,7 +175,7 @@
 \newcommand{\mnbab}{\texttt{MN-BaB}}
 % \newcommand{\vnncomp}{VNN-COMP'23}
 \newcommand{\planet}{\texttt{Planet}}
-\newcommand{\dd}{\texttt{BaB$_{\text{NV}}$}}
+\newcommand{\bab}{\texttt{BaB$_{\text{NV}}$}}
 \newcommand{\neuralsat}{\texttt{NeuralSAT}}
 \newcommand{\mipverify}{\texttt{MIPVerify}}
 \newcommand{\crowndefault}{\texttt{$\alpha\beta$-CROWN} (default)}
@@ -268,8 +273,9 @@
         {\fontsize{24}{24} \selectfont {{for Deep Neural Networks}}} \\[1in]    
         %{\fontsize{18}{18} \selectfont {{A Handbook for International Students}}} \\[1.in]
 
-    {\fontsize{14}{19.2} \selectfont \textcolor{ForestGreen}{ \bf ThanhVu Nguyen and Hai Duong}}\\[0.1in]
-    \today{} (latest version available on  \href{https://github.com/nguyenthanhvuh/phd-cs-us}{Github})
+        {\fontsize{14}{19.2} \selectfont \textcolor{ForestGreen}{ \bf ThanhVu Nguyen}}\\[0.1in]
+        {\fontsize{14}{19.2} \selectfont \textcolor{ForestGreen}{ \bf Hai Duong}}\\[0.1in]
+    \today{} (latest version available on  \href{https://github.com/nguyenthanhvuh/book_nnv}{Github})
     };
     \end{tikzpicture}
 
@@ -557,238 +563,30 @@ An interval abstraction is a simple and widely-used abstraction technique in DNN
 
 \section{Branch-and-Bound (BaB)}
 
-\begin{algorithm}[t]
-
     
-    \SetKwData{nextlayer}{layer$_{i+1}$}
-    \SetKwData{status}{status}
-    \SetKwData{minimum}{objval}
-    
-    \SetKwFunction{InputMILP}{AddInputConstrs}
-    \SetKwFunction{GetUnstableNeurons}{GetUnstableNeurons}
-    \SetKwFunction{PiecewiseLinearMILP}{AddConstrsPWL}
-    \SetKwFunction{LinearMILP}{AddConstrsLinear}
-    \SetKwFunction{Maximize}{Maximize}
-    \SetKwFunction{Minimize}{Minimize}
-    \SetKwFunction{Feasible}{CheckFeasibility}
-    \SetKwFunction{Optimize}{Optimize}
-    \SetKwFunction{isPiecewiseLinear}{isPiecewiseLinear}
-    \SetKwFunction{CreateStabilizedMILP}{CreateStabilizedMILP}
-    \SetKwFunction{GetLeafNodes}{GetLeafNodes}
-    \SetKwFunction{AddConstrs}{AddConstrs}
-    \SetKwFunction{RemoveConstrs}{RemoveConstrs}
-    \SetKwFunction{AddObjective}{AddObjectives}
-    \SetKwFunction{ShortenSplitConstrs}{ShortenSplitConstrs}
-    \SetKwFunction{RemoveLeafNodes}{RemoveLeaves}
-    \SetKwFunction{StoppingConditions}{StoppingConditions}
-    \SetKwFunction{RepOK}{RepOK}
-    \SetKwFunction{RaiseError}{RaiseError}
+\SetKwData{nextlayer}{layer$_{i+1}$}
+\SetKwData{status}{status}
+\SetKwData{minimum}{objval}
 
-    \SetKwInOut{Input}{input}
-    \SetKwInOut{Output}{output}
-    \SetKw{Break}{break}
-    \SetKw{Continue}{continue}
-    \SetKwFunction{Backtrack}{Backtrack}
-    \SetKwFunction{Select}{Select}
-    \SetKwFunction{Decide}{Decide}
-    \SetKwFunction{BCP}{BCP}
-    \SetKwFunction{Deduce}{Deduce}
-    \SetKwFunction{AnalyzeConflict}{AnalyzeConflict}
-    \SetKwFunction{BooleanAbstraction}{BooleanAbstraction}
-    \SetKwFunction{AddClause}{AddClause}
-    \SetKwFunction{isTotal}{isTotal}
-    \SetKwFunction{randomattack}{RandomAttack}
-    \SetKwFunction{pgd}{PGDAttack}
-    
-    \SetKwFunction{DPLLT}{DPLLT}
-    \SetKwFunction{isValid}{isValid}
-    \SetKwFunction{isEmpty}{isEmpty}
-    \SetKwFunction{LPSolver}{LPSolver}
-    \SetKwFunction{Solve}{Solve}
-    \SetKwFunction{FindLayerNodes}{FindLayerNodes}
-    \SetKwFunction{TightenInputBounds}{TightenInputBounds}
-    \SetKwFunction{Abstract}{Abstract}
-    \SetKwFunction{Check}{Check}
-    \SetKwFunction{Decide}{Decide}
-    \SetKwFunction{Imply}{Imply}
-    \SetKwFunction{Lower}{LowerBound}
-    \SetKwFunction{Upper}{UpperBound}
-    \SetKwFunction{GetInputBounds}{GetInputBounds}
-    \SetKwFunction{GetInputs}{GetInputs}
-    \SetKwFunction{GetNumInputs}{GetNumInputs}
-    \SetKwFunction{CurrentConflictClause}{CurrentConflictClause}
-    \SetKwFunction{StopCriterion}{StopCriterion}
-    \SetKwFunction{LastAssignedLiteral}{LastLiteral}
-    \SetKwFunction{LiteralToVariable}{LiteralToVariable}
-    \SetKwFunction{Antecedent}{Antecedent}
-    \SetKwFunction{BinRes}{BinRes}
-    \SetKwFunction{BacktrackLevel}{BacktrackLevel}
-    \SetKwFunction{AddClause}{AddClause}
-    \SetKwFunction{ActivationStatus}{ActivationStatus}
-    \SetKwFunction{Backjump}{Backjump}
-    \SetKwFunction{EstimateBounds}{EstimateBounds}
-    
-    \SetKwData{problems}{ActPatterns}
-    \SetKwData{implicationgraph}{igraph}
-    \SetKwData{literal}{lit}
-    \SetKwData{variable}{var}
-    \SetKwData{antecedent}{ante}
-    \SetKwData{conflict}{conflict}
-    \SetKwData{none}{none}
-    \SetKwData{layerid}{lid}
-    \SetKwData{hiddenbounds}{hidden\_bounds}
-    \SetKwData{inputs}{inputs}
-    \SetKwData{inputbounds}{input\_bounds}
-    \SetKwData{outputbounds}{output\_bounds}
-    \SetKwData{infeasible}{INFEASIBLE}
-    \SetKwData{unreachable}{UNREACHABLE}
-    \SetKwData{maxinputs}{MAX\_NUM\_INPUT}
-    \SetKwData{assignment}{$\sigma$}
-    \SetKwData{dl}{dl}
-    \SetKwData{lpmodel}{solver}
-    \SetKwData{clauses}{clauses}
-    \SetKwData{conflict}{conflict}
-    \SetKwData{clause}{clause}
-    \SetKwData{igraph}{igraph}
-    \SetKwData{cex}{cex}
-    \SetKwData{sat}{sat}
-    \SetKwData{unsat}{unsat}
-    
-    \SetKwData{submodel}{sub\_model}
-    
-    \SetKwData{true}{true}
-    \SetKwData{false}{false}
-    \DontPrintSemicolon
-    
-    \SetKwFunction{Restart}{Restart}
-    
-    \SetKwData{counterexample}{cex}
-    \SetKwData{conflictclause}{conflict\_clause}
-    \SetKwData{isconflict}{is\_conflict}
-
-    \footnotesize
-    \DontPrintSemicolon
-  
-    \Input{DNN $\mathcal{N}$, property $\phi_{in} \Rightarrow \phi_{out}$}
-    \Output{$\unsat$ if property is valid, otherwise ($\sat, \counterexample$)}
-    \BlankLine
-
-
-    $\problems \leftarrow \{ \emptyset \}$ \tcp{initialize verification problems} 
-    % $\prooftree \gets \{ ~ \}$ \tcp{initialize proof tree}\label{line:prooftree}
-    
-    \While(\tcp*[h]{main loop}){$\problems$}{\label{line:dpllstart}
-        % \tcp{$\sigma_i$ is the activation pattern of problem $i$-th}
-        $\sigma_i \gets \Select(\problems)$ \tcp{process problem $i$-th}
-        % \Parfor(\tcp*[h]{process in parallel}){$\sigma_i ~\In~ \problems$}{ \label{line:parfor}
-            \If{\Deduce{$\mathcal{N}, \phi_{in}, \phi_{out}, \sigma_i$}}{\label{line:deduce}
-                $(\counterexample, v_i) \leftarrow \Decide(\mathcal{N}, \phi_{in}, \phi_{out}, \sigma_i)$ \\ \label{line:decide}
-                \If(\tcp*[h]{found a valid counter-example}){$\counterexample$}{
-                    \Return{$(\sat, \counterexample)$} 
-                }
-                \tcp{create new activation patterns}
-                $\problems \leftarrow \problems \cup \{ \sigma_i \land v_i ~;~ \sigma_i \land \overline{v_i} \}$ \;
-            }
-            %\Else(\tcp*[h]{detect a conflict}){
-                % $\clauses \leftarrow \clauses \cup \AnalyzeConflict(\igraph_i)$ \\ \label{line:analyze_conflict}
-            %    $\prooftree \leftarrow \prooftree \cup \{ \sigma_i \}$ \tcp{build proof tree} \label{line:record_proof}
-            %}
-        % }
-        % \If(\tcp*[h]{no more problems}){$\isEmpty(\problems)$}{
-        % }
-        
-    }\label{line:dpllend}
-    \Return{\unsat}
-    
-    \caption{The \dd{} algorithm.}\label{fig:alg}
-\end{algorithm}
-
-Most modern DNN verifiers adopt the branch-and-bound (BaB) approach to search for activation patterns for DNN verification. A BaB search consists of two main components: (branch) splitting into the problem smaller subproblems 
-by using \emph{neuron splitting}, which decides boolean values representing neuron activation status, 
-and (bound) using abstraction and LP solving to approximate bounds on neuron values to determine 
-the satisfiability of the partial activation pattern formed by the split.
-
-
-\autoref{fig:alg} shows \dd{}, a reference BaB architecture~\cite{nakagawa2014consolidating} for modern DNN verifiers. \dd{} takes as input a ReLU-based DNN $\mathcal{N}$ and a formulae $\phi_{in}\Rightarrow \phi_{out}$ representing the property of interest.
-\dd{} iterates between (i) branching (\autoref{line:decide}), which \emph{decides} (assigns) an activation status value for a neuron, and (ii) bounding (\autoref{line:deduce}), which \emph{deduces} or checks the feasibility of the current activation pattern. 
-%To add proof generation capability, \dd{} is instrumented with a proof tree (\texttt{proof}) variable (\autoref{line:prooftree}) to record these branching decisions. The proof is represented as a binary tree structure, where each node represents a neuron and its left and right edges represent its activation decision (active or inactive). %The proof tree is then used to generate a proof in the \nnproofformat{} format (\autoref{sec:proof-format}).
-
-
-
-
-\begin{figure}[t]
-    \begin{minipage}[b]{\linewidth}
-        \centering
-        \begin{minipage}[t]{0.48\textwidth}
-            \centering  
-            \includegraphics[width=\linewidth]{figure/proof_net.pdf}
-            \caption*{(a)}
-        \end{minipage}
-        \begin{minipage}[t]{0.48\textwidth}
-            \centering
-            \includegraphics[width=\linewidth]{figure/proof_tree.pdf}
-            \caption*{(b)}
-        \end{minipage}
-        \caption{(a) A simple DNN.  (b) A proof tree produced verifying the property $(x_1, x_2) \in [-2.0, 2.0] \times [-1.0, 1,0] \Rightarrow (y_1 > y_2)$.}
-        \label{fig:example}
-    \end{minipage}
-\end{figure}
-%White nodes correspond to branching nodes where \neuralsat{} makes decisions to split ReLU neurons.
-
-\paragraph{Example} \autoref{fig:example}a illustrates a DNN and how \dd{} determines unsatisfiability (i.e., verifies the problem) and generates the unsat proof in \autoref{fig:example}b.
-
-First, \dd{} initializes the activation pattern set \functiontextformat{ActPatterns} with an empty activation pattern $\emptyset$. Then \dd{} enters a loop (\autoref{line:dpllstart}-\autoref{line:dpllend}) to search for a satisfying assignment or a proof of unsatisfiability. In the first iteration, \dd{} selects the only available activation pattern $\emptyset \in \functiontextformat{ActPatterns}$. 
-It calls \functiontextformat{Deduce} to check the feasibility of the problem based on the current activation pattern. \functiontextformat{Deduce} uses abstraction to approximate that from the input constraints the output values are feasible for the given network. 
-Since \functiontextformat{Deduce} cannot decide infeasibility, \dd{} randomly selects a neuron to split (\functiontextformat{Decide}). Let us assume that it chooses $v_4$ to split, which essentially means the problem is split into two independent subproblems: one with $v_4$ active and the other with $v_4$ inactive.
-\dd{} then adds $\{v_4\}$ and $\{\overline{v_4}\}$ to \functiontextformat{ActPatterns}.
-
-In the second iteration, \dd{} has two subproblems (that can be processed in parallel). For the first subproblem with $v_4$, \functiontextformat{Deduce} cannot decide infeasibility, so it selects $v_2$ to split. It then conjoins $v_4$ with $v_2$ and then with $\overline{v_2}$ and adds both conjuncts to \texttt{ActPatterns}. 
-For the second subproblem with $\overline{v_4}$ inactive, \functiontextformat{Deduce} determines that the problem is unsatisfiable and \dd{} saves the node $v_4$ to the proof tree, as node 3, to indicate one unsatisfiable pattern, i.e., whenever the network has $v_4$ being inactive, the problem is unsatisfiable.
-
-In the third iteration, \dd{} has two subproblems for $v_4 \land v_2$ and $v_4 \land \overline{v_2}$. For the first subproblem, \functiontextformat{Deduce} cannot decide infeasibility, so it selects $v_1$ to split. It then conjoins $v_1$ and then $\overline{v_1}$ to the current activation pattern and adds them to \functiontextformat{ActPatterns}. For the second subproblem, \functiontextformat{Deduce} determines that the problem is unsatisfiable and \dd{} saves the node $v_4 \land \overline{v_2}$ to the proof tree, as node 5.
-
-In the fourth iteration, \dd{} has two subproblems for $v_4 \land v_2 \land v_1$ and $v_4 \land v_2 \land \overline{v_1}$. Both subproblems are determined to be unsatisfiable, and \dd{} saves them to the proof tree as nodes 6 and 7, respectively.
-
-Finally, \dd{} has an empty \texttt{ActPatterns}, stops the search, and returns \texttt{unsat} and the proof tree. 
-
-
-
-
-\part{Optimizations and Strategies}
-
-
-\chapter{GPU and Multicore Parallelism}
-
-
-\part{Survey of DNN Verification Tools}
-
-\chapter{Popular Techniques and Tools}
-
-
-
-
-\part{Proof Generation and Checking}\label{part:proof}
-
-Advances in DNN verification have made it possible to reason about the safety and robustness of complex 
-DNNs. However, as DNN tools become more complex (e.g., SOTA tools have 20K LoCs), they are more prone to bugs. The 2023 Neural Network Verification competition VNN-COMP'23~\cite{brix2023fourth} showed that 3 of the top 7 participants produced unsound results, incorrectly claiming unsafe DNNs are safe. This undesirable behavior defeats the purpose of DNN verification and hinders its practical adoption.
-
-While all DNN verifiers can provide correct counterexamples for invalid properties, certifying valid results---proving no counterexample exists---is far more challenging, and no current verifiers can do this. This would require verifiers to track their decision steps, which are often complex and large. Moreover, each verification technique (e.g., branch and bound, conflict-driven learning, abstraction and refinement) would need a different proof generation approach, making it difficult to standardize and compare results across different tools.
-This is unlike SAT solving, where most tools adopt the standard DPLL framework and thus allows for unified techniques in proof generation and checking (e.g., the DRAT family of algorithms for UNSAT proofs).
-
-
-\section{Proof Generation}\label{sec:proofgen}
-
-To successfully deploy DNN verification tools in safety-critical applications, it is essential to provide guarantees that the verification results are correct, i.e., it won't claim an unsafe DNN as safe. One way to achieve this is to generate proofs of the verification results, i.e., a sequence of logical steps that demonstrates the validity of the verification result.
-Ideally, the proof generation process should be automated and integrated into the verification tool, so that the proof can be generated and checked automatically. The challenge is that there are many different DNN verification techniques, each with its own decision-making process, making it difficult to standardize proof generation across different tools. 
-
-This section presents an approach to generate proofs for DNN verification results, focusing on the branch-and-bound (BaB) search structure common to many DNN verification tools. We are mainly interested in proofs of unsatisfiability (unsat). A counterexample, $c$, returned by a verifier is an input that is purported to violate the property. This constitutes a proof of satisfiability (sat)  which can easily be checked by evaluating $\phi(c,N(c))$.
-In fact, VNN-COMP already requires competing DNN verification tools to return counterexamples demonstrating satisfiability.  In contrast, the proof of an unsatisfiability result (which explains why \emph{no possible inputs} can violate the property) is inherently more complex to generate (\autoref{sec:proofgen}), requires a more sophisticated encoding (\autoref{sec:prooflang}), and an efficient checking algorithm (\autoref{sec:proofchecking}).
-
-
-
-
-
-
+\SetKwFunction{InputMILP}{AddInputConstrs}
+\SetKwFunction{GetUnstableNeurons}{GetUnstableNeurons}
+\SetKwFunction{PiecewiseLinearMILP}{AddConstrsPWL}
+\SetKwFunction{LinearMILP}{AddConstrsLinear}
+\SetKwFunction{Maximize}{Maximize}
+\SetKwFunction{Minimize}{Minimize}
+\SetKwFunction{Feasible}{CheckFeasibility}
+\SetKwFunction{Optimize}{Optimize}
+\SetKwFunction{isPiecewiseLinear}{isPiecewiseLinear}
+\SetKwFunction{CreateStabilizedMILP}{CreateStabilizedMILP}
+\SetKwFunction{GetLeafNodes}{GetLeafNodes}
+\SetKwFunction{AddConstrs}{AddConstrs}
+\SetKwFunction{RemoveConstrs}{RemoveConstrs}
+\SetKwFunction{AddObjective}{AddObjectives}
+\SetKwFunction{ShortenSplitConstrs}{ShortenSplitConstrs}
+\SetKwFunction{RemoveLeafNodes}{RemoveLeaves}
+\SetKwFunction{StoppingConditions}{StoppingConditions}
+\SetKwFunction{RepOK}{RepOK}
+\SetKwFunction{RaiseError}{RaiseError}
 
 \SetKwInOut{Input}{input}
 \SetKwInOut{Output}{output}
@@ -843,7 +641,6 @@ In fact, VNN-COMP already requires competing DNN verification tools to return co
 \SetKwData{none}{none}
 \SetKwData{layerid}{lid}
 \SetKwData{hiddenbounds}{hidden\_bounds}
-\SetKwData{layerbounds}{layer\_bounds}
 \SetKwData{inputs}{inputs}
 \SetKwData{inputbounds}{input\_bounds}
 \SetKwData{outputbounds}{output\_bounds}
@@ -860,14 +657,12 @@ In fact, VNN-COMP already requires competing DNN verification tools to return co
 \SetKwData{cex}{cex}
 \SetKwData{sat}{sat}
 \SetKwData{unsat}{unsat}
-\SetKwData{certified}{certified}
-\SetKwData{uncertified}{uncertified}
+
 \SetKwData{submodel}{sub\_model}
 
 \SetKwData{true}{true}
 \SetKwData{false}{false}
-\DontPrintSemicolon
-
+    
 \SetKwFunction{Restart}{Restart}
 
 \SetKwData{counterexample}{cex}
@@ -875,10 +670,169 @@ In fact, VNN-COMP already requires competing DNN verification tools to return co
 \SetKwData{isconflict}{is\_conflict}
 
 
+\begin{algorithm}[t]
+    \footnotesize
+    \Input{DNN $\mathcal{N}$, property $\phi_{in} \Rightarrow \phi_{out}$}
+    \Output{$\unsat$ if property is valid, otherwise ($\sat, \counterexample$)}
+    \BlankLine
+
+    $\problems \leftarrow \{ \emptyset \}$ \tcp{initialize verification problems} 
+    % $\prooftree \gets \{ ~ \}$ \tcp{initialize proof tree}\label{line:prooftree}
+    
+    \While(\tcp*[h]{main loop}){$\problems$}{\label{line:dpllstart}
+        % \tcp{$\sigma_i$ is the activation pattern of problem $i$-th}
+        $\sigma_i \gets \Select(\problems)$ \tcp{process problem $i$-th}
+        % \Parfor(\tcp*[h]{process in parallel}){$\sigma_i ~\In~ \problems$}{ \label{line:parfor}
+            \If{\Deduce{$\mathcal{N}, \phi_{in}, \phi_{out}, \sigma_i$}}{\label{line:deduce}
+                $(\counterexample, v_i) \leftarrow \Decide(\mathcal{N}, \phi_{in}, \phi_{out}, \sigma_i)$ \\ \label{line:decide}
+                \If(\tcp*[h]{found a valid counter-example}){$\counterexample$}{
+                    \Return{$(\sat, \counterexample)$} 
+                }
+                \tcp{create new activation patterns}
+                $\problems \leftarrow \problems \cup \{ \sigma_i \land v_i ~;~ \sigma_i \land \overline{v_i} \}$ \;
+            }
+            %\Else(\tcp*[h]{detect a conflict}){
+                % $\clauses \leftarrow \clauses \cup \AnalyzeConflict(\igraph_i)$ \\ \label{line:analyze_conflict}
+            %    $\prooftree \leftarrow \prooftree \cup \{ \sigma_i \}$ \tcp{build proof tree} \label{line:record_proof}
+            %}
+        % }
+        % \If(\tcp*[h]{no more problems}){$\isEmpty(\problems)$}{
+        % }
+        
+    }\label{line:dpllend}
+    \Return{\unsat}
+    
+    \caption{The \bab{} algorithm.}\label{alg:bab}
+\end{algorithm}
+
+Most modern DNN verifiers adopt the branch-and-bound (BaB) approach to search for activation patterns for DNN verification. A BaB search consists of two main components: (branch) splitting into the problem smaller subproblems 
+by using \emph{neuron splitting}, which decides boolean values representing neuron activation status, 
+and (bound) using abstraction and LP solving to approximate bounds on neuron values to determine 
+the satisfiability of the partial activation pattern formed by the split.
+
+
+\autoref{alg:bab} shows \bab{}, a reference BaB architecture~\cite{nakagawa2014consolidating} for modern DNN verifiers. \bab{} takes as input a ReLU-based DNN $\mathcal{N}$ and a formulae $\phi_{in}\Rightarrow \phi_{out}$ representing the property of interest.
+\bab{} iterates between (i) branching (\autoref{line:decide}), which \emph{decides} (assigns) an activation status value for a neuron, and (ii) bounding (\autoref{line:deduce}), which \emph{deduces} or checks the feasibility of the current activation pattern. 
+%To add proof generation capability, \bab{} is instrumented with a proof tree (\texttt{proof}) variable (\autoref{line:prooftree}) to record these branching decisions. The proof is represented as a binary tree structure, where each node represents a neuron and its left and right edges represent its activation decision (active or inactive). %The proof tree is then used to generate a proof in the \nnproofformat{} format (\autoref{sec:proof-format}).
+
+
+
+
+\begin{figure}[t]
+    \begin{minipage}[b]{\linewidth}
+        \centering
+        \begin{minipage}[t]{0.48\textwidth}
+            \centering  
+            \includegraphics[width=\linewidth]{figure/proof_net.pdf}
+            \caption*{(a)}
+        \end{minipage}
+        \begin{minipage}[t]{0.48\textwidth}
+            \centering
+            \includegraphics[width=\linewidth]{figure/proof_tree.pdf}
+            \caption*{(b)}
+        \end{minipage}
+        \caption{(a) A simple DNN.  (b) A proof tree produced verifying the property $(x_1, x_2) \in [-2.0, 2.0] \times [-1.0, 1,0] \Rightarrow (y_1 > y_2)$.}
+        \label{fig:example}
+    \end{minipage}
+\end{figure}
+%White nodes correspond to branching nodes where \neuralsat{} makes decisions to split ReLU neurons.
+
+\paragraph{Example} \autoref{fig:example}a illustrates a DNN and how \bab{} determines unsatisfiability (i.e., verifies the problem) and generates the unsat proof in \autoref{fig:example}b.
+
+First, \bab{} initializes the activation pattern set \functiontextformat{ActPatterns} with an empty activation pattern $\emptyset$. Then \bab{} enters a loop (\autoref{line:dpllstart}-\autoref{line:dpllend}) to search for a satisfying assignment or a proof of unsatisfiability. In the first iteration, \bab{} selects the only available activation pattern $\emptyset \in \functiontextformat{ActPatterns}$. 
+It calls \functiontextformat{Deduce} to check the feasibility of the problem based on the current activation pattern. \functiontextformat{Deduce} uses abstraction to approximate that from the input constraints the output values are feasible for the given network. 
+Since \functiontextformat{Deduce} cannot decide infeasibility, \bab{} randomly selects a neuron to split (\functiontextformat{Decide}). Let us assume that it chooses $v_4$ to split, which essentially means the problem is split into two independent subproblems: one with $v_4$ active and the other with $v_4$ inactive.
+\bab{} then adds $\{v_4\}$ and $\{\overline{v_4}\}$ to \functiontextformat{ActPatterns}.
+
+In the second iteration, \bab{} has two subproblems (that can be processed in parallel). For the first subproblem with $v_4$, \functiontextformat{Deduce} cannot decide infeasibility, so it selects $v_2$ to split. It then conjoins $v_4$ with $v_2$ and then with $\overline{v_2}$ and adds both conjuncts to \texttt{ActPatterns}. 
+For the second subproblem with $\overline{v_4}$ inactive, \functiontextformat{Deduce} determines that the problem is unsatisfiable and \bab{} saves the node $v_4$ to the proof tree, as node 3, to indicate one unsatisfiable pattern, i.e., whenever the network has $v_4$ being inactive, the problem is unsatisfiable.
+
+In the third iteration, \bab{} has two subproblems for $v_4 \land v_2$ and $v_4 \land \overline{v_2}$. For the first subproblem, \functiontextformat{Deduce} cannot decide infeasibility, so it selects $v_1$ to split. It then conjoins $v_1$ and then $\overline{v_1}$ to the current activation pattern and adds them to \functiontextformat{ActPatterns}. For the second subproblem, \functiontextformat{Deduce} determines that the problem is unsatisfiable and \bab{} saves the node $v_4 \land \overline{v_2}$ to the proof tree, as node 5.
+
+In the fourth iteration, \bab{} has two subproblems for $v_4 \land v_2 \land v_1$ and $v_4 \land v_2 \land \overline{v_1}$. Both subproblems are determined to be unsatisfiable, and \bab{} saves them to the proof tree as nodes 6 and 7, respectively.
+
+Finally, \bab{} has an empty \texttt{ActPatterns}, stops the search, and returns \texttt{unsat} and the proof tree. 
+
+
+
+
+\part{Optimizations and Strategies}
+
+
+\chapter{GPU and Multicore Parallelism}
+
+
+\part{Survey of DNN Verification Tools}
+
+\chapter{Popular Techniques and Tools}
+
+
+
+
+\part{Advanced Topics\label{part:advanced-topics}}
+
+
+
+
+\chapter{Proof Generation and Checking}\label{chapter:proof-gen-check}
+
+%Advances in DNN verification have made it possible to reason about the safety and robustness of complex DNNs. 
+As DNN tools become more complex (e.g., SOTA tools have 20K LoCs), they are more prone to bugs. VNN-COMP'23~\cite{brix2023fourth} showed that 3 of the top 7 participants produced unsound results, in which they incorrectly claiming unsafe DNNs are safe. This undesirable behavior defeats the purpose of DNN verification and hinders its practical adoption.
+
+Checking counterexamples which demonstrate the unsafety of a DNN, i.e., \texttt{sat} results, is relatively straightforward. We can just evaluate the DNN on the counterexample and check if it violates the property. However, certifying the safety of a DNN is far more challenging. That is, certifying \texttt{unsat} results---proving no counterexample exists---is far more challenging. This would require verifiers to track their decision steps, which are often complex and large. %Moreover, there are many verification approaches (e.g., branch and bound, conflict-driven learning, abstraction and refinement), making it difficult to standardize and compare results across different tools.
+%This is unlike SAT solving, where most tools adopt the standard DPLL framework and thus allows for unified techniques in proof generation and checking (e.g., the DRAT family of algorithms for UNSAT proofs).
+\section{Proof Generation}\label{sec:proofgen}
+
+% To successfully deploy DNN verification tools in safety-critical applications, it is essential to provide guarantees that the verification results are correct, i.e., it won't claim an unsafe DNN as safe. One way to achieve this is to generate proofs of the verification results, i.e., a sequence of logical steps that demonstrates the validity of the verification result.
+% Ideally, the proof generation process should be automated and integrated into the verification tool, so that the proof can be generated and checked automatically. The challenge is that there are many different DNN verification techniques, each with its own decision-making process, making it difficult to standardize proof generation across different tools. 
+
+This section presents an approach to generate proofs for DNN verification results, focusing on the branch-and-bound (BaB) search structure common to many DNN verification tools. We are mainly interested in proofs of unsatisfiability (unsat). A counterexample, $c$, returned by a verifier is an input that is purported to violate the property. This constitutes a proof of satisfiability (sat)  which can easily be checked by evaluating $\phi(c,N(c))$.
+In fact, VNN-COMP already requires competing DNN verification tools to return counterexamples demonstrating satisfiability.  In contrast, the proof of an unsatisfiability result (which explains why \emph{no possible inputs} can violate the property) is inherently more complex to generate (\autoref{sec:proofgen}), requires a more sophisticated encoding (\autoref{sec:prooflang}), and an efficient checking algorithm (\autoref{sec:proofchecking}).
+
+
+
+%\SetKwData{problems}{ActPatterns}
+% \SetKwData{implicationgraph}{igraph}
+% \SetKwData{literal}{lit}
+% \SetKwData{variable}{var}
+% \SetKwData{antecedent}{ante}
+% \SetKwData{conflict}{conflict}
+% \SetKwData{none}{none}
+% \SetKwData{layerid}{lid}
+% \SetKwData{hiddenbounds}{hidden\_bounds}
+% \SetKwData{layerbounds}{layer\_bounds}
+% \SetKwData{inputs}{inputs}
+% \SetKwData{inputbounds}{input\_bounds}
+% \SetKwData{outputbounds}{output\_bounds}
+% \SetKwData{infeasible}{INFEASIBLE}
+% \SetKwData{unreachable}{UNREACHABLE}
+% \SetKwData{maxinputs}{MAX\_NUM\_INPUT}
+% \SetKwData{assignment}{$\sigma$}
+% \SetKwData{dl}{dl}
+% \SetKwData{lpmodel}{solver}
+% \SetKwData{clauses}{clauses}
+% \SetKwData{conflict}{conflict}
+% \SetKwData{clause}{clause}
+% \SetKwData{igraph}{igraph}
+% \SetKwData{cex}{cex}
+% \SetKwData{sat}{sat}
+% \SetKwData{unsat}{unsat}
+% \SetKwData{certified}{certified}
+% \SetKwData{uncertified}{uncertified}
+% \SetKwData{submodel}{sub\_model}
+
+% \SetKwData{true}{true}
+% \SetKwData{false}{false}
+
+% \SetKwFunction{Restart}{Restart}
+
+% \SetKwData{counterexample}{cex}
+% \SetKwData{conflictclause}{conflict\_clause}
+% \SetKwData{isconflict}{is\_conflict}
+
 
 \begin{algorithm}[t]
     \footnotesize
-    \DontPrintSemicolon
   
     \Input{DNN $\mathcal{N}$, property $\phi_{in} \Rightarrow \phi_{out}$}
     \Output{($\unsat, \prooftree$) if property is valid, otherwise ($\sat, \counterexample$)}
@@ -911,7 +865,7 @@ In fact, VNN-COMP already requires competing DNN verification tools to return co
     }\label{line:dpllend}
     \Return{$(\unsat, \prooftree)$}
     
-    \caption{The \dd{} algorithm with proof generation.}\label{fig:alg}
+    \caption{The \bab{} algorithm with proof generation.}\label{alg:bab-proof}
 \end{algorithm}
 
 
@@ -927,17 +881,17 @@ In fact, VNN-COMP already requires competing DNN verification tools to return co
 
 \subsection{Proof Generation for Branch and Bound (BaB) Algorithms}\label{sec:proogen}
 
-All of the major DNN verification approaches including: \crown{}~\cite{wang2021beta}, \neuralsat{}~\cite{duong2023dpllt}, \mnbab{}~\cite{ferrari2022complete}, \ovalnnv{}~\cite{ovalbab}, \nnenum{}~\cite{bak2021nnenum}, and \marabou{}~\cite{katz2019marabou}, share a common ``branch and bound'' (BaB) search structure: (i) (branch) split into smaller subproblems by using \emph{neuron splitting}, which decides boolean values representing neuron activation status, and (ii) (bound) use abstraction and LP solving to approximate bounds on neuron values to determine the satisfiability of the partial activation pattern formed by the split.
+Major DNN verification approaches including \crown{}~\cite{wang2021beta}, \neuralsat{}~\cite{duong2023dpllt}, \mnbab{}~\cite{ferrari2022complete}, \ovalnnv{}~\cite{ovalbab}, \nnenum{}~\cite{bak2021nnenum}, and \marabou{}~\cite{katz2019marabou} share a common ``branch and bound'' (BaB) search structure: (i) (branch) split into smaller subproblems by using \emph{neuron splitting}, which decides boolean values representing neuron activation status, and (ii) (bound) use abstraction and LP solving to approximate bounds on neuron values to determine the satisfiability of the partial activation pattern formed by the split.
 We leverage this commonality to bring proof generation capabilities with minimal overhead to existing DNN verification tools.
 
 
 
-\autoref{fig:alg} shows \dd{}, a reference architecture~\cite{nakagawa2014consolidating} 
+\autoref{fig:alg} shows \bab{}, a reference architecture~\cite{nakagawa2014consolidating} 
 for modern DNN verifiers that we use to illustrate our observations.  
-\dd{} takes as input a ReLU-based DNN $\mathcal{N}$ and a formulae $\phi_{in}\Rightarrow \phi_{out}$ representing the property of interest.
+\bab{} takes as input a ReLU-based DNN $\mathcal{N}$ and a formulae $\phi_{in}\Rightarrow \phi_{out}$ representing the property of interest.
 
-\dd{} iterates between two components: \texttt{Decide} (branching, \autoref{line:decide}), which decides (assigns) an activation status value for a neuron, and \texttt{Deduce} (bounding, \autoref{line:deduce}), which checks the feasibility of the current activation pattern. 
-To add proof generation capability, \dd{} is instrumented with a proof tree (\texttt{proof}) variable (\autoref{line:prooftree}) to record these branching decisions. The proof is represented as a binary tree structure, where each node represents a neuron and its left and right edges represent its activation decision (active or inactive). %The proof tree is then used to generate a proof in the \nnproofformat{} format (\autoref{sec:proof-format}).
+\bab{} iterates between two components: \texttt{Decide} (branching, \autoref{line:decide}), which decides (assigns) an activation status value for a neuron, and \texttt{Deduce} (bounding, \autoref{line:deduce}), which checks the feasibility of the current activation pattern. 
+To add proof generation capability, \bab{} is instrumented with a proof tree (\texttt{proof}) variable (\autoref{line:prooftree}) to record these branching decisions. The proof is represented as a binary tree structure, where each node represents a neuron and its left and right edges represent its activation decision (active or inactive). %The proof tree is then used to generate a proof in the \nnproofformat{} format (\autoref{sec:proof-format}).
 
 
 
@@ -961,21 +915,21 @@ To add proof generation capability, \dd{} is instrumented with a proof tree (\te
 \end{figure}
 %White nodes correspond to branching nodes where \neuralsat{} makes decisions to split ReLU neurons.
 
-\paragraph{Example} \autoref{fig:example}a illustrates a DNN and how \dd{} determines unsatisfiability (i.e., verifies the problem) and generates the unsat proof in \autoref{fig:example}b.
+\paragraph{Example} \autoref{fig:example}a illustrates a DNN and how \bab{} determines unsatisfiability (i.e., verifies the problem) and generates the unsat proof in \autoref{fig:example}b.
 
-First, \dd{} initializes the activation pattern set \functiontextformat{ActPatterns} with an empty activation pattern $\emptyset$. Then \dd{} enters a loop (\autoref{line:dpllstart}-\autoref{line:dpllend}) to search for a satisfying assignment or a proof of unsatisfiability. In the first iteration, \dd{} selects the only available activation pattern $\emptyset \in \functiontextformat{ActPatterns}$. 
+First, \bab{} initializes the activation pattern set \functiontextformat{ActPatterns} with an empty activation pattern $\emptyset$. Then \bab{} enters a loop (\autoref{line:dpllstart}-\autoref{line:dpllend}) to search for a satisfying assignment or a proof of unsatisfiability. In the first iteration, \bab{} selects the only available activation pattern $\emptyset \in \functiontextformat{ActPatterns}$. 
 It calls \functiontextformat{Deduce} to check the feasibility of the problem based on the current activation pattern. \functiontextformat{Deduce} uses abstraction to approximate that from the input constraints the output values are feasible for the given network. 
-Since \functiontextformat{Deduce} cannot decide infeasibility, \dd{} randomly selects a neuron to split (\functiontextformat{Decide}). Let us assume that it chooses $v_4$ to split, which essentially means the problem is split into two independent subproblems: one with $v_4$ active and the other with $v_4$ inactive.
-\dd{} then adds $v_4$ and $\overline{v_4}$ to \functiontextformat{ActPatterns}.
+Since \functiontextformat{Deduce} cannot decide infeasibility, \bab{} randomly selects a neuron to split (\functiontextformat{Decide}). Let us assume that it chooses $v_4$ to split, which essentially means the problem is split into two independent subproblems: one with $v_4$ active and the other with $v_4$ inactive.
+\bab{} then adds $v_4$ and $\overline{v_4}$ to \functiontextformat{ActPatterns}.
 
-In the second iteration, \dd{} has two subproblems (that can be processed in parallel). For the first subproblem with $v_4$, \functiontextformat{Deduce} cannot decide infeasibility, so it selects $v_2$ to split. It then conjoins $v_4$ with $v_2$ and then with $\overline{v_2}$ and adds both conjuncts to \texttt{ActPatterns}. 
-For the second subproblem with $\overline{v_4}$ inactive, \functiontextformat{Deduce} determines that the problem is unsatisfiable and \dd{} saves the node $v_4$ to the proof tree, as node 3, to indicate one unsatisfiable pattern, i.e., whenever the network has $v_4$ being inactive, the problem is unsatisfiable.
+In the second iteration, \bab{} has two subproblems (that can be processed in parallel). For the first subproblem with $v_4$, \functiontextformat{Deduce} cannot decide infeasibility, so it selects $v_2$ to split. It then conjoins $v_4$ with $v_2$ and then with $\overline{v_2}$ and adds both conjuncts to \texttt{ActPatterns}. 
+For the second subproblem with $\overline{v_4}$ inactive, \functiontextformat{Deduce} determines that the problem is unsatisfiable and \bab{} saves the node $v_4$ to the proof tree, as node 3, to indicate one unsatisfiable pattern, i.e., whenever the network has $v_4$ being inactive, the problem is unsatisfiable.
 
-In the third iteration, \dd{} has two subproblems for $v_4 \land v_2$ and $v_4 \land \overline{v_2}$. For the first subproblem, \functiontextformat{Deduce} cannot decide infeasibility, so it selects $v_1$ to split. It then conjoins $v_1$ and then $\overline{v_1}$ to the current activation pattern and adds them to \functiontextformat{ActPatterns}. For the second subproblem, \functiontextformat{Deduce} determines that the problem is unsatisfiable and \dd{} saves the node $v_4 \land \overline{v_2}$ to the proof tree, as node 5.
+In the third iteration, \bab{} has two subproblems for $v_4 \land v_2$ and $v_4 \land \overline{v_2}$. For the first subproblem, \functiontextformat{Deduce} cannot decide infeasibility, so it selects $v_1$ to split. It then conjoins $v_1$ and then $\overline{v_1}$ to the current activation pattern and adds them to \functiontextformat{ActPatterns}. For the second subproblem, \functiontextformat{Deduce} determines that the problem is unsatisfiable and \bab{} saves the node $v_4 \land \overline{v_2}$ to the proof tree, as node 5.
 
-In the fourth iteration, \dd{} has two subproblems for $v_4 \land v_2 \land v_1$ and $v_4 \land v_2 \land \overline{v_1}$. Both subproblems are determined to be unsatisfiable, and \dd{} saves them to the proof tree as nodes 6 and 7, respectively.
+In the fourth iteration, \bab{} has two subproblems for $v_4 \land v_2 \land v_1$ and $v_4 \land v_2 \land \overline{v_1}$. Both subproblems are determined to be unsatisfiable, and \bab{} saves them to the proof tree as nodes 6 and 7, respectively.
 
-Finally, \dd{} has an empty \texttt{ActPatterns}, stops the search, and returns \texttt{unsat} and the proof tree. 
+Finally, \bab{} has an empty \texttt{ActPatterns}, stops the search, and returns \texttt{unsat} and the proof tree. 
 
 
 
@@ -1053,7 +1007,7 @@ Finally, \dd{} has an empty \texttt{ActPatterns}, stops the search, and returns 
 \caption{The \nnproofformat{} proof language.}\label{fig:grammar}
 \end{figure}
 
-We have shown that the broad class of DNN verification techniques represented by \dd{}
+We have shown that the broad class of DNN verification techniques represented by \bab{}
 can generate a binary tree that represents a proof of unsatisfiability  (\autoref{sec:proof-structure}). 
 Rather than record such proofs in an verifier-specific format, we define a standard format
 that is human-readable, is compact, can be efficiently generated by verification tools, and can
