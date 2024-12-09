@@ -561,7 +561,7 @@ An interval abstraction is a simple and widely-used abstraction technique in DNN
 \part{DNN Verification Algorithms}
 \chapter{Search Algorithms}
 
-\section{Branch-and-Bound (BaB)}
+\section{Branch-and-Bound (BaB)}\label{sec:bab}
 
     
 \SetKwData{nextlayer}{layer$_{i+1}$}
@@ -779,56 +779,15 @@ Finally, \bab{} has an empty \texttt{ActPatterns}, stops the search, and returns
 %Advances in DNN verification have made it possible to reason about the safety and robustness of complex DNNs. 
 As DNN tools become more complex (e.g., SOTA tools have 20K LoCs), they are more prone to bugs. VNN-COMP'23~\cite{brix2023fourth} showed that 3 of the top 7 participants produced unsound results, in which they incorrectly claiming unsafe DNNs are safe. This undesirable behavior defeats the purpose of DNN verification and hinders its practical adoption.
 
-Checking counterexamples which demonstrate the unsafety of a DNN, i.e., \texttt{sat} results, is relatively straightforward. We can just evaluate the DNN on the counterexample and check if it violates the property. However, certifying the safety of a DNN is far more challenging. That is, certifying \texttt{unsat} results---proving no counterexample exists---is far more challenging. This would require verifiers to track their decision steps, which are often complex and large. %Moreover, there are many verification approaches (e.g., branch and bound, conflict-driven learning, abstraction and refinement), making it difficult to standardize and compare results across different tools.
+While checking counterexamples, which demonstrate the unsafety of a DNN, is relatively straightforward, certifying the safety of a DNN is far more challenging. That is, certifying \texttt{unsat} results---proving no counterexample exists---is far more challenging. This would require verifiers to track their decision steps, which are often complex and large. %Moreover, there are many verification approaches (e.g., branch and bound, conflict-driven learning, abstraction and refinement), making it difficult to standardize and compare results across different tools.
 %This is unlike SAT solving, where most tools adopt the standard DPLL framework and thus allows for unified techniques in proof generation and checking (e.g., the DRAT family of algorithms for UNSAT proofs).
 \section{Proof Generation}\label{sec:proofgen}
 
 % To successfully deploy DNN verification tools in safety-critical applications, it is essential to provide guarantees that the verification results are correct, i.e., it won't claim an unsafe DNN as safe. One way to achieve this is to generate proofs of the verification results, i.e., a sequence of logical steps that demonstrates the validity of the verification result.
 % Ideally, the proof generation process should be automated and integrated into the verification tool, so that the proof can be generated and checked automatically. The challenge is that there are many different DNN verification techniques, each with its own decision-making process, making it difficult to standardize proof generation across different tools. 
 
-This section presents an approach to generate proofs for DNN verification results, focusing on the branch-and-bound (BaB) search structure common to many DNN verification tools. We are mainly interested in proofs of unsatisfiability (unsat). A counterexample, $c$, returned by a verifier is an input that is purported to violate the property. This constitutes a proof of satisfiability (sat)  which can easily be checked by evaluating $\phi(c,N(c))$.
-In fact, VNN-COMP already requires competing DNN verification tools to return counterexamples demonstrating satisfiability.  In contrast, the proof of an unsatisfiability result (which explains why \emph{no possible inputs} can violate the property) is inherently more complex to generate (\autoref{sec:proofgen}), requires a more sophisticated encoding (\autoref{sec:prooflang}), and an efficient checking algorithm (\autoref{sec:proofchecking}).
-
-
-
-%\SetKwData{problems}{ActPatterns}
-% \SetKwData{implicationgraph}{igraph}
-% \SetKwData{literal}{lit}
-% \SetKwData{variable}{var}
-% \SetKwData{antecedent}{ante}
-% \SetKwData{conflict}{conflict}
-% \SetKwData{none}{none}
-% \SetKwData{layerid}{lid}
-% \SetKwData{hiddenbounds}{hidden\_bounds}
-% \SetKwData{layerbounds}{layer\_bounds}
-% \SetKwData{inputs}{inputs}
-% \SetKwData{inputbounds}{input\_bounds}
-% \SetKwData{outputbounds}{output\_bounds}
-% \SetKwData{infeasible}{INFEASIBLE}
-% \SetKwData{unreachable}{UNREACHABLE}
-% \SetKwData{maxinputs}{MAX\_NUM\_INPUT}
-% \SetKwData{assignment}{$\sigma$}
-% \SetKwData{dl}{dl}
-% \SetKwData{lpmodel}{solver}
-% \SetKwData{clauses}{clauses}
-% \SetKwData{conflict}{conflict}
-% \SetKwData{clause}{clause}
-% \SetKwData{igraph}{igraph}
-% \SetKwData{cex}{cex}
-% \SetKwData{sat}{sat}
-% \SetKwData{unsat}{unsat}
-% \SetKwData{certified}{certified}
-% \SetKwData{uncertified}{uncertified}
-% \SetKwData{submodel}{sub\_model}
-
-% \SetKwData{true}{true}
-% \SetKwData{false}{false}
-
-% \SetKwFunction{Restart}{Restart}
-
-% \SetKwData{counterexample}{cex}
-% \SetKwData{conflictclause}{conflict\_clause}
-% \SetKwData{isconflict}{is\_conflict}
+We are mainly interested in proofs of unsatisfiability (unsat). A counterexample, $c$, returned by a verifier is an input that is purported to violate the property. This constitutes a proof of satisfiability (sat) which can easily be checked by evaluating $\phi(c,N(c))$ (i.e., running the DNN on the counterexample). 
+In fact, VNN-COMPs already requires competing DNN verification tools to return counterexamples demonstrating satisfiability.  In contrast, the proof of an unsatisfiability result (which explains why \emph{no possible inputs} can violate the property) is inherently more complex to generate (\autoref{sec:proofgen}), requires a more sophisticated encoding (\autoref{sec:prooflang}), and an efficient checking algorithm (\autoref{sec:proofchecking}).
 
 
 \begin{algorithm}[t]
@@ -881,17 +840,17 @@ In fact, VNN-COMP already requires competing DNN verification tools to return co
 
 \subsection{Proof Generation for Branch and Bound (BaB) Algorithms}\label{sec:proogen}
 
-Major DNN verification approaches including \crown{}~\cite{wang2021beta}, \neuralsat{}~\cite{duong2023dpllt}, \mnbab{}~\cite{ferrari2022complete}, \ovalnnv{}~\cite{ovalbab}, \nnenum{}~\cite{bak2021nnenum}, and \marabou{}~\cite{katz2019marabou} share a common ``branch and bound'' (BaB) search structure: (i) (branch) split into smaller subproblems by using \emph{neuron splitting}, which decides boolean values representing neuron activation status, and (ii) (bound) use abstraction and LP solving to approximate bounds on neuron values to determine the satisfiability of the partial activation pattern formed by the split.
-We leverage this commonality to bring proof generation capabilities with minimal overhead to existing DNN verification tools.
+As mentioned in~\autoref{sec:bab}, major DNN verification techniques share the common ``branch and bound'' (BaB) search algorithm. The BaB structure, shown in~ \autoref{alg:bab}, splits the problem into smaller subproblems and use abstraction to compute bounds to prune the search space. This commonality allows us to bring proof generation capabilities with minimal overhead to existing DNN verification tools.
+
+\autoref{alg:bab-proof} extends~\autoref{alg:bab} to show how to generate proofs for BaB algorithms. The key idea is to introducing a proof tree (\texttt{proof}) data structure (\autoref{line:prooftree})and record the branching decisions made by the algorithm to the proof tree (\autoref{line:record_proof}). The proof tree is a binary tree structure, where each node represents a neuron and its left and right edges represent its activation decision (active or inactive). 
 
 
+% \bab{}, a reference architecture~\cite{nakagawa2014consolidating} 
+% for modern DNN verifiers that we use to illustrate our observations.  
+% \bab{} takes as input a ReLU-based DNN $\mathcal{N}$ and a formulae $\phi_{in}\Rightarrow \phi_{out}$ representing the property of interest.
 
-\autoref{fig:alg} shows \bab{}, a reference architecture~\cite{nakagawa2014consolidating} 
-for modern DNN verifiers that we use to illustrate our observations.  
-\bab{} takes as input a ReLU-based DNN $\mathcal{N}$ and a formulae $\phi_{in}\Rightarrow \phi_{out}$ representing the property of interest.
-
-\bab{} iterates between two components: \texttt{Decide} (branching, \autoref{line:decide}), which decides (assigns) an activation status value for a neuron, and \texttt{Deduce} (bounding, \autoref{line:deduce}), which checks the feasibility of the current activation pattern. 
-To add proof generation capability, \bab{} is instrumented with a proof tree (\texttt{proof}) variable (\autoref{line:prooftree}) to record these branching decisions. The proof is represented as a binary tree structure, where each node represents a neuron and its left and right edges represent its activation decision (active or inactive). %The proof tree is then used to generate a proof in the \nnproofformat{} format (\autoref{sec:proof-format}).
+%\bab{} iterates between two components: \texttt{Decide} (branching, \autoref{line:decide}), which decides (assigns) an activation status value for a neuron, and \texttt{Deduce} (bounding, \autoref{line:deduce}), which checks the feasibility of the current activation pattern. 
+%To add proof generation capability, \bab{} is instrumented with a proof tree (\texttt{proof}) variable (\autoref{line:prooftree}) to record these branching decisions. The proof is represented as a binary tree structure, where each node represents a neuron and its left and right edges represent its activation decision (active or inactive). %The proof tree is then used to generate a proof in the \nnproofformat{} format (\autoref{sec:proof-format}).
 
 
 
