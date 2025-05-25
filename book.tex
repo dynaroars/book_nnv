@@ -4,6 +4,9 @@
 \usepackage[T1]{fontenc}
 \usepackage[margin=1.5in]{geometry}
 \usepackage{amsmath,amssymb,amsthm}
+\usepackage{complexity}
+\numberwithin{equation}{section}
+
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{lemma}{Lemma}[section]
 \newtheorem{corollary}{Corollary}[section]
@@ -83,6 +86,7 @@
 \SetAlCapNameFnt{\footnotesize\rm}
 
 \newcommand{\functiontextformat}[1]{\textrm{\texttt{#1}}}
+
 
 \newtoggle{usecomment}
 \settoggle{usecomment}{true}
@@ -178,8 +182,10 @@
 \newcommand{\mipverify}{\texttt{MIPVerify}}
 \newcommand{\crowndefault}{\texttt{$\alpha\beta$-CROWN} (default)}
 
-
-
+\newcommand{\relu}[1]{\mathrm{relu}\left(#1\right)}
+\newcommand{\sigmoid}[1]{\mathrm{sigmoid}\left(#1\right)}
+%\newcommand{\tanh}[1]{\mathrm{Tanh}\left(#1\right)}%already defined in amsmath
+\newcommand{\softmax}[1]{\mathrm{softmax}\left(#1\right)}
 
 
 \begin{document}
@@ -319,32 +325,89 @@ For DNN verification, AF is straightforward to reason about because it is a line
 Several popular activation functions used in DNNs include ReLU, Sigmoid, Tanh, and Softmax. All of these are non-linear\footnote{Non-linear means that the output of the function is not a linear combination of its inputs.} functions that introduce non-linearity to the network, allowing it to learn complex patterns in the data.
 
 
-\begin{itemize}
-\item ReLU (Rectified Linear Unit):  ReLU returns 0 if the input is less than zero, and the input itself otherwise. 
-A ReLU activated neuron is said to be \emph{active} if its input value is greater than zero and \emph{inactive} otherwise.
-ReLU is the most popular activation function in DNNs.\\
-    \begin{center}
-        $ReLU(x) = \max(x,0)$
-    \end{center}
-
-
-    
-    
-\item Sigmoid: Sigmoid is a smooth function that maps any real value to the range (0,1). It is often used in the output layer of a binary classification problem.\\
-    \begin{center}
-        $Sigmoid(x) = \frac{1}{1+e^{-x}}$
-    \end{center}
-\item Tanh: Tanh is similar to the sigmoid function but maps any real value to the range (-1,1). It is often used in the output layer of a multi-class classification problem.\\
-    \begin{center}
-        $Tanh(x) = \frac{e^x-e^{-x}}{e^x+e^{-x}}$
-    \end{center}
-\item Softmax: Softmax is a generalization of the sigmoid function that maps any real value to the range (0,1) and ensures that the sum of the output values is 1. It is often used in the output layer of a multi-class classification problem.\\
-    \begin{center}
-    $Softmax(x)_i = \frac{e^{x_i}}{\sum_{j=1}^{n}e^{x_j}}$
-    \end{center}
-\end{itemize}
-
 For DNN verification, these non-linear activation functions make verification difficult because it introduces multiple possible outcomes for any input, making it hard to reason about the output of the network. For example, ReLU has two possible outputs for any input: 0 if the input is less than zero, and the input itself otherwise, and Sigmoid has a smooth curve with infinite possible outputs for any input.
+
+\autoref{tab:activation} summarizes the most common activation functions used in DNNs, their equations, output ranges, and key uses.
+\begin{table}
+  \centering
+  \caption{Summary of Common Neural Network Activation Functions}\label{tab:activation}
+  \small
+  \begin{tabular}{llll}
+    \toprule
+    \textbf{Name} & \textbf{Equation} & \textbf{Output Range} & \textbf{Key Use} \\
+    \midrule
+    ReLU      & $ \max(0, x) $                   & $[0, \infty)$   & Hidden layers, fast train \\    
+    Sigmoid   & $ \frac{1}{1 + e^{-x}} $         & $(0, 1)$        & Binary classification \\
+    Tanh      & $ \tanh(x) $                     & $(-1, 1)$       & Hidden layers, zero-centered \\
+    Softmax   & $ \frac{e^{x_i}}{\sum_j e^{x_j}} $& $(0, 1), \sum_i=1 $ & Multi-class output \\    
+    Leaky ReLU& $ \begin{cases} x & x>0 \\ \alpha x & x\leq 0 \end{cases} $ & $(-\infty, \infty)$ & Prevent dead neurons \\
+    Swish     & $ x \cdot \mathrm{sigmoid}(x) $  & $(-\infty, \infty)$ & Deep networks \\
+    ELU       & $ \begin{cases} x & x>0 \\ \alpha(e^{x}-1) & x\leq 0 \end{cases} $ & $(-\alpha, \infty)$ & Advanced networks \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+
+\subsection{ReLU (Rectified Linear Unit)}\label{sec:relu}
+
+ReLU is the most widely used activation function in DNNs.  It is a  \emph{piecewise linear} function with two linear pieces: one for the case when the input value is greater than or equal to zero (output is the input itself) and one for the case when the input value is less than zero (output is 0). A ReLU activated neuron is said to be \emph{active} if its input is greater than zero and \emph{inactive} otherwise.
+
+ReLU is defined as follows:
+\begin{align}
+\relu{x} = &\max(x,0)
+\end{align}
+
+The piecewise linearity makes ReLU easy to reason about, but it also introduces non-linearity that complicates verification (and makes verification $\mathsf{NP}$-complete as shown in~\autoref{sec:complexity}). We will use ReLU throughout this book as the default activation function for hidden neurons in a DNN. 
+    
+\begin{example}
+$\relu{-1.2} = 0$ (inactive), $\relu{0} = 0$ (inactive), and $\relu{2.8} = 2.8$ (active).
+\end{example}
+
+
+\subsection{Sigmoid}\label{sub:sigmoid}
+
+Sigmoid is a smooth---a continuous and differentiable---non-linear activation function that maps any real value to the range (0,1). It is often used in the output layer of a binary classification problem.
+
+Sigmoid is continuous, meaning that small changes in the input will result in small changes in the output, and differentiable, meaning that it has a well-defined derivative at every point. This makes it easy to compute gradients for training the network using backpropagation. 
+
+    \begin{align}
+        \sigmoid{x} = \frac{1}{1+e^{-x}}
+    \end{align}
+
+\begin{example}
+$\sigmoid{-1.2} \approx 0.23$, $\sigmoid{0} = 0.5$, and $\sigmoid{2.8} \approx 0.94$. This means that the sigmoid function maps -1.2 to a value close to 0, 0 to 0.5, and 2.8 to a value close to 1.
+\end{example}
+
+\subsection{Hyperbolic Tangent (Tanh)}\label{sec:tanh}
+
+Tanh is similar to the sigmoid function but maps any real value to the range (-1,1). It is often used in the output layer of a multi-class classification problem.
+
+\begin{align}
+\tanh{x} = \frac{e^x-e^{-x}}{e^x+e^{-x}}
+\end{align}
+
+\begin{example}
+$\tanh{-1.2} \approx -0.83$, $\tanh{0} = 0$, and $\tanh{2.8} \approx 0.99$. This means that the tanh function maps -1.2 to a value close to -1, 0 to 0, and 2.8 to a value close to 1.
+\end{example}
+
+\subsection{Softmax}\label{sec:softmax}
+
+Softmax is a generalization of the sigmoid function that maps any real value to the range (0,1) and ensures that the sum of the output values is 1. It is often used in the output layer of a multi-class classification problem.
+\begin{align}
+\softmax{x}_i = \frac{e^{x_i}}{\sum_{j=1}^{n}e^{x_j}}
+\end{align}
+
+\begin{example}
+For a vector $x = [2, 1, 0]$, the softmax function computes: 
+\begin{align*}
+\softmax{x} &= \left[\frac{e^2}{e^2+e^1+e^0}, \frac{e^1}{e^2+e^1+e^0}, \frac{e^0}{e^2+e^1+e^0}\right] \\
+&= \left[\frac{7.389}{7.389+2.718+1}, \frac{2.718}{7.389+2.718+1}, \frac{1}{7.389+2.718+1}\right] \\
+&\approx [0.71, 0.24, 0.05]
+\end{align*}
+
+This means that the softmax function maps the input vector $x$ to a probability distribution over the three classes, where the first class has a probability of 0.71, the second class has a probability of 0.24, and the third class has a probability of 0.05.
+\end{example}
+
 
 
 \section{Example} 
@@ -753,7 +816,7 @@ We can then check the satisfiability of the formula $\alpha \land \phi_{in} \lan
 Modern DNN verification techniques~\cite{bunel2020branch,wang2021beta,ferrari2022complete,duong2024harnessing,duong2023dpllt,ovalbab,katz2019marabou,bak2021nnenum} all adopt this idea and search for satisfying activation patterns.
 
 
-\section{Complexity}
+\section{Complexity}\label{sec:complexity}
 
 
 
@@ -765,9 +828,9 @@ Modern DNN verification techniques~\cite{bunel2020branch,wang2021beta,ferrari202
 
 \section{Symbolic Execution and SMT Solving}\label{sec:se-smt}
 
-As mentioned \autoref{sec:satisfiability-and-activation-pattern-search}, the DNN verification problem can be represented as a satisfiability problem as shown in~\autoref{eq:prob}.  Specifically, we can encode the DNN as a logical formula and use an SMT solver to check that it satisfies the property of interest.
+As shown in~\autoref{eq:prob} the NNV problem can be represented as a satisfiability problem. Specifically, we can encode the network $N$ as a logical formula $\alpha$ and use an SMT solver to check that it satisfies the property $\phi$ of interest.
 
-A straightforward way to do this encoding is using \emph{symbolic execution} (SE)~\cite{FIXME}, a well-known software testing technique for finding bugs.  SE executes a program on symbolic inputs, i.e., inputs represented as symbols rather than concrete values, and tracks the reachability of program state as symbolic expressions, i.e., logical formulae over symbolic inputs. The satisfiability of these formulae is then checked using an SMT solver, and satisfying assignments represent inputs leading to the undesirable (buggy) program state.
+A straightforward way to do this encoding is using \emph{symbolic execution} (SE)~\cite{baldoni2018survey,king1976symbolic}, a well-known software testing technique for finding bugs.  SE executes a program on symbolic inputs, i.e., inputs represented as symbols rather than concrete values, and tracks the reachability of program state as symbolic expressions, i.e., logical formulae over symbolic inputs. The satisfiability of these formulae is then checked using an SMT solver, and satisfying assignments represent inputs leading to the undesirable (buggy) program state.
 
 \subsection{Symbolic Execution}\label{sec:se}
 We can adapt traditional SE to our problem by treating the DNN as a program and neurons as variables and executing the DNN on symbolic inputs. Affine transformations can easily be represented as logical formulae because they are linear functions. Activation functions such as ReLUs are translated to disjunctions of linear functions or if-then-else statements, i.e., $ReLU(x) = \max(x,0) \equiv x \ge 0 \land x \lor 0 \land \neg x$.
@@ -840,7 +903,7 @@ where $n$ is number of output nodes from the previous layer. We can define the a
 
 \subsection{Activation Functions}
 
-Most activation functions used in neural networks are monotonically increasing, e.g., ReLU and sigmoid. It is straightforward to define
+Most activation functions used in neural networks are monotonically increasing, e.g., ReLU and Sigmoid. It is straightforward to define
 an abstract transformer for any monotonically increasing function \(f : \mathbb{R} \to \mathbb{R}\), as we simply apply \(f\) for lower and upper bounds as follows:
 \[f^a
 ([l, u]) = [ f(l), f(u)]
