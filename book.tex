@@ -84,19 +84,16 @@
 
 \newcommand{\functiontextformat}[1]{\textrm{\texttt{#1}}}
 
-% \newtoggle{usecomment}
-% \settoggle{usecomment}{true}
+\newtoggle{usecomment}
+\settoggle{usecomment}{true}
 
-% \newcommand{\tcomment}[1]{\iftoggle{usecomment}{#1}{}}
-% \newcommand{\tvn}[1]{\iftoggle{usecomment}{{\color{red}{[TVN]: #1}}}{}}
+\newcommand{\tcomment}[1]{\iftoggle{usecomment}{#1}{}}
+\newcommand{\tvn}[1]{\iftoggle{usecomment}{{\color{red}{[TVN]: #1}}}{}}
 
-% \newcommand{\mbd}[1]{\iftoggle{usecomment}{{\color{magenta}{[MBD]: #1}}}{}}
-% \newcommand{\matt}[1]{\iftoggle{usecomment}{{\color{magenta}{[MBD]: #1}}}{}}
+\newcommand{\mbd}[1]{\iftoggle{usecomment}{{\color{magenta}{[MBD]: #1}}}{}}
+\newcommand{\hd}[1]{\iftoggle{usecomment}{{\color{blue}{[HD]: #1}}}{}}
 
-% \newcommand{\hd}[1]{\iftoggle{usecomment}{{\color{blue}{[HD]: #1}}}{}}
-
-% \newcommand{\mynew}[1]{\iftoggle{usecomment}{{\color{red}{[NEW]: #1}}}{}}
-
+\newcommand{\mynew}[1]{\iftoggle{usecomment}{{\color{red}{[NEW]: #1}}}{}}
 
 %\newcommand{\ignore}[1]{}
 
@@ -182,12 +179,7 @@
 \newcommand{\crowndefault}{\texttt{$\alpha\beta$-CROWN} (default)}
 
 
-\newcommand{\mycomment}[3][\color{blue}]{{#1{{#2}: {#3}}}}
-\newcommand{\tvn}[1]{\mycomment{TVN}{#1}}{}
-\newcommand{\didi}[1]{\mycomment{Didier}{#1}}{}
-\newcommand{\tl}[1]{\mycomment{ThanhLe}{#1}}{}
-\newcommand{\red}[1]{{\color{red}{#1}}}
-\newcommand{\xz}[1]{\mycomment{Xiaokuan}{[#1]}}{}
+
 
 
 \begin{document}
@@ -477,14 +469,14 @@ We now define some commonly studied correctness properties in neural network ver
 
 \textbf{Robustness} ensures that small changes in the input do not drastically change the output. This is a desirable property for all neural networks, especially classifiers, where we want to ensure that similar inputs yield similar outputs. For example, a slightly blurred image of a red light should still be classified as a red light.
 
-\paragraph{Example (Image Classification)}
+\begin{example}[Image Classification]
 Consider a neural network $f$ that classifies images into different categories (e.g., dog, cat, etc.). Robustness requires that if an input image $c$ is classified as a dog, then any perturbed image $x$ that is visually similar to $c$ should also be classified as a dog. This can be expressed as:
 
 \[
 \|x - c\| \leq \epsilon \implies f(x) = f(c), 
 \]
 where $\|x - c\| \leq \epsilon$ indicates that the difference between the two images is within a certain (small) threshold, which is typically defined in terms of pixel-wise differences.
-
+\end{example}
 
 %Here, $\epsilon$ defines the perturbation bound, and the norm $\|\cdot\|$ is typically the $L_\infty$ norm, which captures the maximum pixel-wise change in the image.\tvn{what's the norm? and $L_\infty$?}
 
@@ -494,12 +486,15 @@ where $\|x - c\| \leq \epsilon$ indicates that the difference between the two im
 
 \textbf{Safety} ensures that the network conforms to certain safety constraints, often specific to the application domain. This is particularly important in safety-critical applications, such as autonomous vehicles or medical diagnosis systems, where incorrect outputs can lead to catastrophic consequences. For example, in a self-driving car, we want to ensure that the car maintains a safe distance from other vehicles and pedestrians under all scenarios.
 
-\paragraph{Example (Collision Avoidance System)} A safety property in a collision avoidance system might be that if the intruder is distant and significantly slower than us, then we stay below a certain velocity threshold. Formally, this can be expressed as:
+\begin{example}[Collision Avoidance System]
+    A safety property in a collision avoidance system might be that if the intruder is distant and significantly slower than us, then we stay below a certain velocity threshold. Formally, this can be expressed as:
 \[
 d_{intruder} > d_{threshold} \land v_{intruder} < v_{threshold} \implies v_{us} < v_{threshold},
 \]
 where $d_{intruder}$ is the distance to the intruder, $d_{threshold}$ is a predefined safe distance, $v_{intruder}$ is the speed of the intruder, and $v_{us}$ is our speed.
+\end{example}
 
+\subsection{Other properties here, e.g., fariness, consistency, monotonicity}
 % \subsection{Consistency}
 
 % \textbf{Consistency} ensures that a neural network behaves in a logically coherent manner, respecting basic axioms of the task at hand.
@@ -534,12 +529,12 @@ where $d_{intruder}$ is the distance to the intruder, $d_{threshold}$ is a prede
 \section{Counterexamples}
 A \textbf{counterexample} is a witness that falsifies the correctness property. A counterexample is an assignment to the input variables that satisfies the precondition but violates the postcondition.
 
-\paragraph{Example: Counterexample to Robustness Property.}
+\begin{example}[Counterexample to Robustness Property]
 For the brightness robustness property:
 \[
 \text{If } f(x) \neq f(c) \text{ and } \|x - c\| \leq \epsilon, \text{ then } x \text{ is a counterexample.}
 \]
-
+\end{example}
 
 
 \section{The VNN-LIB  Specification Language}
@@ -711,17 +706,35 @@ A counterexample showing this property violation is $\{x_1=-1, x_2=2\}$, from wh
 \section{Satisfiability Formulation}\label{sec:satisfiability-and-activation-pattern-search}
 
  As with traditional software verification, DNN verification is often represented as a satisfiability problem.
-We thus need to define a formula to represent the network. Typically this formula is a conjunction of constraints representing the affine transformation and activation function of each neuron in the network.
-For a network with $L$ layers, $N$ neurons per layer, and ReLU activations this formula is:
+
+To do this, we first need to define a formula $\alpha$ to represent the network. Typically $\alpha$ is a conjunction ($\bigwedge$) of constraints representing the affine transformation (\autoref{sec:affine}) and activation function (\autoref{sec:activation}) of each neuron in the network.
+For a network\tvn{does this have to be FC?} with $L$ layers, $N$ ReLU neurons per layer, this formula is:
 \begin{align*}
-\alpha = \bigwedge_{\begin{smallmatrix}i \in [1,L]\\ j \in [1,N]\end{smallmatrix}} v_{i,j} = \max \Big( \sum_{k \in [1,N]} (w_{i-1,j,k} \cdot v_{i-1,j}) + b_{i,j}, 0 \Big)
+\alpha = &\bigwedge_{\begin{smallmatrix}i \in [1,L]\\ j \in [1,N]\end{smallmatrix}}~~v_{i,j} \equiv ReLU \Big( \sum_{k \in [1,N]} (w_{i-1,j,k} \cdot v_{i-1,j}) + b_{i,j}\Big)    \\
+ = &\bigwedge_{\begin{smallmatrix}i \in [1,L]\\ j \in [1,N]\end{smallmatrix}}~~v_{i,j} \equiv \max \Big( \sum_{k \in [1,N]} (w_{i-1,j,k} \cdot v_{i-1,j}) + b_{i,j}, 0 \Big)
 \end{align*}
-With this definition DNN verification can be formulated as checking the satisfiability of:
+With this definition DNN verification can be formulated as checking the satisfiability of the formula:
 \begin{equation}\label{eq:prob}
   \alpha \land \phi_{in} \land \neg \phi_{out}
 \end{equation}
-If \autoref{eq:prob} is unsatisfiable, then $\phi$ is a valid property of $\mathcal{N}$. Otherwise, $\phi$ is not valid (and the counterexample of the original problem is any satisfying assignment that makes \autoref{eq:prob} true).
+If \autoref{eq:prob} is unsatisfiable, then $\phi$ is a valid property of $\mathcal{N}$. Otherwise, $\phi$ is not valid.  Moreover, we can extract a counterexample for the original problem from the satisfying assignment of \autoref{eq:prob}.
 
+\begin{example}
+We first represent the DNN in \autoref{fig:dnn} as:
+\begin{align*}
+\alpha = ~~& x_3' \equiv -0.5x_1 + 0.5x_2 + 1.0 ~\land~ x_3'' \equiv ReLU(x_3') ~\land \\
+         ~~& x_4' \equiv 0.5x_1 - 0.5x_2 + 1.0  ~\land~ x_4'' \equiv ReLU(x_4') ~\land \\
+         ~~& x_5 \equiv -x_3'' + x_4'' - 1.0,
+\end{align*}
+\noindent and the property $x_5 \le 0$ for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$ as:
+\begin{align*}
+\phi_{in} &= (x_1 \ge -1) \land (x_1 \le 1) \land (x_2 \ge -2) \land (x_2 \le 2)\\
+\phi_{out} &= (x_5 < 0)
+\end{align*}
+
+We can then check the satisfiability of the formula $\alpha \land \phi_{in} \land \neg \phi_{out}$, which is equivalent to checking if there exists an input $x_1, x_2$ such that the output $x_5 > 0$. In this case, the formula is satisfiable, and we can extract a counterexample input $\{x_1=-1, x_2=2\}$ that leads to $x_5 = -3.5$, thus violating the property.    
+
+\end{example}
 
 \section{Activation Pattern Search} For the widely-used ReLU activation problem, the DNN verification problem becomes a search for \emph{activation patterns}, i.e., boolean assignments representing activation status of neurons, that lead to satisfaction the formula in \autoref{eq:prob}. 
 
@@ -3037,6 +3050,22 @@ Here we survey the latest benchmarks in DNN verification and how SOTA tools perf
 \tvn{Hai, give some LP background here.}
 
 \chapter{Software vs DNN Verification}\label{app:software-vs-dnn}
+
+\chapter{Schedule}
+
+\begin{enumerate}
+    \item Week 1: 
+    \item Week 2:
+    \item Week 3: 
+    \item Week 3:    
+    \item Week 4:
+    \item Week 5:
+    \item Week 6:
+    \item Week 7:
+    \item Week 8:
+    \item Week 9:
+    \item Week 10:
+\end{enumerate}    
 
 
 \bibliographystyle{abbrv}
