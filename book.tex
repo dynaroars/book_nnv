@@ -317,7 +317,9 @@ More specifically, the AF of a neuron \(y\) with weights \(w_1, \dots, w_n\) and
 %AF is often applied to hidden layers of a DNN to compute the value of a neuron in the hidden layer.
 %The values of a neuron in the output layer is evaluated similarly but it may skip the activation function.
 
+\begin{example}
 For example, the AF of a neuron \(x_3\) in \autoref{fig:dnn} with (incoming arrows) weights \(-0.5, 0.5\) and bias \(1.0\) and the values of neurons in the previous layer \(x_1, x_2\) is \(-0.5x_1 + 0.5x_2 + 1.0\).
+\end{example}
 
 For DNN verification, AF is straightforward to reason about because it is a linear function. However, AFs are often followed by non-linear activation functions, described next in \autoref{sec:activation}, which make the verification problem more challenging.
 
@@ -341,7 +343,7 @@ For DNN verification, these non-linear activation functions make verification di
     Tanh      & $ \tanh(x) $                     & $(-1, 1)$       & Hidden layers, zero-centered \\
     Softmax   & $ \frac{e^{x_i}}{\sum_j e^{x_j}} $& $(0, 1), \sum_i=1 $ & Multi-class output \\    
     Leaky ReLU& $ \begin{cases} x & x>0 \\ \alpha x & x\leq 0 \end{cases} $ & $(-\infty, \infty)$ & Prevent dead neurons \\
-    Swish     & $ x \cdot \mathrm{sigmoid}(x) $  & $(-\infty, \infty)$ & Deep networks \\
+    Swish     & $ x \cdot \sigmoid{x} $  & $(-\infty, \infty)$ & Deep networks \\
     ELU       & $ \begin{cases} x & x>0 \\ \alpha(e^{x}-1) & x\leq 0 \end{cases} $ & $(-\alpha, \infty)$ & Advanced networks \\
     \bottomrule
   \end{tabular}
@@ -411,10 +413,6 @@ This means that the softmax function maps the input vector $x$ to a probability 
 
 
 \section{Example} 
-Fig.~\ref{fig:dnn} shows a simple DNN with two inputs $x_1,x_2$, two hidden neurons $x_3,x_4$, and one output $x_5$. The weights of a neuron are shown on its incoming edges, and the bias is shown above or below each neuron. 
-
-The outputs of the hidden neurons  are computed the affine transformation and ReLU, e.g., $x_3 = ReLU(-0.5x_1+0.5x_2+1.0)$. The output neuron is computed with just the affine transformation, i.e., $x_5=-x_3+x_4-1$.
-
 
 \begin{figure}
     \centering
@@ -423,7 +421,43 @@ The outputs of the hidden neurons  are computed the affine transformation and Re
 \end{figure}
 
 
+
+
+\begin{example}
+Fig.~\ref{fig:dnn} shows a simple DNN with two inputs $x_1,x_2$, two hidden neurons $x_3,x_4$, and one output $x_5$. The weights of a neuron are shown on its incoming edges, and the bias is shown above or below each neuron. 
+
+The outputs of the hidden neurons  are computed the affine transformation and ReLU, e.g., $x_3 = \relu{-0.5x_1+0.5x_2+1.0}$. The output neuron is computed with just the affine transformation, i.e., $x_5=-x_3+x_4-1$.
+
+\end{example}
+
 \section{Types of Neural Networks}
+
+\autoref{sec:nn-types} summarizes the most popular types of neural networks and their typical applications.
+
+\begin{table}
+\caption{Popular Types of Neural Networks and Their Applications}\label{tab:nn-types}
+\centering
+\small
+\begin{tabular}{llp{7cm}@{}}
+\toprule
+\textbf{Name} & \textbf{Acronym} & \textbf{Typical Applications} \\
+\midrule
+Feedforward Neural Network & FNN/MLP & General function approximation, tabular data \\
+Convolutional Neural Network & CNN & Image recognition, video analysis, medical imaging \\
+Recurrent Neural Network & RNN & Sequence data, time series, NLP, speech recognition \\
+Long Short-Term Memory & LSTM & Sequence prediction, language modeling, translation \\
+Gated Recurrent Unit & GRU & Sequence modeling, time series, language tasks \\
+Radial Basis Function Network & RBFN & Function approximation, time series, control \\
+Autoencoder & -- & Dimensionality reduction, denoising, unsupervised learning \\
+Generative Adversarial Network & GAN & Data generation, image synthesis, super-resolution \\
+Transformer & -- & NLP, translation, summarization, image processing \\
+Graph Neural Network & GNN & Social networks, chemistry, recommendation systems \\
+\bottomrule
+\end{tabular}
+
+\end{table}
+
+
 
 
 \paragraph{Feed-Forward Network (FFN)} In an FFN information flows in one direction, from the input layer to hidden layers to the output layer (and thus no cycle).  
