@@ -4,6 +4,18 @@
 \usepackage[T1]{fontenc}
 \usepackage[margin=1.5in]{geometry}
 \usepackage{amsmath,amssymb,amsthm}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}{Lemma}[section]
+\newtheorem{corollary}{Corollary}[section]
+
+% Definitions and remarks usually use a different style:
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{example}{Example}[section]
+
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
+
 \usepackage{soul}
 % \usepackage[small,compact]{titlesec} %very powerful
 \usepackage[most]{tcolorbox}
@@ -673,12 +685,13 @@ Specifying desirable properties for neural networks is not straightforward. Some
 
 
 \section{The Neural Network Verification (NNV) Problem}\label{sec:nnv-problem}
-\paragraph{DNN Verification} Given a DNN \(N\) and a property $\phi$, the \emph{DNN verification problem} asks if $\phi$ is a valid property of $N$.
+
+\begin{definition}[NNV]
+Given a DNN \(N\) and a property $\phi$, the \emph{DNN verification problem} asks if $\phi$ is a valid property of $N$.
 Typically, $\phi$ is a formula of the form $\phi_{in} \Rightarrow \phi_{out}$, where $\phi_{in}$ is a property over the inputs of $N$ and $\phi_{out}$ is a property over the outputs of $N$.
 %This form of properties has been used to encode safety and security requirements of DNNs, e.g., safety specifications to avoid collision in unmanned aircraft~\cite{kochenderfer2012next} and \emph{adversarial robustness}~\cite{katz2017towards} properties desired by all DNNs, in which a small input perturbation does not cause major spikes in the DNN's outputs.
 A DNN verifier attempts to find a \emph{counterexample} input to $N$ that satisfies $\phi_{in}$ but violates $\phi_{out}$.  If no such counterexample exists, $\phi$ is a valid property of $N$. Otherwise, $\phi$ is not valid and the counterexample can be used to retrain or debug the DNN~\cite{huang2017safety}.
-
-
+\end{definition}
 
 
 % Verification tool such as Marabou and nnenum are then applied to the network to prove that the network is safe or identifier counterexample representing small input differences causing large output changes.
@@ -687,16 +700,17 @@ A DNN verifier attempts to find a \emph{counterexample} input to $N$ that satisf
 % \footnote{This is encoded as the differences of the inputs being within a certain small range  ($\phi_{in}$) implies the differences of the outputs still fall within a certain range in $\phi_{out}$)}.
 
 
-
-\paragraph{Example} A valid property for the DNN in \autoref{fig:dnn} is that the output is $x_5 \le 0$ for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$. An invalid property is that $x_5 > 0$ for those similar inputs.
+\begin{example}
+A valid property for the DNN in \autoref{fig:dnn} is that the output is $x_5 \le 0$ for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$. An invalid property is that $x_5 > 0$ for those similar inputs.
 A counterexample showing this property violation is $\{x_1=-1, x_2=2\}$, from which the DNN evaluates to $x_5=-3.5$. 
+\end{example}
 
 %Such properties can capture \emph{safety requirements} (e.g., a rule in an  collision avoidance system in~\cite{kochenderfer2012next,katz2017reluplex} is ``if the intruder is distant and significantly slower than us, then we stay below a certain threshold'') or \emph{local robustness}~\cite{katz2017towards} conditions (a form of adversarial robustness stating that small perturbations of a given input all yield the same output).
 
 
-\section{Satisfiability and Activation Pattern Search}\label{sec:satisfiability-and-activation-pattern-search}
+\section{Satisfiability Formulation}\label{sec:satisfiability-and-activation-pattern-search}
 
- As with traditional software, DNN verification is often represented as a satisfiability problem.
+ As with traditional software verification, DNN verification is often represented as a satisfiability problem.
 We thus need to define a formula to represent the network. Typically this formula is a conjunction of constraints representing the affine transformation and activation function of each neuron in the network.
 For a network with $L$ layers, $N$ neurons per layer, and ReLU activations this formula is:
 \begin{align*}
@@ -1227,7 +1241,6 @@ Therefore, DeepPoly achieves a balance, combining the expressiveness of polyhedr
 \chapter{Search Algorithms}
 
 \section{Branch-and-Bound (BaB)}\label{sec:bab}
-
     
 \SetKwData{nextlayer}{layer$_{i+1}$}
 \SetKwData{status}{status}
@@ -1297,7 +1310,7 @@ Therefore, DeepPoly achieves a balance, combining the expressiveness of polyhedr
 \SetKwFunction{Backjump}{Backjump}
 \SetKwFunction{EstimateBounds}{EstimateBounds}
 
-\SetKwData{problems}{ActPatterns}
+
 \SetKwData{implicationgraph}{igraph}
 \SetKwData{literal}{lit}
 \SetKwData{variable}{var}
@@ -1335,6 +1348,7 @@ Therefore, DeepPoly achieves a balance, combining the expressiveness of polyhedr
 \SetKwData{isconflict}{is\_conflict}
 
 
+\SetKwData{problems}{ActPatterns}
 \begin{algorithm}[t]
     \footnotesize
     \Input{DNN $\mathcal{N}$, property $\phi_{in} \Rightarrow \phi_{out}$}
@@ -1390,9 +1404,12 @@ the satisfiability of the partial activation pattern formed by the split.
 \end{figure}
 %White nodes correspond to branching nodes where \neuralsat{} makes decisions to split ReLU neurons.
 
-\paragraph{Example} \autoref{fig:example1}a illustrates a DNN and how \bab{} verifies that this DNN has the property $(x_1, x_2) \in [-2.0, 2.0] \times [-1.0, 1,0] \Rightarrow (y_1 > y_2)$. 
+\paragraph{Example} \autoref{fig:example1}a illustrates a DNN and how \bab{} verifies that this DNN has the property 
+\[
+(x_1, x_2) \in [-2.0, 2.0] \times [-1.0, 1,0] \Rightarrow (y_1 > y_2).
+\] 
 
-First, \bab{} initializes the activation pattern set \functiontextformat{ActPatterns} with an empty activation pattern $\emptyset$. Then \bab{} enters a loop (\autoref{line:dpllstart}-\autoref{line:dpllend}) to search for a satisfying assignment. In the first iteration, \bab{} selects the only available activation pattern $\emptyset \in \functiontextformat{ActPatterns}$. 
+First, \bab{} initializes the activation pattern set \functiontextformat{ActPatterns} with an empty activation pattern $\emptyset$ (\autoref{line:activation}). Then \bab{} enters a loop (\autoref{line:dpllstart}--\autoref{line:dpllend}) to search for a satisfying assignment. In the first iteration, \bab{} selects the only available activation pattern $\emptyset \in \functiontextformat{ActPatterns}$. 
 It calls \functiontextformat{Deduce} to check the feasibility of the problem based on the current activation pattern. \functiontextformat{Deduce} uses abstraction to approximate that from the input constraints the output values are feasible for the given network. 
 Since \functiontextformat{Deduce} cannot decide infeasibility, \bab{} randomly selects a neuron to split (\functiontextformat{Decide}). Let us assume that it chooses $v_4$ to split, which essentially means the problem is split into two independent subproblems: one with $v_4$ active and the other with $v_4$ inactive.
 \bab{} then adds $\{v_4\}$ and $\{\overline{v_4}\}$ to \functiontextformat{ActPatterns}.
@@ -1456,7 +1473,7 @@ In contrast, the proof of an unsatisfiability result (which explains why \emph{n
     \BlankLine
 
 
-    $\problems \leftarrow \{ \emptyset \}$ \tcp{initialize verification problems} 
+    $\problems \leftarrow \{ \emptyset \}$ \tcp{initialize verification problems}\label{line:activation} 
     $\prooftree \gets \{ ~ \}$ \tcp{initialize proof tree}\label{line:prooftree}
     
     \While(\tcp*[h]{main loop}){$\problems$}{\label{line:dpllstart}
