@@ -2374,577 +2374,577 @@ Here we survey the latest benchmarks in DNN verification and how SOTA tools perf
 
 
 
-\section{VNN-COMP'24 Benchmarks}
+%\section{VNN-COMP'24 Benchmarks}
 
-Artifacts for all benchmarks are available in the repository\footnote{\url{https://github.com/ChristopherBrix/vnncomp2024_benchmarks/tree/main/benchmarks}}.
+% Artifacts for all benchmarks are available in the repository\footnote{\url{https://github.com/ChristopherBrix/vnncomp2024_benchmarks/tree/main/benchmarks}}.
 
                
-\begin{table}[h]
-    \centering
-    \caption{Overview of all scored benchmarks.}\label{tab:my_label}
-    \resizebox{\textwidth}{!}{
-    \renewcommand{\arraystretch}{1.4}
-    \begin{tabular}{ccccccc}
-    \toprule
-    Category &
-    Benchmark &
-    Application &
-    Network Types &
-    \# Params &
-    Effective Input Dim &
-    Track
-    \\
-    \midrule
-    \multirow{8}{*}{Complex} 
-    %& Carvana UNet  & Image Segmentation & Complex UNet              & 275k - 373k & 4.3k \\
-    & cGAN & \makecell{Image Generation \\ \& Image Prediction} & Conv. + Vision Transformer & 500k - 68M & 5 & regular \\
-    & NN4Sys & \makecell{Dataset Indexing \\ \&  Cardinality Prediction}   & ReLU + Sigmoid & 33k - 37M & 1-308 & regular \\
-    & LinearizeNN & NN controller approximation & FC. + Conv. + Vision Transformer + Residual + ReLU & 203k & 4 & regular \\
-    %& ml4acopf & Power System & Complex (ReLU + Trigonometric + Sigmoid) & 4k-680k & 22 - 402 & extended \\
-    %& ViT & Vision & Conv. + Residual + Softmax + BatchNorm & 68k - 76k & 3072 & extended \\
-    %& Collins Aerospace & - & FC + Conv. + Residual, LeakyReLU + MaxPool + Square & 1.8M & 1.2M & extended \\
-    %& LSNC & Lyapunov stability of NN controllers & FC + Residual, ReLU + Sin + Cos & 210, 406 & 8 & extended \\
-    %& CCTSDB & - & FC + Conv. + Residual, ReLU +  MaxPool + Clip & 100k & 2 & extended \\
-    %\cmidrule(lr){1-7}
-    %\multirow{7}{*}{\makecell{CNN \\ \& ResNet}} 
-    % & Cifar Bias Field      & Image Classification & Conv. + ReLU  & 45k   & 16 \\
-    & Collins RUL CNN & Condition Based Maintenance & Conv. + ReLU, Dropout  & 60k - 262k   & 400 - 800 & regular \\
-    % & Large ResNets         & Image Classification & ResNet (Conv. + ReLU)  & 55k - 286k   & 3.1k - 12k \\
-    % & Oval21 & Image Classification & Conv. + ReLU  & 3.1k - 6.2k   & 3.1k \\
-    % & SRI ResNet A/B & Image Classification  & ResNet (Conv. + ReLU)  & 11k   & 3.1k \\
-    %& VGGNet16 & Image Classification & Conv. + ReLU + MaxPool    & 138M & 150k & extended \\
-    & Traffic Signs Recognition & Image Classification & Conv. + Sign + MakPool + BatchNorm & 905k - 1.7M & 2.7k - 12k & extended \\
-    % & cifar100 & Image Classification & FC + Conv. + Residual, ReLU + BatchNorm & 2.5M - 3.8M & 3072 & regular \\
-    % & tinyimagenet & Image Classification & FC + Conv. + Residual, ReLU + BatchNorm & 3.6M & 9408 & regular \\
-    % & Metaroom & - & Conv. + FC, ReLU & 466k - 7.4M & 5376 & regular \\
-    % & Yolo & - & FC + Conv. + Residual, ReLU + Sigmoid & 22k - 37M & 1 - 308 & extended \\
-    % %
-    % \cmidrule(lr){1-7} %
-    % \multirow{5.5}{*}{\makecell{FC}}
-    % %& MNIST FC & Image Classification & FC. + ReLU    & 512 - 1.5k & 784 \\
-    % %& Reach Prob Density    & Probability density estimation & FC. + ReLU    & 64 - 192 & 3 - 14 \\
-    % %& RL Benchmarks  & Reinforcement Learning & FC. + ReLU    & 128 - 512  & 4 - 8 \\
-    % & TLL Verify Bench & Two-Level Lattice NN & \makecell{Two-Level Lattice NN \\(FC. + ReLU)}  & 17k - 67M & 2 & regular \\
-    % & Acas XU & Collision Detection & FC. + ReLU & 13k & 5 & regular \\
-    % & Dist Shift & Distribution Shift Detection & FC. + ReLU + Sigmoid & 342k - 855k & 792 & regular \\
-    % & safeNLP & Sentence classification & FC. + ReLU & 4k & 30 & regular \\
-    % & CORA & Image Classification & FC. + ReLU & 575k, 1.1M & 784, 3072 & regular \\
-    \bottomrule
-    \end{tabular}
-    }
-\end{table}
+% \begin{table}[h]
+%     \centering
+%     \caption{Overview of all scored benchmarks.}\label{tab:my_label}
+%     \resizebox{\textwidth}{!}{
+%     \renewcommand{\arraystretch}{1.4}
+%     \begin{tabular}{ccccccc}
+%     \toprule
+%     Category &
+%     Benchmark &
+%     Application &
+%     Network Types &
+%     \# Params &
+%     Effective Input Dim &
+%     Track
+%     \\
+%     \midrule
+%     \multirow{8}{*}{Complex} 
+%     %& Carvana UNet  & Image Segmentation & Complex UNet              & 275k - 373k & 4.3k \\
+%     & cGAN & \makecell{Image Generation \\ \& Image Prediction} & Conv. + Vision Transformer & 500k - 68M & 5 & regular \\
+%     & NN4Sys & \makecell{Dataset Indexing \\ \&  Cardinality Prediction}   & ReLU + Sigmoid & 33k - 37M & 1-308 & regular \\
+%     & LinearizeNN & NN controller approximation & FC. + Conv. + Vision Transformer + Residual + ReLU & 203k & 4 & regular \\
+%     %& ml4acopf & Power System & Complex (ReLU + Trigonometric + Sigmoid) & 4k-680k & 22 - 402 & extended \\
+%     %& ViT & Vision & Conv. + Residual + Softmax + BatchNorm & 68k - 76k & 3072 & extended \\
+%     %& Collins Aerospace & - & FC + Conv. + Residual, LeakyReLU + MaxPool + Square & 1.8M & 1.2M & extended \\
+%     %& LSNC & Lyapunov stability of NN controllers & FC + Residual, ReLU + Sin + Cos & 210, 406 & 8 & extended \\
+%     %& CCTSDB & - & FC + Conv. + Residual, ReLU +  MaxPool + Clip & 100k & 2 & extended \\
+%     %\cmidrule(lr){1-7}
+%     %\multirow{7}{*}{\makecell{CNN \\ \& ResNet}} 
+%     % & Cifar Bias Field      & Image Classification & Conv. + ReLU  & 45k   & 16 \\
+%     & Collins RUL CNN & Condition Based Maintenance & Conv. + ReLU, Dropout  & 60k - 262k   & 400 - 800 & regular \\
+%     % & Large ResNets         & Image Classification & ResNet (Conv. + ReLU)  & 55k - 286k   & 3.1k - 12k \\
+%     % & Oval21 & Image Classification & Conv. + ReLU  & 3.1k - 6.2k   & 3.1k \\
+%     % & SRI ResNet A/B & Image Classification  & ResNet (Conv. + ReLU)  & 11k   & 3.1k \\
+%     %& VGGNet16 & Image Classification & Conv. + ReLU + MaxPool    & 138M & 150k & extended \\
+%     & Traffic Signs Recognition & Image Classification & Conv. + Sign + MakPool + BatchNorm & 905k - 1.7M & 2.7k - 12k & extended \\
+%     % & cifar100 & Image Classification & FC + Conv. + Residual, ReLU + BatchNorm & 2.5M - 3.8M & 3072 & regular \\
+%     % & tinyimagenet & Image Classification & FC + Conv. + Residual, ReLU + BatchNorm & 3.6M & 9408 & regular \\
+%     % & Metaroom & - & Conv. + FC, ReLU & 466k - 7.4M & 5376 & regular \\
+%     % & Yolo & - & FC + Conv. + Residual, ReLU + Sigmoid & 22k - 37M & 1 - 308 & extended \\
+%     % %
+%     % \cmidrule(lr){1-7} %
+%     % \multirow{5.5}{*}{\makecell{FC}}
+%     % %& MNIST FC & Image Classification & FC. + ReLU    & 512 - 1.5k & 784 \\
+%     % %& Reach Prob Density    & Probability density estimation & FC. + ReLU    & 64 - 192 & 3 - 14 \\
+%     % %& RL Benchmarks  & Reinforcement Learning & FC. + ReLU    & 128 - 512  & 4 - 8 \\
+%     % & TLL Verify Bench & Two-Level Lattice NN & \makecell{Two-Level Lattice NN \\(FC. + ReLU)}  & 17k - 67M & 2 & regular \\
+%     % & Acas XU & Collision Detection & FC. + ReLU & 13k & 5 & regular \\
+%     % & Dist Shift & Distribution Shift Detection & FC. + ReLU + Sigmoid & 342k - 855k & 792 & regular \\
+%     % & safeNLP & Sentence classification & FC. + ReLU & 4k & 30 & regular \\
+%     % & CORA & Image Classification & FC. + ReLU & 575k, 1.1M & 784, 3072 & regular \\
+%     \bottomrule
+%     \end{tabular}
+%     }
+% \end{table}
 
 
-\subsection{cGAN}
-\paragraph*{Proposed by} Feiyang Cai, Ali Arjomandbigdeli, Stanley Bak (Stony Brook Univ.). Link: \url{https://github.com/feiyang-cai/cgan_benchmark2023}
+% \subsection{cGAN}
+% \paragraph*{Proposed by} Feiyang Cai, Ali Arjomandbigdeli, Stanley Bak (Stony Brook Univ.). Link: \url{https://github.com/feiyang-cai/cgan_benchmark2023}
 
-This benchmark targets robustness verification for generative models—an area often overlooked compared to discriminative networks.
-It uses conditional GANs trained to generate images of vehicles at specific distances. The generator takes a 1D distance input and a 4D noise vector; the discriminator outputs a real/fake score and a predicted distance.
-Models vary in architecture (CNNs, vision transformers) and image size (32×32, 64×64).
-The verification task checks whether the predicted distance from the generated image matches the input condition, under small input perturbations.
+% This benchmark targets robustness verification for generative models—an area often overlooked compared to discriminative networks.
+% It uses conditional GANs trained to generate images of vehicles at specific distances. The generator takes a 1D distance input and a 4D noise vector; the discriminator outputs a real/fake score and a predicted distance.
+% Models vary in architecture (CNNs, vision transformers) and image size (32×32, 64×64).
+% The verification task checks whether the predicted distance from the generated image matches the input condition, under small input perturbations.
 
+
+% % \paragraph*{Motivation}
+% % While existing neural network verification benchmarks focus on discriminative models, the exploration of practical and widely used generative networks remains neglected in terms of robustness assessment.
+% % This benchmark introduces a set of image generation networks specifically designed for verifying the robustness of the generative networks.
+% % \paragraph*{Networks}
+% % The generative networks are trained using conditional generative adversarial networks (cGAN), whose objective is to generate camera images that contain a vehicle obstacle located at a specific distance in front of the ego vehicle, where the distance is controlled by the input distance condition.
+% % The network to be verified is the concatenation of a generator and a discriminator.  The generator takes two inputs: 1) a distance condition (1D scalar) and 2) a noise vector controlling the environment (4D vector). The output of the generator is the generated image. The discriminator takes the generated image as input and outputs two values: 1) a real/fake score (1D scalar) and 2) a predicted distance (1D scalar).
+% % Several different models with varying architectures (CNN and vision transformer) and image sizes (32x32, 64x64) are provided for different difficulty levels.
+% % \paragraph*{Specifications}
+% % The verification task is to check whether the generated image aligns with the input distance condition, or in other words, verify whether the input distance condition matches the predicted distance of the generated image.
+% % In each specification, the inputs (condition distance and latent variables) are constrained in small ranges, and the output is the predicted distance with the same center as the condition distance but with slightly larger range.
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% \pagebreak
+% \subsection{NN4Sys}
+% \paragraph*{Proposed by} the $\alpha,\!\beta$-CROWN team with collaborations with Cheng Tan, Haoyu He and Shuyi Lin at Northeastern University.
+% \paragraph*{Application}
+% The benchmark contains networks for database learned index, video streaming learned adaptive bitrate, and learned cardinality
+% estimation which map inputs from various dimensions to 1-dimension outputs.
+
+% \begin{itemize}
+
+% \item \textit{Background}: learned index, learned cardinality, and learned
+%     adaptive bitrate are all instances in neural networks for computer systems
+%         (NN4Sys), which are neural network based methods performing system
+%         operations. These classes of methods show great potential but have one
+%         drawback---the outputs of an NN4Sys model (a neural network) can be
+%         arbitrary, which may lead to unexpected issues in systems.
+
+% \item \textit{What to verify}: our benchmark provides multiple pairs of (1) trained NN4Sys model
+% and (2) corresponding specifications. We design these pairs with different parameters such
+% that they cover a variety of user needs and have varied difficulties for verifiers. 
+% We describe benchmark details in our NN4SysBench report:
+%         \url{http://naizhengtan.github.io/doc/papers/nn4sys23lin.pdf}.
+
+% \item \textit{Translating NN4Sys applications to a VNN benchmark}: 
+% the original NN4Sys applications have some sophisticated structures that are hard to verify.
+% We tailored the neural networks and their specifications to be suitable for VNN-COMP.
+% For example, learned index~\cite{kraska18case} contains multiple NNs in a tree structure that together serve one purpose.
+% However, this cascading structure is inconvenient/unsupported to verify
+% because there is a ``switch" operation---choosing one NN in the second stage
+% based on the prediction of the first stage's NN.
+% To convert learned indexes to a standard form, we train a monolithic (larger) NN.
+
+% \item \textit{A note on broader impact}: using NNs for systems is a broad topic, but many existing works
+% lack strict safety guarantees. We believe that NN Verification can help system developers gain confidence
+% to apply NNs to critical systems. We hope our benchmark can be an early step toward this vision.
+
+% \end{itemize}
+
+% \paragraph*{Networks}
+% This benchmark has twelve networks with different parameters: two for learned
+% indexes, four for learned cardinality estimation and six for learned adaptive bitrate.
+% The learned index uses fully-connected feed-forward neural networks. The other
+% two---the learned cardinality and the learned adaptive bitrate---has a
+% relatively sophisticated internal structure. Please see our NN4SysBench report
+% (URL listed above) for details
+
+
+% \paragraph*{Specifications}
+% For learned indexes,
+% the specification aims to check if the prediction error is bounded.
+% The specification is a collection of pairs of input and output intervals such that
+% any input in the input interval should be mapped to the corresponding output interval.
+% For learned cardinality estimation and learned adaptive bitrate,
+% the specifications check the prediction error bounds (similar to the learned indexes)
+% and monotonicity of the networks.
+% By monotonicity specifications, we mean that for two inputs, the network should produce a larger
+% output for the larger input, which is required by cardinality estimation or adaptive bitrate.
+
+
+% \paragraph{Link:} \url{https://github.com/Khoury-srg/VNNComp23_NN4Sys}
+
+
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%% sec: LinearizeNN %%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \subsection{LinearizeNN}
+% \paragraph*{Proposed by}  Ali Arjomandbigdeli, Stanley Bak (Stony Brook University).
+% \paragraph*{Motivation}
+% Assuming having a neural network controller approximation with a piecewise linear model in the form of a set of linear models with added noise to account for local linearization error. The objective of this benchmark is to investigate the neural network output falls within the range we obtain from our linear model output plus some uncertainty.
+
+% The idea of this benchmark came from one of our recent paper~\cite{ArjomandBigdeli2024} in which we approximated the NN controller with a piecewise linear model, and we wanted to check if the neural network output falls within the range we obtained from our linear model output plus some uncertainty.
+% \paragraph*{Networks} The neural network controller we used in this benchmark is an image-based controller for an Autonomous Aircraft Taxiing System whose goal is to control an aircraft's taxiing at a steady speed on a taxiway. This network was introduced  in the paper "Verification of Image-based Neural Network Controllers Using Generative Models"~\cite{katz2021veri}. The neural network integrates a concatenation of the cGAN (conditional GAN) and controller, resulting in a unified neural network controller with low-dimensional state inputs. In this problem, the inputs to the neural network consist of two state variables and two latent variables. The aircraft's state is determined by its crosstrack position (p) and heading angle error ($\theta$) with respect to the taxiway center line. Two latent variables with a range of -0.8 to 0.8 are introduced to account for environmental changes.
+
+% Because in this case the output spec depends on both the input and output and considering the VNN-LIB limitation, we added a skip-connection layer to the neural network to have the input values present in the output space. We also added one linear layer after that to create a linear equation for each local model.
+% \paragraph*{Specifications} As mentioned earlier, the aim of this benchmark is to examine whether the neural network output stays within the range defined by the linear model's output, including a margin for uncertainty.Given input $x \in X$ and output $Y = f_{NN}(x)$, the query is of the form: $A_{mat}\times X + b + U_{lb} \leq Y \leq A_{mat}\times X + b + U_{ub}$ for each linear model in its abstraction region.
+% \paragraph*{Link} \url{https://github.com/aliabigdeli/LinearizeNN_benchmark2024}
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+% \pagebreak
+% % \subsection{Cifar Bias Field}
+
+% % \paragraph{Proposed by} The VeriNet team.
+
+% % \paragraph*{Motivation} This benchmark considers verification of a Cifar 10 network against bias field perturbations. The bias field perturbations are encoded by creating augmented networks with only 16 input parameters; thus, the problem has a significantly lower input dimensionality than many other image-based benchmarks.
+
+% % \paragraph*{Networks} For each image to be verified, a separate bias field transform network is created~\cite{Henriksen+21} which consists of the FC transform layer followed by the Cifar CNN. The Cifar CNN consists of 8 convolutional layers followed by ReLUs. Each bias field transform network has 363k parameters and 45k nodes.  
+
+% % \paragraph*{Specifications} The specification considers bias field perturbations of the input. The task is reduced to a standard $\ell_\infty$ specification by encoding bias field the bias field transformation into fully connected layers which are prepended to the network under consideration. The bias field perturbations used $\epsilon = 0.06$ (as described in~\cite{Henriksen+21}) and a timeout of 5 minutes. 
+
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%% sec: ml4acopf %%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \subsection{ml4acopf}
+% \paragraph*{Proposed by} Haoruo Zhao, Michael Klamkin, Mathieu Tanneau, Wenbo Chen, and Pascal Van Hentenryck (Georgia Institute of Technology), and Hassan Hijazi, Juston Moore, and Haydn Jones (Los Alamos National Laboratory).
 
 % \paragraph*{Motivation}
-% While existing neural network verification benchmarks focus on discriminative models, the exploration of practical and widely used generative networks remains neglected in terms of robustness assessment.
-% This benchmark introduces a set of image generation networks specifically designed for verifying the robustness of the generative networks.
+% Machine learning models are utilized to predict solutions for an optimization model known as AC Optimal Power Flow (ACOPF) in the power system. Since the solutions are continuous, a regression model is employed. The objective is to evaluate the quality of these machine learning model predictions, specifically by determining whether they satisfy the constraints of the optimization model. Given the challenges in meeting some constraints, the goal is to verify whether the worst-case violations of these constraints are within an acceptable tolerance level.
+
 % \paragraph*{Networks}
-% The generative networks are trained using conditional generative adversarial networks (cGAN), whose objective is to generate camera images that contain a vehicle obstacle located at a specific distance in front of the ego vehicle, where the distance is controlled by the input distance condition.
-% The network to be verified is the concatenation of a generator and a discriminator.  The generator takes two inputs: 1) a distance condition (1D scalar) and 2) a noise vector controlling the environment (4D vector). The output of the generator is the generated image. The discriminator takes the generated image as input and outputs two values: 1) a real/fake score (1D scalar) and 2) a predicted distance (1D scalar).
-% Several different models with varying architectures (CNN and vision transformer) and image sizes (32x32, 64x64) are provided for different difficulty levels.
+% The neural network designed comprises two components. The first component predicts the solutions of the optimization model, while the second evaluates the violation of each constraint that needs checking. The first component consists solely of general matrix multiplication (GEMM) and rectified linear unit (ReLU) operators. However, the second component has a more complex structure, as it involves evaluating the violation of AC constraints using nonlinear functions, including sigmoid, quadratic, and trigonometric functions such as sine and cosine. This complex evaluation component is incorporated into the network due to a limitation of the VNNLIB format, which does not support trigonometric functions. Therefore, these constraints violation evaluation are included in the neural network.
+
 % \paragraph*{Specifications}
-% The verification task is to check whether the generated image aligns with the input distance condition, or in other words, verify whether the input distance condition matches the predicted distance of the generated image.
-% In each specification, the inputs (condition distance and latent variables) are constrained in small ranges, and the output is the predicted distance with the same center as the condition distance but with slightly larger range.
+% In this benchmark, four different properties are checked, each corresponding to a type of constraint violation:
+% \begin{enumerate}
+%     \item Power balance constraints: the net power at each bus node is equal to the sum of the power flows in the branches connected to that node.
+%     \item Thermal limit constraints: power flow on a transmission line is within its maximum and minimum limits.
+%     \item Generation bounds: a generator's active and reactive power output is within its maximum and minimum limits.
+%     \item Voltage magnitude bounds: a voltage's magnitude output is within its maximum and minimum limits.
+% \end{enumerate}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% The input to the model is the active and reactive load. The chosen input point for perturbation is a load profile for which a corresponding feasible solution to the ACOPF problem is known to exist. For the feasibility check, the input load undergoes perturbation. Although this perturbation does not exactly match physical laws, the objective is to ascertain whether a machine learning-predicted solution with the perturbation can produce a solution that does not significantly violate the constraints.
 
-\pagebreak
-\subsection{NN4Sys}
-\paragraph*{Proposed by} the $\alpha,\!\beta$-CROWN team with collaborations with Cheng Tan, Haoyu He and Shuyi Lin at Northeastern University.
-\paragraph*{Application}
-The benchmark contains networks for database learned index, video streaming learned adaptive bitrate, and learned cardinality
-estimation which map inputs from various dimensions to 1-dimension outputs.
+% The scale of the perturbation and the violation threshold are altered by testing whether an adversarial example can be easily found using projected gradient descent with the given perturbation. The benchmark, provided with a fixed random seed, is robust against the simple projected gradient descent that is implemented.
 
-\begin{itemize}
-
-\item \textit{Background}: learned index, learned cardinality, and learned
-    adaptive bitrate are all instances in neural networks for computer systems
-        (NN4Sys), which are neural network based methods performing system
-        operations. These classes of methods show great potential but have one
-        drawback---the outputs of an NN4Sys model (a neural network) can be
-        arbitrary, which may lead to unexpected issues in systems.
+% \paragraph*{Link} \url{https://github.com/AI4OPT/ml4acopf_benchmark}
 
-\item \textit{What to verify}: our benchmark provides multiple pairs of (1) trained NN4Sys model
-and (2) corresponding specifications. We design these pairs with different parameters such
-that they cover a variety of user needs and have varied difficulties for verifiers. 
-We describe benchmark details in our NN4SysBench report:
-        \url{http://naizhengtan.github.io/doc/papers/nn4sys23lin.pdf}.
 
-\item \textit{Translating NN4Sys applications to a VNN benchmark}: 
-the original NN4Sys applications have some sophisticated structures that are hard to verify.
-We tailored the neural networks and their specifications to be suitable for VNN-COMP.
-For example, learned index~\cite{kraska18case} contains multiple NNs in a tree structure that together serve one purpose.
-However, this cascading structure is inconvenient/unsupported to verify
-because there is a ``switch" operation---choosing one NN in the second stage
-based on the prediction of the first stage's NN.
-To convert learned indexes to a standard form, we train a monolithic (larger) NN.
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%% sec: ViT %%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \subsection{ViT}
+% \paragraph*{Proposed by} the $\alpha,\!\beta$-CROWN team.
+% \paragraph*{Motivation}
+% Transformers~\cite{vaswani2017attention} based on the self-attention mechanism have much more complicated architectures and contain more kinds of nonlinerities, compared to simple feedforward networks with relatively simple activation functions. 
+% It makes verifying Transformers challenging. We aim to encourage the development of verification techniques for Transformer-based models, and we also aim to benchmark neural network verifiers on relatively complicated neural network architectures and more general nonlinearities. Therefore, we propose a new benchmark with Vision Transformers (ViTs)~\cite{dosovitskiy2020image}. This benchmark is developed based on our work on neural network verification for models with general nonlinearities~\cite{shi2024genbab}.
 
-\item \textit{A note on broader impact}: using NNs for systems is a broad topic, but many existing works
-lack strict safety guarantees. We believe that NN Verification can help system developers gain confidence
-to apply NNs to critical systems. We hope our benchmark can be an early step toward this vision.
+% \paragraph*{Networks}
+% The benchmark contains two ViTs, as shown in \Cref{tab:vits}.
+% Considering the difficulty of verifying ViTs, we modify the ViTs and make the models relatively shallow and narrow, with significantly reduced number of layers and attention heads.
+% Following \cite{shi2019robustness}, we also replace the layer normalization with batch normalization.
+% The models are mainly trained with PGD training~\cite{madry2017towards}, and we also add a weighted IBP~\cite{gowal2018effectiveness,shi2021fast} loss for one of the models as a regularization.
 
-\end{itemize}
-
-\paragraph*{Networks}
-This benchmark has twelve networks with different parameters: two for learned
-indexes, four for learned cardinality estimation and six for learned adaptive bitrate.
-The learned index uses fully-connected feed-forward neural networks. The other
-two---the learned cardinality and the learned adaptive bitrate---has a
-relatively sophisticated internal structure. Please see our NN4SysBench report
-(URL listed above) for details
-
-
-\paragraph*{Specifications}
-For learned indexes,
-the specification aims to check if the prediction error is bounded.
-The specification is a collection of pairs of input and output intervals such that
-any input in the input interval should be mapped to the corresponding output interval.
-For learned cardinality estimation and learned adaptive bitrate,
-the specifications check the prediction error bounds (similar to the learned indexes)
-and monotonicity of the networks.
-By monotonicity specifications, we mean that for two inputs, the network should produce a larger
-output for the larger input, which is required by cardinality estimation or adaptive bitrate.
-
-
-\paragraph{Link:} \url{https://github.com/Khoury-srg/VNNComp23_NN4Sys}
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% sec: LinearizeNN %%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{LinearizeNN}
-\paragraph*{Proposed by}  Ali Arjomandbigdeli, Stanley Bak (Stony Brook University).
-\paragraph*{Motivation}
-Assuming having a neural network controller approximation with a piecewise linear model in the form of a set of linear models with added noise to account for local linearization error. The objective of this benchmark is to investigate the neural network output falls within the range we obtain from our linear model output plus some uncertainty.
-
-The idea of this benchmark came from one of our recent paper~\cite{ArjomandBigdeli2024} in which we approximated the NN controller with a piecewise linear model, and we wanted to check if the neural network output falls within the range we obtained from our linear model output plus some uncertainty.
-\paragraph*{Networks} The neural network controller we used in this benchmark is an image-based controller for an Autonomous Aircraft Taxiing System whose goal is to control an aircraft's taxiing at a steady speed on a taxiway. This network was introduced  in the paper "Verification of Image-based Neural Network Controllers Using Generative Models"~\cite{katz2021veri}. The neural network integrates a concatenation of the cGAN (conditional GAN) and controller, resulting in a unified neural network controller with low-dimensional state inputs. In this problem, the inputs to the neural network consist of two state variables and two latent variables. The aircraft's state is determined by its crosstrack position (p) and heading angle error ($\theta$) with respect to the taxiway center line. Two latent variables with a range of -0.8 to 0.8 are introduced to account for environmental changes.
-
-Because in this case the output spec depends on both the input and output and considering the VNN-LIB limitation, we added a skip-connection layer to the neural network to have the input values present in the output space. We also added one linear layer after that to create a linear equation for each local model.
-\paragraph*{Specifications} As mentioned earlier, the aim of this benchmark is to examine whether the neural network output stays within the range defined by the linear model's output, including a margin for uncertainty.Given input $x \in X$ and output $Y = f_{NN}(x)$, the query is of the form: $A_{mat}\times X + b + U_{lb} \leq Y \leq A_{mat}\times X + b + U_{ub}$ for each linear model in its abstraction region.
-\paragraph*{Link} \url{https://github.com/aliabigdeli/LinearizeNN_benchmark2024}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
-\pagebreak
-% \subsection{Cifar Bias Field}
-
-% \paragraph{Proposed by} The VeriNet team.
-
-% \paragraph*{Motivation} This benchmark considers verification of a Cifar 10 network against bias field perturbations. The bias field perturbations are encoded by creating augmented networks with only 16 input parameters; thus, the problem has a significantly lower input dimensionality than many other image-based benchmarks.
-
-% \paragraph*{Networks} For each image to be verified, a separate bias field transform network is created~\cite{Henriksen+21} which consists of the FC transform layer followed by the Cifar CNN. The Cifar CNN consists of 8 convolutional layers followed by ReLUs. Each bias field transform network has 363k parameters and 45k nodes.  
+% \begin{table}[ht]
+% \centering
+% \caption{Networks in the ViT benchmark.}
+% \label{tab:vits}
+% \begin{tabular}{ccc}
+% \toprule 
+% Model & \texttt{PGD\_2\_3\_16} & \texttt{IBP\_3\_3\_8} \\
+% \midrule
+% Layers & 2 & 3\\
+% Attention heads & 3 & 3\\
+% Patch size & 16 & 8\\
+% Weight of IBP loss & 0 & 0.01\\
+% Training $\epsilon$ & $\frac{2}{255}$ & $\frac{1}{255}$\\
+% Clean accuracy & 59.78\% & 62.21\%\\
+% \bottomrule
+% \end{tabular}
+% \end{table}
+
+% \paragraph*{Specifications} 
+% The specifications are generated from the robustness verification problem with $\ell_\infty$ perturbation. 
+% We use the CIFAR-10 dataset with perturbation size $\epsilon=\frac{1}{255}$ at test time.
+% We have filtered the CIFAR-10 test set to exclude instances where either adversarial examples can be found (by PGD attack~\cite{madry2017towards} with 100 steps and 1000 restarts) or the vanilla CROWN-like method~\cite{zhang2018efficient,shi2019robustness} can already easily verify. 
+% We randomly keep 100 instances for each model, with a timeout threshold of 100 seconds. 
+% Note that since instances with adversarial examples have mostly been excluded during the filtering process, this version of the benchmark may not be able to reflect soundness issues in verifiers, and we refer readers to \cite{zhou2024testing} for discussions on testing soundness with models including ViT.
 
-% \paragraph*{Specifications} The specification considers bias field perturbations of the input. The task is reduced to a standard $\ell_\infty$ specification by encoding bias field the bias field transformation into fully connected layers which are prepended to the network under consideration. The bias field perturbations used $\epsilon = 0.06$ (as described in~\cite{Henriksen+21}) and a timeout of 5 minutes. 
+% \paragraph*{Link} \url{https://github.com/shizhouxing/ViT_vnncomp2023}
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% sec: ml4acopf %%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{ml4acopf}
-\paragraph*{Proposed by} Haoruo Zhao, Michael Klamkin, Mathieu Tanneau, Wenbo Chen, and Pascal Van Hentenryck (Georgia Institute of Technology), and Hassan Hijazi, Juston Moore, and Haydn Jones (Los Alamos National Laboratory).
+% \subsection{LSNC}
 
-\paragraph*{Motivation}
-Machine learning models are utilized to predict solutions for an optimization model known as AC Optimal Power Flow (ACOPF) in the power system. Since the solutions are continuous, a regression model is employed. The objective is to evaluate the quality of these machine learning model predictions, specifically by determining whether they satisfy the constraints of the optimization model. Given the challenges in meeting some constraints, the goal is to verify whether the worst-case violations of these constraints are within an acceptable tolerance level.
+% \paragraph*{Proposed by} the $\alpha,\!\beta$-CROWN team.
+% \paragraph*{Motivation}
+% We develop a benchmark for the problem of verifying the Lyapunov stability of NN controllers in nonlinear dynamical systems within a region-of-intrest and a region-of-attraction. This is important for providing stability guarantees that are essential for safety-critical applications with NN controllers. It is also a useful application of neural network verification as recently demonstrated in \cite{yang2024lyapunov,shi2024certified}, and we refer readers to those works for more details on the problem.
+% \paragraph*{Networks and Specifications}
+% Models are adopted from \cite{yang2024lyapunov}. 
+% We adopt two models for the 2D quadrotor dynamical system with state feedback and output feedback, respectively. Each model consists of a controller which is a shallow ReLU network, a Lyapunov function which is a quadratic function, and nonlinear operators modelling the dynamics of a 2D quadrotor. The model for output feedback further consists of a shallow LeakyReLU network as the observer. The verification objective of the Lyapunov stability has been encoded in the ONNX graphs and VNNLIB specifications. Specifications for the benchmark are randomly generated and consist of random sub-regions within the original region-of-interest. The size of the random sub-regions is controlled by a factor $\epsilon~(0<\epsilon\leq 1)$ which is applied to each input dimension, and it has been adjusted for a suitable difficulty given the timeout. For the state feedback model, we set $\epsilon=0.5$ and the timeout is 100s; for the output feedback model, we set $\epsilon=0.3$ and timeout is 200s. For each of the two models, we randomly generate 20 instances. 
+% \paragraph*{Link} \url{https://github.com/shizhouxing/LSNC_VNNCOMP2024}
 
-\paragraph*{Networks}
-The neural network designed comprises two components. The first component predicts the solutions of the optimization model, while the second evaluates the violation of each constraint that needs checking. The first component consists solely of general matrix multiplication (GEMM) and rectified linear unit (ReLU) operators. However, the second component has a more complex structure, as it involves evaluating the violation of AC constraints using nonlinear functions, including sigmoid, quadratic, and trigonometric functions such as sine and cosine. This complex evaluation component is incorporated into the network due to a limitation of the VNNLIB format, which does not support trigonometric functions. Therefore, these constraints violation evaluation are included in the neural network.
+% \subsection{Collins-RUL-CNN}
+% \paragraph*{Proposed by} Collins Aerospace, Applied Research \& Technology (\href{https://www.collinsaerospace.com/what-we-do/capabilities/technology-and-innovation/applied-research-and-technology}{website}).
 
-\paragraph*{Specifications}
-In this benchmark, four different properties are checked, each corresponding to a type of constraint violation:
-\begin{enumerate}
-    \item Power balance constraints: the net power at each bus node is equal to the sum of the power flows in the branches connected to that node.
-    \item Thermal limit constraints: power flow on a transmission line is within its maximum and minimum limits.
-    \item Generation bounds: a generator's active and reactive power output is within its maximum and minimum limits.
-    \item Voltage magnitude bounds: a voltage's magnitude output is within its maximum and minimum limits.
-\end{enumerate}
+% \paragraph*{Motivation} Machine Learning (ML) is a disruptive technology for the aviation industry. This particularly concerns safety-critical aircraft functions, where high-assurance design and verification methods have to be used in order to obtain approval from certification authorities for the new ML-based products. Assessment of correctness and robustness of trained models, such as neural networks, is a crucial step for demonstrating the absence of unintended functionalities~\cite{ForMuLA, kirov2023formal}. The key motivation for providing this benchmark is to strengthen the interaction between the VNN community and the aerospace industry by providing a realistic use case for neural networks in future avionics systems~\cite{kirov2023benchmark}.
 
-The input to the model is the active and reactive load. The chosen input point for perturbation is a load profile for which a corresponding feasible solution to the ACOPF problem is known to exist. For the feasibility check, the input load undergoes perturbation. Although this perturbation does not exactly match physical laws, the objective is to ascertain whether a machine learning-predicted solution with the perturbation can produce a solution that does not significantly violate the constraints.
+% \paragraph*{Application} Remaining Useful Life (RUL) is a widely used metric in Prognostics and Health Management (PHM) that manifests the remaining lifetime of a component (e.g., mechanical bearing, hydraulic pump, aircraft engine). RUL is used for Condition-Based Maintenance (CBM) to support aircraft maintenance and flight preparation. It contributes to such tasks as augmented manual inspection of components and scheduling of maintenance cycles for components, such as repair or replacement, thus moving from preventive maintenance to \emph{predictive} maintenance (do maintenance only when needed, based on component’s current condition and estimated future condition). This could allow to eliminate or extend service operations and inspection periods, optimize component servicing (e.g., lubricant replacement), generate inspection and maintenance schedules, and obtain significant cost savings. Finally, RUL function can also be used in airborne (in-flight) applications to dynamically inform pilots on the health state of aircraft components during flight. Multivariate time series data is often used as RUL function input, for example, measurements from a set of sensors monitoring the component state, taken at several subsequent time steps (within a time window). Additional inputs may include information about the current flight phase, mission, and environment. Such highly multi-dimensional input space motivates the use of Deep Learning (DL) solutions with their capabilities of performing automatic feature extraction from raw data.
 
-The scale of the perturbation and the violation threshold are altered by testing whether an adversarial example can be easily found using projected gradient descent with the given perturbation. The benchmark, provided with a fixed random seed, is robust against the simple projected gradient descent that is implemented.
+% \paragraph*{Networks} The benchmark includes 3 convolutional neural networks (CNNs) of different complexity: different numbers of filters and different sizes of the input space. All networks contain only convolutional and fully connected layers with ReLU activations. All CNNs perform the regression function. They have been trained on the same dataset (time series data for mechanical component degradation during flight).
 
-\paragraph*{Link} \url{https://github.com/AI4OPT/ml4acopf_benchmark}
+% \paragraph*{Specifications} We propose 3 properties for the NN-based RUL estimation function. First, two properties (robustness and monotonicity) are local, i.e., defined around a given point. We provide a script with an adjustable random seed that can generate these properties around input points randomly picked from a test dataset. For robustness properties, the input perturbation (delta) is varied between 5\% and 40\%, while the number of perturbed inputs varies between 2 and 16. For monotonicity properties, monotonic shifts between 5\% and 20\% from a given point are considered. Properties of the last type ("if-then") require the output (RUL) to be in an expected value range given certain input ranges. Several if-then properties of different complexity are provided (depending on range widths).
 
+% \paragraph*{Link} \url{https://github.com/loonwerks/vnncomp2022}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% sec: ViT %%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{ViT}
-\paragraph*{Proposed by} the $\alpha,\!\beta$-CROWN team.
-\paragraph*{Motivation}
-Transformers~\cite{vaswani2017attention} based on the self-attention mechanism have much more complicated architectures and contain more kinds of nonlinerities, compared to simple feedforward networks with relatively simple activation functions. 
-It makes verifying Transformers challenging. We aim to encourage the development of verification techniques for Transformer-based models, and we also aim to benchmark neural network verifiers on relatively complicated neural network architectures and more general nonlinearities. Therefore, we propose a new benchmark with Vision Transformers (ViTs)~\cite{dosovitskiy2020image}. This benchmark is developed based on our work on neural network verification for models with general nonlinearities~\cite{shi2024genbab}.
+% \paragraph*{Paper} Available in~\cite{kirov2023benchmark} or on request.
 
-\paragraph*{Networks}
-The benchmark contains two ViTs, as shown in \Cref{tab:vits}.
-Considering the difficulty of verifying ViTs, we modify the ViTs and make the models relatively shallow and narrow, with significantly reduced number of layers and attention heads.
-Following \cite{shi2019robustness}, we also replace the layer normalization with batch normalization.
-The models are mainly trained with PGD training~\cite{madry2017towards}, and we also add a weighted IBP~\cite{gowal2018effectiveness,shi2021fast} loss for one of the models as a regularization.
 
-\begin{table}[ht]
-\centering
-\caption{Networks in the ViT benchmark.}
-\label{tab:vits}
-\begin{tabular}{ccc}
-\toprule 
-Model & \texttt{PGD\_2\_3\_16} & \texttt{IBP\_3\_3\_8} \\
-\midrule
-Layers & 2 & 3\\
-Attention heads & 3 & 3\\
-Patch size & 16 & 8\\
-Weight of IBP loss & 0 & 0.01\\
-Training $\epsilon$ & $\frac{2}{255}$ & $\frac{1}{255}$\\
-Clean accuracy & 59.78\% & 62.21\%\\
-\bottomrule
-\end{tabular}
-\end{table}
+% \subsection{VGGNET16}
+% \paragraph*{Proposed by} Stanley Bak, Stony Brook University
 
-\paragraph*{Specifications} 
-The specifications are generated from the robustness verification problem with $\ell_\infty$ perturbation. 
-We use the CIFAR-10 dataset with perturbation size $\epsilon=\frac{1}{255}$ at test time.
-We have filtered the CIFAR-10 test set to exclude instances where either adversarial examples can be found (by PGD attack~\cite{madry2017towards} with 100 steps and 1000 restarts) or the vanilla CROWN-like method~\cite{zhang2018efficient,shi2019robustness} can already easily verify. 
-We randomly keep 100 instances for each model, with a timeout threshold of 100 seconds. 
-Note that since instances with adversarial examples have mostly been excluded during the filtering process, this version of the benchmark may not be able to reflect soundness issues in verifiers, and we refer readers to \cite{zhou2024testing} for discussions on testing soundness with models including ViT.
+% \paragraph*{Motivation} This benchmark tries to scale up the size of networks being analyzed by using the well-studied VGGNET-16 architecture~\cite{simonyan2014very} that runs on ImageNet. Input-output properties are proposed on pixel-level perturbations that can lead to image misclassification. 
 
-\paragraph*{Link} \url{https://github.com/shizhouxing/ViT_vnncomp2023}
+% \paragraph*{Networks} All properties are run on the same network, which includes 138 million parameters. The network features convolution layers, ReLU activation functions, as well as max pooling layers.
 
+% \paragraph*{Specifications} Properties analyzed ranged from single-pixel perturbations to perturbations on all 150528 pixles (L-infinity perturbations). A subset of the images was used to create the specifications, one from each category, which was randomly chosen to attack. Pixels to perturb were also randomly selected according to a random seed.
 
-\subsection{LSNC}
+% \paragraph*{Link} \url{https://github.com/stanleybak/vggnet16_benchmark2022/}
 
-\paragraph*{Proposed by} the $\alpha,\!\beta$-CROWN team.
-\paragraph*{Motivation}
-We develop a benchmark for the problem of verifying the Lyapunov stability of NN controllers in nonlinear dynamical systems within a region-of-intrest and a region-of-attraction. This is important for providing stability guarantees that are essential for safety-critical applications with NN controllers. It is also a useful application of neural network verification as recently demonstrated in \cite{yang2024lyapunov,shi2024certified}, and we refer readers to those works for more details on the problem.
-\paragraph*{Networks and Specifications}
-Models are adopted from \cite{yang2024lyapunov}. 
-We adopt two models for the 2D quadrotor dynamical system with state feedback and output feedback, respectively. Each model consists of a controller which is a shallow ReLU network, a Lyapunov function which is a quadratic function, and nonlinear operators modelling the dynamics of a 2D quadrotor. The model for output feedback further consists of a shallow LeakyReLU network as the observer. The verification objective of the Lyapunov stability has been encoded in the ONNX graphs and VNNLIB specifications. Specifications for the benchmark are randomly generated and consist of random sub-regions within the original region-of-interest. The size of the random sub-regions is controlled by a factor $\epsilon~(0<\epsilon\leq 1)$ which is applied to each input dimension, and it has been adjusted for a suitable difficulty given the timeout. For the state feedback model, we set $\epsilon=0.5$ and the timeout is 100s; for the output feedback model, we set $\epsilon=0.3$ and timeout is 200s. For each of the two models, we randomly generate 20 instances. 
-\paragraph*{Link} \url{https://github.com/shizhouxing/LSNC_VNNCOMP2024}
 
-\subsection{Collins-RUL-CNN}
-\paragraph*{Proposed by} Collins Aerospace, Applied Research \& Technology (\href{https://www.collinsaerospace.com/what-we-do/capabilities/technology-and-innovation/applied-research-and-technology}{website}).
 
-\paragraph*{Motivation} Machine Learning (ML) is a disruptive technology for the aviation industry. This particularly concerns safety-critical aircraft functions, where high-assurance design and verification methods have to be used in order to obtain approval from certification authorities for the new ML-based products. Assessment of correctness and robustness of trained models, such as neural networks, is a crucial step for demonstrating the absence of unintended functionalities~\cite{ForMuLA, kirov2023formal}. The key motivation for providing this benchmark is to strengthen the interaction between the VNN community and the aerospace industry by providing a realistic use case for neural networks in future avionics systems~\cite{kirov2023benchmark}.
 
-\paragraph*{Application} Remaining Useful Life (RUL) is a widely used metric in Prognostics and Health Management (PHM) that manifests the remaining lifetime of a component (e.g., mechanical bearing, hydraulic pump, aircraft engine). RUL is used for Condition-Based Maintenance (CBM) to support aircraft maintenance and flight preparation. It contributes to such tasks as augmented manual inspection of components and scheduling of maintenance cycles for components, such as repair or replacement, thus moving from preventive maintenance to \emph{predictive} maintenance (do maintenance only when needed, based on component’s current condition and estimated future condition). This could allow to eliminate or extend service operations and inspection periods, optimize component servicing (e.g., lubricant replacement), generate inspection and maintenance schedules, and obtain significant cost savings. Finally, RUL function can also be used in airborne (in-flight) applications to dynamically inform pilots on the health state of aircraft components during flight. Multivariate time series data is often used as RUL function input, for example, measurements from a set of sensors monitoring the component state, taken at several subsequent time steps (within a time window). Additional inputs may include information about the current flight phase, mission, and environment. Such highly multi-dimensional input space motivates the use of Deep Learning (DL) solutions with their capabilities of performing automatic feature extraction from raw data.
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%% sec: Traffic Signs Recognition %%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \subsection{Traffic Signs Recognition}
+% \paragraph*{Proposed by} M\u{a}d\u{a}lina Era\c{s}cu and Andreea Postovan (West University of Timisoara, Romania)
+% \paragraph*{Motivation} Traffic signs play a crucial role in ensuring road safety and managing traffic flow in both city and highway driving. The recognition of these signs, a vital component of autonomous driving vision systems, faces challenges such as susceptibility to adversarial examples~\cite{szegedy2013intriguing} and occlusions~\cite{zhang2020lightweight}, stemming from diverse traffic scene conditions.
 
-\paragraph*{Networks} The benchmark includes 3 convolutional neural networks (CNNs) of different complexity: different numbers of filters and different sizes of the input space. All networks contain only convolutional and fully connected layers with ReLU activations. All CNNs perform the regression function. They have been trained on the same dataset (time series data for mechanical component degradation during flight).
+% \paragraph*{Networks} Binary neural networks (BNNs) show promise in computationally limited and energy-constrained environments within the realm of autonomous driving~\cite{hubara2016binarized}. BNNs, where weights and/or activations are binarized to $\pm 1$, offer reduced model size and simplified convolution operations for image recognition compared to traditional neural networks (NNs).
 
-\paragraph*{Specifications} We propose 3 properties for the NN-based RUL estimation function. First, two properties (robustness and monotonicity) are local, i.e., defined around a given point. We provide a script with an adjustable random seed that can generate these properties around input points randomly picked from a test dataset. For robustness properties, the input perturbation (delta) is varied between 5\% and 40\%, while the number of perturbed inputs varies between 2 and 16. For monotonicity properties, monotonic shifts between 5\% and 20\% from a given point are considered. Properties of the last type ("if-then") require the output (RUL) to be in an expected value range given certain input ranges. Several if-then properties of different complexity are provided (depending on range widths).
+% We trained and tested various BNN architectures using the German Traffic Sign Recognition Benchmark (GTSRB) dataset~\cite{GTSRB}. This multi-class dataset, containing images of German road signs across 43 classes, poses challenges for both humans and models due to factors like perspective change, shade, color degradation, and lighting conditions. The dataset was also tested using the Belgian Traffic Signs \cite{BelgianTrafficSignDatabase} and Chinese Traffic Signs \cite{ChineseTrafficSignDatabase} datasets. The Belgium Traffic Signs dataset, with 62 classes, had 23 overlapping classes with GTSRB. The Chinese Traffic Signs dataset, with 58 classes, shared 15 classes with GTSRB. Pre-processing steps involved relabeling classes in the Belgium and Chinese datasets to match those in GTSRB and eliminating non-overlapping classes (see \cite{postovan2023architecturing} for details).
 
-\paragraph*{Link} \url{https://github.com/loonwerks/vnncomp2022}
+% We provide three models with the structure in Figures \ref{fig:Acc-Efficient-Arch-GTSRB-Belgium}, \ref{fig:Acc-Efficient-Arch-Chinese}, and \ref{fig:XNOR(QConv)-arch}. They contain QConv, Batch Normalization (BN), Max Pooling (ML), Fully Connected/Dense (D) layers.  Note that the QConv layer binarizes the corresponding convolutional layer. All models were trained for 30 epochs. The model from Figure \ref{fig:Acc-Efficient-Arch-GTSRB-Belgium} was trained with images having the dimension 64px x 64 px, the one from Figure \ref{fig:Acc-Efficient-Arch-Chinese} with 48px x 48 px and the one from Figure \ref{fig:XNOR(QConv)-arch} with 30px x 30 px. The two models involving Batch Normalization layers introduce real valued parameters besides the binary ones, while the third one contains only binary parameters (see Table \ref{tab:stats}) for statistics.
 
-\paragraph*{Paper} Available in~\cite{kirov2023benchmark} or on request.
+% \begin{figure}[h]
+%   \centering
+%     \includegraphics[width=0.7\textwidth]{figure/AccEfficientGTSRBBelgium.png}
+%     \caption{Accuracy Efficient Architecture for GTSRB and Belgium dataset}
+%     \label{fig:Acc-Efficient-Arch-GTSRB-Belgium}
+% \end{figure}
 
+% \begin{figure}[h]
+%   \centering
+%     \includegraphics[width=0.7\textwidth]{figure/AccEfficientArchChinese.png}
+%     \caption{Accuracy Efficient Architecture for Chinese dataset}
+%     \label{fig:Acc-Efficient-Arch-Chinese}
+% \end{figure}
 
-\subsection{VGGNET16}
-\paragraph*{Proposed by} Stanley Bak, Stony Brook University
+% \begin{figure}[h]
+%   \centering
+%     \includegraphics[width=0.3\textwidth]{figure/XNORQConv.png}
+%     \caption{XNOR(QConv) architecture}
+%     \label{fig:XNOR(QConv)-arch}
+% \end{figure}
 
-\paragraph*{Motivation} This benchmark tries to scale up the size of networks being analyzed by using the well-studied VGGNET-16 architecture~\cite{simonyan2014very} that runs on ImageNet. Input-output properties are proposed on pixel-level perturbations that can lead to image misclassification. 
+% % Please add the following required packages to your document preamble:
+% % \usepackage{multirow}
+% \begin{table}[h]
+% \caption{Training and Testing Statistics}
+% \label{tab:stats}
+% \centering
+% \scriptsize
+% \begin{tabular}{|c|c|ccc|ccc|}
+% \hline
+% \multirow{2}{*}{\textbf{Input size}} & \multirow{2}{*}{\textbf{Model name}} & \multicolumn{3}{c|}{\textbf{Accuracy}}                                      & \multicolumn{3}{c|}{\textbf{\#Params}}                                      \\ \cline{3-8} 
+%                             &                             & \multicolumn{1}{c|}{\textbf{German}} & \multicolumn{1}{c|}{\textbf{China}} & \textbf{Belgium} & \multicolumn{1}{c|}{\textbf{Binary}}  & \multicolumn{1}{c|}{\textbf{Real}} & \textbf{Total}   \\ \hline
+% 64px $\times$ 64px          & Figure \ref{fig:Acc-Efficient-Arch-GTSRB-Belgium}                  & \multicolumn{1}{c|}{96.45}  & \multicolumn{1}{c|}{81.50} & 88.17   & \multicolumn{1}{c|}{1772896} & \multicolumn{1}{c|}{2368} & 1775264 \\ \hline
+% 48px $\times$ 48px          & Figure \ref{fig:Acc-Efficient-Arch-Chinese}                  & \multicolumn{1}{c|}{95.28}  & \multicolumn{1}{c|}{83.90} & 87.78   & \multicolumn{1}{c|}{904288}  & \multicolumn{1}{c|}{832}  & 905120  \\ \hline
+% 30px $\times$ 30px          & Figure \ref{fig:XNOR(QConv)-arch}                  & \multicolumn{1}{c|}{81.54}  & \multicolumn{1}{c|}{N/A}   & N/A     & \multicolumn{1}{c|}{1005584} & \multicolumn{1}{c|}{0}    & 1005584 \\ \hline
+% \end{tabular}
+% \end{table}
+% \paragraph*{Specifications} To evaluate the \emph{adversarial robustness} of the networks above, we assessed perturbations within the infinity norm around zero, with the radius denoted as $\epsilon = \{1, 3, 5, 10, 15\}$. This involved randomly selecting three distinct images from the GTSRB dataset's test set for each model and generating \textsc{VNNLIB} files for each epsilon in the set. In total, we created 45 \textsc{VNNLIB} files. Due to a 6-hour total timeout constraint for solving all instances, each instance had a maximum timeout of 480 seconds. To review the generated \textsc{VNNLIB} specification files submitted to VNNCOMP 2023, as well as to generate new ones, please refer to \url{https://github.com/apostovan21/vnncomp2023}.
 
-\paragraph*{Networks} All properties are run on the same network, which includes 138 million parameters. The network features convolution layers, ReLU activation functions, as well as max pooling layers.
+% \paragraph*{Link} \url{https://github.com/apostovan21/vnncomp2023}
 
-\paragraph*{Specifications} Properties analyzed ranged from single-pixel perturbations to perturbations on all 150528 pixles (L-infinity perturbations). A subset of the images was used to create the specifications, one from each category, which was randomly chosen to attack. Pixels to perturb were also randomly selected according to a random seed.
 
-\paragraph*{Link} \url{https://github.com/stanleybak/vggnet16_benchmark2022/}
 
+% \subsection{CIFAR100}
 
+% \paragraph*{Proposed by} the $\alpha,\!\beta$-CROWN team.
+% \paragraph*{Motivation} This benchmark is reused from VNN-COMP 2022 with a reduced complexity (only two out of the four models with medium sizes are retained). 
+% See details in Section 4.5 of the report of VNN-COMP 2022~\cite{muller2022vnncomp}.
 
+% \paragraph*{Networks} We provide two ResNet models on CIFAR-100 with different model widths and depths (input dimension $32 \times 32 \times 3$, 100 classes):
+% \begin{itemize}
+%     \item \texttt{CIFAR100-ResNet-medium}: 8 residual blocks, 17 convolutional layers + 2 linear layers
+%     \item \texttt{CIFAR100-ResNet-large}: 8 residual blocks, 19 convolutional layers + 2 linear layers (almost identical to standard ResNet-18 architecture)
+% \end{itemize}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% sec: Traffic Signs Recognition %%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Traffic Signs Recognition}
-\paragraph*{Proposed by} M\u{a}d\u{a}lina Era\c{s}cu and Andreea Postovan (West University of Timisoara, Romania)
-\paragraph*{Motivation} Traffic signs play a crucial role in ensuring road safety and managing traffic flow in both city and highway driving. The recognition of these signs, a vital component of autonomous driving vision systems, faces challenges such as susceptibility to adversarial examples~\cite{szegedy2013intriguing} and occlusions~\cite{zhang2020lightweight}, stemming from diverse traffic scene conditions.
+% \paragraph*{Specifications} 
+% We randomly select 100 images from the CIFAR-100 test set with a verification timeout of 100 seconds for each of the two models. 
+% We filtered out the samples which can be verified by vanilla CROWN (which is used during training) to make the benchmark more challenging. The filtering process is done offline on a machine with a GPU due to the large sizes of these models. 
+% A small proportion of instances (around 18\%) with adversarial examples have been retained for potentially identifying unsound results. 
 
-\paragraph*{Networks} Binary neural networks (BNNs) show promise in computationally limited and energy-constrained environments within the realm of autonomous driving~\cite{hubara2016binarized}. BNNs, where weights and/or activations are binarized to $\pm 1$, offer reduced model size and simplified convolution operations for image recognition compared to traditional neural networks (NNs).
+% \paragraph*{Link} \url{https://github.com/huanzhang12/vnncomp2024_cifar100_benchmark}
 
-We trained and tested various BNN architectures using the German Traffic Sign Recognition Benchmark (GTSRB) dataset~\cite{GTSRB}. This multi-class dataset, containing images of German road signs across 43 classes, poses challenges for both humans and models due to factors like perspective change, shade, color degradation, and lighting conditions. The dataset was also tested using the Belgian Traffic Signs \cite{BelgianTrafficSignDatabase} and Chinese Traffic Signs \cite{ChineseTrafficSignDatabase} datasets. The Belgium Traffic Signs dataset, with 62 classes, had 23 overlapping classes with GTSRB. The Chinese Traffic Signs dataset, with 58 classes, shared 15 classes with GTSRB. Pre-processing steps involved relabeling classes in the Belgium and Chinese datasets to match those in GTSRB and eliminating non-overlapping classes (see \cite{postovan2023architecturing} for details).
 
-We provide three models with the structure in Figures \ref{fig:Acc-Efficient-Arch-GTSRB-Belgium}, \ref{fig:Acc-Efficient-Arch-Chinese}, and \ref{fig:XNOR(QConv)-arch}. They contain QConv, Batch Normalization (BN), Max Pooling (ML), Fully Connected/Dense (D) layers.  Note that the QConv layer binarizes the corresponding convolutional layer. All models were trained for 30 epochs. The model from Figure \ref{fig:Acc-Efficient-Arch-GTSRB-Belgium} was trained with images having the dimension 64px x 64 px, the one from Figure \ref{fig:Acc-Efficient-Arch-Chinese} with 48px x 48 px and the one from Figure \ref{fig:XNOR(QConv)-arch} with 30px x 30 px. The two models involving Batch Normalization layers introduce real valued parameters besides the binary ones, while the third one contains only binary parameters (see Table \ref{tab:stats}) for statistics.
+% \subsection{TinyImagenet}
 
-\begin{figure}[h]
-  \centering
-    \includegraphics[width=0.7\textwidth]{figure/AccEfficientGTSRBBelgium.png}
-    \caption{Accuracy Efficient Architecture for GTSRB and Belgium dataset}
-    \label{fig:Acc-Efficient-Arch-GTSRB-Belgium}
-\end{figure}
+% \paragraph*{Proposed by} the $\alpha,\!\beta$-CROWN team.
+% \paragraph*{Motivation} This benchmark is reused from VNN-COMP 2022. See details in Section 4.5 of the report of VNN-COMP 2022~\cite{muller2022vnncomp}.
 
-\begin{figure}[h]
-  \centering
-    \includegraphics[width=0.7\textwidth]{figure/AccEfficientArchChinese.png}
-    \caption{Accuracy Efficient Architecture for Chinese dataset}
-    \label{fig:Acc-Efficient-Arch-Chinese}
-\end{figure}
+% \paragraph*{Networks} We provide a ResNet for TinyImageNet (input dimension $64 \times 64 \times 3$, 200 classes):
+% \begin{itemize}
+%     \item \texttt{TinyImageNet-ResNet-medium}: 8 residual blocks, 17 convolutional layers + 2 linear layers
+% \end{itemize}
 
-\begin{figure}[h]
-  \centering
-    \includegraphics[width=0.3\textwidth]{figure/XNORQConv.png}
-    \caption{XNOR(QConv) architecture}
-    \label{fig:XNOR(QConv)-arch}
-\end{figure}
+% \paragraph*{Specifications} We randomly select 200 images from the TinyImageNet test set with a verification timeout of 100 seconds for each of the two models. A filtering procedure has been adopted similar to the CIFAR100 benchmark.
 
-% Please add the following required packages to your document preamble:
-% \usepackage{multirow}
-\begin{table}[h]
-\caption{Training and Testing Statistics}
-\label{tab:stats}
-\centering
-\scriptsize
-\begin{tabular}{|c|c|ccc|ccc|}
-\hline
-\multirow{2}{*}{\textbf{Input size}} & \multirow{2}{*}{\textbf{Model name}} & \multicolumn{3}{c|}{\textbf{Accuracy}}                                      & \multicolumn{3}{c|}{\textbf{\#Params}}                                      \\ \cline{3-8} 
-                            &                             & \multicolumn{1}{c|}{\textbf{German}} & \multicolumn{1}{c|}{\textbf{China}} & \textbf{Belgium} & \multicolumn{1}{c|}{\textbf{Binary}}  & \multicolumn{1}{c|}{\textbf{Real}} & \textbf{Total}   \\ \hline
-64px $\times$ 64px          & Figure \ref{fig:Acc-Efficient-Arch-GTSRB-Belgium}                  & \multicolumn{1}{c|}{96.45}  & \multicolumn{1}{c|}{81.50} & 88.17   & \multicolumn{1}{c|}{1772896} & \multicolumn{1}{c|}{2368} & 1775264 \\ \hline
-48px $\times$ 48px          & Figure \ref{fig:Acc-Efficient-Arch-Chinese}                  & \multicolumn{1}{c|}{95.28}  & \multicolumn{1}{c|}{83.90} & 87.78   & \multicolumn{1}{c|}{904288}  & \multicolumn{1}{c|}{832}  & 905120  \\ \hline
-30px $\times$ 30px          & Figure \ref{fig:XNOR(QConv)-arch}                  & \multicolumn{1}{c|}{81.54}  & \multicolumn{1}{c|}{N/A}   & N/A     & \multicolumn{1}{c|}{1005584} & \multicolumn{1}{c|}{0}    & 1005584 \\ \hline
-\end{tabular}
-\end{table}
-\paragraph*{Specifications} To evaluate the \emph{adversarial robustness} of the networks above, we assessed perturbations within the infinity norm around zero, with the radius denoted as $\epsilon = \{1, 3, 5, 10, 15\}$. This involved randomly selecting three distinct images from the GTSRB dataset's test set for each model and generating \textsc{VNNLIB} files for each epsilon in the set. In total, we created 45 \textsc{VNNLIB} files. Due to a 6-hour total timeout constraint for solving all instances, each instance had a maximum timeout of 480 seconds. To review the generated \textsc{VNNLIB} specification files submitted to VNNCOMP 2023, as well as to generate new ones, please refer to \url{https://github.com/apostovan21/vnncomp2023}.
+% \paragraph*{Link} \url{https://github.com/huanzhang12/vnncomp2024_tinyimagenet_benchmark}
 
-\paragraph*{Link} \url{https://github.com/apostovan21/vnncomp2023}
 
 
+% \subsection{TLL Verify Bench}
+% \paragraph*{Proposed by} James Ferlez (University of California, Irvine)
 
-\subsection{CIFAR100}
+% \paragraph*{Motivation} This benchmark consists of Two-Level Lattice (TLL) NNs, which have been shown to be amenable to fast verification algorithms (e.g. \cite{FerlezKS22}). Thus, this benchmark was proposed as a means of comparing TLL-specific verification algorithms with general-purpose NN verification algorithms (i.e. algorithms that can verify arbitrary deep, fully-connected ReLU NNs).
 
-\paragraph*{Proposed by} the $\alpha,\!\beta$-CROWN team.
-\paragraph*{Motivation} This benchmark is reused from VNN-COMP 2022 with a reduced complexity (only two out of the four models with medium sizes are retained). 
-See details in Section 4.5 of the report of VNN-COMP 2022~\cite{muller2022vnncomp}.
+% \paragraph*{Networks}  The networks in this benchmark are a subset of the ones used in \cite[Experiment 3]{FerlezKS22}. Each of these TLL NNs has $n=2$ inputs and $m=1$ output. The architecture of a TLL NN is further specified by two parameters: $N$, the number of local linear functions, and $M$, the number of selector sets. This benchmark contains TLLs of sizes $N = M = 8, 16, 24, 32, 40, 48, 56, 64$, with $30$ randomly generated examples of each (the generation procedure is described in \cite[Section 6.1.1]{FerlezKS22}). At runtime, the specified verification timeout determines how many of these networks are included in the benchmark so as to achieve an overall 6-hour run time; this selection process is deterministic. Finally, a TLL NN has a natural representation using multiple computation paths \cite[Figure 1]{FerlezKS22}, but many tools are only compatible with fully-connected networks. Hence, the ONNX models in this benchmark implement TLL NNs by ``stacking'' these computation paths to make a fully connected NN (leading to sparse weight matrices: i.e. with many zero weights and biases). The \texttt{TLLnet} class (\url{https://github.com/jferlez/TLLnet}) contains the code necessary to generate these implementations via the \texttt{exportONNX} method.
 
-\paragraph*{Networks} We provide two ResNet models on CIFAR-100 with different model widths and depths (input dimension $32 \times 32 \times 3$, 100 classes):
-\begin{itemize}
-    \item \texttt{CIFAR100-ResNet-medium}: 8 residual blocks, 17 convolutional layers + 2 linear layers
-    \item \texttt{CIFAR100-ResNet-large}: 8 residual blocks, 19 convolutional layers + 2 linear layers (almost identical to standard ResNet-18 architecture)
-\end{itemize}
+% %\vfill
+% %\pagebreak
+% \paragraph*{Specifications}  All specifications have as input constraints the hypercube $[-2,2]^2$. Since all networks have only a single output, the output properties consist of a randomly generated real number and a randomly generated inequality direction. Random output samples from the network are used to roughly ensure that the real number property has an equal likelihood of being within the output range of the NN and being outside of it (either above or below all NN outputs on the input constraint set). The inequality direction is generated independently and with each direction having an equal probability. This scheme biases the benchmark towards verification problems for which counterexamples exist. 
 
-\paragraph*{Specifications} 
-We randomly select 100 images from the CIFAR-100 test set with a verification timeout of 100 seconds for each of the two models. 
-We filtered out the samples which can be verified by vanilla CROWN (which is used during training) to make the benchmark more challenging. The filtering process is done offline on a machine with a GPU due to the large sizes of these models. 
-A small proportion of instances (around 18\%) with adversarial examples have been retained for potentially identifying unsound results. 
+% \paragraph*{Link} \url{https://github.com/jferlez/TLLVerifyBench}
+% \paragraph*{Commit}
+% 199d2c26d0ec456e62906366b694a875a21ff7ef
 
-\paragraph*{Link} \url{https://github.com/huanzhang12/vnncomp2024_cifar100_benchmark}
 
+% %%%%%%% Unscored %%%%%%%
+% \subsection{ACAS Xu}
+% \paragraph{Networks} The ACASXu benchmark consists of ten properties defined over 45 neural networks used to issue turn advisories to aircraft to avoid collisions. The neural networks have 300 neurons arranged in 6 layers, with ReLU activation functions. There are five inputs corresponding to the aircraft states, and five network outputs, where the minimum output is used as the turn advisory the system ultimately produces.
 
-\subsection{TinyImagenet}
+% \paragraph{Specifications} We use the original 10 properties~\cite{katz2017reluplex}, where properties 1-4 are checked on all 45 networks as was done in later work by the original authors~\cite{katz2019marabou}. Properties 5-10 are checked on a single network. The total number of benchmarks is therefore 186. The original verification times ranged from seconds to days---including some benchmark instances that did not finish. This year we used a timeout of around two minutes (116 seconds) for each property, in order to fit within a total maximum runtime of six hours.
 
-\paragraph*{Proposed by} the $\alpha,\!\beta$-CROWN team.
-\paragraph*{Motivation} This benchmark is reused from VNN-COMP 2022. See details in Section 4.5 of the report of VNN-COMP 2022~\cite{muller2022vnncomp}.
+% % \subsection{Cifar2020 (unscored)}
 
-\paragraph*{Networks} We provide a ResNet for TinyImageNet (input dimension $64 \times 64 \times 3$, 200 classes):
-\begin{itemize}
-    \item \texttt{TinyImageNet-ResNet-medium}: 8 residual blocks, 17 convolutional layers + 2 linear layers
-\end{itemize}
+% % \paragraph*{Motivation} This benchmark combines two convolutional CIFAR10 networks from last year's VNN-COMP 2020 with a new, larger network with the goal to evaluate the progress made by the whole field of Neural Network verification.
 
-\paragraph*{Specifications} We randomly select 200 images from the TinyImageNet test set with a verification timeout of 100 seconds for each of the two models. A filtering procedure has been adopted similar to the CIFAR100 benchmark.
+% % \paragraph*{Networks} The two ReLU networks \texttt{cifar\_10\_2\_255} and \texttt{cifar\_10\_8\_255} with two convolutional and two fully-connected layers were trained for $\ell_\infty$ perturbations of $\epsilon = \frac{2}{255}$ and $\frac{8}{255}$, respectively, using COLT \cite{balunovic:20}  and the larger \texttt{ConvBig} with four convolutional and three fully-connected networks, was trained using adversarial training \cite{madry:17} and $\epsilon = \frac{2}{255}$.
 
-\paragraph*{Link} \url{https://github.com/huanzhang12/vnncomp2024_tinyimagenet_benchmark}
+% % \paragraph*{Specifications} We draw the first 100 images from the CIFAR10 test set and for every network reject incorrectly classified ones. For the remaining images, the specifications describe a correct classification under an $\ell_\infty$-norm perturbation of at most $\frac{2}{255}$ and $\frac{8}{255}$ for \texttt{cifar\_10\_2\_255} and \texttt{ConvBig} and \texttt{cifar\_10\_8\_255}, respectively and allow a per sample timeout of 5 minutes.
 
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \subsection{safeNLP}
 
-
-\subsection{TLL Verify Bench}
-\paragraph*{Proposed by} James Ferlez (University of California, Irvine)
-
-\paragraph*{Motivation} This benchmark consists of Two-Level Lattice (TLL) NNs, which have been shown to be amenable to fast verification algorithms (e.g. \cite{FerlezKS22}). Thus, this benchmark was proposed as a means of comparing TLL-specific verification algorithms with general-purpose NN verification algorithms (i.e. algorithms that can verify arbitrary deep, fully-connected ReLU NNs).
-
-\paragraph*{Networks}  The networks in this benchmark are a subset of the ones used in \cite[Experiment 3]{FerlezKS22}. Each of these TLL NNs has $n=2$ inputs and $m=1$ output. The architecture of a TLL NN is further specified by two parameters: $N$, the number of local linear functions, and $M$, the number of selector sets. This benchmark contains TLLs of sizes $N = M = 8, 16, 24, 32, 40, 48, 56, 64$, with $30$ randomly generated examples of each (the generation procedure is described in \cite[Section 6.1.1]{FerlezKS22}). At runtime, the specified verification timeout determines how many of these networks are included in the benchmark so as to achieve an overall 6-hour run time; this selection process is deterministic. Finally, a TLL NN has a natural representation using multiple computation paths \cite[Figure 1]{FerlezKS22}, but many tools are only compatible with fully-connected networks. Hence, the ONNX models in this benchmark implement TLL NNs by ``stacking'' these computation paths to make a fully connected NN (leading to sparse weight matrices: i.e. with many zero weights and biases). The \texttt{TLLnet} class (\url{https://github.com/jferlez/TLLnet}) contains the code necessary to generate these implementations via the \texttt{exportONNX} method.
-
-%\vfill
-%\pagebreak
-\paragraph*{Specifications}  All specifications have as input constraints the hypercube $[-2,2]^2$. Since all networks have only a single output, the output properties consist of a randomly generated real number and a randomly generated inequality direction. Random output samples from the network are used to roughly ensure that the real number property has an equal likelihood of being within the output range of the NN and being outside of it (either above or below all NN outputs on the input constraint set). The inequality direction is generated independently and with each direction having an equal probability. This scheme biases the benchmark towards verification problems for which counterexamples exist. 
-
-\paragraph*{Link} \url{https://github.com/jferlez/TLLVerifyBench}
-\paragraph*{Commit}
-199d2c26d0ec456e62906366b694a875a21ff7ef
-
-
-%%%%%%% Unscored %%%%%%%
-\subsection{ACAS Xu}
-\paragraph{Networks} The ACASXu benchmark consists of ten properties defined over 45 neural networks used to issue turn advisories to aircraft to avoid collisions. The neural networks have 300 neurons arranged in 6 layers, with ReLU activation functions. There are five inputs corresponding to the aircraft states, and five network outputs, where the minimum output is used as the turn advisory the system ultimately produces.
-
-\paragraph{Specifications} We use the original 10 properties~\cite{katz2017reluplex}, where properties 1-4 are checked on all 45 networks as was done in later work by the original authors~\cite{katz2019marabou}. Properties 5-10 are checked on a single network. The total number of benchmarks is therefore 186. The original verification times ranged from seconds to days---including some benchmark instances that did not finish. This year we used a timeout of around two minutes (116 seconds) for each property, in order to fit within a total maximum runtime of six hours.
-
-% \subsection{Cifar2020 (unscored)}
-
-% \paragraph*{Motivation} This benchmark combines two convolutional CIFAR10 networks from last year's VNN-COMP 2020 with a new, larger network with the goal to evaluate the progress made by the whole field of Neural Network verification.
-
-% \paragraph*{Networks} The two ReLU networks \texttt{cifar\_10\_2\_255} and \texttt{cifar\_10\_8\_255} with two convolutional and two fully-connected layers were trained for $\ell_\infty$ perturbations of $\epsilon = \frac{2}{255}$ and $\frac{8}{255}$, respectively, using COLT \cite{balunovic:20}  and the larger \texttt{ConvBig} with four convolutional and three fully-connected networks, was trained using adversarial training \cite{madry:17} and $\epsilon = \frac{2}{255}$.
-
-% \paragraph*{Specifications} We draw the first 100 images from the CIFAR10 test set and for every network reject incorrectly classified ones. For the remaining images, the specifications describe a correct classification under an $\ell_\infty$-norm perturbation of at most $\frac{2}{255}$ and $\frac{8}{255}$ for \texttt{cifar\_10\_2\_255} and \texttt{ConvBig} and \texttt{cifar\_10\_8\_255}, respectively and allow a per sample timeout of 5 minutes.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{safeNLP}
-
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.9\columnwidth]{./figure/NLP-Flow.png}
-    \caption{\small\emph{Generic approach to generating the NLP verification pipelines~\cite{casadio2023antonio,casadio2024nlp} deployed to obtain the safeNLP benchmark.}}
-   \label{fig:antonio}
-\end{figure}
-
-\paragraph*{Proposed by} Marco Casadio, Ekaterina Komendantskaya, Luca Arnaboldi, Tanvi Dinkar.
-
-\paragraph*{Motivation}
-While considerable research has been dedicated to the verification of DNN-based systems in domains such as computer vision, there has been a notable lack of focus on the verification of natural language processing (NLP) systems. This is particularly critical given the rise of conversational agents across various domains, where inaccurate or misleading responses can cause real-world harm. For example, recent EU legislation~\cite{EUlaw} requires chatbots to disclose their non-human nature when queried, and developers of the chatbots should provide firm, and if possible, formal, guarantees that such disclosure will be given in an accurate manner. Medical assistants give another example where formal guarantees about the conversational agent responses are needed in order to safeguard against chatbots  generating harmful medical advice~\cite{bickmore2018patient}. While some initial work has been done in this area of NLP verification~\cite{jia2019certified,huang2019achieving,welbl2020towards,zhang2021certified,wang2023robustness,ko2019popqorn,du2021cert,shi2020robustness,bonaert2021fast}, no agreement on commonly  accepted benchmarks has been reached in this domain. To address this gap, we introduce safeNLP, the first such benchmark. 
-
-\paragraph*{Application}
-In~\cite{casadio2024nlp}, we have undertaken a large-scale study of the existing literature on  NLP verification, and distilled common patterns among the existing approaches. Usually, given a dataset consisting of sentences divided into classes, Large Language Models (LLMs) are used to embed these sentences into real-vector spaces, after which smaller neural networks are trained to classify the embedded vectors (relative to the originally given classes). For verification, one can generate meaning-preserving sentence perturbations, again embed them into vector spaces, and verify that subspaces that contain the (embeddings of) the perturbed sentences are classified correctly. Also, in line with classical verification pipelines~\cite{CasadioKDKKAR22}, one can use these input subspaces to train the neural network to be robust on them.  The problem was that each of the existing approaches~\cite{jia2019certified,huang2019achieving,welbl2020towards,zhang2021certified,wang2023robustness,ko2019popqorn,du2021cert,shi2020robustness,bonaert2021fast} used parts of this pipeline in different ways, which made it difficult to compare or audit the results. In~\cite{casadio2023antonio,casadio2024nlp}, we made a generic implementation of this pipeline, 
-%(released as a Python package ANTONIO), 
-where each of the components of the pipeline is implemented in a modular and transparent way. For example, we can choose  and vary embedding functions, training modes, algorithms for sentence perturbations and algorithms for robust training, independently and modularly; as shown in Figure~\ref{fig:antonio}. This implementation was used to generate the presented VNNCOMP benchmark.
-
-\begin{itemize}
-    \item \emph{Datasets:} Although there was no clear consensus in~\cite{jia2019certified,huang2019achieving,welbl2020towards,zhang2021certified,wang2023robustness,ko2019popqorn,du2021cert,shi2020robustness,bonaert2021fast}, the most frequently used dataset in prior works was the IMDB dataset containing film reviews. Its disadvantage is unclear relation to safety critical domains that usually motivate verification efforts. On the other hand, none of the previously used datasets concerned safety-critical applications of NLP. We decided to address this problem, and therefore applied our generic NLP verification pipeline on two safety-critical datasets:  R-U-A-Robot~\cite{gros2021ruarobot}, which focuses on the chatbot disclosure problem, and Medical~\cite{abercrombie2022risk}, which addresses the issue of harmful advice provided by medical chatbots. Both datasets are pre-processed into two classes, positive and negative, to simplify the verification task. For further details on the pre-processing steps and datasets, see~\cite{casadio2024nlp} and the \href{https://github.com/ANTONIONLP/safeNLP}{benchmark GitHub repository}.
-    \item \emph{Input Space:} In both datasets, sentences are transformed into fixed-size vector representations, i.e. embeddings, which serve as the inputs to the neural networks. For this VNNCOMP benchmark, we used Sentence-BERT~\cite{reimers-gurevych-2019-sentence}. 
-    %This part is handled by ANTONIO, which employs .
-    \item \emph{What to Verify:} For each dataset, we generated meaning-preseving sentence perturbations at character and word level as in Moradi et al.~\cite{moradi2021evaluating} and at sentence level with Vicuna~\cite{vicuna2023}. For each positive sentence in the dataset, the smallest hypercube containing the embeddings of all of its obtained perturbations formed one input subspace for verification. Such subspaces were obtained for all positive sentences from the given data set, and were subject to VNCCOMP verification challenge. 
-    %ANTONIO’s modular approach allows us to independently chose both the perturbation algorithms and the subspaces form.
-    %The goal is to verify that every point within these subspaces is classified as positive by the network.
-    \item \emph{A note on broader impact:} Verified models can serve as filters for larger NLP systems: e.g. to screen inputs to ensure they meet safety criteria before being passed on to more complex models.
-\end{itemize}
-
-\paragraph*{Networks} The safeNLP benchmark includes two neural networks, each corresponding to a different dataset (R-U-A-Robot and Medical). Both networks share the same architecture, consisting of two fully-connected layers. The hidden layer has 128 units with a ReLU activation function, while the output layer has 2 units representing the two classification classes (positive/negative). To enhance the robustness of the networks to the specified safety requirements, they are trained using a custom PGD (Projected Gradient Descent)~\cite{madry2018towards} adversarial training technique. In particular, the PGD attack explores the above-mentioned subspaces of the input space (cf. also Figure~\ref{fig:antonio}). 
-%ANTONIO plays a crucial role in this process, allowing us to
-%flexibly select the training mode and robustness algorithm. Specifically, we 
-%customise the PGD algorithm to work effectively with the subspaces used in our specifications.
-
-\paragraph*{Specifications} The benchmark uses hyper-rectangles in the 30-dimensional embedding space as the subspaces of choice, offering a computationally efficient way to define more precise and adaptable regions compared to the traditional $\epsilon$-cubes. 
-%These hyper-rectangles are defined by a series of lower and upper bounds. 
-The specifications require verifying that, for a given network and hyper-rectangle, every point within the hyper-rectangle is classified as the positive class by the network. To meet time constraints, we randomly select 1,080 such specifications, each linked to one of the two networks and a corresponding hyper-rectangle, with a timeout of 20 seconds per specification.
-
-\paragraph*{Link} \url{https://github.com/ANTONIONLP/safeNLP}
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% sec: dist_shift %%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Real-world distribution shifts}
-\paragraph*{Proposed by} the Marabou team.
-\paragraph*{Motivation}
-While robustness against handcrafted perturbations (e.g., norm-bounded) for perception networks are more commonly investigated, robustness against real-world distribution shifts~\cite{wu2022toward} are less studied but of practical interests. This benchmark set contains queries for verifying the latter type of robustness.  
-\paragraph*{Networks} The network is a concatenation of a generative model and a MNIST classifier. The generative model is trained to take in an unperturbed image and an embedding of a particular type of distribution shifts in latent space, and produce a perturbed image. The distribution shift captured in this case is the "shear" perturbation. 
-\paragraph*{Specifications} The verification task is to certify that a classifier correctly classifies all images in a perturbation set, which is a set of images generated by the generative model given a fixed image and a ball centering the mean perturbations on this image (in the latent space). This mean perturbation is computed by a prior network.
-\paragraph*{Link} \url{https://github.com/wu-haoze/dist-shift-vnn-comp}
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% sec: cora %%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{CORA Benchmark}
-\paragraph*{Proposed by} the CORA team.
-\paragraph*{Motivation}
-The verification of neural networks can be quite slow, i.e., the verification of a single instance can take multiple days -- which is often hard to justify, particularly in safety-critical scenarios. To encourage the fast verification of neural networks, our benchmark focuses on the verification time by setting a small timeout and testing three different (adversarial) training techniques that aim to ease the verifiability.
-
-
-\paragraph*{Networks} The benchmark consists of one ReLU-neural network architecture (7x250 + ReLU), which was trained on three datasets, (MNIST, SVHN, and CIFAR10), using three different (adversarial) training methods, i.e., standard (point), interval-bound propagation, and set-based. Both interval-bound propagation and set-based training are training methods that improve the robustness of the trained neural network and aim to ease later verification. The neural networks are taken from the first evaluation run of~\cite{koller_et_al_2024}; please refer to~\cite{koller_et_al_2024} for the training details.
-\paragraph*{Specifications} All networks are trained on classification tasks. The goal is to verify that no image within a given input set is incorrectly classified.
-\paragraph*{Link} \url{https://github.com/kollerlukas/cora-vnncomp2024-benchmark}
-
-\section{Results}
-
-
-\paragraph{Results} \autoref{tab:score} shows the results. We report the Rank (\textbf{\#}) and  \textbf{\%} is the percentage of solved problems over all problem instances of the corresponding benchmark.   The last two columns break down the number of problems each verifier was able to verify and falsify. For example, for ACAS Xu, all tools other than \crowndefault{} were able to verify all 186 problems (139 + 47), and \crowndefault{} was only able to solve 113 problems (78 + 35), which is 60.8\% of the total problems. 
-
-\newcommand{\nsTwentyFour}{\texttt{NeuralSAT}$_\text{VNN-COMP'24}$}
-\newcommand{\ns}{\texttt{NeuralSAT}}
-
-\begin{table}
-  \small
-  \centering
-  \caption{Results over VNN-COMP'24 Benchmarks}\label{tab:score}
-       \renewcommand{\arraystretch}{0.6}
-  \begin{tabular}{c|ccr|rr}
-    \toprule
-    \textbf{Benchmark} & \textbf{\#} & \textbf{Tool} & \textbf{\%} & \textbf{Verify} & \textbf{Falsify}  \\
-
-\midrule
-\multirow{4}{*}{\rotatebox[origin=c]{0}{ACAS Xu}}
-& 1 & \crown{} & 100.0\% & \textbf{139} & \textbf{47} \\
-& 1 & \ns{} & 100.0\% & \textbf{139} & \textbf{47} \\
-& 1 & \nsTwentyFour{} & 100.0\% & \textbf{139} & \textbf{47} \\
-& 4 & \crowndefault{} & 60.8\% & 78 & 35 \\
-\midrule
-\multirow{4}{*}{\rotatebox[origin=c]{0}{Cgan}} 
-& 1 & \crown{} & 100.0\% & \textbf{8} & \textbf{13} \\
-& 1 & \ns{} & 100.0\% & \textbf{8} & \textbf{13} \\
-& 1 & \nsTwentyFour{} & 100.0\% & \textbf{8} & \textbf{13} \\
-& 4 & \crowndefault{} & 33.3\% & 0 & 7 \\
-\midrule
-\multirow{4}{*}{\rotatebox[origin=c]{0}{Cifar100}} 
-& 1 & \crown{} & 77.5\% & \textbf{123} & \textbf{32} \\
-& 2 & \ns{} & 76.5\% & 122 & 31 \\
-& 3 & \crowndefault{} & 71.0\% & 110 & \textbf{32} \\
-& 4 & \nsTwentyFour{} & 64.5\% & 98 & 31 \\
-\midrule
-\multirow{4}{*}{\rotatebox[origin=c]{0}{Collins Rul CNN}} 
-& 1 & \crown{} & 100.0\% & \textbf{30} & \textbf{32} \\
-& 1 & \crowndefault{} & 100.0\% & \textbf{30} & \textbf{32} \\
-& 1 & \ns{} & 100.0\% & \textbf{30} & \textbf{32} \\
-& 1 & \nsTwentyFour{} & 100.0\% & \textbf{30} & \textbf{32} \\
-\midrule
-\multirow{4}{*}{\rotatebox[origin=c]{0}{Cora}} 
-& 1 & \crown{} & 43.9\% & \textbf{24} & \textbf{134} \\
-& 1 & \crowndefault{} & 43.9\% & \textbf{24} & \textbf{134} \\
-& 1 & \ns{} & 43.9\% & \textbf{24} & \textbf{134} \\
-& 1 & \nsTwentyFour{} & 43.9\% & \textbf{24} & \textbf{134} \\
-\midrule
-\multirow{4}{*}{\rotatebox[origin=c]{0}{Dist Shift}} 
-& 1 & \crown{} & 100.0\% & \textbf{64} & \textbf{8} \\
-& 1 & \ns{} & 100.0\% & \textbf{64} & \textbf{8} \\
-& 3 & \nsTwentyFour{} & 98.6\% & 63 & \textbf{8} \\
-& 4 & \crowndefault{} & 94.4\% & 60 & \textbf{8} \\
-\midrule
-\multirow{4}{*}{\rotatebox[origin=c]{0}{Linearize NN}} 
-& 1 & \crown{} & 100.0\% & \textbf{59} & \textbf{1} \\
-& 1 & \ns{} & 100.0\% & \textbf{59} & \textbf{1} \\
-& 1 & \nsTwentyFour{} & 100.0\% & \textbf{59} & \textbf{1} \\
-& 4 & \crowndefault{} & 68.3\% & 40 & \textbf{1} \\
-\midrule
-\multirow{4}{*}{\rotatebox[origin=c]{0}{Meta Room}} 
-& 1 & \crown{} & 98.0\% & \textbf{91} & \textbf{7} \\
-& 1 & \ns{} & 98.0\% & \textbf{91} & \textbf{7} \\
-& 1 & \nsTwentyFour{} & 98.0\% & \textbf{91} & \textbf{7} \\
-& 4 & \crowndefault{} & 0.0\% & 0 & 0 \\
-\midrule
-\multirow{4}{*}{\rotatebox[origin=c]{0}{Nn4sys}} 
-& 1 & \crown{} & 100.0\% & \textbf{194} & 0 \\
-& 1 & \ns{} & 100.0\% & \textbf{194} & 0 \\
-& 1 & \nsTwentyFour{} & 100.0\% & \textbf{194} & 0 \\
-& 4 & \crowndefault{} & 4.1\% & 8 & 0 \\
-\midrule
-\multirow{4}{*}{\rotatebox[origin=c]{0}{Safe NLP}} 
-& 1 & \crown{} & 98.1\% & \textbf{411} & \textbf{648} \\
-& 1 & \ns{} & 98.1\% & \textbf{411} & \textbf{648} \\
-& 3 & \crowndefault{} & 96.9\% & 401 & 646 \\
-& 4 & \nsTwentyFour{} & 94.3\% & 378 & 640 \\
-\midrule
-\multirow{4}{*}{\rotatebox[origin=c]{0}{Tiny ImageNet}} 
-& 1 & \crown{} & 91.5\% & \textbf{140} & \textbf{43} \\
-& 2 & \ns{} & 91.0\% & 139 & \textbf{43} \\
-& 3 & \crowndefault{} & 89.5\% & 136 & \textbf{43} \\
-& 4 & \nsTwentyFour{} & 72.5\% & 102 & \textbf{43} \\
-\midrule
-\multirow{4}{*}{\rotatebox[origin=c]{0}{TLL Verify Bench}} 
-& 1 & \crown{} & 100.0\% & \textbf{15} & \textbf{17} \\
-& 1 & \ns{} & 100.0\% & \textbf{15} & \textbf{17} \\
-& 1 & \nsTwentyFour{} & 100.0\% & \textbf{15} & \textbf{17} \\
-& 4 & \crowndefault{} & 65.6\% & 5 & 16 \\
-\midrule
-\multirow{4}{*}{\rotatebox[origin=c]{0}{\textbf{Overall}}} 
-& 1 & \crown{} & 88.8\% & \textbf{1298} & \textbf{982} \\
-& 2 & \ns{} & 88.7\% & 1296 & 981 \\
-& 3 & \nsTwentyFour{} & 84.7\% & 1201 & 973 \\
-& 4 & \crowndefault{} & 71.9\% & 892 & 954 \\
-\bottomrule
-  \end{tabular}
-\end{table}
+% \begin{figure}[htbp]
+%     \centering
+%     \includegraphics[width=0.9\columnwidth]{./figure/NLP-Flow.png}
+%     \caption{\small\emph{Generic approach to generating the NLP verification pipelines~\cite{casadio2023antonio,casadio2024nlp} deployed to obtain the safeNLP benchmark.}}
+%    \label{fig:antonio}
+% \end{figure}
+
+% \paragraph*{Proposed by} Marco Casadio, Ekaterina Komendantskaya, Luca Arnaboldi, Tanvi Dinkar.
+
+% \paragraph*{Motivation}
+% While considerable research has been dedicated to the verification of DNN-based systems in domains such as computer vision, there has been a notable lack of focus on the verification of natural language processing (NLP) systems. This is particularly critical given the rise of conversational agents across various domains, where inaccurate or misleading responses can cause real-world harm. For example, recent EU legislation~\cite{EUlaw} requires chatbots to disclose their non-human nature when queried, and developers of the chatbots should provide firm, and if possible, formal, guarantees that such disclosure will be given in an accurate manner. Medical assistants give another example where formal guarantees about the conversational agent responses are needed in order to safeguard against chatbots  generating harmful medical advice~\cite{bickmore2018patient}. While some initial work has been done in this area of NLP verification~\cite{jia2019certified,huang2019achieving,welbl2020towards,zhang2021certified,wang2023robustness,ko2019popqorn,du2021cert,shi2020robustness,bonaert2021fast}, no agreement on commonly  accepted benchmarks has been reached in this domain. To address this gap, we introduce safeNLP, the first such benchmark. 
+
+% \paragraph*{Application}
+% In~\cite{casadio2024nlp}, we have undertaken a large-scale study of the existing literature on  NLP verification, and distilled common patterns among the existing approaches. Usually, given a dataset consisting of sentences divided into classes, Large Language Models (LLMs) are used to embed these sentences into real-vector spaces, after which smaller neural networks are trained to classify the embedded vectors (relative to the originally given classes). For verification, one can generate meaning-preserving sentence perturbations, again embed them into vector spaces, and verify that subspaces that contain the (embeddings of) the perturbed sentences are classified correctly. Also, in line with classical verification pipelines~\cite{CasadioKDKKAR22}, one can use these input subspaces to train the neural network to be robust on them.  The problem was that each of the existing approaches~\cite{jia2019certified,huang2019achieving,welbl2020towards,zhang2021certified,wang2023robustness,ko2019popqorn,du2021cert,shi2020robustness,bonaert2021fast} used parts of this pipeline in different ways, which made it difficult to compare or audit the results. In~\cite{casadio2023antonio,casadio2024nlp}, we made a generic implementation of this pipeline, 
+% %(released as a Python package ANTONIO), 
+% where each of the components of the pipeline is implemented in a modular and transparent way. For example, we can choose  and vary embedding functions, training modes, algorithms for sentence perturbations and algorithms for robust training, independently and modularly; as shown in Figure~\ref{fig:antonio}. This implementation was used to generate the presented VNNCOMP benchmark.
+
+% \begin{itemize}
+%     \item \emph{Datasets:} Although there was no clear consensus in~\cite{jia2019certified,huang2019achieving,welbl2020towards,zhang2021certified,wang2023robustness,ko2019popqorn,du2021cert,shi2020robustness,bonaert2021fast}, the most frequently used dataset in prior works was the IMDB dataset containing film reviews. Its disadvantage is unclear relation to safety critical domains that usually motivate verification efforts. On the other hand, none of the previously used datasets concerned safety-critical applications of NLP. We decided to address this problem, and therefore applied our generic NLP verification pipeline on two safety-critical datasets:  R-U-A-Robot~\cite{gros2021ruarobot}, which focuses on the chatbot disclosure problem, and Medical~\cite{abercrombie2022risk}, which addresses the issue of harmful advice provided by medical chatbots. Both datasets are pre-processed into two classes, positive and negative, to simplify the verification task. For further details on the pre-processing steps and datasets, see~\cite{casadio2024nlp} and the \href{https://github.com/ANTONIONLP/safeNLP}{benchmark GitHub repository}.
+%     \item \emph{Input Space:} In both datasets, sentences are transformed into fixed-size vector representations, i.e. embeddings, which serve as the inputs to the neural networks. For this VNNCOMP benchmark, we used Sentence-BERT~\cite{reimers-gurevych-2019-sentence}. 
+%     %This part is handled by ANTONIO, which employs .
+%     \item \emph{What to Verify:} For each dataset, we generated meaning-preseving sentence perturbations at character and word level as in Moradi et al.~\cite{moradi2021evaluating} and at sentence level with Vicuna~\cite{vicuna2023}. For each positive sentence in the dataset, the smallest hypercube containing the embeddings of all of its obtained perturbations formed one input subspace for verification. Such subspaces were obtained for all positive sentences from the given data set, and were subject to VNCCOMP verification challenge. 
+%     %ANTONIO’s modular approach allows us to independently chose both the perturbation algorithms and the subspaces form.
+%     %The goal is to verify that every point within these subspaces is classified as positive by the network.
+%     \item \emph{A note on broader impact:} Verified models can serve as filters for larger NLP systems: e.g. to screen inputs to ensure they meet safety criteria before being passed on to more complex models.
+% \end{itemize}
+
+% \paragraph*{Networks} The safeNLP benchmark includes two neural networks, each corresponding to a different dataset (R-U-A-Robot and Medical). Both networks share the same architecture, consisting of two fully-connected layers. The hidden layer has 128 units with a ReLU activation function, while the output layer has 2 units representing the two classification classes (positive/negative). To enhance the robustness of the networks to the specified safety requirements, they are trained using a custom PGD (Projected Gradient Descent)~\cite{madry2018towards} adversarial training technique. In particular, the PGD attack explores the above-mentioned subspaces of the input space (cf. also Figure~\ref{fig:antonio}). 
+% %ANTONIO plays a crucial role in this process, allowing us to
+% %flexibly select the training mode and robustness algorithm. Specifically, we 
+% %customise the PGD algorithm to work effectively with the subspaces used in our specifications.
+
+% \paragraph*{Specifications} The benchmark uses hyper-rectangles in the 30-dimensional embedding space as the subspaces of choice, offering a computationally efficient way to define more precise and adaptable regions compared to the traditional $\epsilon$-cubes. 
+% %These hyper-rectangles are defined by a series of lower and upper bounds. 
+% The specifications require verifying that, for a given network and hyper-rectangle, every point within the hyper-rectangle is classified as the positive class by the network. To meet time constraints, we randomly select 1,080 such specifications, each linked to one of the two networks and a corresponding hyper-rectangle, with a timeout of 20 seconds per specification.
+
+% \paragraph*{Link} \url{https://github.com/ANTONIONLP/safeNLP}
+
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%% sec: dist_shift %%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \subsection{Real-world distribution shifts}
+% \paragraph*{Proposed by} the Marabou team.
+% \paragraph*{Motivation}
+% While robustness against handcrafted perturbations (e.g., norm-bounded) for perception networks are more commonly investigated, robustness against real-world distribution shifts~\cite{wu2022toward} are less studied but of practical interests. This benchmark set contains queries for verifying the latter type of robustness.  
+% \paragraph*{Networks} The network is a concatenation of a generative model and a MNIST classifier. The generative model is trained to take in an unperturbed image and an embedding of a particular type of distribution shifts in latent space, and produce a perturbed image. The distribution shift captured in this case is the "shear" perturbation. 
+% \paragraph*{Specifications} The verification task is to certify that a classifier correctly classifies all images in a perturbation set, which is a set of images generated by the generative model given a fixed image and a ball centering the mean perturbations on this image (in the latent space). This mean perturbation is computed by a prior network.
+% \paragraph*{Link} \url{https://github.com/wu-haoze/dist-shift-vnn-comp}
+
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%% sec: cora %%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \subsection{CORA Benchmark}
+% \paragraph*{Proposed by} the CORA team.
+% \paragraph*{Motivation}
+% The verification of neural networks can be quite slow, i.e., the verification of a single instance can take multiple days -- which is often hard to justify, particularly in safety-critical scenarios. To encourage the fast verification of neural networks, our benchmark focuses on the verification time by setting a small timeout and testing three different (adversarial) training techniques that aim to ease the verifiability.
+
+
+% \paragraph*{Networks} The benchmark consists of one ReLU-neural network architecture (7x250 + ReLU), which was trained on three datasets, (MNIST, SVHN, and CIFAR10), using three different (adversarial) training methods, i.e., standard (point), interval-bound propagation, and set-based. Both interval-bound propagation and set-based training are training methods that improve the robustness of the trained neural network and aim to ease later verification. The neural networks are taken from the first evaluation run of~\cite{koller_et_al_2024}; please refer to~\cite{koller_et_al_2024} for the training details.
+% \paragraph*{Specifications} All networks are trained on classification tasks. The goal is to verify that no image within a given input set is incorrectly classified.
+% \paragraph*{Link} \url{https://github.com/kollerlukas/cora-vnncomp2024-benchmark}
+
+% \section{Results}
+
+
+% \paragraph{Results} \autoref{tab:score} shows the results. We report the Rank (\textbf{\#}) and  \textbf{\%} is the percentage of solved problems over all problem instances of the corresponding benchmark.   The last two columns break down the number of problems each verifier was able to verify and falsify. For example, for ACAS Xu, all tools other than \crowndefault{} were able to verify all 186 problems (139 + 47), and \crowndefault{} was only able to solve 113 problems (78 + 35), which is 60.8\% of the total problems. 
+
+% \newcommand{\nsTwentyFour}{\texttt{NeuralSAT}$_\text{VNN-COMP'24}$}
+% \newcommand{\ns}{\texttt{NeuralSAT}}
+
+% \begin{table}
+%   \small
+%   \centering
+%   \caption{Results over VNN-COMP'24 Benchmarks}\label{tab:score}
+%        \renewcommand{\arraystretch}{0.6}
+%   \begin{tabular}{c|ccr|rr}
+%     \toprule
+%     \textbf{Benchmark} & \textbf{\#} & \textbf{Tool} & \textbf{\%} & \textbf{Verify} & \textbf{Falsify}  \\
+
+% \midrule
+% \multirow{4}{*}{\rotatebox[origin=c]{0}{ACAS Xu}}
+% & 1 & \crown{} & 100.0\% & \textbf{139} & \textbf{47} \\
+% & 1 & \ns{} & 100.0\% & \textbf{139} & \textbf{47} \\
+% & 1 & \nsTwentyFour{} & 100.0\% & \textbf{139} & \textbf{47} \\
+% & 4 & \crowndefault{} & 60.8\% & 78 & 35 \\
+% \midrule
+% \multirow{4}{*}{\rotatebox[origin=c]{0}{Cgan}} 
+% & 1 & \crown{} & 100.0\% & \textbf{8} & \textbf{13} \\
+% & 1 & \ns{} & 100.0\% & \textbf{8} & \textbf{13} \\
+% & 1 & \nsTwentyFour{} & 100.0\% & \textbf{8} & \textbf{13} \\
+% & 4 & \crowndefault{} & 33.3\% & 0 & 7 \\
+% \midrule
+% \multirow{4}{*}{\rotatebox[origin=c]{0}{Cifar100}} 
+% & 1 & \crown{} & 77.5\% & \textbf{123} & \textbf{32} \\
+% & 2 & \ns{} & 76.5\% & 122 & 31 \\
+% & 3 & \crowndefault{} & 71.0\% & 110 & \textbf{32} \\
+% & 4 & \nsTwentyFour{} & 64.5\% & 98 & 31 \\
+% \midrule
+% \multirow{4}{*}{\rotatebox[origin=c]{0}{Collins Rul CNN}} 
+% & 1 & \crown{} & 100.0\% & \textbf{30} & \textbf{32} \\
+% & 1 & \crowndefault{} & 100.0\% & \textbf{30} & \textbf{32} \\
+% & 1 & \ns{} & 100.0\% & \textbf{30} & \textbf{32} \\
+% & 1 & \nsTwentyFour{} & 100.0\% & \textbf{30} & \textbf{32} \\
+% \midrule
+% \multirow{4}{*}{\rotatebox[origin=c]{0}{Cora}} 
+% & 1 & \crown{} & 43.9\% & \textbf{24} & \textbf{134} \\
+% & 1 & \crowndefault{} & 43.9\% & \textbf{24} & \textbf{134} \\
+% & 1 & \ns{} & 43.9\% & \textbf{24} & \textbf{134} \\
+% & 1 & \nsTwentyFour{} & 43.9\% & \textbf{24} & \textbf{134} \\
+% \midrule
+% \multirow{4}{*}{\rotatebox[origin=c]{0}{Dist Shift}} 
+% & 1 & \crown{} & 100.0\% & \textbf{64} & \textbf{8} \\
+% & 1 & \ns{} & 100.0\% & \textbf{64} & \textbf{8} \\
+% & 3 & \nsTwentyFour{} & 98.6\% & 63 & \textbf{8} \\
+% & 4 & \crowndefault{} & 94.4\% & 60 & \textbf{8} \\
+% \midrule
+% \multirow{4}{*}{\rotatebox[origin=c]{0}{Linearize NN}} 
+% & 1 & \crown{} & 100.0\% & \textbf{59} & \textbf{1} \\
+% & 1 & \ns{} & 100.0\% & \textbf{59} & \textbf{1} \\
+% & 1 & \nsTwentyFour{} & 100.0\% & \textbf{59} & \textbf{1} \\
+% & 4 & \crowndefault{} & 68.3\% & 40 & \textbf{1} \\
+% \midrule
+% \multirow{4}{*}{\rotatebox[origin=c]{0}{Meta Room}} 
+% & 1 & \crown{} & 98.0\% & \textbf{91} & \textbf{7} \\
+% & 1 & \ns{} & 98.0\% & \textbf{91} & \textbf{7} \\
+% & 1 & \nsTwentyFour{} & 98.0\% & \textbf{91} & \textbf{7} \\
+% & 4 & \crowndefault{} & 0.0\% & 0 & 0 \\
+% \midrule
+% \multirow{4}{*}{\rotatebox[origin=c]{0}{Nn4sys}} 
+% & 1 & \crown{} & 100.0\% & \textbf{194} & 0 \\
+% & 1 & \ns{} & 100.0\% & \textbf{194} & 0 \\
+% & 1 & \nsTwentyFour{} & 100.0\% & \textbf{194} & 0 \\
+% & 4 & \crowndefault{} & 4.1\% & 8 & 0 \\
+% \midrule
+% \multirow{4}{*}{\rotatebox[origin=c]{0}{Safe NLP}} 
+% & 1 & \crown{} & 98.1\% & \textbf{411} & \textbf{648} \\
+% & 1 & \ns{} & 98.1\% & \textbf{411} & \textbf{648} \\
+% & 3 & \crowndefault{} & 96.9\% & 401 & 646 \\
+% & 4 & \nsTwentyFour{} & 94.3\% & 378 & 640 \\
+% \midrule
+% \multirow{4}{*}{\rotatebox[origin=c]{0}{Tiny ImageNet}} 
+% & 1 & \crown{} & 91.5\% & \textbf{140} & \textbf{43} \\
+% & 2 & \ns{} & 91.0\% & 139 & \textbf{43} \\
+% & 3 & \crowndefault{} & 89.5\% & 136 & \textbf{43} \\
+% & 4 & \nsTwentyFour{} & 72.5\% & 102 & \textbf{43} \\
+% \midrule
+% \multirow{4}{*}{\rotatebox[origin=c]{0}{TLL Verify Bench}} 
+% & 1 & \crown{} & 100.0\% & \textbf{15} & \textbf{17} \\
+% & 1 & \ns{} & 100.0\% & \textbf{15} & \textbf{17} \\
+% & 1 & \nsTwentyFour{} & 100.0\% & \textbf{15} & \textbf{17} \\
+% & 4 & \crowndefault{} & 65.6\% & 5 & 16 \\
+% \midrule
+% \multirow{4}{*}{\rotatebox[origin=c]{0}{\textbf{Overall}}} 
+% & 1 & \crown{} & 88.8\% & \textbf{1298} & \textbf{982} \\
+% & 2 & \ns{} & 88.7\% & 1296 & 981 \\
+% & 3 & \nsTwentyFour{} & 84.7\% & 1201 & 973 \\
+% & 4 & \crowndefault{} & 71.9\% & 892 & 954 \\
+% \bottomrule
+%   \end{tabular}
+% \end{table}
 
 
 
