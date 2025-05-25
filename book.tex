@@ -540,22 +540,20 @@ For the brightness robustness property:
 \section{The VNN-LIB  Specification Language}
 
 
-The VNN-LIB standard~\cite{demarchi2023supporting,vnnlib} defines a format for specifying benchmarks in neural network verification. 
-Recall that a neural network verification tool takes as input a verification instance consisting of a neural network and a property to be verified. The VNN-LIB standard defines a common format for these instances, allowing different verification tools to share and compare results.
+The VNN-LIB standard~\cite{demarchi2023supporting,vnnlib} defines a format for specifying benchmarks --- descriptions of neural networks and properties --- in neural network verification. Such a standard format enables the sharing of benchmarks across different tools and platforms, facilitating evaluations and comparisons of their performance. The international VNN-COMP competition~\cite{brix2024fifth} also VNN-LIB to evaluate the performance of different neural network verification tools.
+
 
 Specifically, VNN-LIB defines a common format for the following components:
 \begin{itemize}
-    \item \textbf{Network (or model) representation} in the ONNX format~\cite{onnx}.
+    \item \textbf{Neural Network (or model) representation} in the ONNX format~\cite{onnx}.
     \item \textbf{Property specification} in SMT-LIB format~\cite{barrett2010smt}.
 \end{itemize}
 
 \subsection{ONNX: Modelling Neural Networks}
 
-VNN-LIB uses the \textbf{ONNX} (Open Neural Network Exchange) format~\cite{onnx} to represent neural networks. ONNX is an open-source format for representing machine learning models, allowing interoperability between different frameworks and tools. It provides a standardized way to describe the structure and parameters of a neural network, making it easier to share and verify models across different platforms.
-ONNX is widely used in the machine learning community and is supported by many popular frameworks, including PyTorch and TensorFlow.
+\textbf{ONNX} (Open Neural Network Exchange)~\cite{onnx} is an open source and widely adopted standard for representing neural networks. It provides a common format for representing the structure and parameters of neural networks, enabling interoperability between different ML frameworks and tools.
 
-
-\paragraph{Supported ONNX Operators} VNN-LIB supports a subset of ONNX operators that cover most sequential feedforward networks used in verification.
+\paragraph{Supported ONNX Operators} VNN-LIB supports a subset of ONNX operators that cover most sequential feedforward networks used in NN verification. These operators include:
 
 \begin{itemize}
     \item \texttt{Add, Sub, Gemm, MatMul}: basic arithmetic and matrix operations.
@@ -565,15 +563,25 @@ ONNX is widely used in the machine learning community and is supported by many p
     \item \texttt{Concat, Dropout, Unsqueeze}: tensor operations.
 \end{itemize}
 
-\textbf{Note:} Preprocessing (e.g., normalization) should not be included in the model itself to keep property alignment clear.
+%\textbf{Note:} Preprocessing (e.g., normalization) should not be included in the model itself to keep property alignment clear.
 
-\paragraph{Example} For the network in \autoref{fig:dnn}, the ONNX representation would include:
+\begin{example} For the network in \autoref{fig:dnn}, the ONNX representation would include:
 \begin{itemize}
     \item Input: $x_1, x_2$.
     \item Hidden layer: $x_3 = ReLU(-0.5x_1 + 0.5x_2 + 1.0)$, $x_4 = ReLU(0.5x_1 - 0.5x_2 + 1.0)$.
     \item Output: $x_5 = -x_3 + x_4 - 1$.
-\end{itemize}
+\end{itemize} 
+The ONNX representation would look like:\tvn{could we put in the exact ONNX code?}
 
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+(opset_version 13)
+(node (name "input") (op_type "Input") (inputs) (outputs ("x1" "x2")))
+(node (name "hidden1") (op_type "ReLU") (inputs ("x1" "x2")) (outputs ("x3")))
+(node (name "hidden2") (op_type "ReLU") (inputs ("x1" "x2")) (outputs ("x4")))
+(node (name "output") (op_type "Add") (inputs ("x3" "x4")) (outputs ("x5")))
+\end{lstlisting}
+
+\end{example}
 
 
 \subsection{VNN-LIB: Property Specification Language}
@@ -594,7 +602,7 @@ This includes:
 Properties are encoded in \textbf{SMT-LIB2}, referencing input/output variable names consistent with ONNX.
 
 
-\paragraph{Example: ACAS XU Network}
+\begin{example}[ACAS XU Network]
 
 A typical ACAS XU network maps 5D input to 5D output via 6 layers of 50 ReLU neurons. A local robustness property is:
 \[
@@ -604,8 +612,8 @@ A typical ACAS XU network maps 5D input to 5D output via 6 layers of 50 ReLU neu
 y_0 \leq y_1, \quad y_0 \leq y_2, \quad y_0 \leq y_3, \quad y_0 \leq y_4
 \]
 
-\noindent In SMT-LIB:
-\begin{lstlisting}
+In SMT-LIB\tvn{is this also the VNN-LIB code? If not, add the VNN-LIB code}
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
 (declare-fun X0 () Real)
 ...
 (declare-fun FC6_0 () Real)
@@ -616,8 +624,9 @@ y_0 \leq y_1, \quad y_0 \leq y_2, \quad y_0 \leq y_3, \quad y_0 \leq y_4
 (assert (<= (- FC6_0 FC6_1) 0.0))
 ...
 \end{lstlisting}
+\end{example}
 
-\paragraph{Example: MNIST Network}
+\begin{example}[MNIST Network]
 
 A CNN model for MNIST uses:
 \begin{itemize}
@@ -634,7 +643,10 @@ A robustness property around a sample $\hat{x}$ classified as class 9:
 \forall j \in [0,8] : y_j - y_9 \leq 0
 \]
 
-\subsubsection*{Variable Naming Convention}
+\tvn{Need the VNN-LIB code here.}
+\end{example}
+
+\subsubsection*{Variable Naming Convention}\tvn{what's the purpose of this section?}
 \begin{itemize}
     \item 1D tensor: \texttt{X\_0, X\_1, ..., X\_n}
     \item 2D tensor: \texttt{X\_0-0, X\_0-1, ..., X\_n-m}
