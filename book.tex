@@ -823,7 +823,7 @@ For a network\tvn{does this have to be FC?} with $L$ layers, $N$ ReLU neurons pe
 \alpha = &\bigwedge_{\begin{smallmatrix}i \in [1,L]\\ j \in [1,N]\end{smallmatrix}}~~v_{i,j} \equiv ReLU \Big( \sum_{k \in [1,N]} (w_{i-1,j,k} \cdot v_{i-1,j}) + b_{i,j}\Big)    \\
  = &\bigwedge_{\begin{smallmatrix}i \in [1,L]\\ j \in [1,N]\end{smallmatrix}}~~v_{i,j} \equiv \max \Big( \sum_{k \in [1,N]} (w_{i-1,j,k} \cdot v_{i-1,j}) + b_{i,j}, 0 \Big)
 \end{align*}
-With this definition DNN verification can be formulated as checking the satisfiability of the formula:
+With this definition NNV can be formulated as checking the satisfiability of the formula:
 \begin{equation}\label{eq:prob}
   \alpha \land \phi_{in} \land \neg \phi_{out}
 \end{equation}
@@ -846,12 +846,14 @@ We can then check the satisfiability of the formula $\alpha \land \phi_{in} \lan
 
 \end{example}
 
-\section{Activation Pattern Search} For the widely-used ReLU activation problem, the DNN verification problem becomes a search for \emph{activation patterns}, i.e., boolean assignments representing activation status of neurons, that lead to satisfaction the formula in \autoref{eq:prob}. 
+\section{Activation Pattern Search} For ReLU-based DNNs, NNV becomes a search for \emph{activation patterns}, i.e., boolean assignments representing activation status of neurons, that lead to satisfaction the formula in \autoref{eq:prob}. 
 
 Modern DNN verification techniques~\cite{bunel2020branch,wang2021beta,ferrari2022complete,duong2024harnessing,duong2023dpllt,ovalbab,katz2019marabou,bak2021nnenum} all adopt this idea and search for satisfying activation patterns.
 
-
+\tvn{example of activation pattern search? using the above DNN example}
 \section{Complexity}\label{sec:complexity}
+
+ReLU-based NNV is \NP{}-complete~\cite{katz2017reluplex,salzer2023reachability}. This means that the problem of checking whether a given ReLu-based DNN satisfies a property is computationally hard, and no polynomial-time algorithm is known to solve it in the general case.
 
 
 
