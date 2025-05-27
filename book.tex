@@ -528,8 +528,6 @@ A fully connected feed-forward neural network (FNN), shown below, is an FFN wher
 
 
 
-
-
 \subsection{Challenges}
 
 \paragraph{Formalization}
@@ -669,7 +667,7 @@ Specifically, VNN-LIB defines a common format for the following components:
     \item Hidden layer: $x_3 = ReLU(-0.5x_1 + 0.5x_2 + 1.0)$, $x_4 = ReLU(0.5x_1 - 0.5x_2 + 1.0)$.
     \item Output: $x_5 = -x_3 + x_4 - 1$.
 \end{itemize} 
-The ONNX representation would look like:\tvn{could we put in the exact ONNX code?}
+The ONNX representation would look like:\tvn{could we put in the exact ONNX code?}\hd{working on it}
 
 \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
 (opset_version 13)
@@ -710,7 +708,7 @@ A typical ACAS XU network maps 5D input to 5D output via 6 layers of 50 ReLU neu
 y_0 \leq y_1, \quad y_0 \leq y_2, \quad y_0 \leq y_3, \quad y_0 \leq y_4
 \]
 
-In SMT-LIB\tvn{is this also the VNN-LIB code? If not, add the VNN-LIB code}
+In SMT-LIB\tvn{is this also the VNN-LIB code? If not, add the VNN-LIB code}\hd{not VNNLIB}
 \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
 (declare-fun X0 () Real)
 ...
@@ -741,10 +739,10 @@ A robustness property around a sample $\hat{x}$ classified as class 9:
 \forall j \in [0,8] : y_j - y_9 \leq 0
 \]
 
-\tvn{Need the VNN-LIB code here.}
+\tvn{Need the VNN-LIB code here.}\hd{Working on it}
 \end{example}
 
-\subsubsection*{Variable Naming Convention}\tvn{what's the purpose of this section?}
+\subsubsection*{Variable Naming Convention}\tvn{what's the purpose of this section?}\hd{seems unnecessary}
 \begin{itemize}
     \item 1D tensor: \texttt{X\_0, X\_1, ..., X\_n}
     \item 2D tensor: \texttt{X\_0-0, X\_0-1, ..., X\_n-m}
@@ -952,7 +950,7 @@ The interval abstraction is efficient and easy to implement, but it can be impre
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=1.2\linewidth]{2_layers_example.png}
+    \includegraphics[width=1.2\linewidth]{figure/2_layers_example.png}
     \caption{Feed-forward neural network with 6 layers and 2 neurons per layer.}
     \label{fig:interval-network}
 \end{figure}
@@ -1043,7 +1041,7 @@ describes a line segment \ref{fig:2d1gzonotope-example} between \((1, 2)\) and \
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.5\linewidth]{2-generator-zonotope.png}
+    \includegraphics[width=0.5\linewidth]{figure/2-generator-zonotope.png}
     \caption{Illustration of a 2D zonotope with 2 generators per dimension.}
     \label{fig:2d2g-zonotope}
 \end{figure}
@@ -1109,7 +1107,7 @@ Activation functions such as ReLU are not affine and therefore do not preserve t
 
 \begin{figure}
     \centering
-    \includegraphics[width=1\linewidth]{zonotope_vs_interval.png}
+    \includegraphics[width=1\linewidth]{figure/zonotope_vs_interval.png}
     \caption{\textbf{Left:} ReLU's Interval approximation. \textbf{Right:} Zonotope approximation counterpart.}
     \label{fig:zonotope_vs_interval}
 \end{figure}
