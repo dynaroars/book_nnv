@@ -329,7 +329,8 @@ Several popular activation functions used in DNNs include ReLU, Sigmoid, Tanh, a
 
 For DNN verification, these non-linear activation functions make verification difficult because it introduces multiple possible outcomes for any input, making it hard to reason about the output of the network. For example, ReLU has two possible outputs for any input: 0 if the input is less than zero, and the input itself otherwise, and Sigmoid has a smooth curve with infinite possible outputs for any input.
 
-\autoref{tab:activation} summarizes the most common activation functions used in DNNs, their equations, output ranges, and key uses.
+\autoref{tab:activation} summarizes the most common activation functions used in DNNs, their equations, output ranges, and key uses.\tvn{need some simple piectures to demonstrate }
+
 \begin{table}
   \centering
   \caption{Summary of Common Neural Network Activation Functions}\label{tab:activation}
@@ -432,7 +433,7 @@ The outputs of the hidden neurons  are computed the affine transformation and Re
 
 \section{Types of Neural Networks}
 
-\autoref{sec:nn-types} summarizes the most popular types of neural networks and their typical applications.
+\autoref{tab:nn-types} summarizes the most popular types of neural networks and their typical applications. \tvn{need some simple pictures (like \autoref{fig:dnn}) to illustrate each type used in DNN verif..}
 
 \begin{table}
 \caption{Popular Types of Neural Networks and Their Applications}\label{tab:nn-types}
@@ -462,7 +463,7 @@ Graph Neural Network & GNN & Social networks, chemistry, recommendation systems 
 
 \paragraph{Feed-Forward Network (FFN)} In an FFN information flows in one direction, from the input layer to hidden layers to the output layer (and thus no cycle).  
 
-A fully connected feed-forward neural network (FNN), shown below, is an FFN where every neuron in a layer is connected to every neuron in the next layer.
+A fully connected feed-forward neural network (FNN), shown below, is an FFN where every neuron in a layer is connected to every neuron in the next layer. \autoref{fig:dnn} is a simple FNN.
 \begin{center}
 \begin{tikzpicture}[scale=0.8, transform shape]
 % Input Layer
