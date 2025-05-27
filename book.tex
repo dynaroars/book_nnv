@@ -425,7 +425,7 @@ This means that the softmax function maps the input vector $x$ to a probability 
 
 
 \begin{example}
-Fig.~\ref{fig:dnn} shows a simple DNN with two inputs $x_1,x_2$, two hidden neurons $x_3,x_4$, and one output $x_5$. The weights of a neuron are shown on its incoming edges, and the bias is shown above or below each neuron. 
+Fig.~\ref{fig:dnn} shows a simple DNN with two inputs $x_1,x_2$, one hidden layer consisting of two (hidden) neurons $x_3,x_4$, and one output $x_5$. The weights of a neuron are shown on its incoming edges, and the bias is shown above or below each neuron. 
 
 The outputs of the hidden neurons  are computed the affine transformation and ReLU, e.g., $x_3 = \relu{-0.5x_1+0.5x_2+1.0}$. The output neuron is computed with just the affine transformation, i.e., $x_5=-x_3+x_4-1$.
 
@@ -446,11 +446,11 @@ The outputs of the hidden neurons  are computed the affine transformation and Re
 Feedforward Neural Network & FNN/MLP & General function approximation, tabular data \\
 Convolutional Neural Network & CNN & Image recognition, video analysis, medical imaging \\
 Recurrent Neural Network & RNN & Sequence data, time series, NLP, speech recognition \\
-Long Short-Term Memory & LSTM & Sequence prediction, language modeling, translation \\
-Gated Recurrent Unit & GRU & Sequence modeling, time series, language tasks \\
-Radial Basis Function Network & RBFN & Function approximation, time series, control \\
-Autoencoder & -- & Dimensionality reduction, denoising, unsupervised learning \\
-Generative Adversarial Network & GAN & Data generation, image synthesis, super-resolution \\
+% Long Short-Term Memory & LSTM & Sequence prediction, language modeling, translation \\
+% Gated Recurrent Unit & GRU & Sequence modeling, time series, language tasks \\
+% Radial Basis Function Network & RBFN & Function approximation, time series, control \\
+% Autoencoder & -- & Dimensionality reduction, denoising, unsupervised learning \\
+% Generative Adversarial Network & GAN & Data generation, image synthesis, super-resolution \\
 Transformer & -- & NLP, translation, summarization, image processing \\
 Graph Neural Network & GNN & Social networks, chemistry, recommendation systems \\
 \bottomrule
@@ -460,10 +460,11 @@ Graph Neural Network & GNN & Social networks, chemistry, recommendation systems 
 
 
 
-
 \paragraph{Feed-Forward Network (FFN)} In an FFN information flows in one direction, from the input layer to hidden layers to the output layer (and thus no cycle).  
 
-A fully connected feed-forward neural network (FNN), shown below, is an FFN where every neuron in a layer is connected to every neuron in the next layer. \autoref{fig:dnn} is a simple FNN.
+A \emph{fully connected} FFN is an FFN where every neuron in a layer is connected to every neuron in the next layer. \autoref{fig:ffn} shows a simple fully connected FFN with two hidden layers, and the DNN example in~\autoref{fig:dnn} is also fully connected.
+
+\begin{figure}
 \begin{center}
 \begin{tikzpicture}[scale=0.8, transform shape]
 % Input Layer
@@ -505,7 +506,8 @@ A fully connected feed-forward neural network (FNN), shown below, is an FFN wher
 
 \end{tikzpicture}
 \end{center}
-
+\caption{A Fully Connected Feed-Forward Neural Network (FNN).}\label{fig:ffn}
+\end{figure}
 
 
 
