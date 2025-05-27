@@ -743,34 +743,34 @@ A robustness property around a sample $\hat{x}$ classified as class 9:
 \tvn{Need the VNN-LIB code here.}\hd{Working on it}
 \end{example}
 
-\subsubsection*{Variable Naming Convention}\tvn{what's the purpose of this section?}\hd{seems unnecessary}
-\begin{itemize}
-    \item 1D tensor: \texttt{X\_0, X\_1, ..., X\_n}
-    \item 2D tensor: \texttt{X\_0-0, X\_0-1, ..., X\_n-m}
-    \item 3D tensor: \texttt{X\_0-0-0, ..., X\_i-j-k}
-\end{itemize}
+% \subsubsection*{Variable Naming Convention}\tvn{what's the purpose of this section?}\hd{seems unnecessary}
+% \begin{itemize}
+%     \item 1D tensor: \texttt{X\_0, X\_1, ..., X\_n}
+%     \item 2D tensor: \texttt{X\_0-0, X\_0-1, ..., X\_n-m}
+%     \item 3D tensor: \texttt{X\_0-0-0, ..., X\_i-j-k}
+% \end{itemize}
 
-\paragraph{Example: Tensor Flattening Algorithm}
-\begin{lstlisting}
-procedure flatten(x)
-    idx = 0
-    for a = 0 to N1
-      for b = 0 to N2
-        ...
-          for k = 0 to Nk
-            X_idx = x[a][b]...[k]
-            idx += 1
-\end{lstlisting}
+% \paragraph{Example: Tensor Flattening Algorithm}
+% \begin{lstlisting}
+% procedure flatten(x)
+%     idx = 0
+%     for a = 0 to N1
+%       for b = 0 to N2
+%         ...
+%           for k = 0 to Nk
+%             X_idx = x[a][b]...[k]
+%             idx += 1
+% \end{lstlisting}
 
-\noindent In SMT-LIB:
-\begin{lstlisting}
-(declare-fun X0 () Real) ; or (declare-fun X_0-0-0 () Real)
-...
-(assert (<= X0 (+ Xhat0 eps)))
-(assert (>= X0 (- Xhat0 eps)))
-...
-(assert (<= (- FC0_0 FC0_9) 0.0))
-\end{lstlisting}
+% \noindent In SMT-LIB:
+% \begin{lstlisting}
+% (declare-fun X0 () Real) ; or (declare-fun X_0-0-0 () Real)
+% ...
+% (assert (<= X0 (+ Xhat0 eps)))
+% (assert (>= X0 (- Xhat0 eps)))
+% ...
+% (assert (<= (- FC0_0 FC0_9) 0.0))
+% \end{lstlisting}
 
 
 \section{Challenges in Specifying Properties}\tvn{TODO}
