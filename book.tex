@@ -96,6 +96,7 @@
 
 \newcommand{\mbd}[1]{\iftoggle{usecomment}{{\color{magenta}{[MBD]: #1}}}{}}
 \newcommand{\hd}[1]{\iftoggle{usecomment}{{\color{blue}{[HD]: #1}}}{}}
+\newcommand{\hai}[1]{\iftoggle{usecomment}{{\color{blue}{[HD]: #1}}}{}}
 
 \newcommand{\mynew}[1]{\iftoggle{usecomment}{{\color{red}{[NEW]: #1}}}{}}
 
@@ -818,7 +819,7 @@ A counterexample showing this property violation is $\{x_1=-1, x_2=2\}$, from wh
  As with traditional software verification, DNN verification is often represented as a satisfiability problem.
 
 To do this, we first need to define a formula $\alpha$ to represent the network. Typically $\alpha$ is a conjunction ($\bigwedge$) of constraints representing the affine transformation (\autoref{sec:affine}) and activation function (\autoref{sec:activation}) of each neuron in the network.
-For a network\tvn{does this have to be FC?} with $L$ layers, $N$ ReLU neurons per layer, this formula is:
+For a network\tvn{does this have to be FC?}\hai{No, but FC is simpler to define than CNN} with $L$ layers, $N$ ReLU neurons per layer, this formula is:
 \begin{align*}
 \alpha = &\bigwedge_{\begin{smallmatrix}i \in [1,L]\\ j \in [1,N]\end{smallmatrix}}~~v_{i,j} \equiv ReLU \Big( \sum_{k \in [1,N]} (w_{i-1,j,k} \cdot v_{i-1,j}) + b_{i,j}\Big)    \\
  = &\bigwedge_{\begin{smallmatrix}i \in [1,L]\\ j \in [1,N]\end{smallmatrix}}~~v_{i,j} \equiv \max \Big( \sum_{k \in [1,N]} (w_{i-1,j,k} \cdot v_{i-1,j}) + b_{i,j}, 0 \Big)
@@ -851,6 +852,7 @@ We can then check the satisfiability of the formula $\alpha \land \phi_{in} \lan
 Modern DNN verification techniques~\cite{bunel2020branch,wang2021beta,ferrari2022complete,duong2024harnessing,duong2023dpllt,ovalbab,katz2019marabou,bak2021nnenum} all adopt this idea and search for satisfying activation patterns.
 
 \tvn{example of activation pattern search? using the above DNN example}
+\hai{I will pull the example from our paper, but I think we also should create a tree to demonstrate how it proceeds -- I will work on this}
 \section{Complexity}\label{sec:complexity}
 
 ReLU-based NNV is \NP{}-complete~\cite{katz2017reluplex,salzer2023reachability}. This means that the problem of checking whether a given ReLu-based DNN satisfies a property is computationally hard, and no polynomial-time algorithm is known to solve it in the general case.
