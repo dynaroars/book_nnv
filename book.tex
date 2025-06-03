@@ -314,7 +314,7 @@ The value of a neuron in the input layer is the input data. The value of a neuro
 \section{Neural Network as a Function}\label{sec:nn-function}
 
 
-A neural network can be viewed as a graph where each node carries out a specific operation. Collectively, this graph defines a function $f$ mapping vectors of real numbers to other vectors of real numbers: 
+A neural network (NN) can be viewed as a graph where each node carries out a specific operation. Collectively, this graph defines a function $f$ mapping vectors of real numbers to other vectors of real numbers: 
 
 \begin{align}
 f: \mathbb{R}^{n} \to \mathbb{R}^{m}
@@ -337,7 +337,7 @@ The hidden node $v$ applies some function \(f_v\) to \(x\), e.g., if  $f_v(x) = 
 
 Finally, the output node may also apply another function \(f_y\) to the output of the hidden node $v$, e.g., if $f_y(x) = \max(0, x)$, then the output returns the maximum of 0 and the value computed by $v$.  
 
-Thus, this network can be represented by the function $f: \mathbb{R} \to \mathbb{R}$:
+Thus, this NN can be represented by the function $f: \mathbb{R} \to \mathbb{R}$:
 \begin{align}
 f(x) = f_y(f_v(x)) = \max(0, 2x + 1)
 \end{align}
