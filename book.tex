@@ -311,6 +311,40 @@ The value of a neuron in the input layer is the input data. The value of a neuro
 % including Reluplex~\cite{katz2017reluplex}, Neurify~\cite{wang2018efficient}, and VeriNet~\cite{henriksen2020efficient},
 %because it does not change the semantics or complexity of the problem and is easier to reason about as we will show in \S\ref{sec:overview}.
 
+\section{Neural Network as a Function}\label{sec:nn-function}
+
+
+A neural network can be viewed as a graph where each node carries out a specific operation. Collectively, this graph defines a function $f$ mapping vectors of real numbers to other vectors of real numbers: 
+
+\begin{align}
+f: \mathbb{R}^{n} \to \mathbb{R}^{m}
+\end{align}
+where \(n\) is the dimension of the input vector and \(m\) is the dimension of the output vector. 
+
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.4\linewidth]{figure/simplenn.png}
+    \caption{\label{fig:snn} A simple network with 3 nodes.}
+\end{figure}
+
+
+\begin{example}
+
+\autoref{fig:snn} shows a simple NN with 3 nodes: an input node (red), a hidden node (blue), and an output node (green). The input node takes a real number \(x\) as input and returns the same value \(x\)---i.e., an identity function \(f_x: \mathbb{R} \to \mathbb{R}\) where \(f_x(x) = x\). 
+
+The hidden node $v$ applies some function \(f_v\) to \(x\), e.g., if  $f_v(x) = 2x + 1$ then $v$ computes $2x + 1$.
+
+Finally, the output node may also apply another function \(f_y\) to the output of the hidden node $v$, e.g., if $f_y(x) = \max(0, x)$, then the output returns the maximum of 0 and the value computed by $v$.  
+
+Thus, this network can be represented by the function $f: \mathbb{R} \to \mathbb{R}$:
+\begin{align}
+f(x) = f_y(f_v(x)) = \max(0, 2x + 1)
+\end{align}
+
+\end{example}
+
+
 \section{Affine Transformation}\label{sec:affine}
 The affine transformation (AF) of a neuron is the sum of the products of the weights of the incoming edges and the values of the neurons in the previous layer, plus the bias of the neuron.
 More specifically, the AF of a neuron \(y\) with weights \(w_1, \dots, w_n\) and bias \(b\) and the values of neurons in the previous layer \(v_1, \dots, v_n\) is \(w_1v_1 + \dots + w_nv_n + b\). 
