@@ -47,7 +47,10 @@
 \usepackage{booktabs}
 
 \usepackage{tikz}
-\usetikzlibrary{calc}
+\usetikzlibrary{calc,positioning}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+
 \usepackage{xcolor}
 \definecolor{codegreen}{rgb}{0,0.6,0}
 \definecolor{codegray}{rgb}{0.5,0.5,0.5}
@@ -322,10 +325,24 @@ f: \mathbb{R}^{n} \to \mathbb{R}^{m}
 where \(n\) is the dimension of the input vector and \(m\) is the dimension of the output vector. 
 
 
-\begin{figure}
+\begin{figure}[htp]
     \centering
-    \includegraphics[width=0.4\linewidth]{figure/simplenn.png}
-    \caption{\label{fig:snn} A simple network with 3 nodes.}
+    \begin{tikzpicture}[
+        every node/.style={draw, circle, minimum size=8mm, thick, font=\large, inner sep=0pt},
+        xnode/.style={draw=red!60!black, fill=red!15},
+        vnode/.style={draw=cyan!60!black, fill=cyan!40},
+        ynode/.style={draw=green!60!black, fill=green!15}
+      ]
+      % Nodes
+      \node[xnode]   (x) at (0,0)    {$x$};
+      \node[vnode]   (v) at (2.5,0)  {$v$};
+      \node[ynode]   (y) at (5,0)    {$y$};
+      % Arrows
+      \draw[->, thick] (x) -- (v);
+      \draw[->, thick] (v) -- (y);
+    \end{tikzpicture}
+    \caption{A simple network with 3 nodes.}
+    \label{fig:snn}
 \end{figure}
 
 
@@ -397,6 +414,37 @@ For DNN verification, these non-linear activation functions make verification di
 
 ReLU is the most widely used activation function in DNNs.  It is a  \emph{piecewise linear} function with two linear pieces: one for the case when the input value is greater than or equal to zero (output is the input itself) and one for the case when the input value is less than zero (output is 0). A ReLU activated neuron is said to be \emph{active} if its input is greater than zero and \emph{inactive} otherwise.
 
+\begin{figure}[hp]
+    \centering
+    \begin{tikzpicture}
+      \begin{axis}[
+        width=6cm, height=4.5cm,
+        axis x line=middle, axis y line=middle,
+        xlabel={}, ylabel={},
+        axis equal,
+        xtick={-4, -2, 0, 2, 4},
+        ytick={0, 2, 4},
+        xmin=-4.5, xmax=4.5, ymin=-0.5, ymax=4.5,
+        enlargelimits=false,
+        samples=2,
+        domain=-4.5:4.5,
+        axis line style={-latex},
+        tick label style={font=\small},
+        % yticklabel style={font=\small},
+        % xticklabel style={font=\small},
+        tick align=outside,
+        minor tick num=0,
+        ]
+        % ReLU curve: flat at zero, then linear
+        \addplot[line width=1.5pt, blue!80!black, samples=2, domain=-4.5:0] {0};
+        \addplot[line width=1.5pt, blue!80!black, domain=0:4.5] {x};
+      \end{axis}
+    \end{tikzpicture}
+    \caption{ReLU (Rectified Linear Unit) function.}
+    \label{fig:relu}
+\end{figure}
+
+
 ReLU is defined as follows:
 \begin{align}
 \relu{x} = &\max(x,0)
@@ -413,6 +461,33 @@ $\relu{-1.2} = 0$ (inactive), $\relu{0} = 0$ (inactive), and $\relu{2.8} = 2.8$ 
 
 Sigmoid is a smooth---a continuous and differentiable---non-linear activation function that maps any real value to the range (0,1). It is often used in the output layer of a binary classification problem.
 
+\begin{figure}[hp]
+    \centering
+    \begin{tikzpicture}
+      \begin{axis}[
+        width=6cm, height=6cm,
+        axis x line=middle, axis y line=middle,
+        xlabel={}, ylabel={},
+        xtick={-4, -2, 0, 2, 4},
+        ytick={0, 0.5, 1},
+        xmin=-4.5, xmax=4.5, ymin=0, ymax=1.1,
+        enlargelimits=false,
+        samples=300,
+        domain=-4.5:4.5,
+        axis line style={-latex},
+        tick label style={font=\small},
+        % yticklabel style={font=\small},
+        % xticklabel style={font=\small},
+        tick align=outside,
+        minor tick num=0,
+        ]
+        \addplot[line width=1.5pt, blue!80!black, samples=300, domain=-4.5:4.5] {1/(1 + exp(-x))};
+      \end{axis}
+    \end{tikzpicture}
+    \caption{Sigmoid function.}
+    \label{fig:sigmoid}
+\end{figure}
+
 Sigmoid is continuous, meaning that small changes in the input will result in small changes in the output, and differentiable, meaning that it has a well-defined derivative at every point. This makes it easy to compute gradients for training the network using backpropagation. 
 
     \begin{align}
@@ -427,6 +502,33 @@ $\sigmoid{-1.2} \approx 0.23$, $\sigmoid{0} = 0.5$, and $\sigmoid{2.8} \approx 0
 
 Tanh is similar to the sigmoid function but maps any real value to the range (-1,1). It is often used in the output layer of a multi-class classification problem.
 
+\begin{figure}[hp]
+    \centering
+    \begin{tikzpicture}
+      \begin{axis}[
+        width=6cm, height=6cm,
+        axis x line=middle, axis y line=middle,
+        xlabel={}, ylabel={},
+        xtick={-4, -2, 0, 2, 4},
+        ytick={-1, 0, 1},
+        xmin=-4.5, xmax=4.5, ymin=-1.2, ymax=1.2,
+        enlargelimits=false,
+        samples=300,
+        domain=-4.5:4.5,
+        axis line style={-latex},
+        tick label style={font=\small},
+        tick align=outside,
+        minor tick num=0,
+        ]
+        % tanh curve
+        \addplot[line width=1.5pt, blue!80!black, samples=300, domain=-4.5:4.5] {tanh(x)};
+        % 0.0 label at origin, slightly offset
+      \end{axis}
+    \end{tikzpicture}
+    \caption{tanh (hyperbolic tangent) activation function.}
+    \label{fig:tanh}
+\end{figure}
+
 \begin{align}
 \tanh{x} = \frac{e^x-e^{-x}}{e^x+e^{-x}}
 \end{align}
@@ -436,6 +538,41 @@ $\tanh{-1.2} \approx -0.83$, $\tanh{0} = 0$, and $\tanh{2.8} \approx 0.99$. This
 \end{example}
 
 \subsection{Softmax}\label{sec:softmax}
+
+
+\begin{figure}[hp]
+    \centering
+    \begin{tikzpicture}
+      \begin{axis}[
+        width=6cm, height=6cm,
+        axis x line=middle, axis y line=middle,
+        % axis equal,
+        xlabel={}, ylabel={},
+        xtick={-4, -2, 0, 2, 4},
+        ytick={0, 0.5, 1},
+        xmin=-4.5, xmax=4.5, ymin=-0.1, ymax=1.1,
+        enlargelimits=false,
+        samples=200,
+        domain=-4.5:4.5,
+        axis line style={-latex},
+        tick label style={font=\small},
+        tick align=outside,
+        minor tick num=0,
+        legend style={at={(0.5,1.03)},anchor=south,legend columns=2,draw=none, font=\footnotesize},
+        ]
+        % softmax_1 curve
+        \addplot[line width=1.5pt, blue!80!black, domain=-4.5:4.5] {exp(x)/(exp(x)+1)};
+        % softmax_2 curve
+        \addplot[line width=1.5pt, red!80!black, domain=-4.5:4.5, dashed] {1/(exp(x)+1)};
+        % Add legends
+        \addlegendentry{$\mathrm{softmax}_1(x)$}
+        \addlegendentry{$\mathrm{softmax}_2(x)$}
+      \end{axis}
+    \end{tikzpicture}
+    \caption{Softmax function for 2 classes.}
+    \label{fig:softmax}
+\end{figure}
+
 
 Softmax is a generalization of the sigmoid function that maps any real value to the range (0,1) and ensures that the sum of the output values is 1. It is often used in the output layer of a multi-class classification problem.
 \begin{align}
@@ -506,59 +643,205 @@ Graph Neural Network & GNN & Social networks, chemistry, recommendation systems 
 
 A \emph{fully connected} FFN is an FFN where every neuron in a layer is connected to every neuron in the next layer. \autoref{fig:ffn} shows a simple fully connected FFN with two hidden layers, and the DNN example in~\autoref{fig:dnn} is also fully connected.
 
-\begin{figure}
-\begin{center}
-\begin{tikzpicture}[scale=0.8, transform shape]
-% Input Layer
-\node at (0,4) {\textbf{Input Layer}};
-\foreach \x in {1,2,3,4} {
-    \node[circle, draw=black, fill=white, minimum size=0.6cm] (I\x) at (0,4-\x) {};
-}
+\begin{figure}[htp]
+    \begin{center}
+        \begin{tikzpicture}[scale=0.8, transform shape]
+            % Input Layer
+            \node at (0,4) {\textbf{Input Layer}};
+            \foreach \x in {1,2,3,4} {
+                \node[circle, draw=black, fill=white, minimum size=0.6cm] (I\x) at (0,4-\x) {};
+            }
 
-% Hidden Layer 1
-\node at (3,4) {\textbf{Hidden Layer 1}};
-\foreach \x in {1,2,3,4,5} {
-    \node[circle, draw=black, fill=white, minimum size=0.6cm] (H1\x) at (3,4.5-\x) {};
-}
+            % Hidden Layer 1
+            \node at (3,4) {\textbf{Hidden Layer 1}};
+            \foreach \x in {1,2,3,4,5} {
+                \node[circle, draw=black, fill=white, minimum size=0.6cm] (H1\x) at (3,4.5-\x) {};
+            }
 
-% Hidden Layer 2
-\node at (6,4) {\textbf{Hidden Layer 2}};
-\foreach \x in {1,2,3,4,5} {
-    \node[circle, draw=black, fill=white, minimum size=0.6cm] (H2\x) at (6,4.5-\x) {};
-}
+            % Hidden Layer 2
+            \node at (6,4) {\textbf{Hidden Layer 2}};
+            \foreach \x in {1,2,3,4,5} {
+                \node[circle, draw=black, fill=white, minimum size=0.6cm] (H2\x) at (6,4.5-\x) {};
+            }
 
-% Output Layer
-\node at (9,3.5) {\textbf{Output Layer}};
-\foreach \x in {1,2,3} {
-    \node[circle, draw=black, fill=white, minimum size=0.6cm] (O\x) at (9,3.5-\x) {};
-}
+            % Output Layer
+            \node at (9,4) {\textbf{Output Layer}};
+            \foreach \x in {1,2,3} {
+                \node[circle, draw=black, fill=white, minimum size=0.6cm] (O\x) at (9,3.5-\x) {};
+            }
 
-% Connections
-\foreach \i in {1,2,3,4}
-    \foreach \j in {1,2,3,4,5}
-        \draw[->] (I\i) -- (H1\j);
+            % Connections
+            \foreach \i in {1,2,3,4}
+                \foreach \j in {1,2,3,4,5}
+                    \draw[->] (I\i) -- (H1\j);
 
-\foreach \i in {1,2,3,4,5}
-    \foreach \j in {1,2,3,4,5}
-        \draw[->] (H1\i) -- (H2\j);
+            \foreach \i in {1,2,3,4,5}
+                \foreach \j in {1,2,3,4,5}
+                    \draw[->] (H1\i) -- (H2\j);
 
-\foreach \i in {1,2,3,4,5}
-    \foreach \j in {1,2,3}
-        \draw[->] (H2\i) -- (O\j);
-
-\end{tikzpicture}
-\end{center}
-\caption{A Fully Connected Feed-Forward Neural Network (FNN).}\label{fig:ffn}
+            \foreach \i in {1,2,3,4,5}
+                \foreach \j in {1,2,3}
+                    \draw[->] (H2\i) -- (O\j);
+        \end{tikzpicture}
+    \end{center}
+    \caption{A Fully Connected Feed-Forward Neural Network (FNN).}\label{fig:ffn}
 \end{figure}
+
+
 
 
 
 
 \paragraph{Convolutional Neural Networks (CNNs)} CNNs, often used in image recognition and classification, consist of neurons that have learnable weights and biases. Each neuron receives several inputs, takes a weighted sum over them, passes it through an activation function, and responds with an output.
 
+\begin{figure}[htp]
+    \begin{center}
+        \begin{tikzpicture}[scale=0.8, transform shape]
+            % Parameters for vertical node spacing
+            \def\inpN{4}
+            \def\hidN{3}
+            \def\outN{3}
+            \def\dy{1.2}
+            \def\xInput{0}
+            \def\xHidden{3.2}
+            \def\xOutput{6.4}
+        
+            % Layer labels (smaller, not overlapped)
+            \node at (\xInput,{\inpN/2*\dy+0.7}) {\textbf{Input Layer}};
+            \node at (\xHidden,{\inpN/2*\dy+0.7}) {\textbf{Hidden Layer}};
+            \node at (\xOutput,{\inpN/2*\dy+0.7}) {\textbf{Output Layer}};
+        
+            % Input nodes (left column)
+            \foreach \i in {1,...,\inpN} {
+                \node[circle, draw=black, fill=white, minimum size=0.7cm] (I\i) at (\xInput, {(\inpN-1)*0.5*\dy - (\i-1)*\dy}) {};
+            }
+        
+            % Hidden nodes (centered)
+            \foreach \i in {1,...,\hidN} {
+                \node[circle, draw=black, fill=white, minimum size=0.7cm] (H\i) at (\xHidden, {(\hidN-1)*0.5*\dy - (\i-1)*\dy}) {};
+            }
+        
+            % Output nodes (centered)
+            \foreach \i in {1,...,\outN} {
+                \node[circle, draw=black, fill=white, minimum size=0.7cm] (O\i) at (\xOutput, {(\outN-1)*0.5*\dy - (\i-1)*\dy}) {};
+            }
+        
+            % 1D conv connectivity
+            \draw[->, thick] (I1) -- (H1);
+            \draw[->, thick] (I2) -- (H1);
+        
+            \draw[->, thick] (I2) -- (H2);
+            \draw[->, thick] (I3) -- (H2);
+        
+            \draw[->, thick] (I3) -- (H3);
+            \draw[->, thick] (I4) -- (H3);
+        
+            % Hidden to output, one-to-one
+            \foreach \i in {1,2,3} {
+                \draw[->, thick] (H\i) -- (O\i);
+            }
+        \end{tikzpicture}
+    \end{center}
+    \caption{1-dimensional convolution: each hidden node receives input from a local window; each output comes from a hidden node.}
+    \label{fig:conv1d}
+\end{figure}
+
 \paragraph{Recurrent Neural Networks (RNNs)} RNNs, often used in natural language process and speech recognition, are designed to recognize patterns in sequences of data. RNNs have \emph{loops} in them, allowing information to be sent forward and backward.
 
+\begin{figure}[htp]
+    \begin{center}
+    \begin{tikzpicture}[scale=0.8, transform shape]
+        % --- Rolled RNN (left diagram) ---
+        \begin{scope}
+            % Layer labels
+            \node at (0,1.5) {\textbf{Input}};
+            \node at (2.4,1.5) {\textbf{Hidden}};
+            \node at (4.8,1.5) {\textbf{Output}};
+            % Nodes
+            \node[circle, draw=black, fill=white, thick, minimum size=0.7cm] (RI) at (0,0) {};
+            \node[circle, draw=black, fill=white, thick, minimum size=0.7cm] (RH) at (2.4,0) {};
+            \node[circle, draw=black, fill=white, thick, minimum size=0.7cm] (RO) at (4.8,0) {};
+            % Main arrows
+            \draw[->, thick] (RI) -- (RH);
+            \draw[->, thick] (RH) -- (RO);
+            % Recurrent/self-loop at hidden node
+            \draw [->, thick] (RH) edge [out=-120,in=-60,looseness=8] (RH);
+            % Caption
+            \node[align=center] at (2.4,-1.7) {Rolled RNN};
+        \end{scope}
+        
+        % --- Unrolled RNN (right diagram) ---
+        \begin{scope}[xshift=8cm]
+            % Parameters for vertical node spacing
+            \def\inpN{4}
+            \def\hidN{4}
+            \def\outN{4}
+            \def\dy{1.2}
+            \def\xInput{0}
+            \def\xHidden{3.2}
+            \def\xOutput{6.4}
+            % Layer labels
+            \node at (\xInput,{\inpN/2*\dy+0.8}) {\textbf{Input}};
+            \node at (\xHidden,{\inpN/2*\dy+0.8}) {\textbf{Hidden}};
+            \node at (\xOutput,{\inpN/2*\dy+0.8}) {\textbf{Output}};
+            % Input nodes (left column)
+            \foreach \i in {1,...,\inpN} {
+                \node[circle, draw=black, fill=white, minimum size=0.7cm] (I\i) at (\xInput, {(\inpN-1)*0.5*\dy - (\i-1)*\dy}) {};
+            }
+            % Hidden nodes (centered) (as many as input)
+            \foreach \i in {1,...,\hidN} {
+                \node[circle, draw=black, fill=white, minimum size=0.7cm] (H\i) at (\xHidden, {(\hidN-1)*0.5*\dy - (\i-1)*\dy}) {};
+            }
+            % Output nodes (centered) (as many as input)
+            \foreach \i in {1,...,\outN} {
+                \node[circle, draw=black, fill=white, minimum size=0.7cm] (O\i) at (\xOutput, {(\outN-1)*0.5*\dy - (\i-1)*\dy}) {};
+            }
+            % RNN input-to-hidden (1-to-1)
+            \foreach \i in {1,...,4} {
+                \draw[->, thick] (I\i) -- (H\i);
+            }
+            % Hidden-to-hidden (recurrent arrows, e.g. from H1 to H2, H2 to H3, etc)
+            \foreach \i [evaluate={\j=int(\i+1);}] in {1,2,3} {
+                \draw[->, thick] ([xshift=4pt]H\i) -- ([xshift=-4pt]H\j);
+            }
+            % Hidden-to-output (1-to-1)
+            \foreach \i in {1,...,4} {
+                \draw[->, thick] (H\i) -- (O\i);
+            }
+            % Caption
+            \node[align=center] at (3.2,-3.2) {Unrolled RNN};
+        \end{scope}
+    \end{tikzpicture}
+    \end{center}
+    \caption{RNN cell (left) and unrolled RNN sequence structure (right).}
+    \label{fig:rnn}
+\end{figure}
+
 \paragraph{Residual Networks} Residual Networks (ResNets) are a type of neural network that is often used in image recognition and classification. ResNets introduce skip connections that allow the gradient to flow directly through the network, making it easier to train deep networks.
+
+\begin{figure}[htp]
+    \begin{center}
+        \begin{tikzpicture}[scale=0.8, transform shape]
+            % Horizontal node positions
+            \foreach \n/\x in {1/0, 2/2.5, 3/5, 4/7.5, 5/10} {
+                \node[circle, draw=black, thick, minimum size=0.7cm, fill=white] (H\n) at (\x,0) {};
+            }
+            % Layer labels
+            \node at (0,2.0) {\textbf{Input}};
+            \node at (5.0,2.0) {\textbf{Hidden Layers}};
+            \node at (10.0,2.0) {\textbf{Output}};
+            % Main arrows
+            \foreach \n [evaluate={\next=int(\n+1);}] in {1,2,3,4} {
+                \draw[->, thick] (H\n) -- (H\next);
+            }
+            % Residual connections: skip one layer
+            \draw[->, thick] (H1) to[out=60,in=120] (H3);
+            \draw[->, thick] (H3) to[out=60,in=120] (H5);
+        \end{tikzpicture}
+    \end{center}
+    \caption{Residual Network (ResNet) block: each hidden layer receives input both from the previous layer (main path) and a skip connection from previous layers.}
+    \label{fig:resnet}
+\end{figure}
 
 % \section{Properties of Neural Networks}
 
