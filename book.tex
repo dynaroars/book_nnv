@@ -311,10 +311,10 @@ The value of a neuron in the input layer is the input data. The value of a neuro
 % including Reluplex~\cite{katz2017reluplex}, Neurify~\cite{wang2018efficient}, and VeriNet~\cite{henriksen2020efficient},
 %because it does not change the semantics or complexity of the problem and is easier to reason about as we will show in \S\ref{sec:overview}.
 
-\section{Neural Network as a Function}\label{sec:nn-function}
+\section{The Basics}\label{sec:nn-basics}
 
 
-A neural network (NN) can be viewed as a graph where each node carries out a specific operation. Collectively, this graph defines a function $f$ mapping vectors of real numbers to other vectors of real numbers: 
+\paragraph{Neural Network (NN)}  An NN can be viewed as a graph where each node represents a function that takes inputs from other nodes and produces an output.  Collectively, this graph defines a function $f$ mapping vectors of real numbers to other vectors of real numbers: 
 
 \begin{align}
 f: \mathbb{R}^{n} \to \mathbb{R}^{m}
@@ -329,21 +329,28 @@ where \(n\) is the dimension of the input vector and \(m\) is the dimension of t
 \end{figure}
 
 
-\begin{example}
+\begin{example}\label{ex:nn3}
 
-\autoref{fig:snn} shows a simple NN with 3 nodes: an input node (red), a hidden node (blue), and an output node (green). The input node takes a real number \(x\) as input and returns the same value \(x\)---i.e., an identity function \(f_x: \mathbb{R} \to \mathbb{R}\) where \(f_x(x) = x\). 
+\autoref{fig:snn} shows a simple NN with three nodes: an input node (red), a hidden node (blue), and an output node (green). The input node $x$ takes a real number $r$ as input and returns the same value---i.e., an identity function \(f_x: \mathbb{R} \to \mathbb{R}\) where \(f_x(r) = r \). 
 
-The hidden node $v$ applies some function \(f_v\) to \(x\), e.g., if  $f_v(x) = 2x + 1$ then $v$ computes $2x + 1$.
+The hidden node $v$ applies a function \(f_v\) to the output $r$ of node $x$, e.g., if  $f_v(r) = 2r + 1$ then $v$ computes $2r + 1$.
 
-Finally, the output node may also apply another function \(f_y\) to the output of the hidden node $v$, e.g., if $f_y(x) = \max(0, x)$, then the output returns the maximum of 0 and the value computed by $v$.  
+Finally, the output node may also apply a function \(f_y\) to the output $r$ of node $v$, e.g., if $f_y(r) = \max(0, r)$, then the output returns the maximum of 0 and the value computed by $v$.
 
 Thus, this NN can be represented by the function $f: \mathbb{R} \to \mathbb{R}$:
 \begin{align}
-f(x) = f_y(f_v(x)) = \max(0, 2x + 1)
+f(r) = f_y(f_v(f_x(r))) = \max(0, 2r + 1)
 \end{align}
 
 \end{example}
 
+
+\paragraph{Affine Transformation and Activation Function} In~\autoref{ex:nn3}, the function $f_v$ is \emph{affine}: it multiplies inputs with some constant (2) and adds a constant (1) to the result. 
+
+The function $f_y$ is an activation function---it turns negative values into 0 and keeps positive values unchanged. In particular, the $f_y = \max(0, r)$ is the \emph{ReLU} (Rectified Linear Unit) activation function, which is widely used in DNNs.
+
+
+\paragraph{Layers} An NN is typically organized into layers, where each layer consists of multiple nodes (neurons). The first layer is the input layer, which takes the input data. The last layer is the output layer, which produces the final output of the network. Between these two layers are one or more hidden layers, which perform intermediate computations.
 
 \section{Affine Transformation}\label{sec:affine}
 The affine transformation (AF) of a neuron is the sum of the products of the weights of the incoming edges and the values of the neurons in the previous layer, plus the bias of the neuron.
@@ -627,7 +634,7 @@ d_{intruder} > d_{threshold} \land v_{intruder} < v_{threshold} \implies v_{us} 
 where $d_{intruder}$ is the distance to the intruder, $d_{threshold}$ is a predefined safe distance, $v_{intruder}$ is the speed of the intruder, and $v_{us}$ is our speed.
 \end{example}
 
-\subsection{Other properties here, e.g., fariness, consistency, monotonicity}
+\subsection{Other properties here} %, e.g., fariness, consistency, monotonicity
 % \subsection{Consistency}
 
 % \textbf{Consistency} ensures that a neural network behaves in a logically coherent manner, respecting basic axioms of the task at hand.
