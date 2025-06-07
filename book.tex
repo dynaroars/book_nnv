@@ -388,7 +388,7 @@ Several popular activation functions used in DNNs include ReLU, Sigmoid, Tanh, a
 
 For DNN verification, these non-linear activation functions make verification difficult because it introduces multiple possible outcomes for any input, making it hard to reason about the output of the network. For example, ReLU has two possible outputs for any input: 0 if the input is less than zero, and the input itself otherwise, and Sigmoid has a smooth curve with infinite possible outputs for any input.
 
-\autoref{tab:activation} summarizes the most common activation functions used in DNNs, their equations, output ranges, and key uses.\tvn{need some simple piectures to demonstrate }
+\autoref{tab:activation} summarizes the most common activation functions used in DNNs, their equations, output ranges, and key uses.\tvn{need some simple piectures to demonstrate }\hai{added}
 
 \begin{table}
   \centering
@@ -414,26 +414,26 @@ For DNN verification, these non-linear activation functions make verification di
 
 ReLU is the most widely used activation function in DNNs.  It is a  \emph{piecewise linear} function with two linear pieces: one for the case when the input value is greater than or equal to zero (output is the input itself) and one for the case when the input value is less than zero (output is 0). A ReLU activated neuron is said to be \emph{active} if its input is greater than zero and \emph{inactive} otherwise.
 
-\begin{figure}[hp]
+\begin{figure}[htp]
     \centering
     \begin{tikzpicture}
-      \begin{axis}[
-        width=6cm, height=4.5cm,
-        axis x line=middle, axis y line=middle,
-        xlabel={}, ylabel={},
-        axis equal,
-        xtick={-4, -2, 0, 2, 4},
-        ytick={0, 2, 4},
-        xmin=-4.5, xmax=4.5, ymin=-0.5, ymax=4.5,
-        enlargelimits=false,
-        samples=2,
-        domain=-4.5:4.5,
-        axis line style={-latex},
-        tick label style={font=\small},
-        % yticklabel style={font=\small},
-        % xticklabel style={font=\small},
-        tick align=outside,
-        minor tick num=0,
+        \begin{axis}[
+            width=6cm, height=4.5cm,
+            axis x line=middle, axis y line=middle,
+            xlabel={}, ylabel={},
+            axis equal,
+            xtick={-4, -2, 0, 2, 4},
+            ytick={0, 2, 4},
+            xmin=-4.5, xmax=4.5, ymin=-0.5, ymax=4.5,
+            enlargelimits=false,
+            samples=2,
+            domain=-4.5:4.5,
+            axis line style={-latex},
+            tick label style={font=\small},
+            % yticklabel style={font=\small},
+            % xticklabel style={font=\small},
+            tick align=outside,
+            minor tick num=0,
         ]
         % ReLU curve: flat at zero, then linear
         \addplot[line width=1.5pt, blue!80!black, samples=2, domain=-4.5:0] {0};
@@ -461,25 +461,25 @@ $\relu{-1.2} = 0$ (inactive), $\relu{0} = 0$ (inactive), and $\relu{2.8} = 2.8$ 
 
 Sigmoid is a smooth---a continuous and differentiable---non-linear activation function that maps any real value to the range (0,1). It is often used in the output layer of a binary classification problem.
 
-\begin{figure}[hp]
+\begin{figure}[htp]
     \centering
     \begin{tikzpicture}
-      \begin{axis}[
-        width=6cm, height=6cm,
-        axis x line=middle, axis y line=middle,
-        xlabel={}, ylabel={},
-        xtick={-4, -2, 0, 2, 4},
-        ytick={0, 0.5, 1},
-        xmin=-4.5, xmax=4.5, ymin=0, ymax=1.1,
-        enlargelimits=false,
-        samples=300,
-        domain=-4.5:4.5,
-        axis line style={-latex},
-        tick label style={font=\small},
-        % yticklabel style={font=\small},
-        % xticklabel style={font=\small},
-        tick align=outside,
-        minor tick num=0,
+        \begin{axis}[
+            width=6cm, height=6cm,
+            axis x line=middle, axis y line=middle,
+            xlabel={}, ylabel={},
+            xtick={-4, -2, 0, 2, 4},
+            ytick={0, 0.5, 1},
+            xmin=-4.5, xmax=4.5, ymin=0, ymax=1.1,
+            enlargelimits=false,
+            samples=300,
+            domain=-4.5:4.5,
+            axis line style={-latex},
+            tick label style={font=\small},
+            % yticklabel style={font=\small},
+            % xticklabel style={font=\small},
+            tick align=outside,
+            minor tick num=0,
         ]
         \addplot[line width=1.5pt, blue!80!black, samples=300, domain=-4.5:4.5] {1/(1 + exp(-x))};
       \end{axis}
@@ -502,23 +502,23 @@ $\sigmoid{-1.2} \approx 0.23$, $\sigmoid{0} = 0.5$, and $\sigmoid{2.8} \approx 0
 
 Tanh is similar to the sigmoid function but maps any real value to the range (-1,1). It is often used in the output layer of a multi-class classification problem.
 
-\begin{figure}[hp]
+\begin{figure}[htp]
     \centering
     \begin{tikzpicture}
-      \begin{axis}[
-        width=6cm, height=6cm,
-        axis x line=middle, axis y line=middle,
-        xlabel={}, ylabel={},
-        xtick={-4, -2, 0, 2, 4},
-        ytick={-1, 0, 1},
-        xmin=-4.5, xmax=4.5, ymin=-1.2, ymax=1.2,
-        enlargelimits=false,
-        samples=300,
-        domain=-4.5:4.5,
-        axis line style={-latex},
-        tick label style={font=\small},
-        tick align=outside,
-        minor tick num=0,
+        \begin{axis}[
+            width=6cm, height=6cm,
+            axis x line=middle, axis y line=middle,
+            xlabel={}, ylabel={},
+            xtick={-4, -2, 0, 2, 4},
+            ytick={-1, 0, 1},
+            xmin=-4.5, xmax=4.5, ymin=-1.2, ymax=1.2,
+            enlargelimits=false,
+            samples=300,
+            domain=-4.5:4.5,
+            axis line style={-latex},
+            tick label style={font=\small},
+            tick align=outside,
+            minor tick num=0,
         ]
         % tanh curve
         \addplot[line width=1.5pt, blue!80!black, samples=300, domain=-4.5:4.5] {tanh(x)};
@@ -540,25 +540,25 @@ $\tanh{-1.2} \approx -0.83$, $\tanh{0} = 0$, and $\tanh{2.8} \approx 0.99$. This
 \subsection{Softmax}\label{sec:softmax}
 
 
-\begin{figure}[hp]
+\begin{figure}[htp]
     \centering
     \begin{tikzpicture}
-      \begin{axis}[
-        width=6cm, height=6cm,
-        axis x line=middle, axis y line=middle,
-        % axis equal,
-        xlabel={}, ylabel={},
-        xtick={-4, -2, 0, 2, 4},
-        ytick={0, 0.5, 1},
-        xmin=-4.5, xmax=4.5, ymin=-0.1, ymax=1.1,
-        enlargelimits=false,
-        samples=200,
-        domain=-4.5:4.5,
-        axis line style={-latex},
-        tick label style={font=\small},
-        tick align=outside,
-        minor tick num=0,
-        legend style={at={(0.5,1.03)},anchor=south,legend columns=2,draw=none, font=\footnotesize},
+        \begin{axis}[
+            width=6cm, height=6cm,
+            axis x line=middle, axis y line=middle,
+            % axis equal,
+            xlabel={}, ylabel={},
+            xtick={-4, -2, 0, 2, 4},
+            ytick={0, 0.5, 1},
+            xmin=-4.5, xmax=4.5, ymin=-0.1, ymax=1.1,
+            enlargelimits=false,
+            samples=200,
+            domain=-4.5:4.5,
+            axis line style={-latex},
+            tick label style={font=\small},
+            tick align=outside,
+            minor tick num=0,
+            legend style={at={(0.5,1.03)},anchor=south,legend columns=2,draw=none, font=\footnotesize},
         ]
         % softmax_1 curve
         \addplot[line width=1.5pt, blue!80!black, domain=-4.5:4.5] {exp(x)/(exp(x)+1)};
