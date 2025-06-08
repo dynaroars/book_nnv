@@ -144,7 +144,8 @@
 \newcommand{\ignore}[1]{}
 
 % for captions
-\def\Section{\S}
+%\def\Section{\S}
+\newcommand{\Section}{\textsection}
 \renewcommand{\figurename}{Fig.}
 \renewcommand{\tablename}{Tab.}
 \renewcommand{\algorithmcfname}{Alg.}
@@ -156,10 +157,15 @@
 \renewcommand{\figureautorefname}{Fig.}
 \renewcommand{\tableautorefname}{Tab.}
 \renewcommand{\equationautorefname}{Eq.}
-\renewcommand{\chapterautorefname}{\S\@gobble}
-\renewcommand{\sectionautorefname}{\S\@gobble}
-\renewcommand{\subsectionautorefname}{\S\@gobble}
-\renewcommand{\appendixautorefname}{\S\@gobble}
+\renewcommand{\chapterautorefname}{\textsection\@gobble}
+\renewcommand{\sectionautorefname}{\textsection\@gobble}
+\renewcommand{\subsectionautorefname}{\textsection\@gobble}
+\renewcommand{\appendixautorefname}{\textsection\@gobble}
+
+% \renewcommand{\chapterautorefname}{\S\@gobble}
+% \renewcommand{\sectionautorefname}{\S\@gobble}
+% \renewcommand{\subsectionautorefname}{\S\@gobble}
+% \renewcommand{\appendixautorefname}{\S\@gobble}
 
 \makeatother
 \newcommand{\proofgen}{\texttt{BaB$_{\text{ProofGen}}$}}
@@ -2050,10 +2056,10 @@ Finally, \bab{} has an empty \texttt{ActPatterns}, stops the search, and returns
 
 \chapter{Adversarial Attacks}
 
-Modern DNN verifiers (\crown{}, \neuralsat{}, etc) will first run a fast adversarial attack to check for obvious counterexamples. If one is found, the property is \sat (property violated). If no counterexample is found, the verifier will then proceed to the more expensive search-based verification algorithm (e.g., \bab{} as shown in~\autoref{chap:search-algorithms}).
+Modern DNN verifiers (\crown{}, \neuralsat{}, etc) will first run an adversarial attack technique to check for obvious counterexamples. If one is found, the property is violated (and the verifier returns \sat). If no counterexample is found, the verifier proceeds to the more expensive search-based verification algorithm (e.g., \bab{} as shown in~\autoref{chap:search-algorithms}).
 
 \section{Random Search Attack}
-Random search is a simple baseline adversarial attack.  It randomly samples points in the input domain (or within an allowed perturbation region). Each sample is checked against the property.  If any sample violates the property, a counterexample is found.
+Random search is a simple adversarial attack.  It randomly samples points in the input domain (or within an allowed perturbation region). Each sample is checked against the property.  If any sample violates the property, a counterexample is found.
 
 \begin{example}
 Suppose inputs $x_1, x_2$ are allowed in $[-2, 2]$.
