@@ -594,13 +594,44 @@ This means that the softmax function maps the input vector $x$ to a probability 
 
 \section{Example} 
 
-\begin{figure}
+% \begin{figure}
+%     \centering
+%     \includegraphics[width=0.4\linewidth]{figure/dnn.pdf}
+%     \caption{\label{fig:dnn} An DNN with ReLU.}
+% \end{figure}
+
+
+\begin{figure}[ht]
     \centering
-    \includegraphics[width=0.4\linewidth]{figure/dnn.pdf}
-    \caption{\label{fig:dnn} An DNN with ReLU.}
+    \begin{tikzpicture}[scale=0.8, transform shape]
+        % Input nodes
+        \node[circle, draw] (x1) {$x_1$};
+        \node[circle, draw, below=2.2cm of x1]  (x2) {$x_2$};
+
+        % Hidden layer
+        \node[circle, draw, right=2.6cm of x1] (x3) {$x_3$};
+        \node[circle, draw, right=2.6cm of x2] (x4) {$x_4$};
+
+        % Output layer node (centered horizontally)
+        \coordinate (mid) at ($(x3)!0.5!(x4)$);
+        \node[circle, draw, right=2.8cm of mid] (x5) {$x_5$};
+
+        % Connections with weights
+        \draw[->] (x1) -- node[above left=-3pt] {$-0.5$} (x3);
+        \draw[->] (x1) -- node[pos=0.2] {$1.0$} (x4);
+        \draw[->] (x2) -- node[pos=0.2] {$0.5$} (x3);
+        \draw[->] (x2) -- node[below left=-3pt] {$1.0$} (x4);
+        \draw[->] (x3) -- node[above] {$-1.0$} (x5);
+        \draw[->] (x4) -- node[below] {$1.0$} (x5);
+
+        % Output weights under x5 and x4
+        \node[below=0.1cm of x3] {$1.0$};
+        \node[below=0.1cm of x5] {$-1.0$};
+        \node[below=0.1cm of x4] {$-1.0$};
+
+    \end{tikzpicture}
+    \caption{\label{fig:dnn}An DNN with ReLU.}
 \end{figure}
-
-
 
 
 \begin{example}\label{ex:e2}
