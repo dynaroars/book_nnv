@@ -603,7 +603,7 @@ This means that the softmax function maps the input vector $x$ to a probability 
 
 
 
-\begin{example}
+\begin{example}\label{ex:e2}
 Fig.~\ref{fig:dnn} shows a simple DNN with two inputs $x_1,x_2$, one hidden layer consisting of two (hidden) neurons $x_3,x_4$, and one output $x_5$. The weights of a neuron are shown on its incoming edges, and the bias is shown above or below each neuron. 
 
 The outputs of the hidden neurons  are computed the affine transformation and ReLU, e.g., $x_3 = \relu{-0.5x_1+0.5x_2+1.0}$. The output neuron is computed with just the affine transformation, i.e., $x_5=-x_3+x_4-1$.
@@ -612,7 +612,7 @@ The outputs of the hidden neurons  are computed the affine transformation and Re
 
 \section{Types of Neural Networks}
 
-\autoref{tab:nn-types} summarizes the most popular types of neural networks and their typical applications. \tvn{need some simple pictures (like \autoref{fig:dnn}) to illustrate each type used in DNN verif..}\hai{added}
+\autoref{tab:nn-types} summarizes the most popular types of neural networks and their typical applications.
 
 \begin{table}
 \caption{Popular Types of Neural Networks and Their Applications}\label{tab:nn-types}
@@ -622,17 +622,17 @@ The outputs of the hidden neurons  are computed the affine transformation and Re
 \toprule
 \textbf{Name} & \textbf{Acronym} & \textbf{Typical Applications} \\
 \midrule
-Feedforward Neural Network & FNN/MLP & General function approximation, tabular data \\
-Convolutional Neural Network & CNN & Image recognition, video analysis, medical imaging \\
-Recurrent Neural Network & RNN & Sequence data, time series, NLP, speech recognition \\
-Residual Neural Network & ResNet & Image recognition, video analysis, medical imaging \\
+Feedforward NN & FNN/MLP & General function approximation, tabular data \\
+Convolutional NN & CNN & Image recognition, video analysis, medical imaging \\
+Recurrent NN & RNN & Sequence data, time series, NLP, speech recognition \\
+Residual NN & ResNet & Image recognition, video analysis, medical imaging \\
 % Long Short-Term Memory & LSTM & Sequence prediction, language modeling, translation \\
 % Gated Recurrent Unit & GRU & Sequence modeling, time series, language tasks \\
 % Radial Basis Function Network & RBFN & Function approximation, time series, control \\
 % Autoencoder & -- & Dimensionality reduction, denoising, unsupervised learning \\
 % Generative Adversarial Network & GAN & Data generation, image synthesis, super-resolution \\
 Transformer & -- & NLP, translation, summarization, image processing \\
-Graph Neural Network & GNN & Social networks, chemistry, recommendation systems \\
+Graph NN & GNN & Social networks, chemistry, recommendation systems \\
 \bottomrule
 \end{tabular}
 
@@ -640,9 +640,10 @@ Graph Neural Network & GNN & Social networks, chemistry, recommendation systems 
 
 
 
-\paragraph{Feed-Forward Network (FFN)} In an FFN information flows in one direction, from the input layer to hidden layers to the output layer (and thus no cycle).  
+\subsection{Feed-Forward Networks (FFN)} 
+In an FFN information flows in one direction, from the input layer to hidden layers to the output layer (and thus no cycle).  
 
-A \emph{fully connected} FFN is an FFN where every neuron in a layer is connected to every neuron in the next layer. \autoref{fig:ffn} shows a simple fully connected FFN with two hidden layers, and the DNN example in~\autoref{fig:dnn} is also fully connected.
+A \emph{fully connected} FFN is an FFN where every neuron in a layer is connected to every neuron in the next layer. \autoref{fig:dnn} is a fully connected FFN with one hidden layer, and \autoref{fig:ffn} is another fully connected FFN with two hidden layers. 
 
 \begin{figure}[htp]
     \begin{center}
@@ -693,7 +694,9 @@ A \emph{fully connected} FFN is an FFN where every neuron in a layer is connecte
 
 
 
-\paragraph{Convolutional Neural Networks (CNNs)} CNNs, often used in image recognition and classification, consist of neurons that have learnable weights and biases. Each neuron receives several inputs, takes a weighted sum over them, passes it through an activation function, and responds with an output.
+\subsection{Convolutional Neural Networks (CNNs)} 
+
+CNNs, often used in image recognition and classification, consist of neurons that have learnable weights and biases. Each neuron receives several inputs, takes a weighted sum over them, passes it through an activation function, and responds with an output.
 
 \begin{figure}[htp]
     \begin{center}
@@ -743,11 +746,13 @@ A \emph{fully connected} FFN is an FFN where every neuron in a layer is connecte
             }
         \end{tikzpicture}
     \end{center}
-    \caption{1-dimensional convolution: each hidden node receives input from a local window; each output comes from a hidden node.}
+    \caption{1-dimensional convolution: each hidden node receives input from a local window; each output comes from a hidden node.\tvn{Could you add some weights, biases, ReLU  or some other activation that's often used in this network  to the figure to make it a complete example? Also give an example of outputs of the neurons computed using those weights and biases. Like in~\autoref{ex:e2}}}
     \label{fig:conv1d}
 \end{figure}
 
-\paragraph{Recurrent Neural Networks (RNNs)} RNNs, often used in natural language process and speech recognition, are designed to recognize patterns in sequences of data. RNNs have \emph{loops} in them, allowing information to be sent forward and backward.
+\subsection{Recurrent Neural Networks (RNNs)} 
+
+RNNs, often used in natural language process and speech recognition, are designed to recognize patterns in sequences of data. RNNs have \emph{loops} in them, allowing information to be sent forward and backward.
 
 \begin{figure}[htp]
     \begin{center}
@@ -814,7 +819,7 @@ A \emph{fully connected} FFN is an FFN where every neuron in a layer is connecte
         \end{scope}
     \end{tikzpicture}
     \end{center}
-    \caption{RNN cell (left) and unrolled RNN sequence structure (right).}
+    \caption{RNN cell (left) and unrolled RNN sequence structure (right).\tvn{Could you add some weights, biases, ReLU or some other activation that's often used in this network to the figure to make it a complete example? Also give an example of outputs of the neurons computed using those weights and biases. Like in~\autoref{ex:e2}}}
     \label{fig:rnn}
 \end{figure}
 
@@ -840,7 +845,7 @@ A \emph{fully connected} FFN is an FFN where every neuron in a layer is connecte
             \draw[->, thick] (H3) to[out=60,in=120] (H5);
         \end{tikzpicture}
     \end{center}
-    \caption{Residual Network (ResNet) block: each hidden layer receives input both from the previous layer (main path) and a skip connection from previous layers.}
+    \caption{Residual Network (ResNet) block: each hidden layer receives input both from the previous layer (main path) and a skip connection from previous layers.\tvn{Could you add some weights, biases, ReLU  or some other activation that's often used in this network to the figure to make it a complete example? Also give an example of outputs of the neurons computed using those weights and biases. Like in~\autoref{ex:e2}}}
     \label{fig:resnet}
 \end{figure}
 
@@ -1180,7 +1185,7 @@ Modern DNN verification techniques~\cite{bunel2020branch,wang2021beta,ferrari202
 \hai{I will pull the example from our paper, but I think we also should create a tree to demonstrate how it proceeds -- I will work on this}
 \section{Complexity}\label{sec:complexity}
 
-ReLU-based NNV is \NP{}-complete~\cite{katz2017reluplex,salzer2023reachability}. This means that the problem of checking whether a given ReLu-based DNN satisfies a property is computationally hard, and no polynomial-time algorithm is known to solve it in the general case.
+ReLU-based NNV is \NP{}-complete as shown in~\cite{katz2017reluplex,salzer2023reachability}. This means that the problem of checking whether a given ReLu-based DNN satisfies a property is computationally hard, and no polynomial-time algorithm is known to solve it in the general case.
 
 
 
