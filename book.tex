@@ -2091,9 +2091,9 @@ Suppose inputs $x_1, x_2$ are allowed in $[-2, 2]$.
 \chapter{Proof Generation and Checking}\label{chapter:proof-gen-check}
 
 %Advances in DNN verification have made it possible to reason about the safety and robustness of complex DNNs. 
-As DNN tools become more complex (e.g., SOTA tools have 20K LoCs), they are more prone to bugs. VNN-COMP'23~\cite{brix2023fourth} showed that 3 of the top 7 participants produced unsound results, in which they incorrectly claiming unsafe DNNs are safe. This undesirable behavior defeats the purpose of DNN verification and hinders its practical adoption.
+As DNN tools become more complex (e.g., SOTA tools have 20K LoCs), they are more prone to bugs. VNN-COMP'23~\cite{brix2023fourth} showed that 3 of the top 7 participants produced unsound results by claiming unsafe DNNs are safe. This undesirable behavior defeats the purpose of DNN verification and hinders its practical adoption.
 
-While checking counterexamples, which demonstrate the unsafety of a DNN, is relatively straightforward, certifying the safety of a DNN is far more challenging. That is, certifying \texttt{unsat} results---proving no counterexample exists---is far more challenging. This would require verifiers to track their decision steps, which are often complex and large. %Moreover, there are many verification approaches (e.g., branch and bound, conflict-driven learning, abstraction and refinement), making it difficult to standardize and compare results across different tools.
+While checking counterexamples is relatively straightforward---i.e., verifying that a given input violates the property by evaluating the DNN on the input, certifying the safety of a DNN is far more challenging. That is, certifying \texttt{unsat} results---proving no counterexample exists---is far more challenging. This would require verifiers to track their decision steps, which are often complex and large. %Moreover, there are many verification approaches (e.g., branch and bound, conflict-driven learning, abstraction and refinement), making it difficult to standardize and compare results across different tools.
 %This is unlike SAT solving, where most tools adopt the standard DPLL framework and thus allows for unified techniques in proof generation and checking (e.g., the DRAT family of algorithms for UNSAT proofs).
 
 \section{Proof Generation}\label{sec:proofgen}
@@ -2580,453 +2580,453 @@ Future work will explore tuning $N$ to a given verification problem.
 %\subsection{The \proofcheck{} Algorithm and Implementation}
 
 
-\section{Evaluation}\label{sec:evaluation}  
-Our goals are to understand how checking of \prooflang{}s performs, how it can be optimized, and how robust checking is to
-verification optimizations.
-We focus our evaluation on the following research questions:
+% \section{Evaluation}\label{sec:evaluation}  
+% Our goals are to understand how checking of \prooflang{}s performs, how it can be optimized, and how robust checking is to
+% verification optimizations.
+% We focus our evaluation on the following research questions:
 
-\noindent\mbox{~~}\textbf{RQ1} (\autoref{sec:rq1}): How does \proofcheck{} perform and how does it compare prior work? 
+% \noindent\mbox{~~}\textbf{RQ1} (\autoref{sec:rq1}): How does \proofcheck{} perform and how does it compare prior work? 
 
-\noindent\mbox{~~}\textbf{RQ2} (\autoref{sec:rq2}): How does proof checking optimization improve performance?
+% \noindent\mbox{~~}\textbf{RQ2} (\autoref{sec:rq2}): How does proof checking optimization improve performance?
 
-\noindent\mbox{~~}\textbf{RQ3} (\autoref{sec:rq3}): How does proof checking performance vary with verification algorithms and optimizations?
+% \noindent\mbox{~~}\textbf{RQ3} (\autoref{sec:rq3}): How does proof checking performance vary with verification algorithms and optimizations?
 
 
 
-\subsection{Experimental Design}\label{sec:exp_design}
-We describe the selection of benchmarks, baselines, metrics, and treatments used
-to explore the above RQs.
+% \subsection{Experimental Design}\label{sec:exp_design}
+% We describe the selection of benchmarks, baselines, metrics, and treatments used
+% to explore the above RQs.
 
-\ignore{
-\begin{table*}[t]
-    \footnotesize
-    \centering
-    \caption{Benchmark instances. U: \texttt{unsat}, S: \texttt{sat}, ?: \texttt{unknown}.}\label{tab:benchmarks}
-    % \vspace*{-3mm}
-    % \resizebox{\textwidth}{!}{
-    \begin{tabular}{c|ccrr|cc}
-        \toprule
-        % \multirow{2}{*}{\textbf{Benchmarks}} &\multicolumn{3}{c}{\textbf{Networks}}  &\multicolumn{2}{|c}{\textbf{Tasks}}\\
-        % \multirow{2}{*}{\textbf{Benchmarks}} &\multicolumn{2}{c}{\textbf{Networks}} &  \multicolumn{2}{c|}{\textbf{Per Network}} &\multicolumn{2}{c}{\textbf{Tasks}}\\
-        \multirow{2}{*}{\textbf{Benchmarks}} &\multicolumn{4}{c}{\textbf{Networks}} & \multicolumn{2}{|c}{\textbf{Tasks}}\\
-        & Type & Networks & Neurons & Parameters & Properties & Instances (U/S/?)\\
+% \ignore{
+% \begin{table*}[t]
+%     \footnotesize
+%     \centering
+%     \caption{Benchmark instances. U: \texttt{unsat}, S: \texttt{sat}, ?: \texttt{unknown}.}\label{tab:benchmarks}
+%     % \vspace*{-3mm}
+%     % \resizebox{\textwidth}{!}{
+%     \begin{tabular}{c|ccrr|cc}
+%         \toprule
+%         % \multirow{2}{*}{\textbf{Benchmarks}} &\multicolumn{3}{c}{\textbf{Networks}}  &\multicolumn{2}{|c}{\textbf{Tasks}}\\
+%         % \multirow{2}{*}{\textbf{Benchmarks}} &\multicolumn{2}{c}{\textbf{Networks}} &  \multicolumn{2}{c|}{\textbf{Per Network}} &\multicolumn{2}{c}{\textbf{Tasks}}\\
+%         \multirow{2}{*}{\textbf{Benchmarks}} &\multicolumn{4}{c}{\textbf{Networks}} & \multicolumn{2}{|c}{\textbf{Tasks}}\\
+%         & Type & Networks & Neurons & Parameters & Properties & Instances (U/S/?)\\
   
-        \midrule
-        \multirow{4}{*}{FNN\_SMALL}         & \multirow{4}{*}{FNN + ReLU} & 2 x FNN(32) &   64 & 27K & 25 & 25/0/0 \\
-                                            &                             & 4 x FNN(32) &  128 & 29K & 25 & 25/0/0 \\
-                                            &                             & 2 x FNN(64) &  128 & 55K & 25 & 25/0/0 \\
-                                            &                             & 4 x FNN(64) &  256 & 63K & 25 & 25/0/0 \\
+%         \midrule
+%         \multirow{4}{*}{FNN\_SMALL}         & \multirow{4}{*}{FNN + ReLU} & 2 x FNN(32) &   64 & 27K & 25 & 25/0/0 \\
+%                                             &                             & 4 x FNN(32) &  128 & 29K & 25 & 25/0/0 \\
+%                                             &                             & 2 x FNN(64) &  128 & 55K & 25 & 25/0/0 \\
+%                                             &                             & 4 x FNN(64) &  256 & 63K & 25 & 25/0/0 \\
         
-        \midrule
-        \multirow{4}{*}{FNN\_MEDIUM}        & \multirow{4}{*}{FNN + ReLU} & 2 x FNN(256)  &    512 &  269K & 25 & 25/0/0 \\
-                                            &                             & 4 x FNN(256)  &   1024 &  401K & 25 & 25/0/0 \\
-                                            &                             & 6 x FNN(256)  &   1536 &  532K & 25 & 25/0/0 \\
-                                            &                             & 6 x FNN(512)  &   3072 & 1.7M & 25 & 25/0/0 \\
-        \midrule
-        \multirow{4}{*}{CNN\_SMALL}         & \multirow{4}{*}{CNN + ReLU} & 1 x CNN(3, 21), 1 x FNN(128)  &   320 & 27K & 25 & 25/0/0 \\
-                                            &                             & 1 x CNN(3, 19), 1 x FNN(128)  &   428 & 41K & 25 & 25/0/0 \\
-                                            &                             & 1 x CNN(3, 17), 1 x FNN(128)  &   560 & 58K & 25 & 25/0/0 \\
-                                            &                             & 1 x CNN(3, 13), 1 x FNN(128)  &   896 & 100K & 25 & 25/0/0 \\
-        \midrule
-        \multirow{4}{*}{CNN\_MEDIUM}        & \multirow{4}{*}{CNN + ReLU} & 1 x CNN(3, 9), 1 x CNN(5, 11), 1 x FNN(128)  &   1828 & 67K & 25 & 25/0/0 \\
-                                            &                             & 1 x CNN(3, 7), 1 x CNN(5, 9),  1 x FNN(128)  &   2560 & 128K & 25 & 25/0/0 \\
-                                            &                             & 1 x CNN(5, 9), 1 x CNN(7, 11), 1 x FNN(128)  &   2828 & 96K & 25 & 25/0/0 \\
-                                            &                             & 1 x CNN(5, 7), 1 x CNN(7, 9),  1 x FNN(128)  &   3920 & 180K & 25 & 25/0/0 \\
-        \midrule
-        \textbf{Total}                      &                             & \textbf{16}                  &     &   & \textbf{400} & \textbf{400/0/0} \\
-        \bottomrule
-    \end{tabular}
-    % }
-\end{table*}
-}
+%         \midrule
+%         \multirow{4}{*}{FNN\_MEDIUM}        & \multirow{4}{*}{FNN + ReLU} & 2 x FNN(256)  &    512 &  269K & 25 & 25/0/0 \\
+%                                             &                             & 4 x FNN(256)  &   1024 &  401K & 25 & 25/0/0 \\
+%                                             &                             & 6 x FNN(256)  &   1536 &  532K & 25 & 25/0/0 \\
+%                                             &                             & 6 x FNN(512)  &   3072 & 1.7M & 25 & 25/0/0 \\
+%         \midrule
+%         \multirow{4}{*}{CNN\_SMALL}         & \multirow{4}{*}{CNN + ReLU} & 1 x CNN(3, 21), 1 x FNN(128)  &   320 & 27K & 25 & 25/0/0 \\
+%                                             &                             & 1 x CNN(3, 19), 1 x FNN(128)  &   428 & 41K & 25 & 25/0/0 \\
+%                                             &                             & 1 x CNN(3, 17), 1 x FNN(128)  &   560 & 58K & 25 & 25/0/0 \\
+%                                             &                             & 1 x CNN(3, 13), 1 x FNN(128)  &   896 & 100K & 25 & 25/0/0 \\
+%         \midrule
+%         \multirow{4}{*}{CNN\_MEDIUM}        & \multirow{4}{*}{CNN + ReLU} & 1 x CNN(3, 9), 1 x CNN(5, 11), 1 x FNN(128)  &   1828 & 67K & 25 & 25/0/0 \\
+%                                             &                             & 1 x CNN(3, 7), 1 x CNN(5, 9),  1 x FNN(128)  &   2560 & 128K & 25 & 25/0/0 \\
+%                                             &                             & 1 x CNN(5, 9), 1 x CNN(7, 11), 1 x FNN(128)  &   2828 & 96K & 25 & 25/0/0 \\
+%                                             &                             & 1 x CNN(5, 7), 1 x CNN(7, 9),  1 x FNN(128)  &   3920 & 180K & 25 & 25/0/0 \\
+%         \midrule
+%         \textbf{Total}                      &                             & \textbf{16}                  &     &   & \textbf{400} & \textbf{400/0/0} \\
+%         \bottomrule
+%     \end{tabular}
+%     % }
+% \end{table*}
+% }
 
 
-\paragraph{Benchmarks}
-Evaluating these research questions requires neural network verification problems
-that are valid, i.e., their formulation as satisfiability problems is UNSAT.
+% \paragraph{Benchmarks}
+% Evaluating these research questions requires neural network verification problems
+% that are valid, i.e., their formulation as satisfiability problems is UNSAT.
 
-The yearly VNN-COMP competitions~\cite{brix2023first,brix2023fourth,bak2021second} includes a wide-variety of benchmarks,
-but the competitions organizers observed that many benchmarks are too easy.
-They contain large numbers SAT problems that can be solved by adversarial attacks 
-or UNSAT problems that can be solved, without any state splitting, using coarse overapproximations.
-They conclude that there is a need 
-for benchmarks to be ``not so easy that every tool can solve all of them''~\cite{brix2023first}.
-For this reason, we base our benchmark selection on a recent paper~\cite{duong2024harnessing} that developed harder
-UNSAT benchmarks including:
-ACAS Xu, RESNET\_A/B, CIFAR2020, MNISTFC, and MNIST\_GDVB.
+% The yearly VNN-COMP competitions~\cite{brix2023first,brix2023fourth,bak2021second} includes a wide-variety of benchmarks,
+% but the competitions organizers observed that many benchmarks are too easy.
+% They contain large numbers SAT problems that can be solved by adversarial attacks 
+% or UNSAT problems that can be solved, without any state splitting, using coarse overapproximations.
+% They conclude that there is a need 
+% for benchmarks to be ``not so easy that every tool can solve all of them''~\cite{brix2023first}.
+% For this reason, we base our benchmark selection on a recent paper~\cite{duong2024harnessing} that developed harder
+% UNSAT benchmarks including:
+% ACAS Xu, RESNET\_A/B, CIFAR2020, MNISTFC, and MNIST\_GDVB.
 
-We selected problems from these based on the applicability of our
-current \proofcheck{} implementations.
+% We selected problems from these based on the applicability of our
+% current \proofcheck{} implementations.
 
-We chose not to use ACAS Xu, because those problems have a very small
-input dimension (5 dimensions) which triggers a divide-and-conquer problem
-decomposition optimization in verifiers, like \neuralsat{} and \crown{}.
-This results in a set of relatively small proofs, each of which
-can be expressed in \prooflang{}, but whose simplicity do not add
-value beyond the selected benchmarks discussed below.
+% We chose not to use ACAS Xu, because those problems have a very small
+% input dimension (5 dimensions) which triggers a divide-and-conquer problem
+% decomposition optimization in verifiers, like \neuralsat{} and \crown{}.
+% This results in a set of relatively small proofs, each of which
+% can be expressed in \prooflang{}, but whose simplicity do not add
+% value beyond the selected benchmarks discussed below.
 
-We chose not to use the RESNET benchmarks because  \proofcheck{} does not currently handle residual blocks.  This is an engineering limitation and there is no fundamental reason the checking algorithm is not applicable.  
+% We chose not to use the RESNET benchmarks because  \proofcheck{} does not currently handle residual blocks.  This is an engineering limitation and there is no fundamental reason the checking algorithm is not applicable.  
 
-Of the CIFAR2020 networks, one contains BatchNorm layers which are not currently
-supported by \proofcheck{}, but we note that adding this support is a straightforward
-engineering issue.
-The remaining CIFAR2020 benchmarks contain very large numbers of convolutional
-kernels, which generates complex constraints that can be challenging to solve.
-We adapt the smallest of the CIFAR2020 benchmarks, by varying the size of the
-convolutional kernels and the number of CNN layers, to produce 
-the CNN benchmark in the second row of \autoref{tab:benchmarks}.
-\begin{table}[t]
-    \footnotesize
-    \centering
-    \caption{Benchmarks consist of a 8 neural networks comprised of varying numbers of CNN (C) and FNN (F) layers, neurons, and parameters, each paired with 25 properties to form verification instances that have been confirmed to be UNSAT.}\label{tab:benchmarks}
-    % \vspace*{-3mm}
-    % \resizebox{\textwidth}{!}{
-    \begin{tabular}{c|cccc|c}
-        \toprule
-        \multirow{2}{*}{\textbf{Name}} &\multicolumn{4}{c|}{\textbf{Networks}} & \textbf{Properties}\\
-        & Num. & Layers & Neurons & Param. & Num. \\
+% Of the CIFAR2020 networks, one contains BatchNorm layers which are not currently
+% supported by \proofcheck{}, but we note that adding this support is a straightforward
+% engineering issue.
+% The remaining CIFAR2020 benchmarks contain very large numbers of convolutional
+% kernels, which generates complex constraints that can be challenging to solve.
+% We adapt the smallest of the CIFAR2020 benchmarks, by varying the size of the
+% convolutional kernels and the number of CNN layers, to produce 
+% the CNN benchmark in the second row of \autoref{tab:benchmarks}.
+% \begin{table}[t]
+%     \footnotesize
+%     \centering
+%     \caption{Benchmarks consist of a 8 neural networks comprised of varying numbers of CNN (C) and FNN (F) layers, neurons, and parameters, each paired with 25 properties to form verification instances that have been confirmed to be UNSAT.}\label{tab:benchmarks}
+%     % \vspace*{-3mm}
+%     % \resizebox{\textwidth}{!}{
+%     \begin{tabular}{c|cccc|c}
+%         \toprule
+%         \multirow{2}{*}{\textbf{Name}} &\multicolumn{4}{c|}{\textbf{Networks}} & \textbf{Properties}\\
+%         & Num. & Layers & Neurons & Param. & Num. \\
 
-        \midrule
-        FNN        & 8 & 2-6F &  64-3072 & 27K-1.7M & 200  \\
-        \midrule
-        CNN        & 8 & 1-2C;1F  &  320-3920 & 41K-180K & 200  \\
-        \bottomrule
-    \end{tabular}
-    % }
-\end{table}
+%         \midrule
+%         FNN        & 8 & 2-6F &  64-3072 & 27K-1.7M & 200  \\
+%         \midrule
+%         CNN        & 8 & 1-2C;1F  &  320-3920 & 41K-180K & 200  \\
+%         \bottomrule
+%     \end{tabular}
+%     % }
+% \end{table}
 
-The MNISTFC and MNIST\_GDVB benchmarks contain 41 networks and a total of 106 UNSAT verification problems.
-From those we selected 8 networks with varying numbers of layers and neurons, resulting
-in models spanning several orders of magnitude in terms of parameters, to produce
-the FNN benchmark in the first row of \autoref{tab:benchmarks}.
+% The MNISTFC and MNIST\_GDVB benchmarks contain 41 networks and a total of 106 UNSAT verification problems.
+% From those we selected 8 networks with varying numbers of layers and neurons, resulting
+% in models spanning several orders of magnitude in terms of parameters, to produce
+% the FNN benchmark in the first row of \autoref{tab:benchmarks}.
 
-For each of the networks, following the approach from~\cite{duong2024harnessing}, 
-we randomly selected centerpoints and radii for local-robustness properties until we found 25 property specifications that yielded UNSAT results.  This yielded 200 properties
-each for the FNN and CNN benchmarks for a total of 400 verification problems and
-their associated proofs.
+% For each of the networks, following the approach from~\cite{duong2024harnessing}, 
+% we randomly selected centerpoints and radii for local-robustness properties until we found 25 property specifications that yielded UNSAT results.  This yielded 200 properties
+% each for the FNN and CNN benchmarks for a total of 400 verification problems and
+% their associated proofs.
 
-\paragraph{Baselines}
-To the best of our knowledge there is a single prior work published
-on DNN verification proof checking~\cite{desmartin2023towards}.
-That checker is designed to work only with a single verifier, \marabou{}, 
-unlike \proofcheck{}.
+% \paragraph{Baselines}
+% To the best of our knowledge there is a single prior work published
+% on DNN verification proof checking~\cite{desmartin2023towards}.
+% That checker is designed to work only with a single verifier, \marabou{}, 
+% unlike \proofcheck{}.
 
-While not strictly a baseline we also use the time to verify problems
-as a baseline.  This is because it is instructive to understand 
-the cost of proof checking after having generated a proof.
-We have adapted two verifiers: \crown{} and \neuralsat{}, to 
-generate \prooflang{} proofs for this study.
+% While not strictly a baseline we also use the time to verify problems
+% as a baseline.  This is because it is instructive to understand 
+% the cost of proof checking after having generated a proof.
+% We have adapted two verifiers: \crown{} and \neuralsat{}, to 
+% generate \prooflang{} proofs for this study.
 
-For RQ1 our focus is on proof checking performance, so we compare
-\marabou{} and its proof checker with a single verifier, \neuralsat{},
-and \proofcheck{}.  
-RQ2 explores \proofcheck{} optimizations and it uses the unoptimized
-\proofcheck{} performance as a baseline.
-For RQ3 our goal is to understand how well \proofcheck{} accommodates
-proofs generated by different verification algorithm variants, since no
-other proof checker can do this there is no baseline for comparison.
+% For RQ1 our focus is on proof checking performance, so we compare
+% \marabou{} and its proof checker with a single verifier, \neuralsat{},
+% and \proofcheck{}.  
+% RQ2 explores \proofcheck{} optimizations and it uses the unoptimized
+% \proofcheck{} performance as a baseline.
+% For RQ3 our goal is to understand how well \proofcheck{} accommodates
+% proofs generated by different verification algorithm variants, since no
+% other proof checker can do this there is no baseline for comparison.
 
-\begin{figure}[t]
-    \centering
-    \begin{minipage}[t]{0.4\textwidth}
-        \centering  
-        \includegraphics[width=\linewidth]{figure/fnn.pdf}
-    \end{minipage}
-    \begin{minipage}[t]{0.4\textwidth}
-        \centering  
-        \includegraphics[width=\linewidth]{figure/cnn.pdf}
-    \end{minipage}
+% \begin{figure}[t]
+%     \centering
+%     \begin{minipage}[t]{0.4\textwidth}
+%         \centering  
+%         \includegraphics[width=\linewidth]{figure/fnn.pdf}
+%     \end{minipage}
+%     \begin{minipage}[t]{0.4\textwidth}
+%         \centering  
+%         \includegraphics[width=\linewidth]{figure/cnn.pdf}
+%     \end{minipage}
 
-    % \begin{minipage}[t]{0.45\textwidth}
-    %     \centering  
-    %     \includegraphics[width=\linewidth]{figure/MNIST_CNN_SMALL.pdf}
-    % \end{minipage}
-    % \hfill
-    % \begin{minipage}[t]{0.45\textwidth}
-    %     \centering  
-    %     \includegraphics[width=\linewidth]{figure/MNIST_CNN_MEDIUM.pdf}
-    % \end{minipage}
-    \caption{Cactus-plots for verifiers and proof checkers of FNN (top) and CNN (bottom) benchmarks.}
-    \label{fig:cactus-plots}
-\end{figure}
-\paragraph{Treatments}
-RQ1 compares the best performing versions of \marabou{}'s proof checker and \proofcheck{}.
-For RQ2, we consider two of the three optimizations
-implemented in \proofcheck{} : proof tree pruning (X), and 
-proof stabilization (S).  We kept a third optimization that controls the
-degree of parallelization in proof checking fixed at a value of 64 to mitigate
-experimental cost; since the independence of sub-proofs means that
-proof checking is amenable to linear speedup we felt this aspect of experimentation
-was less valuable.
-For RQ3, we use both \neuralsat{} and \crown{} to generate proofs; this
-constitutes a treatment for this research question as it varies the
-verification algorithm.
-For each verifier, we explore a base version of the verifier and an optimization:
-the stabilization optimization for \neuralsat{} and replacing
-the default branch-and-bound decision heuristic with the BaBSR~\cite{bunel2020branch} heuristic
-in \crown{}.
+%     % \begin{minipage}[t]{0.45\textwidth}
+%     %     \centering  
+%     %     \includegraphics[width=\linewidth]{figure/MNIST_CNN_SMALL.pdf}
+%     % \end{minipage}
+%     % \hfill
+%     % \begin{minipage}[t]{0.45\textwidth}
+%     %     \centering  
+%     %     \includegraphics[width=\linewidth]{figure/MNIST_CNN_MEDIUM.pdf}
+%     % \end{minipage}
+%     \caption{Cactus-plots for verifiers and proof checkers of FNN (top) and CNN (bottom) benchmarks.}
+%     \label{fig:cactus-plots}
+% \end{figure}
+% \paragraph{Treatments}
+% RQ1 compares the best performing versions of \marabou{}'s proof checker and \proofcheck{}.
+% For RQ2, we consider two of the three optimizations
+% implemented in \proofcheck{} : proof tree pruning (X), and 
+% proof stabilization (S).  We kept a third optimization that controls the
+% degree of parallelization in proof checking fixed at a value of 64 to mitigate
+% experimental cost; since the independence of sub-proofs means that
+% proof checking is amenable to linear speedup we felt this aspect of experimentation
+% was less valuable.
+% For RQ3, we use both \neuralsat{} and \crown{} to generate proofs; this
+% constitutes a treatment for this research question as it varies the
+% verification algorithm.
+% For each verifier, we explore a base version of the verifier and an optimization:
+% the stabilization optimization for \neuralsat{} and replacing
+% the default branch-and-bound decision heuristic with the BaBSR~\cite{bunel2020branch} heuristic
+% in \crown{}.
 
-\paragraph{Metrics}
-In the verification community there are two metrics commonly used to
-assess performance: time to solve the problems and number of problems solved
-from a benchmark.  We report them both here.
+% \paragraph{Metrics}
+% In the verification community there are two metrics commonly used to
+% assess performance: time to solve the problems and number of problems solved
+% from a benchmark.  We report them both here.
 
-For each \proofcheck{} problem we record:
-the time to verify that the problem is UNSAT, the time to generate a proof,
-the time for \proofcheck{} to finish.
-If the sum of these for a problem is less than a specified timeout,
-1000 seconds in our evaluation, then we say the problem is ``solved''.
-For verifiers run alone, a problem is solved if the verification completes
-within the timeout.
+% For each \proofcheck{} problem we record:
+% the time to verify that the problem is UNSAT, the time to generate a proof,
+% the time for \proofcheck{} to finish.
+% If the sum of these for a problem is less than a specified timeout,
+% 1000 seconds in our evaluation, then we say the problem is ``solved''.
+% For verifiers run alone, a problem is solved if the verification completes
+% within the timeout.
 
-For each benchmark, we provide cactus plots which plot the time for a problem on the y-axis, and the number of problems solved on the x-axis; problems are sorted on the x-axis from least to largest.
-As shown in~\autoref{fig:cactus-plots}, these plots allow one to observe both the time difference between baselines and treatments (vertical distance between lines at a point on the x-axis) and the ability of techniques to solve problems (the maximum x-coordinate for a given line).
+% For each benchmark, we provide cactus plots which plot the time for a problem on the y-axis, and the number of problems solved on the x-axis; problems are sorted on the x-axis from least to largest.
+% As shown in~\autoref{fig:cactus-plots}, these plots allow one to observe both the time difference between baselines and treatments (vertical distance between lines at a point on the x-axis) and the ability of techniques to solve problems (the maximum x-coordinate for a given line).
 
-We also report the size of proof trees that are generated in \prooflang{}.
-In the absence of optimizations this defines the \textit{number of sub-proofs}
-that need to be checked, but with optimizations the number of sub-proofs may
-be reduced, e.g., when an interior node in the tree can be proven.
-The complexity of  sub-proofs
-may vary significantly, so to provide a more detailed characterization we
-also report \textit{MILP complexity}.  \autoref{eq:mip} defines the general form
-of each MILP problem, but the problems will vary based on how many of the $a$ variables
-defined in \autoref{eq:mip}(d) have a fixed value -- either 0 or 1.   When this
-happens the constraint in \autoref{eq:mip}(e) are simplified.
-Consequently, we measure MILP complexity as the number of neurons that do \textit{not}
-have a fixed value, i.e., the number of unstable neurons.  
-\ignore{This does not account for the contribution of \autoref{eq:mip}a,b which is directly
-related to network size and input/output dimension.   Is there any way to measure that?}
-% \hd{I see. It seems hard since "a"s and constraints do not have the same unit.}
+% We also report the size of proof trees that are generated in \prooflang{}.
+% In the absence of optimizations this defines the \textit{number of sub-proofs}
+% that need to be checked, but with optimizations the number of sub-proofs may
+% be reduced, e.g., when an interior node in the tree can be proven.
+% The complexity of  sub-proofs
+% may vary significantly, so to provide a more detailed characterization we
+% also report \textit{MILP complexity}.  \autoref{eq:mip} defines the general form
+% of each MILP problem, but the problems will vary based on how many of the $a$ variables
+% defined in \autoref{eq:mip}(d) have a fixed value -- either 0 or 1.   When this
+% happens the constraint in \autoref{eq:mip}(e) are simplified.
+% Consequently, we measure MILP complexity as the number of neurons that do \textit{not}
+% have a fixed value, i.e., the number of unstable neurons.  
+% \ignore{This does not account for the contribution of \autoref{eq:mip}a,b which is directly
+% related to network size and input/output dimension.   Is there any way to measure that?}
+% % \hd{I see. It seems hard since "a"s and constraints do not have the same unit.}
 
-\paragraph{Experimental Setup}
-All experiments were run on a Linux machine with an AMD Threadripper 64-core 4.2GHZ CPU, 128GB RAM, and an NVIDIA GeForce RTX 4090 GPU with 24 GB VRAM. 
-We used a timeout of 1000 seconds for the combined time of running the verifier,
-generating the proof, and then checking that proof.
+% \paragraph{Experimental Setup}
+% All experiments were run on a Linux machine with an AMD Threadripper 64-core 4.2GHZ CPU, 128GB RAM, and an NVIDIA GeForce RTX 4090 GPU with 24 GB VRAM. 
+% We used a timeout of 1000 seconds for the combined time of running the verifier,
+% generating the proof, and then checking that proof.
 
-\subsection{RQ1 : Proof Checking Performance}
-\label{sec:rq1}
-\autoref{fig:cactus-plots} presents data on the performance
-of \proofcheck{} relative to both an underlying verifier, \neuralsat{}, and prior work on neural network proof checking, \marabou{}'s proof checker.  
-In cactus plots like this, lines that extend further on the x-axis
-are better -- more problems solved -- and lines that are lower are better -- faster solve times.
-Another way to view these is to pick a point on the x-axis where the plots for two techniques are defined and think of the areas under the two curves as the ``total cost'' to solve that number of problems.
-The dashed lines in the plots show the performance of the verifier and the solid lines show the performance of the verifier, proof generation, and the proof checker.  Several configurations of
-\proofcheck{} are shown, but in this RQ we draw the readers attention
-to the plots for the \proofcheck{}(S+X) configurations; the rest are discussed in detail below.
+% \subsection{RQ1 : Proof Checking Performance}
+% \label{sec:rq1}
+% \autoref{fig:cactus-plots} presents data on the performance
+% of \proofcheck{} relative to both an underlying verifier, \neuralsat{}, and prior work on neural network proof checking, \marabou{}'s proof checker.  
+% In cactus plots like this, lines that extend further on the x-axis
+% are better -- more problems solved -- and lines that are lower are better -- faster solve times.
+% Another way to view these is to pick a point on the x-axis where the plots for two techniques are defined and think of the areas under the two curves as the ``total cost'' to solve that number of problems.
+% The dashed lines in the plots show the performance of the verifier and the solid lines show the performance of the verifier, proof generation, and the proof checker.  Several configurations of
+% \proofcheck{} are shown, but in this RQ we draw the readers attention
+% to the plots for the \proofcheck{}(S+X) configurations; the rest are discussed in detail below.
 
-The cactus plot for the FNN benchmark (top)
-shows that \marabou{} and its checker are able to solve 69 problems or 35\% of the benchmark, whereas \proofcheck{} can solve 186 or 93\%.  
-For the CNN benchmark (bottom) \marabou{} and its checker can solve a single benchmark, whereas \proofcheck{} can solve 177 problems or 89\%.
-In total, \proofcheck{} solved 363 problems or 91\%, whereas \marabou{}  solved 70 problems or 18\% of all instances.
+% The cactus plot for the FNN benchmark (top)
+% shows that \marabou{} and its checker are able to solve 69 problems or 35\% of the benchmark, whereas \proofcheck{} can solve 186 or 93\%.  
+% For the CNN benchmark (bottom) \marabou{} and its checker can solve a single benchmark, whereas \proofcheck{} can solve 177 problems or 89\%.
+% In total, \proofcheck{} solved 363 problems or 91\%, whereas \marabou{}  solved 70 problems or 18\% of all instances.
 
-\begin{figure*}[t]
-\begin{subfigure}{0.4\linewidth}
-    \centering
-    % 
-    \begin{minipage}[t]{0.75\textwidth}
-        \centering  
-        \includegraphics[width=\linewidth]{figure/SUB_PROOFS_NONE.pdf}
-    \end{minipage}
-    %
-    \begin{minipage}[t]{0.235\textwidth}
-        \centering  
-        \includegraphics[width=\linewidth]{figure/SUB_PROOFS_SX.pdf}
-    \end{minipage}
-    \caption{Number of sub-proofs per problem with (right) and without (left) \proofcheck{} optimizations.}
-    \label{fig:sub-proofs-plots}
-\end{subfigure}
-\hfill
-\begin{subfigure}{0.59\linewidth}
-    \centering 
-    %
-    \begin{minipage}[t]{0.5\textwidth}
-        \centering  
-        \includegraphics[width=\linewidth]{figure/MILP_COMPLEXITY_NONE.pdf}
-    \end{minipage}%
-    \begin{minipage}[t]{0.5\textwidth}
-        \centering  
-        \includegraphics[width=\linewidth]{figure/MILP_COMPLEXITY_SX.pdf}
-    \end{minipage}
+% \begin{figure*}[t]
+% \begin{subfigure}{0.4\linewidth}
+%     \centering
+%     % 
+%     \begin{minipage}[t]{0.75\textwidth}
+%         \centering  
+%         \includegraphics[width=\linewidth]{figure/SUB_PROOFS_NONE.pdf}
+%     \end{minipage}
+%     %
+%     \begin{minipage}[t]{0.235\textwidth}
+%         \centering  
+%         \includegraphics[width=\linewidth]{figure/SUB_PROOFS_SX.pdf}
+%     \end{minipage}
+%     \caption{Number of sub-proofs per problem with (right) and without (left) \proofcheck{} optimizations.}
+%     \label{fig:sub-proofs-plots}
+% \end{subfigure}
+% \hfill
+% \begin{subfigure}{0.59\linewidth}
+%     \centering 
+%     %
+%     \begin{minipage}[t]{0.5\textwidth}
+%         \centering  
+%         \includegraphics[width=\linewidth]{figure/MILP_COMPLEXITY_NONE.pdf}
+%     \end{minipage}%
+%     \begin{minipage}[t]{0.5\textwidth}
+%         \centering  
+%         \includegraphics[width=\linewidth]{figure/MILP_COMPLEXITY_SX.pdf}
+%     \end{minipage}
 
-    \caption{Number of constraints of a given complexity per problem with (right) and without (left) \proofcheck{} optimizations.}
-    \label{fig:constrs-proofs-plots}
-\end{subfigure}
-\caption{Data on proof size and complexity.   Y-axes are log-scale due to the range of values.}
-\end{figure*}
+%     \caption{Number of constraints of a given complexity per problem with (right) and without (left) \proofcheck{} optimizations.}
+%     \label{fig:constrs-proofs-plots}
+% \end{subfigure}
+% \caption{Data on proof size and complexity.   Y-axes are log-scale due to the range of values.}
+% \end{figure*}
 
-% \matt{Some of the line number references are no longer resolving below.}
-The shape of these cactus plots indicates a high-degree of variability in the cost of proof
-checking relative to verification.
-From~\autoref{fig:algorithm} it is clear that both the number of leaves in the tree
-structure,~\autoref{line:get_leaf}, and the complexity of the model to be checked,~\autoref{line:proof_check_objective1}, are factors that contribute to the cost of proof checking.
-To explore those factors we plot their variation across the benchmarks when running \proofcheck{}.
+% % \matt{Some of the line number references are no longer resolving below.}
+% The shape of these cactus plots indicates a high-degree of variability in the cost of proof
+% checking relative to verification.
+% From~\autoref{fig:algorithm} it is clear that both the number of leaves in the tree
+% structure,~\autoref{line:get_leaf}, and the complexity of the model to be checked,~\autoref{line:proof_check_objective1}, are factors that contribute to the cost of proof checking.
+% To explore those factors we plot their variation across the benchmarks when running \proofcheck{}.
 
-\autoref{fig:sub-proofs-plots} (left) plots a histogram of the number of sub-proofs solved per verification 
-problem, i.e., the number of nodes of the proof tree.
-When interpreting these plots, understand that the y-axis log scale means that vertical
-distances have a different meaning as you move upward in the plot.
-While the vast majority of the verification problems have proof trees of fewer then 2000 leaves, but 17 of them have larger trees up to a maximum of more than 10000 leaves.
-Note also that even among the smaller sized proof trees, there are some problems that cannot be solved.
-This is due to complexity of solving the MILP constraints at the leaves of those proof trees.
+% \autoref{fig:sub-proofs-plots} (left) plots a histogram of the number of sub-proofs solved per verification 
+% problem, i.e., the number of nodes of the proof tree.
+% When interpreting these plots, understand that the y-axis log scale means that vertical
+% distances have a different meaning as you move upward in the plot.
+% While the vast majority of the verification problems have proof trees of fewer then 2000 leaves, but 17 of them have larger trees up to a maximum of more than 10000 leaves.
+% Note also that even among the smaller sized proof trees, there are some problems that cannot be solved.
+% This is due to complexity of solving the MILP constraints at the leaves of those proof trees.
 
-\autoref{fig:constrs-proofs-plots} (top) plots a histogram of the number of occurrences of MILP problems of
-a given complexity across the benchmarks.  Here again we see a spread in data, but unlike with the number of sub-proofs the CNN benchmarks seem to have consistently larger constraints and there is a clear bias among the unsolved problems towards larger constraint size.
-To optimize proof checking, we must address both of these sources of complexity.
+% \autoref{fig:constrs-proofs-plots} (top) plots a histogram of the number of occurrences of MILP problems of
+% a given complexity across the benchmarks.  Here again we see a spread in data, but unlike with the number of sub-proofs the CNN benchmarks seem to have consistently larger constraints and there is a clear bias among the unsolved problems towards larger constraint size.
+% To optimize proof checking, we must address both of these sources of complexity.
 
-\begin{tcolorbox}[left=1pt,right=1pt,top=1pt,bottom=1pt]
-\textbf{RQ1 Findings}: Proof checking performance varies with both the size of the proof tree and the complexity of the MILP problems at the nodes of the tree.  \proofcheck{} can solve 91\% of the problems across the benchmarks and improves on prior work which can solve less than 18\%.
-% \tvn{are these numbers correct?  the 2nd paragraph of RQ1 says prior work can do 24\% and \proofcheck{} can do 92\%}
-\end{tcolorbox}
+% \begin{tcolorbox}[left=1pt,right=1pt,top=1pt,bottom=1pt]
+% \textbf{RQ1 Findings}: Proof checking performance varies with both the size of the proof tree and the complexity of the MILP problems at the nodes of the tree.  \proofcheck{} can solve 91\% of the problems across the benchmarks and improves on prior work which can solve less than 18\%.
+% % \tvn{are these numbers correct?  the 2nd paragraph of RQ1 says prior work can do 24\% and \proofcheck{} can do 92\%}
+% \end{tcolorbox}
 
-\subsection{RQ2 : Proof Checking Optimizations}
-\label{sec:rq2}
-The performance cactus plots~\autoref{fig:cactus-plots} present an ablation
-study of the 
-pruning (X) and stabilization (S) optimizations of \proofcheck{}.
-The trend across both benchmarks is consistent with pruning (yellow) and stabilization (blue)
- improving the number of problems solved by 5\% and 36\%, respectively, over the unoptimized
-\proofcheck{} (green).
-The combination of optimizations (red) improves the number of solved problems by 46\%, which is more than the sum of their individual improvements demonstrating that the methods create opportunities for one another for further optimization.
-\ignore{
-- neither X nor S: 168 (F) + 88 (C) = 256
-- X: 175 (F) + 93 (C) = 268
-- S: 178 (F) + 170 (C) = 348
-}
+% \subsection{RQ2 : Proof Checking Optimizations}
+% \label{sec:rq2}
+% The performance cactus plots~\autoref{fig:cactus-plots} present an ablation
+% study of the 
+% pruning (X) and stabilization (S) optimizations of \proofcheck{}.
+% The trend across both benchmarks is consistent with pruning (yellow) and stabilization (blue)
+%  improving the number of problems solved by 5\% and 36\%, respectively, over the unoptimized
+% \proofcheck{} (green).
+% The combination of optimizations (red) improves the number of solved problems by 46\%, which is more than the sum of their individual improvements demonstrating that the methods create opportunities for one another for further optimization.
+% \ignore{
+% - neither X nor S: 168 (F) + 88 (C) = 256
+% - X: 175 (F) + 93 (C) = 268
+% - S: 178 (F) + 170 (C) = 348
+% }
 
-The \autoref{fig:sub-proofs-plots} (right) and \autoref{fig:constrs-proofs-plots} (right) explore the impact of the S and X optimizations on the number of sub-proofs and MILP complexity.  Across the benchmarks optimizations reduce 
-the number of sub-proofs is to less than 1000 and
-MILP complexity to less than 2000.   
-The reduction in sub-proofs directly contributes to the increase
-in performance of \proofcheck{}, but the reduction in
-MILP complexity is more subtle.   
-Integer programming, and thus MILP, is known to be
-NP-Hard in general~\cite{garey1979computers}.
-The stabilization optimization addresses this complexity by
-calculating sets of variables that are forced to take on specific
-values based on other constraints in the MILP problem.  For each
-such variable, the constraints associated with it is effectively
-eliminated.  We can observe this in comparing the left and
-right of \autoref{fig:constrs-proofs-plots} where we see both
-constraints of higher complexity eliminated and the peak of
-the constraint distribution shifted downward from 400 to 100
-constraints.  
+% The \autoref{fig:sub-proofs-plots} (right) and \autoref{fig:constrs-proofs-plots} (right) explore the impact of the S and X optimizations on the number of sub-proofs and MILP complexity.  Across the benchmarks optimizations reduce 
+% the number of sub-proofs is to less than 1000 and
+% MILP complexity to less than 2000.   
+% The reduction in sub-proofs directly contributes to the increase
+% in performance of \proofcheck{}, but the reduction in
+% MILP complexity is more subtle.   
+% Integer programming, and thus MILP, is known to be
+% NP-Hard in general~\cite{garey1979computers}.
+% The stabilization optimization addresses this complexity by
+% calculating sets of variables that are forced to take on specific
+% values based on other constraints in the MILP problem.  For each
+% such variable, the constraints associated with it is effectively
+% eliminated.  We can observe this in comparing the left and
+% right of \autoref{fig:constrs-proofs-plots} where we see both
+% constraints of higher complexity eliminated and the peak of
+% the constraint distribution shifted downward from 400 to 100
+% constraints.  
 
-\ignore{
-Sub-problem size
-- without S+X:
-    + mean: 388
-    + std: 1062
-- with S+X
-    + mean: 142
-    + std: 152
+% \ignore{
+% Sub-problem size
+% - without S+X:
+%     + mean: 388
+%     + std: 1062
+% - with S+X
+%     + mean: 142
+%     + std: 152
 
-MILP complexity
-- without S+X: 
-    + mean: 329
-    + std: 274
-- with S+X
-    + mean: 493
-    + std 449
+% MILP complexity
+% - without S+X: 
+%     + mean: 329
+%     + std: 274
+% - with S+X
+%     + mean: 493
+%     + std 449
 
-We performed an analysis of the relationship between size of constraints and number of sub-proofs and determined that these factors are not strongly correlated.
-For example, there is a 1 layer CNN model with 27k parameters whose verification
-generates 680 sub-proofs where the complexity of the constraints in that proof are at most 109. 
-On the other end of the spectrum, verification of a 2 layer CNN model with 180k parameters only requires 81 sub-proofs, but those proofs consist of constraints with complexity of at least 1721.
-}
+% We performed an analysis of the relationship between size of constraints and number of sub-proofs and determined that these factors are not strongly correlated.
+% For example, there is a 1 layer CNN model with 27k parameters whose verification
+% generates 680 sub-proofs where the complexity of the constraints in that proof are at most 109. 
+% On the other end of the spectrum, verification of a 2 layer CNN model with 180k parameters only requires 81 sub-proofs, but those proofs consist of constraints with complexity of at least 1721.
+% }
 
-\begin{tcolorbox}[left=1pt,right=1pt,top=1pt,bottom=1pt]
-\textbf{RQ2 Findings}: The \proofcheck{} optimizations each independently increase the number of proofs that can be checked and in combination they allow
-an additional 46\% of the proofs in the benchmarks to be checked.
-\end{tcolorbox}
+% \begin{tcolorbox}[left=1pt,right=1pt,top=1pt,bottom=1pt]
+% \textbf{RQ2 Findings}: The \proofcheck{} optimizations each independently increase the number of proofs that can be checked and in combination they allow
+% an additional 46\% of the proofs in the benchmarks to be checked.
+% \end{tcolorbox}
 
-\subsection{RQ3 : Proof Checking and Verifier Optimizations}
-\label{sec:rq3}
-\autoref{fig:algvariation} shows cactus-plots for two configurations of \neuralsat{} and \crown{} generated proofs across the benchmarks.   The performance of the verifiers, dashed lines, differ across configurations and they are able to 
-verify between 337 and 400 problems in the benchmark.
-\ignore{Number of Verified/Proved problems
-    + abcrown(babsr):   337/335 = 99.4%
-    + abcrown:          368/366 = 99.4%
-    + neuralsat(SX):    387/363 = 93.7%
-    + neuralsat(S)(SX): 400/384 = 96%
-}
-For both of the verifiers and configurations,
-\proofcheck{} is able to check between 93.7\% and 99.4\% of the proofs that are generated.
-This demonstrates that the \prooflang{} is able to encode proofs
-generated by differing neural network verification algorithms, and
-that \proofcheck{} can check them.
+% \subsection{RQ3 : Proof Checking and Verifier Optimizations}
+% \label{sec:rq3}
+% \autoref{fig:algvariation} shows cactus-plots for two configurations of \neuralsat{} and \crown{} generated proofs across the benchmarks.   The performance of the verifiers, dashed lines, differ across configurations and they are able to 
+% verify between 337 and 400 problems in the benchmark.
+% \ignore{Number of Verified/Proved problems
+%     + abcrown(babsr):   337/335 = 99.4%
+%     + abcrown:          368/366 = 99.4%
+%     + neuralsat(SX):    387/363 = 93.7%
+%     + neuralsat(S)(SX): 400/384 = 96%
+% }
+% For both of the verifiers and configurations,
+% \proofcheck{} is able to check between 93.7\% and 99.4\% of the proofs that are generated.
+% This demonstrates that the \prooflang{} is able to encode proofs
+% generated by differing neural network verification algorithms, and
+% that \proofcheck{} can check them.
 
-% \autoref{tab:sizestats}.
-\begin{figure}[t]
-    \centering
-    \includegraphics[width=0.8\linewidth]{figure/ablation.pdf}
-    \caption{\proofcheck{} performance with different verification algorithms.}
-    \label{fig:algvariation}
-\end{figure}
+% % \autoref{tab:sizestats}.
+% \begin{figure}[t]
+%     \centering
+%     \includegraphics[width=0.8\linewidth]{figure/ablation.pdf}
+%     \caption{\proofcheck{} performance with different verification algorithms.}
+%     \label{fig:algvariation}
+% \end{figure}
 
-\begin{table}[t]
-    \caption{Proof statistics for best verifier configurations.}
-    \label{tab:sizestats}
-    \centering
-    \begin{tabular}{c|cc|cc}
-        \toprule
-         \multirow{2}{*}{\textbf{Verifier}} & \multicolumn{2}{c}{\textbf{Num. Sub-Proofs}} & \multicolumn{2}{|c}{\textbf{MILP Complexity}}\\
-         & Mean & Median & Mean & Median \\ 
-         \midrule
-         \neuralsat{}(S) & 95 & 36 & 601 & 545 \\ 
-         \midrule
-         \crown{} & 230 & 180 & 414 & 179\\
-         \bottomrule
-    \end{tabular}
-\end{table}
+% \begin{table}[t]
+%     \caption{Proof statistics for best verifier configurations.}
+%     \label{tab:sizestats}
+%     \centering
+%     \begin{tabular}{c|cc|cc}
+%         \toprule
+%          \multirow{2}{*}{\textbf{Verifier}} & \multicolumn{2}{c}{\textbf{Num. Sub-Proofs}} & \multicolumn{2}{|c}{\textbf{MILP Complexity}}\\
+%          & Mean & Median & Mean & Median \\ 
+%          \midrule
+%          \neuralsat{}(S) & 95 & 36 & 601 & 545 \\ 
+%          \midrule
+%          \crown{} & 230 & 180 & 414 & 179\\
+%          \bottomrule
+%     \end{tabular}
+% \end{table}
 
-We performed an analysis of both the number of sub-proofs and MILP complexity for the proofs generated by the two best performing verifier
-configurations.  These values follow a skewed
-distribution, so we report the mean and median values in \autoref{tab:sizestats}.   One can observe variation in the
-structure of the proofs generated by these verifiers.
-\neuralsat{} generates smaller proof trees, but where the
-MILP problems are more complex.
-In contrast, \crown{} generates significantly larger proof trees,
-but with less complex MILP problems.
-This variation suggests potential avenues for future work, especially,
-when proof checking is important.
+% We performed an analysis of both the number of sub-proofs and MILP complexity for the proofs generated by the two best performing verifier
+% configurations.  These values follow a skewed
+% distribution, so we report the mean and median values in \autoref{tab:sizestats}.   One can observe variation in the
+% structure of the proofs generated by these verifiers.
+% \neuralsat{} generates smaller proof trees, but where the
+% MILP problems are more complex.
+% In contrast, \crown{} generates significantly larger proof trees,
+% but with less complex MILP problems.
+% This variation suggests potential avenues for future work, especially,
+% when proof checking is important.
 
-For example, \neuralsat{} might include an option to generate larger proof trees, but with smaller MILP problems.  Such proofs would then
-be amenable to higher-degrees of parallel solving and mitigate the 
-performance bottleneck presented by MILP solver implementations.
-One might even consider strategies that use fast verification 
-options during development and then when all properties are proven, shift to slower verification options that are more amenable to proof checking.
+% For example, \neuralsat{} might include an option to generate larger proof trees, but with smaller MILP problems.  Such proofs would then
+% be amenable to higher-degrees of parallel solving and mitigate the 
+% performance bottleneck presented by MILP solver implementations.
+% One might even consider strategies that use fast verification 
+% options during development and then when all properties are proven, shift to slower verification options that are more amenable to proof checking.
 
-\ignore{
-1. Longer verification time means proof tree will be larger since verifier has to explore larger space
-2. If an instance is verified by \crown{}, it will likely be proved by \proofcheck{}. In other words, most of timeout instances are due to \crown{} cannot verify (1st phase).
+% \ignore{
+% 1. Longer verification time means proof tree will be larger since verifier has to explore larger space
+% 2. If an instance is verified by \crown{}, it will likely be proved by \proofcheck{}. In other words, most of timeout instances are due to \crown{} cannot verify (1st phase).
 
-- MILP complexity:
-    + neuralsat(S)(SX)  : mean=601.36, std=475.88, median=545.00, min=3, max=1944
-    + neuralsat(SX)     : mean=492.40, std=448.81, median=342.00, min=2, max=1956
-    + abcrown           : mean=414.35, std=447.02, median=179.00, min=0, max=1957
-    + abcrown(babsr)    : mean=409.00, std=448.89, median=166.00, min=0, max=1952
+% - MILP complexity:
+%     + neuralsat(S)(SX)  : mean=601.36, std=475.88, median=545.00, min=3, max=1944
+%     + neuralsat(SX)     : mean=492.40, std=448.81, median=342.00, min=2, max=1956
+%     + abcrown           : mean=414.35, std=447.02, median=179.00, min=0, max=1957
+%     + abcrown(babsr)    : mean=409.00, std=448.89, median=166.00, min=0, max=1952
 
-They share the same MILP base model since their base models are all generated from SX setting.
-neuralsat(S)(SX) has larger MILP complexity in average means that its proof trees are often shallower than others. In other words, neuralsat(S) explores smaller space than others -- which is true.
+% They share the same MILP base model since their base models are all generated from SX setting.
+% neuralsat(S)(SX) has larger MILP complexity in average means that its proof trees are often shallower than others. In other words, neuralsat(S) explores smaller space than others -- which is true.
 
-- number of sub proofs:
-    + neuralsat(S)(SX): mean=95.11,   std=117.13, median=36.00,  min=0, max=829
-    + neuralsat(SX)   : mean=142.00,  std=151.72, median=106.00, min=1, max=1132
-    + abcrown         : mean=229.96,  std=199.23, median=180.00, min=0, max=1152
-    + abcrown(babsr)  : mean=228.10,  std=170.88, median=188.00, min=0, max=857
+% - number of sub proofs:
+%     + neuralsat(S)(SX): mean=95.11,   std=117.13, median=36.00,  min=0, max=829
+%     + neuralsat(SX)   : mean=142.00,  std=151.72, median=106.00, min=1, max=1132
+%     + abcrown         : mean=229.96,  std=199.23, median=180.00, min=0, max=1152
+%     + abcrown(babsr)  : mean=228.10,  std=170.88, median=188.00, min=0, max=857
 
-- Number of leaves:
-    + neuralsat(S)(SX): mean=236.59,   std=447.80,   median=37.50,  min=0, max=3627
-    + neuralsat(SX)   : mean=902.25,   std=4957.22,  median=219.00, min=6, max=91318
-    + abcrown         : mean=3007.42,  std=12742.09, median=561.00, min=0, max=138918
-    + abcrown(babsr)  : mean=11714.62, std=41909.72, median=781.50, min=0, max=509765
-}
+% - Number of leaves:
+%     + neuralsat(S)(SX): mean=236.59,   std=447.80,   median=37.50,  min=0, max=3627
+%     + neuralsat(SX)   : mean=902.25,   std=4957.22,  median=219.00, min=6, max=91318
+%     + abcrown         : mean=3007.42,  std=12742.09, median=561.00, min=0, max=138918
+%     + abcrown(babsr)  : mean=11714.62, std=41909.72, median=781.50, min=0, max=509765
+% }
 
 
-\begin{tcolorbox}[left=1pt,right=1pt,top=1pt,bottom=1pt]
-\textbf{RQ3 Findings}: \prooflang{} is robust to variation in different verification algorithms and \proofcheck{} is applicable to any such proof and effective in checking
-the vast majority of those arising from the benchmarks.
-\end{tcolorbox}
+% \begin{tcolorbox}[left=1pt,right=1pt,top=1pt,bottom=1pt]
+% \textbf{RQ3 Findings}: \prooflang{} is robust to variation in different verification algorithms and \proofcheck{} is applicable to any such proof and effective in checking
+% the vast majority of those arising from the benchmarks.
+% \end{tcolorbox}
 
 
 \chapter{DNN Verification Benchmarks}\label{chap:benchmarks}
