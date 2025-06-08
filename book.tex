@@ -727,59 +727,63 @@ A \emph{fully connected} FFN is an FFN where every neuron in a layer is connecte
 
 \subsection{Convolutional Neural Networks (CNNs)} 
 
-CNNs, often used in image recognition and classification, consist of neurons that have learnable weights and biases. Each neuron receives several inputs, takes a weighted sum over them, passes it through an activation function, and responds with an output.
+CNNs, often used in image recognition and classification, consist of neurons that have learnable weights and biases~\autoref{fig:cnn}. 
+Each neuron receives several inputs, takes a weighted sum over them, passes it through an activation function, and responds with an output.
 
 \begin{figure}[htp]
-    \begin{center}
-        \begin{tikzpicture}[scale=0.8, transform shape]
-            % Parameters for vertical node spacing
-            \def\inpN{4}
-            \def\hidN{3}
-            \def\outN{3}
-            \def\dy{1.2}
-            \def\xInput{0}
-            \def\xHidden{3.2}
-            \def\xOutput{6.4}
-        
-            % Layer labels (smaller, not overlapped)
-            \node at (\xInput,{\inpN/2*\dy+0.7}) {\textbf{Input Layer}};
-            \node at (\xHidden,{\inpN/2*\dy+0.7}) {\textbf{Hidden Layer}};
-            \node at (\xOutput,{\inpN/2*\dy+0.7}) {\textbf{Output Layer}};
-        
-            % Input nodes (left column)
-            \foreach \i in {1,...,\inpN} {
-                \node[circle, draw=black, fill=white, minimum size=0.7cm] (I\i) at (\xInput, {(\inpN-1)*0.5*\dy - (\i-1)*\dy}) {};
-            }
-        
-            % Hidden nodes (centered)
-            \foreach \i in {1,...,\hidN} {
-                \node[circle, draw=black, fill=white, minimum size=0.7cm] (H\i) at (\xHidden, {(\hidN-1)*0.5*\dy - (\i-1)*\dy}) {};
-            }
-        
-            % Output nodes (centered)
-            \foreach \i in {1,...,\outN} {
-                \node[circle, draw=black, fill=white, minimum size=0.7cm] (O\i) at (\xOutput, {(\outN-1)*0.5*\dy - (\i-1)*\dy}) {};
-            }
-        
-            % 1D conv connectivity
-            \draw[->, thick] (I1) -- (H1);
-            \draw[->, thick] (I2) -- (H1);
-        
-            \draw[->, thick] (I2) -- (H2);
-            \draw[->, thick] (I3) -- (H2);
-        
-            \draw[->, thick] (I3) -- (H3);
-            \draw[->, thick] (I4) -- (H3);
-        
-            % Hidden to output, one-to-one
-            \foreach \i in {1,2,3} {
-                \draw[->, thick] (H\i) -- (O\i);
-            }
-        \end{tikzpicture}
-    \end{center}
-    \caption{1-dimensional convolution: each hidden node receives input from a local window; each output comes from a hidden node.\tvn{Could you add some weights, biases, ReLU  or some other activation that's often used in this network  to the figure to make it a complete example? Also give an example of outputs of the neurons computed using those weights and biases. Like in~\autoref{ex:e2}}}
-    \label{fig:conv1d}
+    \centering
+    \begin{tikzpicture}[scale=0.8, transform shape]
+    % Parameters
+    \def\inpN{4}
+    \def\hidN{3}
+    \def\outN{3}
+    \def\dy{1.5}
+    \def\xInput{0}
+    \def\xHidden{3.2}
+    \def\xOutput{6.4}
+
+    % Input nodes
+    \foreach \i [evaluate=\i as \lbl using int(\i)] in {1,...,4} {
+        \node[circle, draw, fill=white, minimum size=0.7cm, label=left:{$x_{\lbl}$}] 
+            (I\i) at (\xInput, {(4-1)*0.5*\dy - (\i-1)*\dy}) {};
+    }
+
+    % Hidden nodes
+    \node[circle, draw, fill=white, minimum size=0.7cm] at (\xHidden, {1.5}) (H1) {$h_1$};
+    \node[above=0.1cm of H1] (B1) {$b=0.5$};
+    \node[circle, draw, fill=white, minimum size=0.7cm] at (\xHidden, {0}) (H2) {$h_2$};
+    % \node[above=0.2cm of H2] (B2) {$b=0.5$};
+    \node[circle, draw, fill=white, minimum size=0.7cm] at (\xHidden, {-1.5}) (H3) {$h_3$};
+    % \node[above=0.2cm of H3] (B3) {$b=0.5$};
+
+    % Output nodes
+    \node[circle, draw, fill=white, minimum size=0.7cm] at (\xOutput, {1.5}) (O1) {$y_1$};
+    \node[circle, draw, fill=white, minimum size=0.7cm] at (\xOutput, {0}) (O2) {$y_2$};
+    \node[circle, draw, fill=white, minimum size=0.7cm] at (\xOutput, {-1.5}) (O3) {$y_3$};
+
+    % Connections: Input to Hidden (with weight labels spaced to avoid overlap)
+    \draw[->, thick] (I1) -- node[above=2pt, midway, xshift=-2pt, yshift=1pt] {$w_1=2$} (H1);
+    \draw[->, thick] (I2) -- node[below=1pt, midway, xshift=2pt] {$w_2=-1$} (H1);
+    \draw[->, thick] (I2) -- (H2);
+    \draw[->, thick] (I3) -- (H2);
+    \draw[->, thick] (I3) -- (H3);
+    \draw[->, thick] (I4) -- (H3);
+
+    % Hidden to Output, one to one
+    \draw[->, thick] (H1) -- (O1);
+    \draw[->, thick] (H2) -- (O2);
+    \draw[->, thick] (H3) -- (O3);
+
+    \end{tikzpicture}
+    \caption{1-dimensional convolution}
+    \label{fig:cnn}
 \end{figure}
+
+Given an input vector $\mathbf{x} = [x_1, x_2, x_3, x_4]$, the computation of the first output proceeds as follows. 
+The first hidden unit forms a linear combination of its inputs as $h_1 = 2x_1 - x_2 + 0.5$. 
+This value is then passed through the ReLU activation function, resulting in $\hat{h}_1 = \mathrm{ReLU}(h_1) = \max(0, 2x_1 - x_2 + 0.5)$. 
+Finally, the first output is simply $y_1 = \hat{h}_1$.
+
 
 \subsection{Recurrent Neural Networks (RNNs)} 
 
