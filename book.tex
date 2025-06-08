@@ -1695,7 +1695,7 @@ Therefore, DeepPoly achieves a balance, combining the expressiveness of polyhedr
 
 
 \part{DNN Verification Algorithms}
-\chapter{Search Algorithms}
+\chapter{Search Algorithms}\label{chap:search-algorithms}
 
 \section{Branch-and-Bound (BaB)}\label{sec:bab}
     
@@ -1886,6 +1886,13 @@ Finally, \bab{} has an empty \texttt{ActPatterns}, stops the search, and returns
 \part{Optimizations and Strategies}
 
 \chapter{Adversarial Attacks}
+
+Modern DNN verifiers (\crown{}, \neuralsat{}, etc) will first run a fast adversarial attack to check for obvious counterexamples. If one is found, the property is \sat (property violated). If no counterexample is found, the verifier will then proceed to the more expensive search-based verification algorithm (e.g., \bab{} as shown in~\autoref{chap:search-algorithms}).
+
+\section{Random Search Attack}
+Random search is a simple baseline adversarial attack.  It randomly samples points in the input domain (or within an allowed perturbation region). Each sample is checked against the property.  If any sample violates the property, a counterexample is found.
+
+
 \chapter{GPU and Multicore Parallelism}
 
 
