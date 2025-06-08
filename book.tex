@@ -592,7 +592,7 @@ This means that the softmax function maps the input vector $x$ to a probability 
 
 
 
-\section{Example} 
+\section{Example} \label{ex:e2}
 
 % \begin{figure}
 %     \centering
@@ -634,12 +634,10 @@ This means that the softmax function maps the input vector $x$ to a probability 
 \end{figure}
 
 
-\begin{example}\label{ex:e2}
 Fig.~\ref{fig:dnn} shows a simple DNN with two inputs $x_1,x_2$, one hidden layer consisting of two (hidden) neurons $x_3,x_4$, and one output $x_5$. The weights of a neuron are shown on its incoming edges, and the bias is shown above or below each neuron. 
 
 The outputs of the hidden neurons  are computed the affine transformation and ReLU, e.g., $x_3 = \relu{-0.5x_1+0.5x_2+1.0}$. The output neuron is computed with just the affine transformation, i.e., $x_5=-x_3+x_4-1$.
 
-\end{example}
 
 \section{Types of Neural Networks}
 
@@ -744,22 +742,22 @@ Each neuron receives several inputs, takes a weighted sum over them, passes it t
 
     % Input nodes
     \foreach \i [evaluate=\i as \lbl using int(\i)] in {1,...,4} {
-        \node[circle, draw, fill=white, minimum size=0.7cm, label=left:{$x_{\lbl}$}] 
+        \node[circle, draw, fill=white, minimum size=0.7cm, label=center:{$x_{\lbl}$}] 
             (I\i) at (\xInput, {(4-1)*0.5*\dy - (\i-1)*\dy}) {};
     }
 
     % Hidden nodes
-    \node[circle, draw, fill=white, minimum size=0.7cm] at (\xHidden, {1.5}) (H1) {$h_1$};
+    \node[circle, draw, fill=white, minimum size=0.7cm, label=center:{$h_1$}] at (\xHidden, {1.5}) (H1) {};
     \node[above=0.1cm of H1] (B1) {$b=0.5$};
-    \node[circle, draw, fill=white, minimum size=0.7cm] at (\xHidden, {0}) (H2) {$h_2$};
+    \node[circle, draw, fill=white, minimum size=0.7cm, label=center:{$h_2$}] at (\xHidden, {0}) (H2) {};
     % \node[above=0.2cm of H2] (B2) {$b=0.5$};
-    \node[circle, draw, fill=white, minimum size=0.7cm] at (\xHidden, {-1.5}) (H3) {$h_3$};
+    \node[circle, draw, fill=white, minimum size=0.7cm, label=center:{$h_3$}] at (\xHidden, {-1.5}) (H3) {};
     % \node[above=0.2cm of H3] (B3) {$b=0.5$};
 
     % Output nodes
-    \node[circle, draw, fill=white, minimum size=0.7cm] at (\xOutput, {1.5}) (O1) {$y_1$};
-    \node[circle, draw, fill=white, minimum size=0.7cm] at (\xOutput, {0}) (O2) {$y_2$};
-    \node[circle, draw, fill=white, minimum size=0.7cm] at (\xOutput, {-1.5}) (O3) {$y_3$};
+    \node[circle, draw, fill=white, minimum size=0.7cm, label=center:{$y_1$}] at (\xOutput, {1.5}) (O1) {};
+    \node[circle, draw, fill=white, minimum size=0.7cm, label=center:{$y_2$}] at (\xOutput, {0}) (O2) {};
+    \node[circle, draw, fill=white, minimum size=0.7cm, label=center:{$y_3$}] at (\xOutput, {-1.5}) (O3) {};
 
     % Connections: Input to Hidden (with weight labels spaced to avoid overlap)
     \draw[->, thick] (I1) -- node[above=2pt, midway, xshift=-2pt, yshift=1pt] {$w_1=2$} (H1);
@@ -789,74 +787,159 @@ Finally, the first output is simply $y_1 = \hat{h}_1$.
 
 RNNs, often used in natural language process and speech recognition, are designed to recognize patterns in sequences of data. RNNs have \emph{loops} in them, allowing information to be sent forward and backward.
 
+% \begin{figure}[htp]
+%     \begin{center}
+%     \begin{tikzpicture}[scale=0.8, transform shape]
+%         % --- Rolled RNN (left diagram) ---
+%         \begin{scope}
+%             % Layer labels
+%             \node at (0,1.5) {\textbf{Input}};
+%             \node at (2.4,1.5) {\textbf{Hidden}};
+%             \node at (4.8,1.5) {\textbf{Output}};
+%             % Nodes
+%             \node[circle, draw=black, fill=white, thick, minimum size=0.7cm] (RI) at (0,0) {};
+%             \node[circle, draw=black, fill=white, thick, minimum size=0.7cm] (RH) at (2.4,0) {};
+%             \node[circle, draw=black, fill=white, thick, minimum size=0.7cm] (RO) at (4.8,0) {};
+%             % Main arrows
+%             \draw[->, thick] (RI) -- (RH);
+%             \draw[->, thick] (RH) -- (RO);
+%             % Recurrent/self-loop at hidden node
+%             \draw [->, thick] (RH) edge [out=-120,in=-60,looseness=8] (RH);
+%             % Caption
+%             \node[align=center] at (2.4,-1.7) {Rolled RNN};
+%         \end{scope}
+        
+%         % --- Unrolled RNN (right diagram) ---
+%         \begin{scope}[xshift=8cm]
+%             % Parameters for vertical node spacing
+%             \def\inpN{4}
+%             \def\hidN{4}
+%             \def\outN{4}
+%             \def\dy{1.2}
+%             \def\xInput{0}
+%             \def\xHidden{3.2}
+%             \def\xOutput{6.4}
+%             % Layer labels
+%             \node at (\xInput,{\inpN/2*\dy+0.8}) {\textbf{Input}};
+%             \node at (\xHidden,{\inpN/2*\dy+0.8}) {\textbf{Hidden}};
+%             \node at (\xOutput,{\inpN/2*\dy+0.8}) {\textbf{Output}};
+%             % Input nodes (left column)
+%             \foreach \i in {1,...,\inpN} {
+%                 \node[circle, draw=black, fill=white, minimum size=0.7cm] (I\i) at (\xInput, {(\inpN-1)*0.5*\dy - (\i-1)*\dy}) {};
+%             }
+%             % Hidden nodes (centered) (as many as input)
+%             \foreach \i in {1,...,\hidN} {
+%                 \node[circle, draw=black, fill=white, minimum size=0.7cm] (H\i) at (\xHidden, {(\hidN-1)*0.5*\dy - (\i-1)*\dy}) {};
+%             }
+%             % Output nodes (centered) (as many as input)
+%             \foreach \i in {1,...,\outN} {
+%                 \node[circle, draw=black, fill=white, minimum size=0.7cm] (O\i) at (\xOutput, {(\outN-1)*0.5*\dy - (\i-1)*\dy}) {};
+%             }
+%             % RNN input-to-hidden (1-to-1)
+%             \foreach \i in {1,...,4} {
+%                 \draw[->, thick] (I\i) -- (H\i);
+%             }
+%             % Hidden-to-hidden (recurrent arrows, e.g. from H1 to H2, H2 to H3, etc)
+%             \foreach \i [evaluate={\j=int(\i+1);}] in {1,2,3} {
+%                 \draw[->, thick] ([xshift=4pt]H\i) -- ([xshift=-4pt]H\j);
+%             }
+%             % Hidden-to-output (1-to-1)
+%             \foreach \i in {1,...,4} {
+%                 \draw[->, thick] (H\i) -- (O\i);
+%             }
+%             % Caption
+%             \node[align=center] at (3.2,-3.2) {Unrolled RNN};
+%         \end{scope}
+%     \end{tikzpicture}
+%     \end{center}
+%     \caption{RNN cell (left) and unrolled RNN sequence structure (right).\tvn{Could you add some weights, biases, ReLU or some other activation that's often used in this network to the figure to make it a complete example? Also give an example of outputs of the neurons computed using those weights and biases. Like in~\autoref{ex:e2}}}
+%     \label{fig:rnn}
+% \end{figure}
+
+
 \begin{figure}[htp]
     \begin{center}
-    \begin{tikzpicture}[scale=0.8, transform shape]
-        % --- Rolled RNN (left diagram) ---
-        \begin{scope}
-            % Layer labels
-            \node at (0,1.5) {\textbf{Input}};
-            \node at (2.4,1.5) {\textbf{Hidden}};
-            \node at (4.8,1.5) {\textbf{Output}};
-            % Nodes
-            \node[circle, draw=black, fill=white, thick, minimum size=0.7cm] (RI) at (0,0) {};
-            \node[circle, draw=black, fill=white, thick, minimum size=0.7cm] (RH) at (2.4,0) {};
-            \node[circle, draw=black, fill=white, thick, minimum size=0.7cm] (RO) at (4.8,0) {};
-            % Main arrows
-            \draw[->, thick] (RI) -- (RH);
-            \draw[->, thick] (RH) -- (RO);
-            % Recurrent/self-loop at hidden node
-            \draw [->, thick] (RH) edge [out=-120,in=-60,looseness=8] (RH);
-            % Caption
-            \node[align=center] at (2.4,-1.7) {Rolled RNN};
-        \end{scope}
-        
-        % --- Unrolled RNN (right diagram) ---
-        \begin{scope}[xshift=8cm]
-            % Parameters for vertical node spacing
-            \def\inpN{4}
-            \def\hidN{4}
-            \def\outN{4}
-            \def\dy{1.2}
-            \def\xInput{0}
-            \def\xHidden{3.2}
-            \def\xOutput{6.4}
-            % Layer labels
-            \node at (\xInput,{\inpN/2*\dy+0.8}) {\textbf{Input}};
-            \node at (\xHidden,{\inpN/2*\dy+0.8}) {\textbf{Hidden}};
-            \node at (\xOutput,{\inpN/2*\dy+0.8}) {\textbf{Output}};
-            % Input nodes (left column)
-            \foreach \i in {1,...,\inpN} {
-                \node[circle, draw=black, fill=white, minimum size=0.7cm] (I\i) at (\xInput, {(\inpN-1)*0.5*\dy - (\i-1)*\dy}) {};
-            }
-            % Hidden nodes (centered) (as many as input)
-            \foreach \i in {1,...,\hidN} {
-                \node[circle, draw=black, fill=white, minimum size=0.7cm] (H\i) at (\xHidden, {(\hidN-1)*0.5*\dy - (\i-1)*\dy}) {};
-            }
-            % Output nodes (centered) (as many as input)
-            \foreach \i in {1,...,\outN} {
-                \node[circle, draw=black, fill=white, minimum size=0.7cm] (O\i) at (\xOutput, {(\outN-1)*0.5*\dy - (\i-1)*\dy}) {};
-            }
-            % RNN input-to-hidden (1-to-1)
-            \foreach \i in {1,...,4} {
-                \draw[->, thick] (I\i) -- (H\i);
-            }
-            % Hidden-to-hidden (recurrent arrows, e.g. from H1 to H2, H2 to H3, etc)
-            \foreach \i [evaluate={\j=int(\i+1);}] in {1,2,3} {
-                \draw[->, thick] ([xshift=4pt]H\i) -- ([xshift=-4pt]H\j);
-            }
-            % Hidden-to-output (1-to-1)
-            \foreach \i in {1,...,4} {
-                \draw[->, thick] (H\i) -- (O\i);
-            }
-            % Caption
-            \node[align=center] at (3.2,-3.2) {Unrolled RNN};
-        \end{scope}
-    \end{tikzpicture}
-    \end{center}
-    \caption{RNN cell (left) and unrolled RNN sequence structure (right).\tvn{Could you add some weights, biases, ReLU or some other activation that's often used in this network to the figure to make it a complete example? Also give an example of outputs of the neurons computed using those weights and biases. Like in~\autoref{ex:e2}}}
-    \label{fig:rnn}
+\begin{tikzpicture}[scale=0.8, transform shape]
+% --- Rolled RNN (left diagram) ---
+\begin{scope}
+% Layer labels
+\node at (0,1.5) {\textbf{Input}};
+\node at (2.4,1.5) {\textbf{Hidden}};
+\node at (4.8,1.5) {\textbf{Output}};
+% Nodes
+\node[circle, draw=black, fill=white, thick, minimum size=0.7cm, label=center:{$x_t$}] (RI) at (0,0) {};
+\node[circle, draw=black, fill=white, thick, minimum size=0.7cm, label=center:{$h_t$}] (RH) at (2.4,0) {};
+\node[circle, draw=black, fill=white, thick, minimum size=0.7cm, label=center:{$y_t$}] (RO) at (4.8,0) {};
+% Bias above nodes
+\node[above=0.16cm of RH] {$0.5$};
+\node[above=0.16cm of RO] {$-1$};
+% Main arrows with weights
+\draw[->, thick] (RI) -- node[above, pos=0.5] {$2$} (RH);
+\draw[->, thick] (RH) -- node[above, pos=0.5] {$1$} (RO);
+% Recurrent/self-loop at hidden node with recurrent weight
+\draw [->, thick] (RH) edge [out=-120,in=-60,looseness=8] node[below, yshift=-2pt, xshift=10pt] {$-1$} (RH);
+% Caption
+\node[align=center] at (2.4,-2.7) {RNN cell};
+\end{scope}
+
+
+
+% --- Unrolled RNN (right diagram) ---
+\begin{scope}[xshift=8cm]
+% Parameters for vertical node spacing
+\def\inpN{4}
+\def\hidN{4}
+\def\outN{4}
+\def\dy{2.0}
+\def\xInput{0}
+\def\xHidden{3.2}
+\def\xOutput{6.4}
+% Layer labels
+\node at (\xInput,{\inpN/2*\dy+0.8}) {\textbf{Input}};
+\node at (\xHidden,{\inpN/2*\dy+0.8}) {\textbf{Hidden}};
+\node at (\xOutput,{\inpN/2*\dy+0.8}) {\textbf{Output}};
+% Input nodes (left column)
+\foreach \i in {1,...,\inpN} {
+    \node[circle, draw=black, fill=white, minimum size=0.7cm, label=center:{$x_{\i}$}] (I\i) at (\xInput, {(\inpN-1)*0.5*\dy - (\i-1)*\dy}) {};
+}
+% Hidden nodes (centered) (as many as input)
+\foreach \i in {1,...,\hidN} {
+    \node[circle, draw=black, fill=white, minimum size=0.7cm, label=center:{$h_{\i}$}] (H\i) at (\xHidden, {(\hidN-1)*0.5*\dy - (\i-1)*\dy}) {};
+    \node[above right=0 of H\i] {$0.5$}; % Bias above each hidden
+}
+% Output nodes (centered) (as many as input)
+\foreach \i in {1,...,\outN} {
+    \node[circle, draw=black, fill=white, minimum size=0.7cm, label=center:{$y_{\i}$}] (O\i) at (\xOutput, {(\outN-1)*0.5*\dy - (\i-1)*\dy}) {};
+    \node[above=0.16cm of O\i] {$-1$}; % Bias above each output
+}
+% RNN input-to-hidden (1-to-1, with weight)
+\foreach \i in {1,...,4} {
+    \draw[->, thick] (I\i) -- node[above, pos=0.5, yshift=2pt] {$2$} (H\i);
+}
+% Hidden-to-hidden (recurrent arrows, with weight)
+\foreach \i [evaluate={\j=int(\i+1);}] in {1,2,3} {
+    \draw[->, thick] ([xshift=4pt]H\i) -- node[above left, pos=0.5, yshift=2pt] {$-1$} ([xshift=-4pt]H\j);
+}
+% Hidden-to-output (1-to-1, with weight)
+\foreach \i in {1,...,4} {
+    \draw[->, thick] (H\i) -- node[above, pos=0.5, yshift=2pt] {$1$} (O\i);
+}
+% Caption
+\node[align=center] at (3.2,-4.0) {Unrolled RNN};
+\end{scope}
+\end{tikzpicture}
+\end{center}
+\caption{RNN cell (left) and unrolled RNN sequence structure (right). 
+Weights on connections; biases above hidden and output nodes.}
+\label{fig:rnn}
 \end{figure}
+
+
+Assume the input sequence is $\mathbf{x} = [x_1, x_2, x_3, x_4]$, and the initial hidden state is $h_0=0$. 
+For the first time step, the hidden state is computed as $h_1 = ReLU(2x_1 - h_0 + 0.5) = ReLU(2x_1 + 0.5)$, and the output is $y_1 = h_1 - 1$. 
+For the second time step, the hidden state is $h_2 = ReLU(2x_2 - h_1 + 0.5)$, and the output is $y_2 = h_2 - 1$.
+% For the third time step, the hidden state is $h_3 = ReLU(2x_3 - h_2 + 0.5)$, and the output is $y_3 = h_3 - 1$.
+% For the fourth time step, the hidden state is $h_4 = ReLU(2x_4 - h_3 + 0.5)$, and the output is $y_4 = h_4 - 1$.
 
 \paragraph{Residual Networks} Residual Networks (ResNets) are a type of neural network that is often used in image recognition and classification. ResNets introduce skip connections that allow the gradient to flow directly through the network, making it easier to train deep networks.
 
