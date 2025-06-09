@@ -192,7 +192,7 @@
 \newcommand{\mipverify}{\texttt{MIPVerify}}
 \newcommand{\crowndefault}{\texttt{$\alpha\beta$-CROWN} (default)}
 
-\newcommand{\relu}[1]{\mathrm{relu}\left(#1\right)}
+\newcommand{\relu}[1]{\mathrm{ReLU}\left(#1\right)}
 \newcommand{\sigmoid}[1]{\mathrm{sigmoid}\left(#1\right)}
 %\newcommand{\tanh}[1]{\mathrm{Tanh}\left(#1\right)}%already defined in amsmath
 \newcommand{\softmax}[1]{\mathrm{softmax}\left(#1\right)}
@@ -754,7 +754,7 @@ Each neuron receives several inputs, takes a weighted sum over them, passes it t
 
     % Hidden nodes
     \node[circle, draw, fill=white, minimum size=0.7cm, label=center:{$h_1$}] at (\xHidden, {1.5}) (H1) {};
-    \node[above=0.1cm of H1] (B1) {$b=0.5$};
+    \node[above=0.1cm of H1] (B1) {$0.5$};
     \node[circle, draw, fill=white, minimum size=0.7cm, label=center:{$h_2$}] at (\xHidden, {0}) (H2) {};
     % \node[above=0.2cm of H2] (B2) {$b=0.5$};
     \node[circle, draw, fill=white, minimum size=0.7cm, label=center:{$h_3$}] at (\xHidden, {-1.5}) (H3) {};
@@ -762,19 +762,20 @@ Each neuron receives several inputs, takes a weighted sum over them, passes it t
 
     % Output nodes
     \node[circle, draw, fill=white, minimum size=0.7cm, label=center:{$y_1$}] at (\xOutput, {1.5}) (O1) {};
+    \node[above=0.1cm of O1] (B1) {$-1$};
     \node[circle, draw, fill=white, minimum size=0.7cm, label=center:{$y_2$}] at (\xOutput, {0}) (O2) {};
     \node[circle, draw, fill=white, minimum size=0.7cm, label=center:{$y_3$}] at (\xOutput, {-1.5}) (O3) {};
 
     % Connections: Input to Hidden (with weight labels spaced to avoid overlap)
-    \draw[->, thick] (I1) -- node[above=2pt, midway, xshift=-2pt, yshift=1pt] {$w_1=2$} (H1);
-    \draw[->, thick] (I2) -- node[below=1pt, midway, xshift=2pt] {$w_2=-1$} (H1);
+    \draw[->, thick] (I1) -- node[above=2pt, midway, xshift=-2pt, yshift=1pt] {$2$} (H1);
+    \draw[->, thick] (I2) -- node[below=1pt, midway, xshift=2pt] {$-1$} (H1);
     \draw[->, thick] (I2) -- (H2);
     \draw[->, thick] (I3) -- (H2);
     \draw[->, thick] (I3) -- (H3);
     \draw[->, thick] (I4) -- (H3);
 
     % Hidden to Output, one to one
-    \draw[->, thick] (H1) -- (O1);
+    \draw[->, thick] (H1) -- node[above=2pt, midway] {$1$} (O1);
     \draw[->, thick] (H2) -- (O2);
     \draw[->, thick] (H3) -- (O3);
 
@@ -786,7 +787,7 @@ Each neuron receives several inputs, takes a weighted sum over them, passes it t
 Given an input vector $\mathbf{x} = [x_1, x_2, x_3, x_4]$, the computation of the first output proceeds as follows. 
 The first hidden unit forms a linear combination of its inputs as $h_1 = 2x_1 - x_2 + 0.5$. 
 This value is then passed through the ReLU activation function, resulting in $\hat{h}_1 = \mathrm{ReLU}(h_1) = \max(0, 2x_1 - x_2 + 0.5)$. 
-Finally, the first output is simply $y_1 = \hat{h}_1$.
+Finally, the first output is simply $y_1 = \hat{h}_1 - 1$.
 
 
 \subsection{Recurrent Neural Networks (RNNs)} 
@@ -878,7 +879,7 @@ RNNs, often used in natural language process and speech recognition, are designe
 \node[circle, draw=black, fill=white, thick, minimum size=0.7cm, label=center:{$y_t$}] (RO) at (4.8,0) {};
 % Bias above nodes
 \node[above=0.16cm of RH] {$0.5$};
-\node[above=0.16cm of RO] {$-1$};
+\node[above=0.16cm of RO] {$-0.5$};
 % Main arrows with weights
 \draw[->, thick] (RI) -- node[above, pos=0.5] {$2$} (RH);
 \draw[->, thick] (RH) -- node[above, pos=0.5] {$1$} (RO);
@@ -916,7 +917,7 @@ RNNs, often used in natural language process and speech recognition, are designe
 % Output nodes (centered) (as many as input)
 \foreach \i in {1,...,\outN} {
     \node[circle, draw=black, fill=white, minimum size=0.7cm, label=center:{$y_{\i}$}] (O\i) at (\xOutput, {(\outN-1)*0.5*\dy - (\i-1)*\dy}) {};
-    \node[above=0.16cm of O\i] {$-1$}; % Bias above each output
+    \node[above=0.16cm of O\i] {$-0.5$}; % Bias above each output
 }
 % RNN input-to-hidden (1-to-1, with weight)
 \foreach \i in {1,...,4} {
@@ -941,11 +942,11 @@ Weights on connections; biases above hidden and output nodes.}
 \end{figure}
 
 
-Assume the input sequence is $\mathbf{x} = [x_1, x_2, x_3, x_4]$, and the initial hidden state is $h_0=0$. 
-For the first time step, the hidden state is computed as $h_1 = ReLU(2x_1 - h_0 + 0.5) = ReLU(2x_1 + 0.5)$, and the output is $y_1 = h_1 - 1$. 
-For the second time step, the hidden state is $h_2 = ReLU(2x_2 - h_1 + 0.5)$, and the output is $y_2 = h_2 - 1$.
-% For the third time step, the hidden state is $h_3 = ReLU(2x_3 - h_2 + 0.5)$, and the output is $y_3 = h_3 - 1$.
-% For the fourth time step, the hidden state is $h_4 = ReLU(2x_4 - h_3 + 0.5)$, and the output is $y_4 = h_4 - 1$.
+Assume the input sequence is $\mathbf{x} = [x_1, x_2, x_3, x_4]$, and the initial hidden state is $h_0$. 
+For the first time step, the hidden state is computed as $h_1 = \relu{2x_1 - h_0 + 0.5}$, and the output is $y_1 = h_1 - 0.5$. 
+For the second time step, the hidden state is $h_2 = \relu{2x_2 - h_1 + 0.5}$, and the output is $y_2 = h_2 - 0.5$.
+% For the third time step, the hidden state is $h_3 = ReLU(2x_3 - h_2 + 0.5)$, and the output is $y_3 = h_3 - 0.5$.
+% For the fourth time step, the hidden state is $h_4 = ReLU(2x_4 - h_3 + 0.5)$, and the output is $y_4 = h_4 - 0.5$.
 
 \paragraph{Residual Networks} Residual Networks (ResNets) are a type of neural network that is often used in image recognition and classification. ResNets introduce skip connections that allow the gradient to flow directly through the network, making it easier to train deep networks.
 
@@ -1012,9 +1013,9 @@ For the second time step, the hidden state is $h_2 = ReLU(2x_2 - h_1 + 0.5)$, an
 Assume the input $x$ and each node applies the ReLU activation. With the weights and biases shown in the diagram, the outputs are computed as follows:
 \[
 \begin{aligned}
-    h_1 &= \mathrm{ReLU}(x + 1) \\
-    h_2 &= \mathrm{ReLU}(2h_1 + x - 1) \\
-    h_3 &= \mathrm{ReLU}(-h_2 + 0.5) \\
+    h_1 &= \relu{x + 1} \\
+    h_2 &= \relu{2h_1 + x - 1} \\
+    h_3 &= \relu{-h_2 + 0.5} \\
     y   &= 0.5h_3 + h_2 + 2
 \end{aligned}
 \]
@@ -1166,7 +1167,7 @@ Specifically, VNN-LIB defines a common format for the following components:
 \begin{example} For the network in \autoref{fig:dnn}, the ONNX representation would include:
 \begin{itemize}
     \item Input: $x_1, x_2$.
-    \item Hidden layer: $x_3 = ReLU(-0.5x_1 + 0.5x_2 + 1.0)$, $x_4 = ReLU(0.5x_1 - 0.5x_2 + 1.0)$.
+    \item Hidden layer: $x_3 = \relu{-0.5x_1 + 0.5x_2 + 1.0}$, $x_4 = \relu{0.5x_1 - 0.5x_2 + 1.0}$.
     \item Output: $x_5 = -x_3 + x_4 - 1$.
 \end{itemize} 
 The ONNX representation would look like:\tvn{could we put in the exact ONNX code?}\hd{working on it}
