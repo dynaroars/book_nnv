@@ -1146,6 +1146,207 @@ The ONNX representation would look like:\tvn{could we put in the exact ONNX code
 (node (name "output") (op_type "Add") (inputs ("x3" "x4")) (outputs ("x5")))
 \end{lstlisting}
 
+\hai{ONNX onnx.helper.printable\_graph}
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+graph torch_jit (
+  %onnx::Flatten_0[FLOAT, 1x2]
+) initializers (
+  %1.weight[FLOAT, 3x2]
+  %1.bias[FLOAT, 3]
+  %3.weight[FLOAT, 4x3]
+  %3.bias[FLOAT, 4]
+  %5.weight[FLOAT, 2x4]
+  %5.bias[FLOAT, 2]
+) {
+  %onnx::Gemm_7 = Flatten[axis = 1](%onnx::Flatten_0)
+  %input = Gemm[alpha = 1, beta = 1, transB = 1](%onnx::Gemm_7, %1.weight, %1.bias)
+  %onnx::Gemm_9 = Relu(%input)
+  %input.3 = Gemm[alpha = 1, beta = 1, transB = 1](%onnx::Gemm_9, %3.weight, %3.bias)
+  %onnx::Gemm_11 = Relu(%input.3)
+  %12 = Gemm[alpha = 1, beta = 1, transB = 1](%onnx::Gemm_11, %5.weight, %5.bias)
+  return %12
+}
+\end{lstlisting}
+
+
+\hai{ONNX raw model (need to update weights to match the example)}
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+    ir_version: 7
+    producer_name: "pytorch"
+    producer_version: "1.12.1"
+    graph {
+      node {
+        input: "onnx::Flatten_0"
+        output: "onnx::Gemm_7"
+        name: "Flatten_0"
+        op_type: "Flatten"
+        attribute {
+          name: "axis"
+          i: 1
+          type: INT
+        }
+      }
+      node {
+        input: "onnx::Gemm_7"
+        input: "1.weight"
+        input: "1.bias"
+        output: "input"
+        name: "Gemm_1"
+        op_type: "Gemm"
+        attribute {
+          name: "alpha"
+          f: 1.0
+          type: FLOAT
+        }
+        attribute {
+          name: "beta"
+          f: 1.0
+          type: FLOAT
+        }
+        attribute {
+          name: "transB"
+          i: 1
+          type: INT
+        }
+      }
+      node {
+        input: "input"
+        output: "onnx::Gemm_9"
+        name: "Relu_2"
+        op_type: "Relu"
+      }
+      node {
+        input: "onnx::Gemm_9"
+        input: "3.weight"
+        input: "3.bias"
+        output: "input.3"
+        name: "Gemm_3"
+        op_type: "Gemm"
+        attribute {
+          name: "alpha"
+          f: 1.0
+          type: FLOAT
+        }
+        attribute {
+          name: "beta"
+          f: 1.0
+          type: FLOAT
+        }
+        attribute {
+          name: "transB"
+          i: 1
+          type: INT
+        }
+      }
+      node {
+        input: "input.3"
+        output: "onnx::Gemm_11"
+        name: "Relu_4"
+        op_type: "Relu"
+      }
+      node {
+        input: "onnx::Gemm_11"
+        input: "5.weight"
+        input: "5.bias"
+        output: "12"
+        name: "Gemm_5"
+        op_type: "Gemm"
+        attribute {
+          name: "alpha"
+          f: 1.0
+          type: FLOAT
+        }
+        attribute {
+          name: "beta"
+          f: 1.0
+          type: FLOAT
+        }
+        attribute {
+          name: "transB"
+          i: 1
+          type: INT
+        }
+      }
+      name: "torch_jit"
+      initializer {
+        dims: 3
+        dims: 2
+        data_type: 1
+        name: "1.weight"
+        raw_data: "\020\204\t\277\177\231\302>g\022\030\277\343\222\346=\226\037\327>TR\367\276"
+      }
+      initializer {
+        dims: 3
+        data_type: 1
+        name: "1.bias"
+        raw_data: "HT\n?K\024\224>\252\\\000\272"
+      }
+      initializer {
+        dims: 4
+        dims: 3
+        data_type: 1
+        name: "3.weight"
+        raw_data: "\007l\212\274I\023\006?\261B:>j.\247>1\302\221\276\361\\\036>\357~\206\276o\000\326>\013\345\260\2731\260%\276\006\242\272\276\367\331\373\276"
+      }
+      initializer {
+        dims: 4
+        data_type: 1
+        name: "3.bias"
+        raw_data: "\311\360\304=S\346-<\236\024\251\276U /\276"
+      }
+      initializer {
+        dims: 2
+        dims: 4
+        data_type: 1
+        name: "5.weight"
+        raw_data: "\370\222\342\275\200w\336<\004A\273\276\000;\023>hz\246=@\221\327<j\222\266>\342\014\325>"
+      }
+      initializer {
+        dims: 2
+        data_type: 1
+        name: "5.bias"
+        raw_data: "\024\256{\276,/\205\276"
+      }
+      input {
+        name: "onnx::Flatten_0"
+        type {
+          tensor_type {
+            elem_type: 1
+            shape {
+              dim {
+                dim_value: 1
+              }
+              dim {
+                dim_value: 2
+              }
+            }
+          }
+        }
+      }
+      output {
+        name: "12"
+        type {
+          tensor_type {
+            elem_type: 1
+            shape {
+              dim {
+                dim_value: 1
+              }
+              dim {
+                dim_value: 2
+              }
+            }
+          }
+        }
+      }
+    }
+    opset_import {
+      version: 13
+    }
+\end{lstlisting}
+
 \end{example}
 
 
