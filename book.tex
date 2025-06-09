@@ -19,6 +19,7 @@
 \theoremstyle{remark}
 \newtheorem{remark}{Remark}
 
+
 \usepackage{soul}
 % \usepackage[small,compact]{titlesec} %very powerful
 \usepackage[most]{tcolorbox}
@@ -32,7 +33,6 @@
 \captionsetup{font=small}
 \usepackage{graphicx}
 \usepackage{pdfpages}
-\usepackage{hyperref}
 \usepackage{wrapfig}
 \usepackage{subcaption}
 \setlength\intextsep{0pt} % remove extra space above and below in-line float
@@ -44,6 +44,7 @@
   linkcolor=blue,
   urlcolor=blue,
 }
+\usepackage{cleveref}
 \usepackage{booktabs}
 
 \usepackage{tikz}
@@ -323,12 +324,13 @@ The value of a neuron in the input layer is the input data. The value of a neuro
 \section{The Basics}\label{sec:nn-basics}
 
 
-\paragraph{Neural Network (NN)}  An NN can be viewed as a graph where each node represents a function that takes inputs from other nodes and produces an output.  Collectively, this graph defines a function $f$ mapping vectors of real numbers to other vectors of real numbers: 
 
+\paragraph{Graph Structure} A neural network (NN) can be viewed as a special kind of \emph{directed acyclic graph (DAG)} where each node represents a computation unit that receives inputs from its parent nodes and produces outputs for its child nodes. %Typically, neural networks are organized into layers, although more complex architectures may deviate from strict layer-wise organization (e.g., residual networks, attention models). 
+Overall, the NN defines a composite function \( f \) mapping vectors of real numbers to vectors of real numbers:
 \begin{align}
 f: \mathbb{R}^{n} \to \mathbb{R}^{m}
 \end{align}
-where \(n\) is the dimension of the input vector and \(m\) is the dimension of the output vector. 
+where $n, m$ are the dimensions of the input and output vectors, respectively.
 
 
 \begin{figure}[htp]
@@ -347,33 +349,93 @@ where \(n\) is the dimension of the input vector and \(m\) is the dimension of t
       \draw[->, thick] (x) -- (v);
       \draw[->, thick] (v) -- (y);
     \end{tikzpicture}
-    \caption{A simple network with 3 nodes.}
+    \caption{A simple neural network with 3 nodes.}
     \label{fig:snn}
 \end{figure}
 
-
 \begin{example}\label{ex:nn3}
+\Cref{fig:snn} illustrates a simple neural network with three nodes:
 
-\autoref{fig:snn} shows a simple NN with three nodes: an input node (red), a hidden node (blue), and an output node (green). The input node $x$ takes a real number $r$ as input and returns the same value---i.e., an identity function \(f_x: \mathbb{R} \to \mathbb{R}\) where \(f_x(r) = r \). 
+\begin{enumerate}
+    \item The \textbf{input node} \(x\) (red) simply receives the external input value \(r \in \mathbb{R}\) and passes it forward without any modification.
 
-The hidden node $v$ applies a function \(f_v\) to the output $r$ of node $x$, e.g., if  $f_v(r) = 2r + 1$ then $v$ computes $2r + 1$.
+    \item The \textbf{hidden node} \(v\) (cyan) applies a linear transformation:
+    \[
+    v = 2r + 1.
+    \]
 
-Finally, the output node may also apply a function \(f_y\) to the output $r$ of node $v$, e.g., if $f_y(r) = \max(0, r)$, then the output returns the maximum of 0 and the value computed by $v$.
+    \item The \textbf{output node} \(y\) (green) applies a non-linear activation function, in this case, the ReLU function:
+    \[
+    y = \relu{v} = \max(0, v).
+    \]
+\end{enumerate}
 
-Thus, this NN can be represented by the function $f: \mathbb{R} \to \mathbb{R}$:
+Thus, the network defines the function \(f: \mathbb{R} \to \mathbb{R}\) given by:
 \begin{align}
-f(r) = f_y(f_v(f_x(r))) = \max(0, 2r + 1)
+f(r) = \relu{2r + 1}.
 \end{align}
-
 \end{example}
 
 
-\paragraph{Affine Transformation and Activation Function} In~\autoref{ex:nn3}, the function $f_v$ is \emph{affine}: it multiplies inputs with some constant (2) and adds a constant (1) to the result. 
+\subsection{Weights and Layers} The network structures described earlier can be generalized by allowing each node (except input nodes) to have \textbf{weights} and \textbf{biases}. With these parameters, each node computes its output by first applying an \textbf{affine transformation} to its inputs (a weighted sum plus a bias), and then applying a \textbf{non-linear activation} such as ReLU.
 
-The function $f_y$ is an activation function---it turns negative values into 0 and keeps positive values unchanged. In particular, the $f_y = \max(0, r)$ is the \emph{ReLU} (Rectified Linear Unit) activation function, which is widely used in DNNs.
+In most neural networks, nodes are grouped into \textbf{layers}, where each layer consists of multiple nodes that compute their outputs in parallel using the outputs from the previous layer as their inputs. The first layer that processes input data is called the \textbf{input layer}, the last layer producing the network's final outputs is called the \textbf{output layer}, and all layers in between are called \textbf{hidden layers}. The computation proceeds layer by layer, from inputs to outputs, forming a feedforward flow of information.
+
+\begin{figure}
+    \centering
+    \begin{tikzpicture}[scale=0.8, transform shape]
+        % Input nodes
+        \node[circle, draw] (x1) {$x_1$};
+        \node[circle, draw, below=2.2cm of x1]  (x2) {$x_2$};
+
+        % Hidden layer
+        \node[circle, draw, right=2.6cm of x1] (x3) {$x_3$};
+        \node[circle, draw, right=2.6cm of x2] (x4) {$x_4$};
+
+        % Output layer node (centered horizontally)
+        \coordinate (mid) at ($(x3)!0.5!(x4)$);
+        \node[circle, draw, right=2.8cm of mid] (x5) {$x_5$};
+
+        % Connections with weights
+        \draw[->] (x1) -- node[above left=-3pt] {$-0.5$} (x3);
+        \draw[->] (x1) -- node[pos=0.2] {$1.0$} (x4);
+        \draw[->] (x2) -- node[pos=0.2] {$0.5$} (x3);
+        \draw[->] (x2) -- node[below left=-3pt] {$1.0$} (x4);
+        \draw[->] (x3) -- node[above] {$-1.0$} (x5);
+        \draw[->] (x4) -- node[below] {$1.0$} (x5);
+
+        % Output weights under x3, x4, x5 (biases)
+        \node[below=0.1cm of x3] {$+1.0$};
+        \node[below=0.1cm of x4] {$-1.0$};
+        \node[below=0.1cm of x5] {$-1.0$};
+    \end{tikzpicture}
+    \caption{\label{fig:dnn}A simple DNN with weights, biases, and ReLU activations.}
+\end{figure}
+
+\begin{example}\label{ex:dnn}
+\Cref{fig:dnn} shows a simple DNN with two inputs \(x_1, x_2\), one hidden layer with two neurons \(x_3, x_4\), and one output node \(x_5\). The weights are shown on the edges, and the biases are displayed below each neuron.
+
+\begin{itemize}
+    \item The hidden neurons compute:
+    \[
+    x_3 = \relu{-0.5 x_1 + 0.5 x_2 + 1.0},
+    \]
+    \[
+    x_4 = \relu{1.0 x_1 + 1.0 x_2 - 1.0}.
+    \]
+    \item The output neuron computes:
+    \[
+    x_5 = -1.0 \cdot x_3 + 1.0 \cdot x_4 - 1.0.
+    \]
+\end{itemize}
+
+Thus, this DNN computes a function \(f: \mathbb{R}^2 \to \mathbb{R}\) where:
+\[
+f(x_1, x_2) = -\relu{-0.5 x_1 + 0.5 x_2 + 1.0} + \relu{1.0 x_1 + 1.0 x_2 - 1.0} - 1.0.
+\]
+\end{example}
 
 
-\paragraph{Layers} An NN is typically organized into layers, where each layer consists of multiple nodes (neurons). The first layer is the input layer, which takes the input data. The last layer is the output layer, which produces the final output of the network. Between these two layers are one or more hidden layers, which perform intermediate computations.
 
 \section{Affine Transformation}\label{sec:affine}
 The affine transformation (AF) of a neuron is the sum of the products of the weights of the incoming edges and the values of the neurons in the previous layer, plus the bias of the neuron.
@@ -394,7 +456,7 @@ Several popular activation functions used in DNNs include ReLU, Sigmoid, Tanh, a
 
 For DNN verification, these non-linear activation functions make verification difficult because it introduces multiple possible outcomes for any input, making it hard to reason about the output of the network. For example, ReLU has two possible outputs for any input: 0 if the input is less than zero, and the input itself otherwise, and Sigmoid has a smooth curve with infinite possible outputs for any input.
 
-\autoref{tab:activation} summarizes the most common activation functions used in DNNs, their equations, output ranges, and key uses.\tvn{need some simple piectures to demonstrate }\hai{added}
+\autoref{tab:activation} summarizes the most common activation functions used in DNNs, their equations, output ranges, and key uses.
 
 \begin{table}
   \centering
@@ -597,52 +659,6 @@ This means that the softmax function maps the input vector $x$ to a probability 
 \end{example}
 
 
-
-\section{Example} \label{ex:e2}
-
-% \begin{figure}
-%     \centering
-%     \includegraphics[width=0.4\linewidth]{figure/dnn.pdf}
-%     \caption{\label{fig:dnn} An DNN with ReLU.}
-% \end{figure}
-
-
-\begin{figure}[ht]
-    \centering
-    \begin{tikzpicture}[scale=0.8, transform shape]
-        % Input nodes
-        \node[circle, draw] (x1) {$x_1$};
-        \node[circle, draw, below=2.2cm of x1]  (x2) {$x_2$};
-
-        % Hidden layer
-        \node[circle, draw, right=2.6cm of x1] (x3) {$x_3$};
-        \node[circle, draw, right=2.6cm of x2] (x4) {$x_4$};
-
-        % Output layer node (centered horizontally)
-        \coordinate (mid) at ($(x3)!0.5!(x4)$);
-        \node[circle, draw, right=2.8cm of mid] (x5) {$x_5$};
-
-        % Connections with weights
-        \draw[->] (x1) -- node[above left=-3pt] {$-0.5$} (x3);
-        \draw[->] (x1) -- node[pos=0.2] {$1.0$} (x4);
-        \draw[->] (x2) -- node[pos=0.2] {$0.5$} (x3);
-        \draw[->] (x2) -- node[below left=-3pt] {$1.0$} (x4);
-        \draw[->] (x3) -- node[above] {$-1.0$} (x5);
-        \draw[->] (x4) -- node[below] {$1.0$} (x5);
-
-        % Output weights under x5 and x4
-        \node[below=0.1cm of x3] {$1.0$};
-        \node[below=0.1cm of x5] {$-1.0$};
-        \node[below=0.1cm of x4] {$-1.0$};
-
-    \end{tikzpicture}
-    \caption{\label{fig:dnn}An DNN with ReLU.}
-\end{figure}
-
-
-Fig.~\ref{fig:dnn} shows a simple DNN with two inputs $x_1,x_2$, one hidden layer consisting of two (hidden) neurons $x_3,x_4$, and one output $x_5$. The weights of a neuron are shown on its incoming edges, and the bias is shown above or below each neuron. 
-
-The outputs of the hidden neurons  are computed the affine transformation and ReLU, e.g., $x_3 = \relu{-0.5x_1+0.5x_2+1.0}$. The output neuron is computed with just the affine transformation, i.e., $x_5=-x_3+x_4-1$.
 
 
 \section{Types of Neural Networks}
