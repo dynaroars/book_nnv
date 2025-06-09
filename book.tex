@@ -306,9 +306,10 @@
 \newpage
 \tableofcontents
 
-\part{Basic of Neural Networks and Verification}
-\chapter{Basic of Neural Network}\label{sec:basic}
+\part{Basics of Neural Networks and Verification}
+\chapter{Neural Networks}\label{sec:basic}
 
+\section{Basics of Neural Networks}
 A \emph{neural network} (\textbf{NN})~\cite{Goodfellow-et-al-2016} consists of an input layer, multiple hidden layers, and an output layer. Each layer has a number of neurons, each connected to neurons in the next layer through a predefined set of weights (derived by training the network with data). A \emph{Deep Neural Network} (\textbf{DNN}) is an NN with two or more hidden layers. 
 
 %A deep neural network consists of three types of layers: an input layer, multiple hidden layers, and an output layer. Each layer consists of a number of neurons, each connected to neurons from another layers through a predefined set of weights (derived by training the network with data). A network is called a \emph{fully connected feed-forward} neural network (FNN) if it connects every neuron in a layer (i.e., all weights are non-zero) to a neuron in the next layer.
@@ -321,65 +322,65 @@ The value of a neuron in the input layer is the input data. The value of a neuro
 % including Reluplex~\cite{katz2017reluplex}, Neurify~\cite{wang2018efficient}, and VeriNet~\cite{henriksen2020efficient},
 %because it does not change the semantics or complexity of the problem and is easier to reason about as we will show in \S\ref{sec:overview}.
 
-\section{The Basics}\label{sec:nn-basics}
+% \section{The Basics}\label{sec:nn-basics}
 
 
 
-\paragraph{Graph Structure} A neural network (NN) can be viewed as a special kind of \emph{directed acyclic graph (DAG)} where each node represents a computation unit that receives inputs from its parent nodes and produces outputs for its child nodes. %Typically, neural networks are organized into layers, although more complex architectures may deviate from strict layer-wise organization (e.g., residual networks, attention models). 
-Overall, the NN defines a composite function \( f \) mapping vectors of real numbers to vectors of real numbers:
-\begin{align}
-f: \mathbb{R}^{n} \to \mathbb{R}^{m}
-\end{align}
-where $n, m$ are the dimensions of the input and output vectors, respectively.
+% \paragraph{Graph Structure} A neural network (NN) can be viewed as a special kind of \emph{directed acyclic graph (DAG)} where each node represents a computation unit that receives inputs from its parent nodes and produces outputs for its child nodes. %Typically, neural networks are organized into layers, although more complex architectures may deviate from strict layer-wise organization (e.g., residual networks, attention models). 
+% Overall, the NN defines a composite function \( f \) mapping vectors of real numbers to vectors of real numbers:
+% \begin{align}
+% f: \mathbb{R}^{n} \to \mathbb{R}^{m}
+% \end{align}
+% where $n, m$ are the dimensions of the input and output vectors, respectively.
 
 
-\begin{figure}[htp]
-    \centering
-    \begin{tikzpicture}[
-        every node/.style={draw, circle, minimum size=8mm, thick, font=\large, inner sep=0pt},
-        xnode/.style={draw=red!60!black, fill=red!15},
-        vnode/.style={draw=cyan!60!black, fill=cyan!40},
-        ynode/.style={draw=green!60!black, fill=green!15}
-      ]
-      % Nodes
-      \node[xnode]   (x) at (0,0)    {$x$};
-      \node[vnode]   (v) at (2.5,0)  {$v$};
-      \node[ynode]   (y) at (5,0)    {$y$};
-      % Arrows
-      \draw[->, thick] (x) -- (v);
-      \draw[->, thick] (v) -- (y);
-    \end{tikzpicture}
-    \caption{A simple neural network with 3 nodes.}
-    \label{fig:snn}
-\end{figure}
+% \begin{figure}[htp]
+%     \centering
+%     \begin{tikzpicture}[
+%         every node/.style={draw, circle, minimum size=8mm, thick, font=\large, inner sep=0pt},
+%         xnode/.style={draw=red!60!black, fill=red!15},
+%         vnode/.style={draw=cyan!60!black, fill=cyan!40},
+%         ynode/.style={draw=green!60!black, fill=green!15}
+%       ]
+%       % Nodes
+%       \node[xnode]   (x) at (0,0)    {$x$};
+%       \node[vnode]   (v) at (2.5,0)  {$v$};
+%       \node[ynode]   (y) at (5,0)    {$y$};
+%       % Arrows
+%       \draw[->, thick] (x) -- (v);
+%       \draw[->, thick] (v) -- (y);
+%     \end{tikzpicture}
+%     \caption{A simple neural network with 3 nodes.}
+%     \label{fig:snn}
+% \end{figure}
 
-\begin{example}\label{ex:nn3}
-\Cref{fig:snn} illustrates a simple neural network with three nodes:
+% \begin{example}\label{ex:nn3}
+% \Cref{fig:snn} illustrates a simple neural network with three nodes:
 
-\begin{enumerate}
-    \item The \textbf{input node} \(x\) (red) simply receives the external input value \(r \in \mathbb{R}\) and passes it forward without any modification.
+% \begin{enumerate}
+%     \item The \textbf{input node} \(x\) (red) simply receives the external input value \(r \in \mathbb{R}\) and passes it forward without any modification.
 
-    \item The \textbf{hidden node} \(v\) (cyan) applies a linear transformation:
-    \[
-    v = 2r + 1.
-    \]
+%     \item The \textbf{hidden node} \(v\) (cyan) applies a linear transformation:
+%     \[
+%     v = 2r + 1.
+%     \]
 
-    \item The \textbf{output node} \(y\) (green) applies a non-linear activation function, in this case, the ReLU function:
-    \[
-    y = \relu{v} = \max(0, v).
-    \]
-\end{enumerate}
+%     \item The \textbf{output node} \(y\) (green) applies a non-linear activation function, in this case, the ReLU function:
+%     \[
+%     y = \relu{v} = \max(0, v).
+%     \]
+% \end{enumerate}
 
-Thus, the network defines the function \(f: \mathbb{R} \to \mathbb{R}\) given by:
-\begin{align}
-f(r) = \relu{2r + 1}.
-\end{align}
-\end{example}
+% Thus, the network defines the function \(f: \mathbb{R} \to \mathbb{R}\) given by:
+% \begin{align}
+% f(r) = \relu{2r + 1}.
+% \end{align}
+% \end{example}
 
 
-\subsection{Weights and Layers} The network structures described earlier can be generalized by allowing each node (except input nodes) to have \textbf{weights} and \textbf{biases}. With these parameters, each node computes its output by first applying an \textbf{affine transformation} to its inputs (a weighted sum plus a bias), and then applying a \textbf{non-linear activation} such as ReLU.
+% \subsection{Weights and Layers} The network structures described earlier can be generalized by allowing each node (except input nodes) to have \textbf{weights} and \textbf{biases}. With these parameters, each node computes its output by first applying an \textbf{affine transformation} to its inputs (a weighted sum plus a bias), and then applying a \textbf{non-linear activation} such as ReLU.
 
-In most neural networks, nodes are grouped into \textbf{layers}, where each layer consists of multiple nodes that compute their outputs in parallel using the outputs from the previous layer as their inputs. The first layer that processes input data is called the \textbf{input layer}, the last layer producing the network's final outputs is called the \textbf{output layer}, and all layers in between are called \textbf{hidden layers}. The computation proceeds layer by layer, from inputs to outputs, forming a feedforward flow of information.
+% In most neural networks, nodes are grouped into \textbf{layers}, where each layer consists of multiple nodes that compute their outputs in parallel using the outputs from the previous layer as their inputs. The first layer that processes input data is called the \textbf{input layer}, the last layer producing the network's final outputs is called the \textbf{output layer}, and all layers in between are called \textbf{hidden layers}. The computation proceeds layer by layer, from inputs to outputs, forming a feedforward flow of information.
 
 \begin{figure}
     \centering
@@ -409,11 +410,12 @@ In most neural networks, nodes are grouped into \textbf{layers}, where each laye
         \node[below=0.1cm of x4] {$-1.0$};
         \node[below=0.1cm of x5] {$-1.0$};
     \end{tikzpicture}
-    \caption{\label{fig:dnn}A simple DNN with weights, biases, and ReLU activations.}
+    \caption{\label{fig:dnn}A simple DNN.}
 \end{figure}
 
 \begin{example}\label{ex:dnn}
-\Cref{fig:dnn} shows a simple DNN with two inputs \(x_1, x_2\), one hidden layer with two neurons \(x_3, x_4\), and one output node \(x_5\). The weights are shown on the edges, and the biases are displayed below each neuron.
+\Cref{fig:dnn} shows a simple DNN with two inputs $x_1, x_2 \in \mathbb{R}$, two hidden neurons \(x_3, x_4\) in one hidden layer, and one output neuron \(x_5\). The connections between the neurons are weighted edges, and the biases are shown below each neuron.
+
 
 \begin{itemize}
     \item The hidden neurons compute:
@@ -421,8 +423,9 @@ In most neural networks, nodes are grouped into \textbf{layers}, where each laye
     x_3 = \relu{-0.5 x_1 + 0.5 x_2 + 1.0},
     \]
     \[
-    x_4 = \relu{1.0 x_1 + 1.0 x_2 - 1.0}.
+    x_4 = \relu{1.0 x_1 + 1.0 x_2 - 1.0},
     \]
+    where $\relu{x} = \max(x, 0)$ is the ReLU activation function.
     \item The output neuron computes:
     \[
     x_5 = -1.0 \cdot x_3 + 1.0 \cdot x_4 - 1.0.
@@ -438,23 +441,26 @@ f(x_1, x_2) = -\relu{-0.5 x_1 + 0.5 x_2 + 1.0} + \relu{1.0 x_1 + 1.0 x_2 - 1.0} 
 
 
 \section{Affine Transformation}\label{sec:affine}
-The affine transformation (AF) of a neuron is the sum of the products of the weights of the incoming edges and the values of the neurons in the previous layer, plus the bias of the neuron.
-More specifically, the AF of a neuron \(y\) with weights \(w_1, \dots, w_n\) and bias \(b\) and the values of neurons in the previous layer \(v_1, \dots, v_n\) is \(w_1v_1 + \dots + w_nv_n + b\). 
+
+
+The affine transformation (AF) of a neuron consists of a \emph{linear combination}---i.e., a weighted sum---of its inputs, followed by the addition of a bias term. More specifically, for a neuron \(y\) with weights \(w_1, \dots, w_n\), bias \(b\), and inputs \(v_1, \dots, v_n\) from the previous layer, the affine transformation computes:
+
+\begin{equation}\label{eq:affine}   
+    z = \sum_{i=1}^{n} w_i v_i + b.
+\end{equation}
 
 %AF is often applied to hidden layers of a DNN to compute the value of a neuron in the hidden layer.
 %The values of a neuron in the output layer is evaluated similarly but it may skip the activation function.
 
 \begin{example}
-For example, the AF of a neuron \(x_3\) in \autoref{fig:dnn} with (incoming arrows) weights \(-0.5, 0.5\) and bias \(1.0\) and the values of neurons in the previous layer \(x_1, x_2\) is \(-0.5x_1 + 0.5x_2 + 1.0\).
+In \autoref{fig:dnn}, neuron \(x_3\) receives inputs \(x_1\) and \(x_2\) with weights \(-0.5\), \(0.5\), and bias \(1.0\), so its affine transformation is $z = -0.5 x_1 + 0.5 x_2 + 1.0$.
 \end{example}
 
-For DNN verification, AF is straightforward to reason about because it is a linear function. However, AFs are often followed by non-linear activation functions, described next in \autoref{sec:activation}, which make the verification problem more challenging.
 
 \section{Activation Functions}\label{sec:activation}
 Several popular activation functions used in DNNs include ReLU, Sigmoid, Tanh, and Softmax. All of these are non-linear\footnote{Non-linear means that the output of the function is not a linear combination of its inputs.} functions that introduce non-linearity to the network, allowing it to learn complex patterns in the data.
 
 
-For DNN verification, these non-linear activation functions make verification difficult because it introduces multiple possible outcomes for any input, making it hard to reason about the output of the network. For example, ReLU has two possible outputs for any input: 0 if the input is less than zero, and the input itself otherwise, and Sigmoid has a smooth curve with infinite possible outputs for any input.
 
 \autoref{tab:activation} summarizes the most common activation functions used in DNNs, their equations, output ranges, and key uses.
 
@@ -834,50 +840,6 @@ RNNs, often used in natural language process and speech recognition, are designe
         
 %         % --- Unrolled RNN (right diagram) ---
 %         \begin{scope}[xshift=8cm]
-%             % Parameters for vertical node spacing
-%             \def\inpN{4}
-%             \def\hidN{4}
-%             \def\outN{4}
-%             \def\dy{1.2}
-%             \def\xInput{0}
-%             \def\xHidden{3.2}
-%             \def\xOutput{6.4}
-%             % Layer labels
-%             \node at (\xInput,{\inpN/2*\dy+0.8}) {\textbf{Input}};
-%             \node at (\xHidden,{\inpN/2*\dy+0.8}) {\textbf{Hidden}};
-%             \node at (\xOutput,{\inpN/2*\dy+0.8}) {\textbf{Output}};
-%             % Input nodes (left column)
-%             \foreach \i in {1,...,\inpN} {
-%                 \node[circle, draw=black, fill=white, minimum size=0.7cm] (I\i) at (\xInput, {(\inpN-1)*0.5*\dy - (\i-1)*\dy}) {};
-%             }
-%             % Hidden nodes (centered) (as many as input)
-%             \foreach \i in {1,...,\hidN} {
-%                 \node[circle, draw=black, fill=white, minimum size=0.7cm] (H\i) at (\xHidden, {(\hidN-1)*0.5*\dy - (\i-1)*\dy}) {};
-%             }
-%             % Output nodes (centered) (as many as input)
-%             \foreach \i in {1,...,\outN} {
-%                 \node[circle, draw=black, fill=white, minimum size=0.7cm] (O\i) at (\xOutput, {(\outN-1)*0.5*\dy - (\i-1)*\dy}) {};
-%             }
-%             % RNN input-to-hidden (1-to-1)
-%             \foreach \i in {1,...,4} {
-%                 \draw[->, thick] (I\i) -- (H\i);
-%             }
-%             % Hidden-to-hidden (recurrent arrows, e.g. from H1 to H2, H2 to H3, etc)
-%             \foreach \i [evaluate={\j=int(\i+1);}] in {1,2,3} {
-%                 \draw[->, thick] ([xshift=4pt]H\i) -- ([xshift=-4pt]H\j);
-%             }
-%             % Hidden-to-output (1-to-1)
-%             \foreach \i in {1,...,4} {
-%                 \draw[->, thick] (H\i) -- (O\i);
-%             }
-%             % Caption
-%             \node[align=center] at (3.2,-3.2) {Unrolled RNN};
-%         \end{scope}
-%     \end{tikzpicture}
-%     \end{center}
-%     \caption{RNN cell (left) and unrolled RNN sequence structure (right).\tvn{Could you add some weights, biases, ReLU or some other activation that's often used in this network to the figure to make it a complete example? Also give an example of outputs of the neurons computed using those weights and biases. Like in~\autoref{ex:e2}}}
-%     \label{fig:rnn}
-% \end{figure}
 
 
 \begin{figure}[htp]
@@ -966,29 +928,6 @@ For the second time step, the hidden state is $h_2 = \relu{2x_2 - h_1 + 0.5}$, a
 
 \paragraph{Residual Networks} Residual Networks (ResNets) are a type of neural network that is often used in image recognition and classification. ResNets introduce skip connections that allow the gradient to flow directly through the network, making it easier to train deep networks.
 
-% \begin{figure}[htp]
-%     \begin{center}
-%         \begin{tikzpicture}[scale=0.8, transform shape]
-%             % Horizontal node positions
-%             \foreach \n/\x in {1/0, 2/2.5, 3/5, 4/7.5, 5/10} {
-%                 \node[circle, draw=black, thick, minimum size=0.7cm, fill=white] (H\n) at (\x,0) {};
-%             }
-%             % Layer labels
-%             \node at (0,2.0) {\textbf{Input}};
-%             \node at (5.0,2.0) {\textbf{Hidden Layers}};
-%             \node at (10.0,2.0) {\textbf{Output}};
-%             % Main arrows
-%             \foreach \n [evaluate={\next=int(\n+1);}] in {1,2,3,4} {
-%                 \draw[->, thick] (H\n) -- (H\next);
-%             }
-%             % Residual connections: skip one layer
-%             \draw[->, thick] (H1) to[out=60,in=120] (H3);
-%             \draw[->, thick] (H3) to[out=60,in=120] (H5);
-%         \end{tikzpicture}
-%     \end{center}
-%     \caption{Residual Network (ResNet) block: each hidden layer receives input both from the previous layer (main path) and a skip connection from previous layers.\tvn{Could you add some weights, biases, ReLU  or some other activation that's often used in this network to the figure to make it a complete example? Also give an example of outputs of the neurons computed using those weights and biases. Like in~\autoref{ex:e2}}}
-%     \label{fig:resnet}
-% \end{figure}
 
 \begin{figure}[htp]
     \centering
@@ -1035,6 +974,8 @@ Assume the input $x$ and each node applies the ReLU activation. With the weights
     y   &= 0.5h_3 + h_2 + 2
 \end{aligned}
 \]
+
+
 % \section{Properties of Neural Networks}
 
 % \paragraph{Robustness Properties}
@@ -1048,6 +989,15 @@ Assume the input $x$ and each node applies the ReLU activation. With the weights
 
 
 \subsection{Challenges}
+
+\paragraph{Scalability} Neural networks can be very large, with millions of parameters. This makes it difficult to verify their correctness, as the number of possible inputs grows exponentially with the size of the network.
+
+%TODO: put somewhere else  
+For DNN verification, AF is straightforward to reason about because it is a linear function. However, AFs are often followed by non-linear activation functions, described next in \autoref{sec:activation}, which make the verification problem more challenging.
+
+%TODO: put somewhere else
+For DNN verification, these non-linear activation functions make verification difficult because it introduces multiple possible outcomes for any input, making it hard to reason about the output of the network. For example, ReLU has two possible outputs for any input: 0 if the input is less than zero, and the input itself otherwise, and Sigmoid has a smooth curve with infinite possible outputs for any input.
+
 
 \paragraph{Formalization}
 
