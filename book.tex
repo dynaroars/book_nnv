@@ -670,17 +670,17 @@ Neural networks vary in architecture depending on how information flows through 
 
 
 
-\subsection{Feedforward Neural Networks (FNN)}
+\subsection{Feedforward Neural Networks (FNNs)}
 
 In an FNN, information flows in one direction: from the input layer, through one or more hidden layers, and finally to the output layer. There are no loops or cycles in the computation graph. 
 
 
 Widely used feedforward architectures include fully connected, convolutional, and residual networks. Each architecture has its own strengths and is suited for different types of tasks.
 
-\paragraph{Fully Connected Neural Networks} A \emph{fully connected} NN connects each neuron in a layer to every neuron in the next layer.
+\paragraph{Fully Connected Neural Networks} A \emph{fully connected} NN connects each neuron in a layer to every neuron in the next layer. Thus, every neuron in the input layer is connected to every neuron in the first hidden layer, every neuron in the first hidden layer is connected to every neuron in the second hidden layer, and so on, until the output layer. Fully connected NNs, sometimes called \emph{dense networks}, are the most basic type of feedforward network and are commonly used for tasks like classification. 
 
 \begin{example}
-\autoref{fig:dnn} earlier showed a fully connected FNN with a single hidden layer. \autoref{fig:ffn} below shows an FNN with two hidden layers.
+\autoref{fig:dnn} earlier showed a fully connected network with two inputs and one hidden layer with two neurons, and one output neuron. \autoref{fig:ffn} below shows a fully connected network with four inputs, two hidden layers with five neurons each, and three output neurons.
 
 \begin{figure}[htp]
     \centering
