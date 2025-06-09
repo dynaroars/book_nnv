@@ -680,7 +680,7 @@ Widely used feedforward architectures include fully connected, convolutional, an
 \paragraph{Fully Connected Neural Networks} A \emph{fully connected} NN connects each neuron in a layer to every neuron in the next layer. Thus, every neuron in the input layer is connected to every neuron in the first hidden layer, every neuron in the first hidden layer is connected to every neuron in the second hidden layer, and so on, until the output layer. Fully connected NNs, sometimes called \emph{dense networks}, are the most basic type of feedforward network and are commonly used for tasks like classification. 
 
 \begin{example}
-\autoref{fig:dnn} earlier showed a fully connected network with two inputs and one hidden layer with two neurons, and one output neuron. \autoref{fig:ffn} below shows a fully connected network with four inputs, two hidden layers with five neurons each, and three output neurons.
+\autoref{fig:dnn} earlier showed a fully connected network with two inputs and one hidden layer with two neurons, and one output neuron. \autoref{fig:ffn} below shows a fully connected network with four inputs, two hidden layers with five neurons each, and three output neurons (weights and biases not shown for simplicity).
 
 \begin{figure}[htp]
     \centering
@@ -843,15 +843,15 @@ Assume the input $x$ and each node applies the ReLU activation. With the weights
 
 
 
-\subsubsection*{Common Layer Types}
+% \subsubsection*{Common Layer Types}
 
-Feedforward networks, including CNNs and ResNets, are built from layers such as:
+% Feedforward networks, including CNNs and ResNets, are built from layers such as:
 
-\begin{itemize}
-    \item \textbf{Fully Connected (Dense) Layers}: Every neuron is connected to every neuron in the next layer.
-    \item \textbf{Convolutional Layers}: Local filters scan over inputs to extract spatial features.
-    \item \textbf{Residual (Skip) Connections}: Enable shortcut paths from earlier to later layers.
-\end{itemize}
+% \begin{itemize}
+%     \item \textbf{Fully Connected (Dense) Layers}: Every neuron is connected to every neuron in the next layer.
+%     \item \textbf{Convolutional Layers}: Local filters scan over inputs to extract spatial features.
+%     \item \textbf{Residual (Skip) Connections}: Enable shortcut paths from earlier to later layers.
+% \end{itemize}
 
 \subsection{Other Neural Network Architectures}
 
