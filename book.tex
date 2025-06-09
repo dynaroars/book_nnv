@@ -1191,6 +1191,41 @@ In SMT-LIB\tvn{is this also the VNN-LIB code? If not, add the VNN-LIB code}\hd{n
 \end{lstlisting}
 \end{example}
 
+\hai{VNN-LIB code}
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+(declare-const X_0 Real)
+(declare-const X_1 Real)
+(declare-const X_2 Real)
+(declare-const X_3 Real)
+(declare-const X_4 Real)
+(declare-const X_5 Real)
+
+(declare-const Y_0 Real)
+(declare-const Y_1 Real)
+(declare-const Y_2 Real)
+(declare-const Y_3 Real)
+(declare-const Y_4 Real)
+
+(assert (<= X_0 eps0))
+(assert (>= X_0 -eps0))
+(assert (<= X_1 eps1))
+(assert (>= X_1 -eps1))
+(assert (<= X_2 eps2))
+(assert (>= X_2 -eps2))
+(assert (<= X_3 eps3))
+(assert (>= X_3 -eps3))
+(assert (<= X_4 eps4))
+(assert (>= X_4 -eps4))
+
+(assert (<= Y_0 Y_1))
+(assert (<= Y_0 Y_2))
+(assert (<= Y_0 Y_3))
+(assert (<= Y_0 Y_4))
+\end{lstlisting}
+
+
+
 \begin{example}[MNIST Network]
 
 A CNN model for MNIST uses:
