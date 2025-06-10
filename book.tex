@@ -195,7 +195,7 @@
 
 \newcommand{\relu}[1]{\mathrm{ReLU}\left(#1\right)}
 \newcommand{\sigmoid}[1]{\mathrm{sigmoid}\left(#1\right)}
-%\newcommand{\tanh}[1]{\mathrm{Tanh}\left(#1\right)}%already defined in amsmath
+\newcommand{\mytanh}[1]{\mathrm{tanh}\left(#1\right)}
 \newcommand{\softmax}[1]{\mathrm{softmax}\left(#1\right)}
 
 
@@ -420,10 +420,7 @@ The value of a neuron in the input layer is the input data. The value of a neuro
 \begin{itemize}
     \item The hidden neurons compute:
     \[
-    x_3 = \relu{-0.5 x_1 + 0.5 x_2 + 1.0},
-    \]
-    \[
-    x_4 = \relu{1.0 x_1 + 1.0 x_2 - 1.0},
+    x_3 = \relu{-0.5 x_1 + 0.5 x_2 + 1.0},\quad x_4 = \relu{1.0 x_1 + 1.0 x_2 - 1.0},
     \]
     where $\relu{x} = \max(x, 0)$ is the ReLU activation function.
     \item The output neuron computes:
@@ -442,7 +439,7 @@ f(x_1, x_2) = -\relu{-0.5 x_1 + 0.5 x_2 + 1.0} + \relu{1.0 x_1 + 1.0 x_2 - 1.0} 
 
 \section{Affine Transformation}\label{sec:affine}
 
-The affine transformation (AF) of a neuron consists of a \emph{linear combination}---i.e., a weighted sum---of its inputs, followed by the addition of a bias term. More specifically, for a neuron \(y\) with weights \(w_1, \dots, w_n\), bias \(b\), and inputs \(v_1, \dots, v_n\) from the previous layer, the affine transformation computes:
+The affine transformation (AF) of a neuron consists of a \emph{linear combination}---i.e., a weighted sum---of its inputs, followed by the addition of a bias term. More specifically, for a neuron $z$ with weights \(w_1, \dots, w_n\), bias \(b\), and inputs \(v_1, \dots, v_n\) from the previous layer, the affine transformation computes:
 
 \begin{equation}\label{eq:affine}   
     z = \sum_{i=1}^{n} w_i v_i + b.
@@ -452,7 +449,7 @@ The affine transformation (AF) of a neuron consists of a \emph{linear combinatio
 %The values of a neuron in the output layer is evaluated similarly but it may skip the activation function.
 
 \begin{example}
-In \autoref{fig:dnn}, neuron \(x_3\) receives inputs \(x_1\) and \(x_2\) with weights \(-0.5\), \(0.5\), and bias \(1.0\), so its affine transformation is $z = -0.5 x_1 + 0.5 x_2 + 1.0$.
+In \autoref{fig:dnn}, neuron \(x_3\) receives inputs \(x_1\) and \(x_2\) with weights \(-0.5\), \(0.5\), and bias \(1.0\), so its affine transformation is $x_3 = -0.5 x_1 + 0.5 x_2 + 1.0$.
 \end{example}
 
 
@@ -485,7 +482,7 @@ Several popular activation functions used in NNs include ReLU, Sigmoid, Tanh, an
 
 \subsection{ReLU (Rectified Linear Unit)}\label{sec:relu}
 
-ReLU is the most widely used activation function in NNs.  It is a  \emph{piecewise linear} function with two linear pieces: one for the case when the input value is greater than or equal to zero (output is the input itself) and one for the case when the input value is less than zero (output is 0). A ReLU activated neuron is said to be \emph{active} if its input is greater than zero and \emph{inactive} otherwise.
+ReLU is the most widely used activation function in NNs.  As shown in~\autoref{fig:relu}, it is a  \emph{piecewise linear} function with two linear pieces: one for the case when the input value is greater than or equal to zero (output is the input itself) and one for the case when the input value is less than zero (output is 0). A ReLU activated neuron is said to be \emph{active} if its input is greater than zero and \emph{inactive} otherwise.
 
 \begin{figure}[h]
     \centering
@@ -513,8 +510,7 @@ ReLU is the most widely used activation function in NNs.  It is a  \emph{piecewi
         \addplot[line width=1.5pt, blue!80!black, domain=0:4.5] {x};
       \end{axis}
     \end{tikzpicture}
-    \caption{ReLU (Rectified Linear Unit) function.}
-    \label{fig:relu}
+    \caption{ReLU (Rectified Linear Unit) function.}\label{fig:relu}
 \end{figure}
 
 
@@ -525,16 +521,16 @@ ReLU is defined as follows:
 \end{align}
 
 
-The piecewise linearity makes ReLU easy to reason about, but it also introduces non-linearity that complicates verification (and makes DNN verification $\mathsf{NP}$-complete as shown in~\autoref{sec:complexity}). We will use ReLU throughout this book as the default activation function for hidden neurons in a DNN. 
+The piecewise linearity makes ReLU easy to reason about, but it also introduces non-linearity that makes DNN verification difficult---in fact, $\mathsf{NP}$-complete as shown in~\autoref{sec:complexity}. We will use ReLU throughout this book as the default activation function for hidden neurons in an NN. 
     
 \begin{example}
 $\relu{-1.2} = 0$ (inactive), $\relu{0} = 0$ (inactive), and $\relu{2.8} = 2.8$ (active).
 \end{example}
 
 
-\subsection{Sigmoid}\label{sub:sigmoid}
+\subsection{Sigmoid}\label{sec:sigmoid}
 
-Sigmoid is a smooth---i.e., continuous and differentiable---non-linear activation function that maps any real value to the range (0,1). It is often used in the output layer of a binary classification problem.
+
 
 \begin{figure}[ht]
     \centering
@@ -559,11 +555,11 @@ Sigmoid is a smooth---i.e., continuous and differentiable---non-linear activatio
         \addplot[line width=1.5pt, blue!80!black, samples=300, domain=-4.5:4.5] {1/(1 + exp(-x))};
       \end{axis}
     \end{tikzpicture}
-    \caption{Sigmoid function.}
-    \label{fig:sigmoid}
+    \caption{Sigmoid function.}\label{fig:sigmoid}
 \end{figure}
 
-Sigmoid is continuous, meaning that small changes in the input will result in small changes in the output, and differentiable, meaning that it has a well-defined derivative at every point. This makes it easy to compute gradients for training the network using backpropagation. 
+Sigmoid, shown in~\autoref{fig:sigmoid}, is a smooth---i.e., continuous and differentiable---non-linear activation function that maps any real value to the range (0,1).
+It is continuous, meaning that small changes in the input will result in small changes in the output, and differentiable, meaning that it has a well-defined derivative at every point. Sigmoid is often used in the output layer of a binary classification problem.
 
     \begin{align}
         \sigmoid{x} = \frac{1}{1+e^{-x}}
@@ -575,7 +571,7 @@ $\sigmoid{-1.2} \approx 0.23$, $\sigmoid{0} = 0.5$, and $\sigmoid{2.8} \approx 0
 
 \subsection{Hyperbolic Tangent (Tanh)}\label{sec:tanh}
 
-Tanh is similar to the sigmoid function but maps any real value to the range (-1,1). It is often used in the output layer of a multi-class classification problem.
+Tanh, shown in~\autoref{fig:tanh}, is similar to sigmoid (\autoref{sec:sigmoid})  but maps any real value to the range (-1,1). It is often used in the output layer of a multi-class classification problem.
 
 \begin{figure}[htp]
     \centering
@@ -600,16 +596,15 @@ Tanh is similar to the sigmoid function but maps any real value to the range (-1
         % 0.0 label at origin, slightly offset
       \end{axis}
     \end{tikzpicture}
-    \caption{tanh (hyperbolic tangent) activation function.}
-    \label{fig:tanh}
+    \caption{tanh (hyperbolic tangent) activation function.}\label{fig:tanh}
 \end{figure}
 
 \begin{align}
-\tanh{x} = \frac{e^x-e^{-x}}{e^x+e^{-x}}
+\tanh(x) = \frac{e^x-e^{-x}}{e^x+e^{-x}}
 \end{align}
 
 \begin{example}
-$\tanh{-1.2} \approx -0.83$, $\tanh{0} = 0$, and $\tanh{2.8} \approx 0.99$. This means that the tanh function maps -1.2 to a value close to -1, 0 to 0, and 2.8 to a value close to 1.
+$\tanh(-1.2) \approx -0.83$, $\tanh(0) = 0$, and $\tanh(2.8) \approx 0.99$. This means that the tanh function maps -1.2 to a value close to -1, 0 to 0, and 2.8 to a value close to 1.
 \end{example}
 
 \subsection{Softmax}\label{sec:softmax}
@@ -644,12 +639,11 @@ $\tanh{-1.2} \approx -0.83$, $\tanh{0} = 0$, and $\tanh{2.8} \approx 0.99$. This
         \addlegendentry{$\mathrm{softmax}_2(x)$}
       \end{axis}
     \end{tikzpicture}
-    \caption{Softmax function for 2 classes.}
-    \label{fig:softmax}
+    \caption{Softmax function for 2 classes.}\label{fig:softmax}
 \end{figure}
 
 
-Softmax is a generalization of the sigmoid function that maps any real value to the range (0,1) and ensures that the sum of the output values is 1. It is often used in the output layer of a multi-class classification problem.
+Softmax, shown in~\autoref{fig:softmax}, is a generalization of sigmoid (\autoref{sec:sigmoid}) that maps any real value to the range (0,1) and ensures that the sum of the output values is 1. It is often used in the output layer of a multi-class classification problem.
 \begin{align}
 \softmax{x}_i = \frac{e^{x_i}}{\sum_{j=1}^{n}e^{x_j}}
 \end{align}
@@ -671,7 +665,9 @@ This means that softmax maps the input vector $x$ to a probability distribution 
 
 \section{Neural Network Architectures and Layers}
 
-Neural networks vary in architecture depending on how information flows through them and how computations are structured. Most models can be understood as variations on the \emph{feedforward neural network}, with additional structures or constraints layered on top. This section first introduces feedforward networks, then discusses common architectural variants, and finally outlines other distinct classes of neural networks.
+Neural networks vary in architecture depending on how information flows through them and how computations are structured. Most models can be understood as variations on the \emph{feedforward neural network}, with additional structures or constraints layered on top. 
+
+
 
 
 
