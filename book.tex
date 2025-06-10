@@ -457,11 +457,11 @@ In \autoref{fig:dnn}, neuron \(x_3\) receives inputs \(x_1\) and \(x_2\) with we
 
 
 \section{Activation Functions}\label{sec:activation}
-Several popular activation functions used in DNNs include ReLU, Sigmoid, Tanh, and Softmax. All of these are non-linear\footnote{Non-linear means that the output of the function is not a linear combination of its inputs.} functions that introduce non-linearity to the network, allowing it to learn complex patterns in the data.
+Several popular activation functions used in NNs include ReLU, Sigmoid, Tanh, and Softmax. All of these are non-linear\footnote{Non-linear means that the output of the function is not a linear combination of its inputs.} functions that introduce non-linearity to the network, allowing it to learn complex patterns in the data.
 
 
 
-\autoref{tab:activation} summarizes the most common activation functions used in DNNs, their equations, output ranges, and key uses.
+\autoref{tab:activation} summarizes the most common activation functions used in NNs, their equations, output ranges, and key uses.
 
 \begin{table}
   \centering
@@ -485,7 +485,7 @@ Several popular activation functions used in DNNs include ReLU, Sigmoid, Tanh, a
 
 \subsection{ReLU (Rectified Linear Unit)}\label{sec:relu}
 
-ReLU is the most widely used activation function in DNNs.  It is a  \emph{piecewise linear} function with two linear pieces: one for the case when the input value is greater than or equal to zero (output is the input itself) and one for the case when the input value is less than zero (output is 0). A ReLU activated neuron is said to be \emph{active} if its input is greater than zero and \emph{inactive} otherwise.
+ReLU is the most widely used activation function in NNs.  It is a  \emph{piecewise linear} function with two linear pieces: one for the case when the input value is greater than or equal to zero (output is the input itself) and one for the case when the input value is less than zero (output is 0). A ReLU activated neuron is said to be \emph{active} if its input is greater than zero and \emph{inactive} otherwise.
 
 \begin{figure}[htp]
     \centering
@@ -653,14 +653,14 @@ Softmax is a generalization of the sigmoid function that maps any real value to 
 \end{align}
 
 \begin{example}
-For a vector $x = [2, 1, 0]$, the softmax function computes: 
+For a vector $x = [2, 1, 0]$, softmax computes: 
 \begin{align*}
 \softmax{x} &= \left[\frac{e^2}{e^2+e^1+e^0}, \frac{e^1}{e^2+e^1+e^0}, \frac{e^0}{e^2+e^1+e^0}\right] \\
 &= \left[\frac{7.389}{7.389+2.718+1}, \frac{2.718}{7.389+2.718+1}, \frac{1}{7.389+2.718+1}\right] \\
 &\approx [0.71, 0.24, 0.05]
 \end{align*}
 
-This means that the softmax function maps the input vector $x$ to a probability distribution over the three classes, where the first class has a probability of 0.71, the second class has a probability of 0.24, and the third class has a probability of 0.05.
+This means that softmax maps the input vector $x$ to a probability distribution over the three classes, where the first class has a probability of 0.71, the second class has a probability of 0.24, and the third class has a probability of 0.05.
 \end{example}
 
 
@@ -741,7 +741,7 @@ The first hidden unit forms a linear combination of its inputs as $h_1 = 2x_1 - 
 This value is then passed through the ReLU activation function, resulting in $\hat{h}_1 = \mathrm{ReLU}(h_1) = \max(0, 2x_1 - x_2 + 0.5)$. 
 Finally, the first output is simply $y_1 = \hat{h}_1 - 1$.
 
-\begin{figure}[htp]
+\begin{figure}[h]
     \centering
     \begin{tikzpicture}[scale=0.8, transform shape]
     % Parameters
@@ -755,23 +755,23 @@ Finally, the first output is simply $y_1 = \hat{h}_1 - 1$.
 
     % Input nodes
     \foreach \i [evaluate=\i as \lbl using int(\i)] in {1,...,4} {
-        \node[circle, draw, fill=white, minimum size=0.7cm, label=center:{$x_{\lbl}$}] 
+        \node[circle, draw, fill=white, minimum size=0.4in, label=center:{$x_{\lbl}$}] 
             (I\i) at (\xInput, {(4-1)*0.5*\dy - (\i-1)*\dy}) {};
     }
 
     % Hidden nodes
-    \node[circle, draw, fill=white, minimum size=0.7cm, label=center:{$h_1$}] at (\xHidden, {1.5}) (H1) {};
+    \node[circle, draw, fill=white, minimum size=0.4in, label=center:{$h_1$}] at (\xHidden, {1.5}) (H1) {};
     \node[above=0.1cm of H1] (B1) {$0.5$};
-    \node[circle, draw, fill=white, minimum size=0.7cm, label=center:{$h_2$}] at (\xHidden, {0}) (H2) {};
+    \node[circle, draw, fill=white, minimum size=0.4in, label=center:{$h_2$}] at (\xHidden, {0}) (H2) {};
     % \node[above=0.2cm of H2] (B2) {$b=0.5$};
-    \node[circle, draw, fill=white, minimum size=0.7cm, label=center:{$h_3$}] at (\xHidden, {-1.5}) (H3) {};
+    \node[circle, draw, fill=white, minimum size=0.4in, label=center:{$h_3$}] at (\xHidden, {-1.5}) (H3) {};
     % \node[above=0.2cm of H3] (B3) {$b=0.5$};
 
     % Output nodes
-    \node[circle, draw, fill=white, minimum size=0.7cm, label=center:{$y_1$}] at (\xOutput, {1.5}) (O1) {};
+    \node[circle, draw, fill=white, minimum size=0.4in, label=center:{$y_1$}] at (\xOutput, {1.5}) (O1) {};
     \node[above=0.1cm of O1] (B1) {$-1$};
-    \node[circle, draw, fill=white, minimum size=0.7cm, label=center:{$y_2$}] at (\xOutput, {0}) (O2) {};
-    \node[circle, draw, fill=white, minimum size=0.7cm, label=center:{$y_3$}] at (\xOutput, {-1.5}) (O3) {};
+    \node[circle, draw, fill=white, minimum size=0.4in, label=center:{$y_2$}] at (\xOutput, {0}) (O2) {};
+    \node[circle, draw, fill=white, minimum size=0.4in, label=center:{$y_3$}] at (\xOutput, {-1.5}) (O3) {};
 
     % Connections: Input to Hidden (with weight labels spaced to avoid overlap)
     \draw[->, thick] (I1) -- node[above=2pt, midway, xshift=-2pt, yshift=1pt] {$2$} (H1);
@@ -787,25 +787,22 @@ Finally, the first output is simply $y_1 = \hat{h}_1 - 1$.
     \draw[->, thick] (H3) -- (O3);
 
     \end{tikzpicture}
-    \caption{1-dimensional convolution}
-    \label{fig:cnn}
+    \caption{1-dimensional CNN}\label{fig:cnn}
 \end{figure}
 \end{example}
 
-\paragraph{Residual Networks (ResNets)} Resnets extend FNNs by adding \emph{skip connections}—direct links that bypass one or more layers. This structure helps with training deeper networks by mitigating the vanishing gradient problem. Resnets are often used in image recognition and classification. 
+\paragraph{Residual Networks (ResNets)} Resnets extend FNNs by adding \emph{skip connections}—direct links that bypass one or more layers. Resnets are often used in image recognition and classification. 
 
 \begin{example}
-
-
 \begin{figure}[htp]
     \centering
     \begin{tikzpicture}[scale=0.8, transform shape]
     % Horizontal node positions with labels
-    \node[circle, draw=black, thick, minimum size=0.7cm, fill=white, label=center:{$x$}] (H1) at (0,0) {};
-    \node[circle, draw=black, thick, minimum size=0.7cm, fill=white, label=center:{$h_1$}] (H2) at (2.5,0) {};
-    \node[circle, draw=black, thick, minimum size=0.7cm, fill=white, label=center:{$h_2$}] (H3) at (5,0) {};
-    \node[circle, draw=black, thick, minimum size=0.7cm, fill=white, label=center:{$h_3$}] (H4) at (7.5,0) {};
-    \node[circle, draw=black, thick, minimum size=0.7cm, fill=white, label=center:{$y$}] (H5) at (10,0) {};
+    \node[circle, draw=black, thick, minimum size=0.4in, fill=white, label=center:{$x$}] (H1) at (0,0) {};
+    \node[circle, draw=black, thick, minimum size=0.4in, fill=white, label=center:{$h_1$}] (H2) at (2.5,0) {};
+    \node[circle, draw=black, thick, minimum size=0.4in, fill=white, label=center:{$h_2$}] (H3) at (5,0) {};
+    \node[circle, draw=black, thick, minimum size=0.4in, fill=white, label=center:{$h_3$}] (H4) at (7.5,0) {};
+    \node[circle, draw=black, thick, minimum size=0.4in, fill=white, label=center:{$y$}] (H5) at (10,0) {};
 
     % Layer labels
     \node at (0,2.0) {\textbf{Input}};
@@ -829,21 +826,19 @@ Finally, the first output is simply $y_1 = \hat{h}_1 - 1$.
     \draw[->, thick] (H3) to[out=60,in=120] node[above, pos=0.4] {$1$} (H5);
 
     \end{tikzpicture}
-    \caption{Residual Network (ResNet) block with weights on all connections and biases above nodes. Each node is labeled and typical ReLU is applied after each hidden sum.}
-    \label{fig:resnet}
+    \caption{Residual Network (ResNet) block with weights on all connections and biases above nodes. Each node is labeled and typical ReLU is applied after each hidden sum.}\label{fig:resnet}
 \end{figure}
 
-\autoref{fig:resnet}  shows an example of a residual network with skip connections.
+
+\autoref{fig:resnet}  shows an example of a Resnet.
 Assume the input $x$ and each node applies the ReLU activation. With the weights and biases shown in the diagram, the outputs are computed as follows:
+
 \[
 \begin{aligned}
-    h_1 &= \relu{x + 1} \\
-    h_2 &= \relu{2h_1 + x - 1} \\
-    h_3 &= \relu{-h_2 + 0.5} \\
-    y   &= 0.5h_3 + h_2 + 2
+    h_1 = \relu{x + 1} &\quad h_2 = \relu{2h_1 + x - 1} \\
+    h_3 = \relu{-h_2 + 0.5} &\quad y  = 0.5h_3 + h_2 + 2
 \end{aligned}
 \]
-
 
 \end{example}
 
@@ -910,9 +905,9 @@ RNNs, often used in natural language process and speech recognition, are designe
 %             \node at (2.4,1.5) {\textbf{Hidden}};
 %             \node at (4.8,1.5) {\textbf{Output}};
 %             % Nodes
-%             \node[circle, draw=black, fill=white, thick, minimum size=0.7cm] (RI) at (0,0) {};
-%             \node[circle, draw=black, fill=white, thick, minimum size=0.7cm] (RH) at (2.4,0) {};
-%             \node[circle, draw=black, fill=white, thick, minimum size=0.7cm] (RO) at (4.8,0) {};
+%             \node[circle, draw=black, fill=white, thick, minimum size=0.4in] (RI) at (0,0) {};
+%             \node[circle, draw=black, fill=white, thick, minimum size=0.4in] (RH) at (2.4,0) {};
+%             \node[circle, draw=black, fill=white, thick, minimum size=0.4in] (RO) at (4.8,0) {};
 %             % Main arrows
 %             \draw[->, thick] (RI) -- (RH);
 %             \draw[->, thick] (RH) -- (RO);
@@ -936,9 +931,9 @@ RNNs, often used in natural language process and speech recognition, are designe
 \node at (2.4,1.5) {\textbf{Hidden}};
 \node at (4.8,1.5) {\textbf{Output}};
 % Nodes
-\node[circle, draw=black, fill=white, thick, minimum size=0.7cm, label=center:{$x_t$}] (RI) at (0,0) {};
-\node[circle, draw=black, fill=white, thick, minimum size=0.7cm, label=center:{$h_t$}] (RH) at (2.4,0) {};
-\node[circle, draw=black, fill=white, thick, minimum size=0.7cm, label=center:{$y_t$}] (RO) at (4.8,0) {};
+\node[circle, draw=black, fill=white, thick, minimum size=0.4in, label=center:{$x_t$}] (RI) at (0,0) {};
+\node[circle, draw=black, fill=white, thick, minimum size=0.4in, label=center:{$h_t$}] (RH) at (2.4,0) {};
+\node[circle, draw=black, fill=white, thick, minimum size=0.4in, label=center:{$y_t$}] (RO) at (4.8,0) {};
 % Bias above nodes
 \node[above=0.16cm of RH] {$0.5$};
 \node[above=0.16cm of RO] {$-0.5$};
@@ -969,16 +964,16 @@ RNNs, often used in natural language process and speech recognition, are designe
 \node at (\xOutput,{\inpN/2*\dy+0.8}) {\textbf{Output}};
 % Input nodes (left column)
 \foreach \i in {1,...,\inpN} {
-    \node[circle, draw=black, fill=white, minimum size=0.7cm, label=center:{$x_{\i}$}] (I\i) at (\xInput, {(\inpN-1)*0.5*\dy - (\i-1)*\dy}) {};
+    \node[circle, draw=black, fill=white, minimum size=0.4in, label=center:{$x_{\i}$}] (I\i) at (\xInput, {(\inpN-1)*0.5*\dy - (\i-1)*\dy}) {};
 }
 % Hidden nodes (centered) (as many as input)
 \foreach \i in {1,...,\hidN} {
-    \node[circle, draw=black, fill=white, minimum size=0.7cm, label=center:{$h_{\i}$}] (H\i) at (\xHidden, {(\hidN-1)*0.5*\dy - (\i-1)*\dy}) {};
+    \node[circle, draw=black, fill=white, minimum size=0.4in, label=center:{$h_{\i}$}] (H\i) at (\xHidden, {(\hidN-1)*0.5*\dy - (\i-1)*\dy}) {};
     \node[above right=0 of H\i] {$0.5$}; % Bias above each hidden
 }
 % Output nodes (centered) (as many as input)
 \foreach \i in {1,...,\outN} {
-    \node[circle, draw=black, fill=white, minimum size=0.7cm, label=center:{$y_{\i}$}] (O\i) at (\xOutput, {(\outN-1)*0.5*\dy - (\i-1)*\dy}) {};
+    \node[circle, draw=black, fill=white, minimum size=0.4in, label=center:{$y_{\i}$}] (O\i) at (\xOutput, {(\outN-1)*0.5*\dy - (\i-1)*\dy}) {};
     \node[above=0.16cm of O\i] {$-0.5$}; % Bias above each output
 }
 % RNN input-to-hidden (1-to-1, with weight)
