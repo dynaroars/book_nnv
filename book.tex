@@ -677,7 +677,7 @@ In an FNN, information flows in one direction: from the input layer, through one
 
 Widely used feedforward architectures include fully connected, convolutional, and residual networks. Each architecture has its own strengths and is suited for different types of tasks.
 
-\paragraph{Fully Connected Neural Networks} A \emph{fully connected} NN connects each neuron in a layer to every neuron in the next layer. Thus, every neuron in the input layer is connected to every neuron in the first hidden layer, every neuron in the first hidden layer is connected to every neuron in the second hidden layer, and so on, until the output layer. Fully connected NNs, sometimes called \emph{dense networks}, are the most basic type of feedforward network and are commonly used for tasks like classification. 
+\paragraph{Fully Connected Neural Networks.} In fully connected NNs, each neuron in a layer is connected to every neuron in the next layer. Thus, every neuron in the input layer is connected to every neuron in the first hidden layer, every neuron in the first hidden layer is connected to every neuron in the second hidden layer, and so on, until the output layer. Fully connected NNs, sometimes called \emph{dense networks}, are the most basic type of FNNs and are commonly used for tasks like classification. 
 
 \begin{example}
 \autoref{fig:dnn} earlier showed a fully connected network with two inputs and one hidden layer with two neurons, and one output neuron. \autoref{fig:ffn} below shows a fully connected network with four inputs, two hidden layers with five neurons each, and three output neurons (weights and biases not shown for simplicity).
@@ -728,10 +728,18 @@ Widely used feedforward architectures include fully connected, convolutional, an
 \end{example}
 
 
-\paragraph{Convolutional Neural Networks (CNNs)} replace fully connected layers with \emph{convolutional layers}, which apply local filters across the input space. They are commonly used in computer vision and image processing. Despite their local structure, CNNs remain feedforward: data flows forward without cycles.
+\paragraph{Convolutional Neural Networks (CNNs).} CNNs replace fully connected layers with \emph{convolutional layers}, which apply local filters across the input space. In CNNs, each neuron receives several inputs, takes a weighted sum over them, passes it through an activation function, and responds with an output.  CNNs are commonly used in computer vision and image processing. Despite their local structure, CNNs remain feedforward: data flows forward without cycles.
 
 
-Each neuron receives several inputs, takes a weighted sum over them, passes it through an activation function, and responds with an output.
+
+
+
+\begin{example}
+    \autoref{fig:cnn} shows a simple CNN with four inputs, three hidden neurons, and three outputs. %The first hidden neuron computes a weighted sum of its inputs, applies the ReLU activation function, and produces an output. The second and third hidden neurons compute their outputs similarly. The outputs are computed by taking the outputs of the hidden neurons and applying a linear transformation (without activation) to produce the final output values.
+Given an input vector $\mathbf{x} = [x_1, x_2, x_3, x_4]$, the computation of the first output proceeds as follows. 
+The first hidden unit forms a linear combination of its inputs as $h_1 = 2x_1 - x_2 + 0.5$. 
+This value is then passed through the ReLU activation function, resulting in $\hat{h}_1 = \mathrm{ReLU}(h_1) = \max(0, 2x_1 - x_2 + 0.5)$. 
+Finally, the first output is simply $y_1 = \hat{h}_1 - 1$.
 
 \begin{figure}[htp]
     \centering
@@ -782,16 +790,11 @@ Each neuron receives several inputs, takes a weighted sum over them, passes it t
     \caption{1-dimensional convolution}
     \label{fig:cnn}
 \end{figure}
+\end{example}
 
-Given an input vector $\mathbf{x} = [x_1, x_2, x_3, x_4]$, the computation of the first output proceeds as follows. 
-The first hidden unit forms a linear combination of its inputs as $h_1 = 2x_1 - x_2 + 0.5$. 
-This value is then passed through the ReLU activation function, resulting in $\hat{h}_1 = \mathrm{ReLU}(h_1) = \max(0, 2x_1 - x_2 + 0.5)$. 
-Finally, the first output is simply $y_1 = \hat{h}_1 - 1$.
+\paragraph{Residual Networks (ResNets)} Resnets extend FNNs by adding \emph{skip connections}—direct links that bypass one or more layers. This structure helps with training deeper networks by mitigating the vanishing gradient problem. Resnets are often used in image recognition and classification. 
 
-
-\paragraph{Residual Networks (ResNets)} extend feedforward networks by adding \emph{skip connections}—direct links that bypass one or more layers. This structure helps with training deeper networks by mitigating the vanishing gradient problem.
-
-\autoref{fig:resnet}  shows an example of a residual network with skip connections.
+\begin{example}
 
 
 \begin{figure}[htp]
@@ -830,6 +833,7 @@ Finally, the first output is simply $y_1 = \hat{h}_1 - 1$.
     \label{fig:resnet}
 \end{figure}
 
+\autoref{fig:resnet}  shows an example of a residual network with skip connections.
 Assume the input $x$ and each node applies the ReLU activation. With the weights and biases shown in the diagram, the outputs are computed as follows:
 \[
 \begin{aligned}
@@ -841,7 +845,7 @@ Assume the input $x$ and each node applies the ReLU activation. With the weights
 \]
 
 
-
+\end{example}
 
 % \subsubsection*{Common Layer Types}
 
@@ -1006,7 +1010,7 @@ For the second time step, the hidden state is $h_2 = \relu{2x_2 - h_1 + 0.5}$, a
 % For the third time step, the hidden state is $h_3 = ReLU(2x_3 - h_2 + 0.5)$, and the output is $y_3 = h_3 - 0.5$.
 % For the fourth time step, the hidden state is $h_4 = ReLU(2x_4 - h_3 + 0.5)$, and the output is $y_4 = h_4 - 0.5$.
 
-\paragraph{Residual Networks} Residual Networks (ResNets) are a type of neural network that is often used in image recognition and classification. 
+
 % \section{Properties of Neural Networks}
 
 % \paragraph{Robustness Properties}
