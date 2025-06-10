@@ -677,7 +677,7 @@ In an FNN, information flows in one direction: from the input layer, through one
 
 Widely used feedforward architectures include fully connected, convolutional, and residual networks. Each architecture has its own strengths and is suited for different types of tasks.
 
-\paragraph{Fully Connected Neural Networks.} In fully connected NNs, each neuron in a layer is connected to every neuron in the next layer. Thus, every neuron in the input layer is connected to every neuron in the first hidden layer, every neuron in the first hidden layer is connected to every neuron in the second hidden layer, and so on, until the output layer. Fully connected NNs, sometimes called \emph{dense networks}, are the most basic type of FNNs and are commonly used for tasks like classification. 
+\paragraph{Fully Connected NNs} In fully connected NNs, each neuron in a layer is connected to every neuron in the next layer. Thus, every neuron in the input layer is connected to every neuron in the first hidden layer, every neuron in the first hidden layer is connected to every neuron in the second hidden layer, and so on, until the output layer. Fully connected NNs, sometimes called \emph{dense networks}, are the most basic type of FNNs and are commonly used for tasks like classification. 
 
 \begin{example}
 \autoref{fig:dnn} earlier showed a fully connected network with two inputs and one hidden layer with two neurons, and one output neuron. \autoref{fig:ffn} below shows a fully connected network with four inputs, two hidden layers with five neurons each, and three output neurons (weights and biases not shown for simplicity).
@@ -728,7 +728,7 @@ Widely used feedforward architectures include fully connected, convolutional, an
 \end{example}
 
 
-\paragraph{Convolutional Neural Networks (CNNs).} CNNs replace fully connected layers with \emph{convolutional layers}, which apply local filters across the input space. In CNNs, each neuron receives several inputs, takes a weighted sum over them, passes it through an activation function, and responds with an output.  CNNs are commonly used in computer vision and image processing. Despite their local structure, CNNs remain feedforward: data flows forward without cycles.
+\paragraph{Convolutional NNs (CNNs)} CNNs replace fully connected layers with \emph{convolutional layers}, which apply local filters across the input space. In CNNs, each neuron receives several inputs, takes a weighted sum over them, passes it through an activation function, and responds with an output.  CNNs are commonly used in computer vision and image processing. Despite their local structure, CNNs remain feedforward: data flows forward without cycles.
 
 
 
@@ -852,76 +852,14 @@ Assume the input $x$ and each node applies the ReLU activation. With the weights
 %     \item \textbf{Residual (Skip) Connections}: Enable shortcut paths from earlier to later layers.
 % \end{itemize}
 
-\subsection{Other Neural Network Architectures}
+\subsection{Other NN Architectures}
 
-Not all neural networks are strictly feedforward. Some architectures introduce cycles, dynamic connections, or non-Euclidean data structures.
+Not all NNs are feedforward. Some architectures introduce cycles, dynamic connections, or non-Euclidean data structures.
 
-\paragraph{Recurrent Neural Networks (RNNs)} process sequential data by introducing recurrent connections that allow information to persist across time steps. \autoref{fig:rnn} shows a simple RNN cell.
-
-\paragraph{Transformers} are designed for long-range dependencies using \emph{self-attention} rather than recurrence. They dominate applications in natural language processing and are increasingly used in vision and reinforcement learning.
-
-\paragraph{Graph Neural Networks (GNNs)} operate on graphs, allowing each node to aggregate information from its neighbors. They are used in applications involving structured data like molecules or social networks.
-
-\subsection{Architecture Summary}
-
-\autoref{tab:nn-types} summarizes several common neural network architectures and their typical application domains.
-
-\begin{table}[ht]
-\caption{Popular Neural Network Architectures and Applications}
-\label{tab:nn-types}
-\centering
-\small
-\begin{tabular}{llp{6cm}@{}}
-\toprule
-\textbf{Name} & \textbf{Acronym} & \textbf{Typical Applications} \\
-\midrule
-Feedforward NN & FNN / MLP & General function approximation, tabular data \\
-Convolutional NN & CNN & Image processing, video analysis \\
-Residual NN & ResNet & Deep image recognition, medical imaging \\
-Recurrent NN & RNN & Sequence modeling, NLP, time series \\
-Transformer & -- & NLP, summarization, code generation, vision \\
-Graph NN & GNN & Graph-structured data, molecule modeling, recommendation \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\section{Types of Neural Networks}
+\paragraph{Recurrent Neural Networks (RNNs)} RNNs, often used in natural language process and speech recognition, are designed to recognize patterns in sequences of data. RNNs have \emph{loops} in them, allowing information to be sent forward and backward.
 
 
-
-
-
-\subsection{Recurrent Neural Networks (RNNs)} 
-
-RNNs, often used in natural language process and speech recognition, are designed to recognize patterns in sequences of data. RNNs have \emph{loops} in them, allowing information to be sent forward and backward.
-
-% \begin{figure}[htp]
-%     \begin{center}
-%     \begin{tikzpicture}[scale=0.8, transform shape]
-%         % --- Rolled RNN (left diagram) ---
-%         \begin{scope}
-%             % Layer labels
-%             \node at (0,1.5) {\textbf{Input}};
-%             \node at (2.4,1.5) {\textbf{Hidden}};
-%             \node at (4.8,1.5) {\textbf{Output}};
-%             % Nodes
-%             \node[circle, draw=black, fill=white, thick, minimum size=0.4in] (RI) at (0,0) {};
-%             \node[circle, draw=black, fill=white, thick, minimum size=0.4in] (RH) at (2.4,0) {};
-%             \node[circle, draw=black, fill=white, thick, minimum size=0.4in] (RO) at (4.8,0) {};
-%             % Main arrows
-%             \draw[->, thick] (RI) -- (RH);
-%             \draw[->, thick] (RH) -- (RO);
-%             % Recurrent/self-loop at hidden node
-%             \draw [->, thick] (RH) edge [out=-120,in=-60,looseness=8] (RH);
-%             % Caption
-%             \node[align=center] at (2.4,-1.7) {Rolled RNN};
-%         \end{scope}
-        
-%         % --- Unrolled RNN (right diagram) ---
-%         \begin{scope}[xshift=8cm]
-
-
-\begin{figure}[htp]
+\begin{figure}[h]
     \begin{center}
 \begin{tikzpicture}[scale=0.8, transform shape]
 % --- Rolled RNN (left diagram) ---
@@ -998,12 +936,75 @@ Weights on connections; biases above hidden and output nodes.}
 \label{fig:rnn}
 \end{figure}
 
-
-Assume the input sequence is $\mathbf{x} = [x_1, x_2, x_3, x_4]$, and the initial hidden state is $h_0$. 
+\begin{example}
+\autoref{fig:rnn} shows a simple RNN cell. Assume the input sequence is $\mathbf{x} = [x_1, x_2, x_3, x_4]$, and the initial hidden state is $h_0$. 
 For the first time step, the hidden state is computed as $h_1 = \relu{2x_1 - h_0 + 0.5}$, and the output is $y_1 = h_1 - 0.5$. 
 For the second time step, the hidden state is $h_2 = \relu{2x_2 - h_1 + 0.5}$, and the output is $y_2 = h_2 - 0.5$.
 % For the third time step, the hidden state is $h_3 = ReLU(2x_3 - h_2 + 0.5)$, and the output is $y_3 = h_3 - 0.5$.
 % For the fourth time step, the hidden state is $h_4 = ReLU(2x_4 - h_3 + 0.5)$, and the output is $y_4 = h_4 - 0.5$.
+
+\end{example}
+
+\paragraph{Transformers} are designed for long-range dependencies using \emph{self-attention} rather than recurrence. They dominate applications in natural language processing and are increasingly used in vision and reinforcement learning.
+
+\paragraph{Graph Neural Networks (GNNs)} operate on graphs, allowing each node to aggregate information from its neighbors. They are used in applications involving structured data like molecules or social networks.
+
+\subsection{Architecture Summary}
+
+\autoref{tab:nn-types} summarizes several common NN architectures and their typical application domains.
+
+\begin{table}[ht]
+\caption{Popular NN Architectures and Applications}\label{tab:nn-types}
+\centering
+\small
+\begin{tabular}{llp{8cm}@{}}
+\toprule
+\textbf{Name} & \textbf{Acronym} & \textbf{Typical Applications} \\
+\midrule
+Feedforward NN & FNN / MLP & General function approximation, tabular data \\
+Convolutional NN & CNN & Image processing, video analysis \\
+Residual NN & ResNet & Deep image recognition, medical imaging \\
+Recurrent NN & RNN & Sequence modeling, NLP, time series \\
+Transformer & -- & NLP, summarization, code generation, vision \\
+Graph NN & GNN & Graph-structured data, molecule modeling, recommendation \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+
+
+
+
+
+
+% \begin{figure}[htp]
+%     \begin{center}
+%     \begin{tikzpicture}[scale=0.8, transform shape]
+%         % --- Rolled RNN (left diagram) ---
+%         \begin{scope}
+%             % Layer labels
+%             \node at (0,1.5) {\textbf{Input}};
+%             \node at (2.4,1.5) {\textbf{Hidden}};
+%             \node at (4.8,1.5) {\textbf{Output}};
+%             % Nodes
+%             \node[circle, draw=black, fill=white, thick, minimum size=0.4in] (RI) at (0,0) {};
+%             \node[circle, draw=black, fill=white, thick, minimum size=0.4in] (RH) at (2.4,0) {};
+%             \node[circle, draw=black, fill=white, thick, minimum size=0.4in] (RO) at (4.8,0) {};
+%             % Main arrows
+%             \draw[->, thick] (RI) -- (RH);
+%             \draw[->, thick] (RH) -- (RO);
+%             % Recurrent/self-loop at hidden node
+%             \draw [->, thick] (RH) edge [out=-120,in=-60,looseness=8] (RH);
+%             % Caption
+%             \node[align=center] at (2.4,-1.7) {Rolled RNN};
+%         \end{scope}
+        
+%         % --- Unrolled RNN (right diagram) ---
+%         \begin{scope}[xshift=8cm]
+
+
+
 
 
 % \section{Properties of Neural Networks}
@@ -1018,7 +1019,7 @@ For the second time step, the hidden state is $h_2 = \relu{2x_2 - h_1 + 0.5}$, a
 
 
 
-\subsection{Challenges}
+\section{Challenges}
 
 \paragraph{Scalability} Neural networks can be very large, with millions of parameters. This makes it difficult to verify their correctness, as the number of possible inputs grows exponentially with the size of the network.
 
