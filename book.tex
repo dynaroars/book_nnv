@@ -727,7 +727,7 @@ Widely used feedforward architectures include fully connected, convolutional, an
             \foreach \j in {1,2,3}
                 \draw[->] (H2\i) -- (O\j);
     \end{tikzpicture}
-    \caption{A fully connected FNN with two hidden layers.}
+    \caption{A fully connected NN with two hidden layers.}
     \label{fig:ffn}
 \end{figure}
 \end{example}
@@ -737,16 +737,7 @@ Widely used feedforward architectures include fully connected, convolutional, an
 
 
 
-
-
-\begin{example}
-    \autoref{fig:cnn} shows a simple CNN with four inputs, three hidden neurons, and three outputs. %The first hidden neuron computes a weighted sum of its inputs, applies the ReLU activation function, and produces an output. The second and third hidden neurons compute their outputs similarly. The outputs are computed by taking the outputs of the hidden neurons and applying a linear transformation (without activation) to produce the final output values.
-Given an input vector $\mathbf{x} = [x_1, x_2, x_3, x_4]$, the computation of the first output proceeds as follows. 
-The first hidden unit forms a linear combination of its inputs as $h_1 = 2x_1 - x_2 + 0.5$. 
-This value is then passed through the ReLU activation function, resulting in $\hat{h}_1 = \mathrm{ReLU}(h_1) = \max(0, 2x_1 - x_2 + 0.5)$. 
-Finally, the first output is simply $y_1 = \hat{h}_1 - 1$.
-
-\begin{figure}[h]
+\begin{figure}[htp]
     \centering
     \begin{tikzpicture}[scale=0.8, transform shape]
     % Parameters
@@ -794,6 +785,15 @@ Finally, the first output is simply $y_1 = \hat{h}_1 - 1$.
     \end{tikzpicture}
     \caption{1-dimensional CNN}\label{fig:cnn}
 \end{figure}
+
+\begin{example}
+    \autoref{fig:cnn} shows a simple CNN with four inputs, three hidden neurons, and three outputs. %The first hidden neuron computes a weighted sum of its inputs, applies the ReLU activation function, and produces an output. The second and third hidden neurons compute their outputs similarly. The outputs are computed by taking the outputs of the hidden neurons and applying a linear transformation (without activation) to produce the final output values.
+Given an input vector $\mathbf{x} = [x_1, x_2, x_3, x_4]$, the computation of the first output proceeds as follows. 
+The first hidden unit forms a linear combination of its inputs as $h_1 = 2x_1 - x_2 + 0.5$. 
+This value is then passed through the ReLU activation function, resulting in $\hat{h}_1 = \mathrm{ReLU}(h_1) = \max(0, 2x_1 - x_2 + 0.5)$. 
+Finally, the first output is simply $y_1 = \hat{h}_1 - 1$.
+
+
 \end{example}
 
 \paragraph{Residual Networks (ResNets)} Resnets extend FNNs by adding \emph{skip connections}—direct links that bypass one or more layers. Resnets are often used in image recognition and classification. 
@@ -977,185 +977,14 @@ Graph NN & GNN & Graph-structured data, molecule modeling, recommendation \\
 \end{table}
 
 
-
-
-
-
-
-
-% \begin{figure}[htp]
-%     \begin{center}
-%     \begin{tikzpicture}[scale=0.8, transform shape]
-%         % --- Rolled RNN (left diagram) ---
-%         \begin{scope}
-%             % Layer labels
-%             \node at (0,1.5) {\textbf{Input}};
-%             \node at (2.4,1.5) {\textbf{Hidden}};
-%             \node at (4.8,1.5) {\textbf{Output}};
-%             % Nodes
-%             \node[circle, draw=black, fill=white, thick, minimum size=0.4in] (RI) at (0,0) {};
-%             \node[circle, draw=black, fill=white, thick, minimum size=0.4in] (RH) at (2.4,0) {};
-%             \node[circle, draw=black, fill=white, thick, minimum size=0.4in] (RO) at (4.8,0) {};
-%             % Main arrows
-%             \draw[->, thick] (RI) -- (RH);
-%             \draw[->, thick] (RH) -- (RO);
-%             % Recurrent/self-loop at hidden node
-%             \draw [->, thick] (RH) edge [out=-120,in=-60,looseness=8] (RH);
-%             % Caption
-%             \node[align=center] at (2.4,-1.7) {Rolled RNN};
-%         \end{scope}
-        
-%         % --- Unrolled RNN (right diagram) ---
-%         \begin{scope}[xshift=8cm]
-
-
-
-
-
-% \section{Properties of Neural Networks}
-
-% \paragraph{Robustness Properties}
-% \emph{Robustness}, a desirable property for all networks, ensures that small perturbations in the input data do not cause major changes in the output of the network. For example, if a few pixels in an image are changed, the network should still classify the image correctly. \emph{Adversarial attacks} are a common way to test the robustness of a neural network. In an adversarial attack, an attacker makes small changes to the input data to cause the network to misclassify the data.
-
-% \emph{Local} robustness refers to robustness of a neural network within a \emph{small neighborhood or region} of the input data. In contrast, \emph{global} robustness refers to robustness of a network across the \emph{entire input space}. Global robustness is harder to achieve than local robustness, as it requires the network to be robust to all possible inputs.
-
-% \paragraph{$\epsilon$-robustness} A neural network is $\epsilon$-robust if the difference between any two inputs $x$ and $x'$ is within a small range $\epsilon$, the output $f$ of the network does not change significantly (or remain the same), i.e., $\|x-x'\| \leq \epsilon \implies f(x) \approx f(x')$.
-
-
-
-
-\section{Challenges}
-
-\paragraph{Scalability} Neural networks can be very large, with millions of parameters. This makes it difficult to verify their correctness, as the number of possible inputs grows exponentially with the size of the network.
-
-%TODO: put somewhere else  
-For DNN verification, AF is straightforward to reason about because it is a linear function. However, AFs are often followed by non-linear activation functions, described next in \autoref{sec:activation}, which make the verification problem more challenging.
-
-%TODO: put somewhere else
-For DNN verification, these non-linear activation functions make verification difficult because it introduces multiple possible outcomes for any input, making it hard to reason about the output of the network. For example, ReLU has two possible outputs for any input: 0 if the input is less than zero, and the input itself otherwise, and Sigmoid has a smooth curve with infinite possible outputs for any input.
-
-
-\paragraph{Formalization}
-
-
-\paragraph{Expressiveness}
-
-
-\chapter{Correctness Properties}
-
-Similar to software programs, neural networks have desirable properties to ensure the network behaves as expected. These could be specific to the applications modeled by the network, e.g., safety properties for a network modelling a collision avoidance system or general properties that are desired by all networks, e.g., robustness to adversarial attacks. 
-
-Below we will discuss properties that are relevant to the verification of neural networks. Specifically, these properties can be 
-expressed in a formal language supported by a DNN verifier. Additional properties can be found in the literature~\cite{seshia2018formal}.
-
-\section{Properties, Informally}
-
-Neural networks define functions of the form:
-\[
-f: \mathbb{R}^{n} \to \mathbb{R}^{m}
-\]
-where $n$ is the dimension of the input and $m$ is the dimension of the output. Properties are statements about the behavior of this function, specifying what we expect from the neural network under different conditions.
-
-\begin{quote}
-\textit{For any input $x \in \mathbb{R}^{n}$, the neural network should produce an output $f(x) \in \mathbb{R}^{m}$ that satisfies a desired correctness property.}
-\end{quote}
-
-These properties describe the expected relationship between the inputs and outputs, ignoring the internal workings of the neural network.
-
-\section{Common Correctness Properties in Neural Networks}
-
-We now define some commonly studied correctness properties in neural network verification.
-
-\subsection{Robustness}
-
-\textbf{Robustness} ensures that small changes in the input do not drastically change the output. This is a desirable property for all neural networks, especially classifiers, where we want to ensure that similar inputs yield similar outputs. For example, a slightly blurred image of a red light should still be classified as a red light.
-
-\begin{example}[Image Classification]
-Consider a neural network $f$ that classifies images into different categories (e.g., dog, cat, etc.). Robustness requires that if an input image $c$ is classified as a dog, then any perturbed image $x$ that is visually similar to $c$ should also be classified as a dog. This can be expressed as:
-
-\[
-\|x - c\| \leq \epsilon \implies f(x) = f(c), 
-\]
-where $\|x - c\| \leq \epsilon$ indicates that the difference between the two images is within a certain (small) threshold, which is typically defined in terms of pixel-wise differences.
-\end{example}
-
-%Here, $\epsilon$ defines the perturbation bound, and the norm $\|\cdot\|$ is typically the $L_\infty$ norm, which captures the maximum pixel-wise change in the image.\tvn{what's the norm? and $L_\infty$?}
-
-
-\subsection{Safety}
-
-
-\textbf{Safety} ensures that the network conforms to certain safety constraints, often specific to the application domain. This is particularly important in safety-critical applications, such as autonomous vehicles or medical diagnosis systems, where incorrect outputs can lead to catastrophic consequences. For example, in a self-driving car, we want to ensure that the car maintains a safe distance from other vehicles and pedestrians under all scenarios.
-
-\begin{example}[Collision Avoidance System]
-    A safety property in a collision avoidance system might be that if the intruder is distant and significantly slower than us, then we stay below a certain velocity threshold. Formally, this can be expressed as:
-\[
-d_{intruder} > d_{threshold} \land v_{intruder} < v_{threshold} \implies v_{us} < v_{threshold},
-\]
-where $d_{intruder}$ is the distance to the intruder, $d_{threshold}$ is a predefined safe distance, $v_{intruder}$ is the speed of the intruder, and $v_{us}$ is our speed.
-\end{example}
-
-\subsection{Other properties here} %, e.g., fariness, consistency, monotonicity
-% \subsection{Consistency}
-
-% \textbf{Consistency} ensures that a neural network behaves in a logically coherent manner, respecting basic axioms of the task at hand.
-
-% \paragraph{Example: Object Position Consistency.}
-% Consider a neural network tracking the position of objects in a video frame. It should not report that an object is on the left in one frame and then immediately claim it is on the right in the next frame.
-
-% \paragraph{Formal Specification:}
-% \[
-% \{ \text{frame } t, \text{ frame } t+1 \}
-% \quad r_1 \gets f(x_t), \quad r_2 \gets f(x_{t+1})
-% \quad \{ \text{consistent}(r_1, r_2) \}
-% \]
-
-% \subsection{Monotonicity}
-
-% \textbf{Monotonicity} ensures that larger inputs should lead to larger (or at least non-decreasing) outputs, capturing intuitive relationships between input variables and predictions.
-
-% \paragraph{Example: Housing Price Prediction.}
-% A neural network $f$ predicts the price of a house based on various features. One would expect that increasing the square footage should not reduce the predicted price.
-% \[
-% \text{If } x \geq x' \text{ then } f(x) \geq f(x')
-% \]
-
-% \paragraph{Formal Specification:}
-% \[
-% \{ x \geq x' \}
-% \quad r \gets f(x), \quad r' \gets f(x')
-% \quad \{ r \geq r' \}
-% \]
-
-\section{Counterexamples}
-A \textbf{counterexample} is a witness that falsifies the correctness property. A counterexample is an assignment to the input variables that satisfies the precondition but violates the postcondition.
-
-\begin{example}[Counterexample to Robustness Property]
-For the brightness robustness property:
-\[
-\text{If } f(x) \neq f(c) \text{ and } \|x - c\| \leq \epsilon, \text{ then } x \text{ is a counterexample.}
-\]
-\end{example}
-
-
-\section{The VNN-LIB  Specification Language}
-
-
-The VNN-LIB standard~\cite{demarchi2023supporting,vnnlib} defines a format for specifying benchmarks --- descriptions of neural networks and properties --- in neural network verification. Such a standard format enables the sharing of benchmarks across different tools and platforms, facilitating evaluations and comparisons of their performance. The international VNN-COMP competition~\cite{brix2024fifth} also VNN-LIB to evaluate the performance of different neural network verification tools.
-
-
-Specifically, VNN-LIB defines a common format for the following components:
-\begin{itemize}
-    \item \textbf{Neural Network (or model) representation} in the ONNX format~\cite{onnx}.
-    \item \textbf{Property specification} in SMT-LIB format~\cite{barrett2010smt}.
-\end{itemize}
-
-\subsection{ONNX: Modelling Neural Networks}
+\section{ONNX: Modelling Neural Networks}\label{sec:onnx}
 
 \textbf{ONNX} (Open Neural Network Exchange)~\cite{onnx} is an open source and widely adopted standard for representing neural networks. It provides a common format for representing the structure and parameters of neural networks, enabling interoperability between different ML frameworks and tools.
 
-\paragraph{Supported ONNX Operators} VNN-LIB supports a subset of ONNX operators that cover most sequential feedforward networks used in NN verification. These operators include:
+%\paragraph{Supported ONNX Operators} VNN-LIB supports a subset of ONNX operators that cover most sequential feedforward networks used in NN verification. These operators include:
 
+
+ONNX operators that cover most sequential feedforward networks include: 
 \begin{itemize}
     \item \texttt{Add, Sub, Gemm, MatMul}: basic arithmetic and matrix operations.
     \item \texttt{ReLU, Sigmoid, SoftMax}: activation functions.
@@ -1386,6 +1215,164 @@ graph torch_jit (
 \end{example}
 
 
+
+
+
+
+% \begin{figure}[htp]
+%     \begin{center}
+%     \begin{tikzpicture}[scale=0.8, transform shape]
+%         % --- Rolled RNN (left diagram) ---
+%         \begin{scope}
+%             % Layer labels
+%             \node at (0,1.5) {\textbf{Input}};
+%             \node at (2.4,1.5) {\textbf{Hidden}};
+%             \node at (4.8,1.5) {\textbf{Output}};
+%             % Nodes
+%             \node[circle, draw=black, fill=white, thick, minimum size=0.4in] (RI) at (0,0) {};
+%             \node[circle, draw=black, fill=white, thick, minimum size=0.4in] (RH) at (2.4,0) {};
+%             \node[circle, draw=black, fill=white, thick, minimum size=0.4in] (RO) at (4.8,0) {};
+%             % Main arrows
+%             \draw[->, thick] (RI) -- (RH);
+%             \draw[->, thick] (RH) -- (RO);
+%             % Recurrent/self-loop at hidden node
+%             \draw [->, thick] (RH) edge [out=-120,in=-60,looseness=8] (RH);
+%             % Caption
+%             \node[align=center] at (2.4,-1.7) {Rolled RNN};
+%         \end{scope}
+        
+%         % --- Unrolled RNN (right diagram) ---
+%         \begin{scope}[xshift=8cm]
+
+
+
+
+
+% \section{Properties of Neural Networks}
+
+% \paragraph{Robustness Properties}
+% \emph{Robustness}, a desirable property for all networks, ensures that small perturbations in the input data do not cause major changes in the output of the network. For example, if a few pixels in an image are changed, the network should still classify the image correctly. \emph{Adversarial attacks} are a common way to test the robustness of a neural network. In an adversarial attack, an attacker makes small changes to the input data to cause the network to misclassify the data.
+
+% \emph{Local} robustness refers to robustness of a neural network within a \emph{small neighborhood or region} of the input data. In contrast, \emph{global} robustness refers to robustness of a network across the \emph{entire input space}. Global robustness is harder to achieve than local robustness, as it requires the network to be robust to all possible inputs.
+
+% \paragraph{$\epsilon$-robustness} A neural network is $\epsilon$-robust if the difference between any two inputs $x$ and $x'$ is within a small range $\epsilon$, the output $f$ of the network does not change significantly (or remain the same), i.e., $\|x-x'\| \leq \epsilon \implies f(x) \approx f(x')$.
+
+
+
+
+
+
+\chapter{Correctness Properties}
+
+Similar to software programs, neural networks have desirable properties to ensure the network behaves as expected. These could be specific to the applications modeled by the network, e.g., safety properties for a network modelling a collision avoidance system or general properties that are desired by all networks, e.g., robustness to adversarial attacks. 
+
+Below we will discuss properties that are relevant to the verification of neural networks. Specifically, these properties can be 
+expressed in a formal language supported by a DNN verifier. Additional properties can be found in the literature~\cite{seshia2018formal}.
+
+\section{Properties, Informally}
+
+Neural networks define functions of the form:
+\[
+f: \mathbb{R}^{n} \to \mathbb{R}^{m}
+\]
+where $n$ is the dimension of the input and $m$ is the dimension of the output. Properties are statements about the behavior of this function, specifying what we expect from the neural network under different conditions.
+
+\begin{quote}
+\textit{For any input $x \in \mathbb{R}^{n}$, the neural network should produce an output $f(x) \in \mathbb{R}^{m}$ that satisfies a desired correctness property.}
+\end{quote}
+
+These properties describe the expected relationship between the inputs and outputs, ignoring the internal workings of the neural network.
+
+\section{Common Correctness Properties in Neural Networks}
+
+We now define some commonly studied correctness properties in neural network verification.
+
+\subsection{Robustness}
+
+\textbf{Robustness} ensures that small changes in the input do not drastically change the output. This is a desirable property for all neural networks, especially classifiers, where we want to ensure that similar inputs yield similar outputs. For example, a slightly blurred image of a red light should still be classified as a red light.
+
+\begin{example}[Image Classification]
+Consider a neural network $f$ that classifies images into different categories (e.g., dog, cat, etc.). Robustness requires that if an input image $c$ is classified as a dog, then any perturbed image $x$ that is visually similar to $c$ should also be classified as a dog. This can be expressed as:
+
+\[
+\|x - c\| \leq \epsilon \implies f(x) = f(c), 
+\]
+where $\|x - c\| \leq \epsilon$ indicates that the difference between the two images is within a certain (small) threshold, which is typically defined in terms of pixel-wise differences.
+\end{example}
+
+%Here, $\epsilon$ defines the perturbation bound, and the norm $\|\cdot\|$ is typically the $L_\infty$ norm, which captures the maximum pixel-wise change in the image.\tvn{what's the norm? and $L_\infty$?}
+
+
+\subsection{Safety}
+
+
+\textbf{Safety} ensures that the network conforms to certain safety constraints, often specific to the application domain. This is particularly important in safety-critical applications, such as autonomous vehicles or medical diagnosis systems, where incorrect outputs can lead to catastrophic consequences. For example, in a self-driving car, we want to ensure that the car maintains a safe distance from other vehicles and pedestrians under all scenarios.
+
+\begin{example}[Collision Avoidance System]
+    A safety property in a collision avoidance system might be that if the intruder is distant and significantly slower than us, then we stay below a certain velocity threshold. Formally, this can be expressed as:
+\[
+d_{intruder} > d_{threshold} \land v_{intruder} < v_{threshold} \implies v_{us} < v_{threshold},
+\]
+where $d_{intruder}$ is the distance to the intruder, $d_{threshold}$ is a predefined safe distance, $v_{intruder}$ is the speed of the intruder, and $v_{us}$ is our speed.
+\end{example}
+
+\subsection{Other properties here} %, e.g., fariness, consistency, monotonicity
+% \subsection{Consistency}
+
+% \textbf{Consistency} ensures that a neural network behaves in a logically coherent manner, respecting basic axioms of the task at hand.
+
+% \paragraph{Example: Object Position Consistency.}
+% Consider a neural network tracking the position of objects in a video frame. It should not report that an object is on the left in one frame and then immediately claim it is on the right in the next frame.
+
+% \paragraph{Formal Specification:}
+% \[
+% \{ \text{frame } t, \text{ frame } t+1 \}
+% \quad r_1 \gets f(x_t), \quad r_2 \gets f(x_{t+1})
+% \quad \{ \text{consistent}(r_1, r_2) \}
+% \]
+
+% \subsection{Monotonicity}
+
+% \textbf{Monotonicity} ensures that larger inputs should lead to larger (or at least non-decreasing) outputs, capturing intuitive relationships between input variables and predictions.
+
+% \paragraph{Example: Housing Price Prediction.}
+% A neural network $f$ predicts the price of a house based on various features. One would expect that increasing the square footage should not reduce the predicted price.
+% \[
+% \text{If } x \geq x' \text{ then } f(x) \geq f(x')
+% \]
+
+% \paragraph{Formal Specification:}
+% \[
+% \{ x \geq x' \}
+% \quad r \gets f(x), \quad r' \gets f(x')
+% \quad \{ r \geq r' \}
+% \]
+
+\section{Counterexamples}
+A \textbf{counterexample} is a witness that falsifies the correctness property. A counterexample is an assignment to the input variables that satisfies the precondition but violates the postcondition.
+
+\begin{example}[Counterexample to Robustness Property]
+For the brightness robustness property:
+\[
+\text{If } f(x) \neq f(c) \text{ and } \|x - c\| \leq \epsilon, \text{ then } x \text{ is a counterexample.}
+\]
+\end{example}
+
+
+\section{The VNN-LIB  Specification Language}
+
+
+The VNN-LIB standard~\cite{demarchi2023supporting,vnnlib} defines a format for specifying benchmarks --- descriptions of neural networks and properties --- in neural network verification. Such a standard format enables the sharing of benchmarks across different tools and platforms, facilitating evaluations and comparisons of their performance. The international VNN-COMP competition~\cite{brix2024fifth} also VNN-LIB to evaluate the performance of different neural network verification tools.
+
+
+Specifically, VNN-LIB defines a common format for the following components:
+\begin{itemize}
+    \item \textbf{Neural Network (or model) representation} in the ONNX format~\cite{onnx}.
+    \item \textbf{Property specification} in SMT-LIB format~\cite{barrett2010smt}.
+\end{itemize}
+
+
+
 \subsection{VNN-LIB: Property Specification Language}
 
 Verification tasks involve proving that the output of a network remains within some desired post-condition $\Sigma$, given inputs within a bounded set $\Pi$.
@@ -1595,6 +1582,21 @@ Modern DNN verification techniques~\cite{bunel2020branch,wang2021beta,ferrari202
 
 ReLU-based NNV is \NP{}-complete as shown in~\cite{katz2017reluplex,salzer2023reachability}. This means that the problem of checking whether a given ReLu-based DNN satisfies a property is computationally hard, and no polynomial-time algorithm is known to solve it in the general case.
 
+\section{Challenges} %TODO
+
+\paragraph{Scalability} Neural networks can be very large, with millions of parameters. This makes it difficult to verify their correctness, as the number of possible inputs grows exponentially with the size of the network.
+
+%TODO: put somewhere else  
+For DNN verification, AF is straightforward to reason about because it is a linear function. However, AFs are often followed by non-linear activation functions, described next in \autoref{sec:activation}, which make the verification problem more challenging.
+
+%TODO: put somewhere else
+For DNN verification, these non-linear activation functions make verification difficult because it introduces multiple possible outcomes for any input, making it hard to reason about the output of the network. For example, ReLU has two possible outputs for any input: 0 if the input is less than zero, and the input itself otherwise, and Sigmoid has a smooth curve with infinite possible outputs for any input.
+
+
+\paragraph{Formalization}
+
+
+\paragraph{Expressiveness}
 
 
 \part{Constraint Solving and Abstraction}
