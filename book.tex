@@ -475,9 +475,9 @@ Several popular activation functions used in NNs include ReLU, Sigmoid, Tanh, an
     Sigmoid   & $ \frac{1}{1 + e^{-x}} $         & $(0, 1)$        & Binary classification \\
     Tanh      & $ \tanh(x) $                     & $(-1, 1)$       & Hidden layers, zero-centered \\
     Softmax   & $ \frac{e^{x_i}}{\sum_j e^{x_j}} $& $(0, 1), \sum_i=1 $ & Multi-class output \\    
-    Leaky ReLU& $ \begin{cases} x & x>0 \\ \alpha x & x\leq 0 \end{cases} $ & $(-\infty, \infty)$ & Prevent dead neurons \\
-    Swish     & $ x \cdot \sigmoid{x} $  & $(-\infty, \infty)$ & Deep networks \\
-    ELU       & $ \begin{cases} x & x>0 \\ \alpha(e^{x}-1) & x\leq 0 \end{cases} $ & $(-\alpha, \infty)$ & Advanced networks \\
+    % Leaky ReLU& $ \begin{cases} x & x>0 \\ \alpha x & x\leq 0 \end{cases} $ & $(-\infty, \infty)$ & Prevent dead neurons \\
+    % Swish     & $ x \cdot \sigmoid{x} $  & $(-\infty, \infty)$ & Deep networks \\
+    % ELU       & $ \begin{cases} x & x>0 \\ \alpha(e^{x}-1) & x\leq 0 \end{cases} $ & $(-\alpha, \infty)$ & Advanced networks \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -487,11 +487,11 @@ Several popular activation functions used in NNs include ReLU, Sigmoid, Tanh, an
 
 ReLU is the most widely used activation function in NNs.  It is a  \emph{piecewise linear} function with two linear pieces: one for the case when the input value is greater than or equal to zero (output is the input itself) and one for the case when the input value is less than zero (output is 0). A ReLU activated neuron is said to be \emph{active} if its input is greater than zero and \emph{inactive} otherwise.
 
-\begin{figure}[htp]
+\begin{figure}[h]
     \centering
     \begin{tikzpicture}
         \begin{axis}[
-            width=6cm, height=4.5cm,
+            width=1.7in, height=1.7in,
             axis x line=middle, axis y line=middle,
             xlabel={}, ylabel={},
             axis equal,
@@ -519,11 +519,13 @@ ReLU is the most widely used activation function in NNs.  It is a  \emph{piecewi
 
 
 ReLU is defined as follows:
+
 \begin{align}
 \relu{x} = &\max(x,0)
 \end{align}
 
-The piecewise linearity makes ReLU easy to reason about, but it also introduces non-linearity that complicates verification (and makes verification $\mathsf{NP}$-complete as shown in~\autoref{sec:complexity}). We will use ReLU throughout this book as the default activation function for hidden neurons in a DNN. 
+
+The piecewise linearity makes ReLU easy to reason about, but it also introduces non-linearity that complicates verification (and makes DNN verification $\mathsf{NP}$-complete as shown in~\autoref{sec:complexity}). We will use ReLU throughout this book as the default activation function for hidden neurons in a DNN. 
     
 \begin{example}
 $\relu{-1.2} = 0$ (inactive), $\relu{0} = 0$ (inactive), and $\relu{2.8} = 2.8$ (active).
@@ -534,11 +536,11 @@ $\relu{-1.2} = 0$ (inactive), $\relu{0} = 0$ (inactive), and $\relu{2.8} = 2.8$ 
 
 Sigmoid is a smooth---a continuous and differentiable---non-linear activation function that maps any real value to the range (0,1). It is often used in the output layer of a binary classification problem.
 
-\begin{figure}[htp]
+\begin{figure}[ht]
     \centering
     \begin{tikzpicture}
         \begin{axis}[
-            width=6cm, height=6cm,
+            width=1.7in, height=1.7in,
             axis x line=middle, axis y line=middle,
             xlabel={}, ylabel={},
             xtick={-4, -2, 0, 2, 4},
@@ -579,7 +581,7 @@ Tanh is similar to the sigmoid function but maps any real value to the range (-1
     \centering
     \begin{tikzpicture}
         \begin{axis}[
-            width=6cm, height=6cm,
+            width=1.7in, height=1.7in,
             axis x line=middle, axis y line=middle,
             xlabel={}, ylabel={},
             xtick={-4, -2, 0, 2, 4},
@@ -617,7 +619,7 @@ $\tanh{-1.2} \approx -0.83$, $\tanh{0} = 0$, and $\tanh{2.8} \approx 0.99$. This
     \centering
     \begin{tikzpicture}
         \begin{axis}[
-            width=6cm, height=6cm,
+            width=1.7in, height=1.7in,
             axis x line=middle, axis y line=middle,
             % axis equal,
             xlabel={}, ylabel={},
@@ -654,11 +656,14 @@ Softmax is a generalization of the sigmoid function that maps any real value to 
 
 \begin{example}
 For a vector $x = [2, 1, 0]$, softmax computes: 
+
+{\small
 \begin{align*}
 \softmax{x} &= \left[\frac{e^2}{e^2+e^1+e^0}, \frac{e^1}{e^2+e^1+e^0}, \frac{e^0}{e^2+e^1+e^0}\right] \\
 &= \left[\frac{7.389}{7.389+2.718+1}, \frac{2.718}{7.389+2.718+1}, \frac{1}{7.389+2.718+1}\right] \\
 &\approx [0.71, 0.24, 0.05]
 \end{align*}
+}
 
 This means that softmax maps the input vector $x$ to a probability distribution over the three classes, where the first class has a probability of 0.71, the second class has a probability of 0.24, and the third class has a probability of 0.05.
 \end{example}
