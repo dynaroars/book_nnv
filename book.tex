@@ -671,7 +671,7 @@ Neural networks vary in architecture depending on how information flows through 
 
 
 
-\subsection{Feedforward Neural Networks (FNNs)}
+\subsection{Feedforward Neural Networks (FNNs)}\label{sec:ffn}
 
 In an FNN, information flows in one direction: from the input layer, through one or more hidden layers, and finally to the output layer. There are no loops or cycles in the computation graph. 
 
@@ -1496,13 +1496,7 @@ A robustness property around a sample $\hat{x}$ classified as class 9:
 % \end{lstlisting}
 
 
-\section{Challenges in Specifying Properties}\tvn{TODO}
 
-Specifying desirable properties for neural networks is not straightforward. Some challenges include:
-\begin{itemize}
-    \item \textbf{Incomplete Specifications:} We may not be able to specify all desirable properties.
-    \item \textbf{Expressiveness} For tasks such as sentiment analysis or image recognition, functional correctness is hard to define precisely.
-\end{itemize}
 
 
 
@@ -1580,7 +1574,7 @@ ReLU-based NNV is \NP{}-complete as shown in~\cite{katz2017reluplex,salzer2023re
 
 \section{Challenges} %TODO
 
-\paragraph{Scalability} Neural networks can be very large, with millions of parameters. This makes it difficult to verify their correctness, as the number of possible inputs grows exponentially with the size of the network.
+\subsection{Scalability} Neural networks can be very large, with millions of parameters. This makes it difficult to verify their correctness, as the number of possible inputs grows exponentially with the size of the network.
 
 %TODO: put somewhere else  
 For DNN verification, AF is straightforward to reason about because it is a linear function. However, AFs are often followed by non-linear activation functions, described next in \autoref{sec:activation}, which make the verification problem more challenging.
@@ -1589,10 +1583,21 @@ For DNN verification, AF is straightforward to reason about because it is a line
 For DNN verification, these non-linear activation functions make verification difficult because it introduces multiple possible outcomes for any input, making it hard to reason about the output of the network. For example, ReLU has two possible outputs for any input: 0 if the input is less than zero, and the input itself otherwise, and Sigmoid has a smooth curve with infinite possible outputs for any input.
 
 
-\paragraph{Formalization}
+\subsection{Formalization}
 
 
-\paragraph{Expressiveness}
+\subsection{Expressiveness}
+
+
+
+\section{Challenges in Specifying Properties}\tvn{TODO}
+
+Specifying desirable properties for neural networks is not straightforward. Some challenges include:
+\begin{itemize}
+    \item \textbf{Incomplete Specifications:} We may not be able to specify all desirable properties.
+    \item \textbf{Expressiveness} For tasks such as sentiment analysis or image recognition, functional correctness is hard to define precisely.
+\end{itemize}
+
 
 
 \part{Constraint Solving and Abstraction}
@@ -3272,11 +3277,74 @@ Here we survey the latest benchmarks in DNN verification and how SOTA tools perf
 
 
 
-%\section{VNN-COMP'24 Benchmarks}
+\section{VNN-COMP Benchmarks}
 
-% Artifacts for all benchmarks are available in the repository\footnote{\url{https://github.com/ChristopherBrix/vnncomp2024_benchmarks/tree/main/benchmarks}}.
+%Artifacts for all benchmarks are available in the repository\footnote{\url{https://github.com/ChristopherBrix/vnncomp2024_benchmarks/tree/main/benchmarks}}.
 
-               
+\tvn{check this table with VNN-COMP'24 reports. The Report seems to have a lot more benchmarks for regular tracks. Also many numbers don't quite match. We should probably use the benchmarks from VNN-COMP'24 report. I also ? on place for you to fill in}
+
+\begin{table}
+    \caption{Benchmark instances. U: \texttt{unsat}, S: \texttt{sat}, ?: \texttt{unknown}.}\label{tab:benchmarks}
+    \resizebox{\textwidth}{!}{
+    \begin{tabular}{c|ccccc|cc}
+        \toprule
+        \multirow{2}{*}{\textbf{Benchmarks}} &\multicolumn{2}{c}{\textbf{Networks}} &  \multicolumn{3}{c|}{\textbf{Per Network}} &\multicolumn{2}{c}{\textbf{Tasks}} \\
+        & Type & Networks & Neurons & Parameters & Input Dim & Properties & Instances (U/S/?) \\
+        \midrule
+        
+        ACAS Xu & FNN & 45 & 300 & 13305 & 5 & 10 & 139/47/0 \\
+        \midrule
+    
+        MNISTFC & FNN & 3 &  0.5--1.5K & 269--532K & & 30 & 56/23/11\\
+        \midrule
+        
+        CIFAR2020 & FNN+CNN & 3 &  17--62K & 2.1--2.5M && 203 & 149/43/11 \\
+        \midrule
+        
+        RESNET\_A/B & CNN+ResNet & 2 & 11K & 354K & & 144 & 49/23/72 \\
+        \midrule
+        
+        CIFAR\_GDVB & FNN+CNN & 42 & 9--49K & 0.08--58M && 39 & 60/0/0 \\
+        \midrule
+        \midrule
+        VGGNet16 & CNN + ReLU + MaxPool& ? & ? & 138M & 150K & ? & ? \\
+        \bottomrule
+        \end{tabular}
+    }
+\end{table}
+
+
+
+\subsection{ACAS Xu}
+\paragraph{Networks} The ACASXu benchmark consists of ten properties defined over 45 neural networks used to issue turn advisories to aircraft to avoid collisions. The neural networks have 300 neurons arranged in 6 layers, with ReLU activation functions. There are five inputs corresponding to the aircraft states, and five network outputs, where the minimum output is used as the turn advisory the system ultimately produces.
+
+\paragraph{Specifications} We use the original 10 properties~\cite{katz2017reluplex}, where properties 1--4 are checked on all 45 networks as was done in later work by the original authors~\cite{katz2019marabou}. Properties 5--10 are checked on a single network. The total number of benchmarks is therefore 186.\tvn{does not match table}
+
+
+\subsection{Cifar2020}
+
+\paragraph*{Motivation} This benchmark combines two convolutional CIFAR10 networks from last year's VNN-COMP 2020 with a new, larger network with the goal to evaluate the progress made by the whole field of Neural Network verification.
+
+\paragraph*{Networks} The two ReLU networks \texttt{cifar\_10\_2\_255} and \texttt{cifar\_10\_8\_255} with two convolutional and two fully-connected layers were trained for $\ell_\infty$ perturbations of $\epsilon = \frac{2}{255}$ and $\frac{8}{255}$, respectively, using COLT \cite{balunovic:20}  and the larger \texttt{ConvBig} with four convolutional and three fully-connected networks, was trained using adversarial training \cite{madry:17} and $\epsilon = \frac{2}{255}$.
+
+\paragraph*{Specifications} We draw the first 100 images from the CIFAR10 test set and for every network reject incorrectly classified ones. For the remaining images, the specifications describe a correct classification under an $\ell_\infty$-norm perturbation of at most $\frac{2}{255}$ and $\frac{8}{255}$ for \texttt{cifar\_10\_2\_255} and \texttt{ConvBig} and \texttt{cifar\_10\_8\_255}, respectively and allow a per sample timeout of 5 minutes.
+
+
+\subsection{VGGNET16}
+\paragraph*{Proposed by} Stanley Bak, Stony Brook University
+
+\paragraph*{Motivation} This benchmark tries to scale up the size of networks being analyzed by using the well-studied VGGNET-16 architecture~\cite{simonyan2014very} that runs on ImageNet. Input-output properties are proposed on pixel-level perturbations that can lead to image misclassification. 
+
+\paragraph*{Networks} All properties are run on the same network, which includes 138 million parameters. The network features convolution layers, ReLU activation functions, as well as max pooling layers.
+
+\paragraph*{Specifications} Properties analyzed ranged from single-pixel perturbations to perturbations on all 150528 pixles (L-infinity perturbations). A subset of the images was used to create the specifications, one from each category, which was randomly chosen to attack. Pixels to perturb were also randomly selected according to a random seed.
+
+\paragraph*{Link} \url{https://github.com/stanleybak/vggnet16_benchmark2022/}
+
+
+
+
+
 % \begin{table}[h]
 %     \centering
 %     \caption{Overview of all scored benchmarks.}\label{tab:my_label}
@@ -3542,18 +3610,6 @@ Here we survey the latest benchmarks in DNN verification and how SOTA tools perf
 % \paragraph*{Paper} Available in~\cite{kirov2023benchmark} or on request.
 
 
-% \subsection{VGGNET16}
-% \paragraph*{Proposed by} Stanley Bak, Stony Brook University
-
-% \paragraph*{Motivation} This benchmark tries to scale up the size of networks being analyzed by using the well-studied VGGNET-16 architecture~\cite{simonyan2014very} that runs on ImageNet. Input-output properties are proposed on pixel-level perturbations that can lead to image misclassification. 
-
-% \paragraph*{Networks} All properties are run on the same network, which includes 138 million parameters. The network features convolution layers, ReLU activation functions, as well as max pooling layers.
-
-% \paragraph*{Specifications} Properties analyzed ranged from single-pixel perturbations to perturbations on all 150528 pixles (L-infinity perturbations). A subset of the images was used to create the specifications, one from each category, which was randomly chosen to attack. Pixels to perturb were also randomly selected according to a random seed.
-
-% \paragraph*{Link} \url{https://github.com/stanleybak/vggnet16_benchmark2022/}
-
-
 
 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -3664,19 +3720,8 @@ Here we survey the latest benchmarks in DNN verification and how SOTA tools perf
 % 199d2c26d0ec456e62906366b694a875a21ff7ef
 
 
-% %%%%%%% Unscored %%%%%%%
-% \subsection{ACAS Xu}
-% \paragraph{Networks} The ACASXu benchmark consists of ten properties defined over 45 neural networks used to issue turn advisories to aircraft to avoid collisions. The neural networks have 300 neurons arranged in 6 layers, with ReLU activation functions. There are five inputs corresponding to the aircraft states, and five network outputs, where the minimum output is used as the turn advisory the system ultimately produces.
 
-% \paragraph{Specifications} We use the original 10 properties~\cite{katz2017reluplex}, where properties 1-4 are checked on all 45 networks as was done in later work by the original authors~\cite{katz2019marabou}. Properties 5-10 are checked on a single network. The total number of benchmarks is therefore 186. The original verification times ranged from seconds to days---including some benchmark instances that did not finish. This year we used a timeout of around two minutes (116 seconds) for each property, in order to fit within a total maximum runtime of six hours.
 
-% % \subsection{Cifar2020 (unscored)}
-
-% % \paragraph*{Motivation} This benchmark combines two convolutional CIFAR10 networks from last year's VNN-COMP 2020 with a new, larger network with the goal to evaluate the progress made by the whole field of Neural Network verification.
-
-% % \paragraph*{Networks} The two ReLU networks \texttt{cifar\_10\_2\_255} and \texttt{cifar\_10\_8\_255} with two convolutional and two fully-connected layers were trained for $\ell_\infty$ perturbations of $\epsilon = \frac{2}{255}$ and $\frac{8}{255}$, respectively, using COLT \cite{balunovic:20}  and the larger \texttt{ConvBig} with four convolutional and three fully-connected networks, was trained using adversarial training \cite{madry:17} and $\epsilon = \frac{2}{255}$.
-
-% % \paragraph*{Specifications} We draw the first 100 images from the CIFAR10 test set and for every network reject incorrectly classified ones. For the remaining images, the specifications describe a correct classification under an $\ell_\infty$-norm perturbation of at most $\frac{2}{255}$ and $\frac{8}{255}$ for \texttt{cifar\_10\_2\_255} and \texttt{ConvBig} and \texttt{cifar\_10\_8\_255}, respectively and allow a per sample timeout of 5 minutes.
 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % \subsection{safeNLP}
