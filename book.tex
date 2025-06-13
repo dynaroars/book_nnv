@@ -317,12 +317,18 @@ A \emph{neural network} (\textbf{NN})~\cite{Goodfellow-et-al-2016} consists of a
 The output of an NN is obtained by iteratively computing  the  values  of  neurons  in  each  layer.
 The value of a neuron in the input layer is the input data. The value of a neuron in the hidden layers is computed by applying an \emph{affine transformation} (\autoref{sec:affine}) to values of neurons in the previous layers, then followed by an \emph{activation function} (\autoref{sec:activation}) such as ReLU and Sigmoid. The value of a neuron in the output layer is computed similarly but may skip the activation function.
 
+\paragraph{NN as a Function} We can view an NN as a function that maps input vectors to output vectors: 
+\begin{equation}
+f: \mathbb{R}^{n} \to \mathbb{R}^{m}
+\end{equation}
+where \(n\) is the number of input neurons and \(m\) is the number of output neurons. The neurons in the input layer are the inputs to the function, and the neurons in the output layer are the outputs of the function. The neurons in the hidden layers are also functions that transform the inputs from the previous layer to produce outputs for the next layer.
 
 %Fig.~\ref{fig:dnn}b shows the same network but with each hidden neuron $x$ split into two neurons $x'$ and $x''$ representing the result of affine transformation on $x$ and ReLU activation on $x'$, respectively, e.g.,  $x_3'=-x_1-0.5x_2-1.0$ and  $x_3'' = ReLU(x_3')$. This ReLU-slitting representation is adopted by \tool{} and other DNN analyses (e.g., ~\cite{katz2017reluplex,wang2018efficient,henriksen2020efficient}) 
 % including Reluplex~\cite{katz2017reluplex}, Neurify~\cite{wang2018efficient}, and VeriNet~\cite{henriksen2020efficient},
 %because it does not change the semantics or complexity of the problem and is easier to reason about as we will show in \S\ref{sec:overview}.
 
 % \section{The Basics}\label{sec:nn-basics}
+
 
 
 
@@ -378,10 +384,6 @@ The value of a neuron in the input layer is the input data. The value of a neuro
 % \end{example}
 
 
-% \subsection{Weights and Layers} The network structures described earlier can be generalized by allowing each node (except input nodes) to have \textbf{weights} and \textbf{biases}. With these parameters, each node computes its output by first applying an \textbf{affine transformation} to its inputs (a weighted sum plus a bias), and then applying a \textbf{non-linear activation} such as ReLU.
-
-% In most neural networks, nodes are grouped into \textbf{layers}, where each layer consists of multiple nodes that compute their outputs in parallel using the outputs from the previous layer as their inputs. The first layer that processes input data is called the \textbf{input layer}, the last layer producing the network's final outputs is called the \textbf{output layer}, and all layers in between are called \textbf{hidden layers}. The computation proceeds layer by layer, from inputs to outputs, forming a feedforward flow of information.
-
 \begin{figure}
     \centering
     \begin{tikzpicture}[scale=0.8, transform shape]
@@ -429,7 +431,7 @@ The value of a neuron in the input layer is the input data. The value of a neuro
     \]
 \end{itemize}
 
-Thus, this DNN computes a function \(f: \mathbb{R}^2 \to \mathbb{R}\) where:
+Thus, this NN computes a function \(f: \mathbb{R}^2 \to \mathbb{R}\) where:
 \[
 f(x_1, x_2) = -\relu{-0.5 x_1 + 0.5 x_2 + 1.0} + \relu{1.0 x_1 + 1.0 x_2 - 1.0} - 1.0.
 \]
@@ -454,7 +456,7 @@ In \autoref{fig:dnn}, neuron \(x_3\) receives inputs \(x_1\) and \(x_2\) with we
 
 
 \section{Activation Functions}\label{sec:activation}
-Several popular activation functions used in NNs include ReLU, Sigmoid, Tanh, and Softmax. All of these are non-linear\footnote{Non-linear means that the output of the function is not a linear combination of its inputs.} functions that introduce non-linearity to the network, allowing it to learn complex patterns in the data.
+Popular activation functions used in NNs include ReLU, Sigmoid, Tanh, and Softmax. All of these are non-linear\footnote{Non-linear means that the output of the function is not a linear combination of its inputs.} functions that introduce non-linearity to the network, allowing it to learn complex patterns in the data.
 
 
 
@@ -1254,11 +1256,7 @@ graph torch_jit (
 % \paragraph{$\epsilon$-robustness} A neural network is $\epsilon$-robust if the difference between any two inputs $x$ and $x'$ is within a small range $\epsilon$, the output $f$ of the network does not change significantly (or remain the same), i.e., $\|x-x'\| \leq \epsilon \implies f(x) \approx f(x')$.
 
 
-
-
-
-
-\chapter{Correctness Properties}
+\chapter{Properties}\label{chap:properties}
 
 Similar to software programs, neural networks have desirable properties to ensure the network behaves as expected. These could be specific to the applications modeled by the network, e.g., safety properties for a network modelling a collision avoidance system or general properties that are desired by all networks, e.g., robustness to adversarial attacks. 
 
@@ -1267,19 +1265,21 @@ expressed in a formal language supported by a DNN verifier. Additional propertie
 
 \section{Properties, Informally}
 
-Neural networks define functions of the form:
-\[
-f: \mathbb{R}^{n} \to \mathbb{R}^{m}
-\]
-where $n$ is the dimension of the input and $m$ is the dimension of the output. Properties are statements about the behavior of this function, specifying what we expect from the neural network under different conditions.
+As described in~\autoref{sec:basic} NNs define functions of the form $f: \mathbb{R}^{n} \to \mathbb{R}^{m}$, 
+where $n$ is the dimension of the input and $m$ is the dimension of the output. Thus, the properties (or specifications) of an NN---similarly to properties of software program---are defined in terms of its input and output:
 
 \begin{quote}
-\textit{For any input $x \in \mathbb{R}^{n}$, the neural network should produce an output $f(x) \in \mathbb{R}^{m}$ that satisfies a desired correctness property.}
+\textit{For any input $x \in \mathbb{R}^{n}$ satisfying a precondition $P$, the neural network should produce an output $f(x) \in \mathbb{R}^{m}$ that satisfies a postcondition $Q$.}
 \end{quote}
 
-These properties describe the expected relationship between the inputs and outputs, ignoring the internal workings of the neural network.
+This says that if the input $x$ satisfies the precondition $P$, then the output $f(x)$ should satisfy the postcondition $Q$.
 
-\section{Common Correctness Properties in Neural Networks}
+
+
+
+
+
+\section{Common Properties in Neural Networks}
 
 We now define some commonly studied correctness properties in neural network verification.
 
