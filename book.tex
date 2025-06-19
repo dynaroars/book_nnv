@@ -1,5 +1,9 @@
 \documentclass[oneside,11pt,dvipsnames]{book}
-
+\usepackage{xcolor}
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.97,0.97,0.97}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[margin=1.5in]{geometry}
@@ -46,17 +50,12 @@
 }
 \usepackage{cleveref}
 \usepackage{booktabs}
-
 \usepackage{tikz}
 \usetikzlibrary{calc,positioning}
 \usepackage{pgfplots}
 \pgfplotsset{compat=1.18}
 
-\usepackage{xcolor}
-\definecolor{codegreen}{rgb}{0,0.6,0}
-\definecolor{codegray}{rgb}{0.5,0.5,0.5}
-\definecolor{codepurple}{rgb}{0.58,0,0.82}
-\definecolor{backcolour}{rgb}{0.97,0.97,0.97}
+
 
 \usepackage{anyfontsize}
 \usepackage{sectsty}
@@ -106,7 +105,8 @@
 
 %\newcommand{\ignore}[1]{}
 
-
+\newcommand{\sat}{\texttt{SAT}}
+\newcommand{\unsat}{\texttt{UNSAT}}
 
 
 
@@ -677,10 +677,11 @@ Neural networks vary in architecture depending on how information flows through 
 
 In an FNN, information flows in one direction: from the input layer, through one or more hidden layers, and finally to the output layer. There are no loops or cycles in the computation graph. 
 
-
 Widely used feedforward architectures include fully connected, convolutional, and residual networks. Each architecture has its own strengths and is suited for different types of tasks.
 
-\paragraph{Fully Connected NNs} In fully connected NNs, each neuron in a layer is connected to every neuron in the next layer. Thus, every neuron in the input layer is connected to every neuron in the first hidden layer, every neuron in the first hidden layer is connected to every neuron in the second hidden layer, and so on, until the output layer. Fully connected NNs, sometimes called \emph{dense networks}, are the most basic type of FNNs and are commonly used for tasks like classification. 
+\paragraph{Fully Connected NNs}
+
+In fully connected NNs, each neuron in a layer is connected to every neuron in the next layer. Thus, every neuron in the input layer is connected to every neuron in the first hidden layer, every neuron in the first hidden layer is connected to every neuron in the second hidden layer, and so on, until the output layer. Fully connected NNs, sometimes called \emph{dense networks}, are the most basic type of FNNs and are commonly used for tasks like classification. 
 
 \begin{example}
 \autoref{fig:dnn} earlier showed a fully connected network with two inputs and one hidden layer with two neurons, and one output neuron. \autoref{fig:ffn} below shows a fully connected network with four inputs, two hidden layers with five neurons each, and three output neurons (weights and biases not shown for simplicity).
@@ -1312,7 +1313,10 @@ d_{intruder} > d_{threshold} \land v_{intruder} < v_{threshold} \implies v_{us} 
 where $d_{intruder}$ is the distance to the intruder, $d_{threshold}$ is a predefined safe distance, $v_{intruder}$ is the speed of the intruder, and $v_{us}$ is our speed.
 \end{example}
 
-\subsection{Other properties here} %, e.g., fariness, consistency, monotonicity
+\subsection{Other properties}
+
+\tvn{Hai:  talk about other properties such as consistency, monotonicity, etc.}
+
 % \subsection{Consistency}
 
 % \textbf{Consistency} ensures that a neural network behaves in a logically coherent manner, respecting basic axioms of the task at hand.
@@ -1344,7 +1348,8 @@ where $d_{intruder}$ is the distance to the intruder, $d_{threshold}$ is a prede
 % \quad \{ r \geq r' \}
 % \]
 
-\section{Counterexamples}
+\section{Counterexamples}\label{sec:counterexamples}
+
 A \textbf{counterexample} is a witness that falsifies the correctness property. A counterexample is an assignment to the input variables that satisfies the precondition but violates the postcondition.
 
 \begin{example}[Counterexample to Robustness Property]
@@ -1534,19 +1539,26 @@ A counterexample showing this property violation is $\{x_1=-1, x_2=2\}$, from wh
  As with traditional software verification, DNN verification is often represented as a satisfiability problem.
 
 To do this, we first need to define a formula $\alpha$ to represent the network. Typically $\alpha$ is a conjunction ($\bigwedge$) of constraints representing the affine transformation (\autoref{sec:affine}) and activation function (\autoref{sec:activation}) of each neuron in the network.
-For a network\tvn{does this have to be FC?}\hai{No, but FC is simpler to define than CNN} with $L$ layers, $N$ ReLU neurons per layer, this formula is:
+For example, for a fully-connected neural network (\autoref{sec:ffn}) with $L$ layers, $N$ ReLU neurons per layer, this formula is:
+
 \begin{align*}
 \alpha = &\bigwedge_{\begin{smallmatrix}i \in [1,L]\\ j \in [1,N]\end{smallmatrix}}~~v_{i,j} \equiv ReLU \Big( \sum_{k \in [1,N]} (w_{i-1,j,k} \cdot v_{i-1,j}) + b_{i,j}\Big)    \\
  = &\bigwedge_{\begin{smallmatrix}i \in [1,L]\\ j \in [1,N]\end{smallmatrix}}~~v_{i,j} \equiv \max \Big( \sum_{k \in [1,N]} (w_{i-1,j,k} \cdot v_{i-1,j}) + b_{i,j}, 0 \Big)
 \end{align*}
-With this definition NNV can be formulated as checking the satisfiability of the formula:
+
+With this definition the NNV problem can be formulated as checking the validity of the following formula:
+\begin{equation}\label{eq:nnv}
+    \alpha \implies (\phi_{in} \implies \phi_{out}).
+\end{equation}
+This formula checks if the network $N$ satisfies (implies) the property $\phi$, where $\phi_{in}$ is a precondition on the inputs and $\phi_{out}$ is a postcondition on the outputs. This validity checking can be reduced to checking the satisfiability of the formula:
+
 \begin{equation}\label{eq:prob}
   \alpha \land \phi_{in} \land \neg \phi_{out}
 \end{equation}
 If \autoref{eq:prob} is unsatisfiable, then $\phi$ is a valid property of $\mathcal{N}$. Otherwise, $\phi$ is not valid.  Moreover, we can extract a counterexample for the original problem from the satisfying assignment of \autoref{eq:prob}.
 
 \begin{example}
-We first represent the DNN in \autoref{fig:dnn} as:
+We represent the DNN in \autoref{fig:dnn} as:
 \begin{align*}
 \alpha = ~~& x_3' \equiv -0.5x_1 + 0.5x_2 + 1.0 ~\land~ x_3'' \equiv ReLU(x_3') ~\land \\
          ~~& x_4' \equiv 0.5x_1 - 0.5x_2 + 1.0  ~\land~ x_4'' \equiv ReLU(x_4') ~\land \\
@@ -1558,7 +1570,7 @@ We first represent the DNN in \autoref{fig:dnn} as:
 \phi_{out} &= (x_5 < 0)
 \end{align*}
 
-We can then check the satisfiability of the formula $\alpha \land \phi_{in} \land \neg \phi_{out}$, which is equivalent to checking if there exists an input $x_1, x_2$ such that the output $x_5 > 0$. In this case, the formula is satisfiable, and we can extract a counterexample input $\{x_1=-1, x_2=2\}$ that leads to $x_5 = -3.5$, thus violating the property.    
+We can check the satisfiability of the formula $\alpha \land \phi_{in} \land \neg \phi_{out}$ using a constraint solver (e.g., an SMT solver).  In this case, the formula is satisfiable and the solver returns \sat{}, and we query the solver for a satisfying assignment to the input variables, e.g., $x_1=-1$ and $x_2=2$. This assignment is a counterexample (\autoref{sec:counterexamples}) to the property, as it satisfies the input constraint but violates the output constraint, i.e., $x_5 = -3.5 < 0$.
 
 \end{example}
 
