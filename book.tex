@@ -1313,13 +1313,28 @@ d_{intruder} > d_{threshold} \land v_{intruder} < v_{threshold} \implies v_{us} 
 where $d_{intruder}$ is the distance to the intruder, $d_{threshold}$ is a predefined safe distance, $v_{intruder}$ is the speed of the intruder, and $v_{us}$ is our speed.
 \end{example}
 
-\subsection{Other properties}
+\section{Other properties}
 
 \tvn{Hai:  talk about other properties such as consistency, monotonicity, etc.}
 
-% \subsection{Consistency}
+\subsection{Consistency}
 
-% \textbf{Consistency} ensures that a neural network behaves in a logically coherent manner, respecting basic axioms of the task at hand.
+\textbf{Consistency} ensures that a neural network behaves in a logically coherent manner, maintaining stable and predictable outputs under semantically equivalent or related inputs. This property requires that the network's predictions follow logical relationships and respect domain-specific invariants, preventing contradictory outputs that would violate fundamental assumptions of the problem domain. 
+
+\begin{example}[Logical Consistency in Large Language Models]
+    A consistency property in an LLM-based question answering system requires that the model provides logically coherent answers to related questions. For instance, given a set of related queries about the same factual information, the model should maintain consistency. Formally, consider queries $q_1$, $q_2$, and $q_3$ about a person's age:
+\[
+q_1: \text{"How old is person X?"}
+\]
+\[
+q_2: \text{"What year was person X born if they are currently Y years old?"}
+\]
+\[
+q_3: \text{"Will person X be Z years old in 2025?"}
+\]
+The consistency property requires that if the LLM outputs age $Y$ for $q_1$, then the birth year in $q_2$ should be $\text{current\_year} - Y$, and the answer to $q_3$ should be logically consistent with the stated age. This prevents scenarios where an LLM claims someone is 30 years old but was born in 1985 when the current year is 2024, ensuring logical coherence across related factual queries.
+\end{example}
+
 
 % \paragraph{Example: Object Position Consistency.}
 % Consider a neural network tracking the position of objects in a video frame. It should not report that an object is on the left in one frame and then immediately claim it is on the right in the next frame.
@@ -1331,22 +1346,26 @@ where $d_{intruder}$ is the distance to the intruder, $d_{threshold}$ is a prede
 % \quad \{ \text{consistent}(r_1, r_2) \}
 % \]
 
-% \subsection{Monotonicity}
+\subsection{Monotonicity}
 
-% \textbf{Monotonicity} ensures that larger inputs should lead to larger (or at least non-decreasing) outputs, capturing intuitive relationships between input variables and predictions.
+\textbf{Monotonicity} ensures that the neural network maintains a consistent ordering relationship between inputs and outputs, where an increase in certain input features always leads to a non-decreasing output value. This property is particularly important in applications where domain knowledge dictates logical ordering constraints, such as fairness-aware systems, medical diagnosis, and scientific applications where physical laws impose natural ordering relationships.
 
-% \paragraph{Example: Housing Price Prediction.}
-% A neural network $f$ predicts the price of a house based on various features. One would expect that increasing the square footage should not reduce the predicted price.
-% \[
-% \text{If } x \geq x' \text{ then } f(x) \geq f(x')
-% \]
+\begin{example}[Fairness with Gender Considerations]
+    A monotonicity property in an AI system should ensure that relevant merit-based features are monotonic while demographic features like gender have no effect on the outcome. For instance, in a university admissions system, the admission probability should be monotonically non-decreasing with respect to GPA and test scores, regardless of gender. Formally, for applicants with profiles $(p, s, g)$ and $(p', s', g')$ where $p, p'$ are GPAs, $s, s'$ are test scores, and $g, g'$ are gender indicators:
+\[
+p \leq p' \land s = s' \land g \neq g' \implies f(p, s, g) \leq f(p', s', g'),
+\]
+\[
+s \leq s' \land p = p' \land g \neq g' \implies f(p, s, g) \leq f(p, s', g'),
+\]
+where $f$ is the neural network computing admission probability. Additionally, for gender fairness:
+\[
+f(p, s, \text{male}) = f(p, s, \text{female}) \text{ for all } p, s,
+\]
+ensuring that applicants with identical academic qualifications receive the same treatment regardless of gender, while maintaining logical ordering based on academic merit.
+\end{example}
 
-% \paragraph{Formal Specification:}
-% \[
-% \{ x \geq x' \}
-% \quad r \gets f(x), \quad r' \gets f(x')
-% \quad \{ r \geq r' \}
-% \]
+
 
 \section{Counterexamples}\label{sec:counterexamples}
 
@@ -1468,7 +1487,7 @@ A robustness property around a sample $\hat{x}$ classified as class 9:
 \forall j \in [0,8] : y_j - y_9 \leq 0
 \]
 
-\tvn{Need the VNN-LIB code here.}\hd{Working on it}
+\tvn{Need the VNN-LIB code here.}\hd{Ignored. Will be too long.}
 \end{example}
 
 % \subsubsection*{Variable Naming Convention}\tvn{what's the purpose of this section?}\hd{seems unnecessary}
@@ -3999,3 +4018,4 @@ Here we survey the latest benchmarks in DNN verification and how SOTA tools perf
 \appendix
 
 \end{document}
+
