@@ -1726,7 +1726,7 @@ To use MILP solving for DNN reasoning, we can encode non-linear activation funct
 
 %We can encode the DNN as a set of linear constraints and use an MILP solver to check that the constraints are satisfiable. 
 
-\begin{equation}
+\begin{equation}\label{eq:mip}
     \begin{aligned}
         &\mbox{(a)}\quad z^{(i)} = W^{(i)} \hat{z}^{(i-i)} + b^{(i)}; \\
         &\mbox{(b)}\quad y = z^{(L)};  x = \hat{z}^{(0)}; \\
@@ -1734,19 +1734,19 @@ To use MILP solving for DNN reasoning, we can encode non-linear activation funct
         &\mbox{(d)}\quad a_j^{(i)} \in \{ 0, 1\} ;\\
         &\mbox{(e)}\quad \hat{z}_j^{(i)} \le {a}_j^{(i)} {u}_j^{(i)}; \hat{z}_j^{(i)} \le {z}_j^{(i)} - {l}_j^{(i)}(1 - {a}_j^{(i)}); \\
     \end{aligned}
-    \label{eq:mip}
 \end{equation}
 where $x$ is input, $y$ is output, and $z^{(i)}$, $\hat{z}^{(i)}$, $W^{(i)}$, and $b^{(i)}$ are the pre-activation, post-activation, weight, and bias vectors for layer $i$. 
-The equations encode the semantics of a DNN as follows:
-(a) defines the affine transformation computing the pre-activation value for a neuron in terms of outputs in the preceding layer;
-(b) defines the inputs and outputs in terms of the adjacent hidden layers;
-(c) asserts that post-activation values are non-negative and no less than pre-activation values;
-(d) defines that the neuron activation status indicator variables that are either 0 or 1; and
-(e) defines constraints on the upper, $u_j^{(i)}$, and lower, $l_j^{(i)}$, bounds of the pre-activation value of the $j$th neuron in the $i$th layer.
+\begin{enumerate}[label=(\alph*)]
+    \item defines the affine transformation computing the pre-activation value for a neuron in terms of outputs in the preceding layer;
+    \item defines the inputs and outputs in terms of the adjacent hidden layers;
+    \item asserts that post-activation values are non-negative and no less than pre-activation values;
+    \item defines that the neuron activation status indicator variables that are either 0 or 1; and
+    \item defines constraints on the upper, $u_j^{(i)}$, and lower, $l_j^{(i)}$, bounds of the pre-activation value of the $j$th neuron in the $i$th layer.
+\end{enumerate}
 Deactivating a neuron, $a_j^{(i)} = 0$, simplifies the first of the (e) constraints to $\hat{z}_j^{(i)} \le 0$, and activating a neuron simplifies the second to $\hat{z}_j^{(i)} \le z_j^{(i)}$, which is consistent with the semantics of $\hat{z}_j^{(i)} = max(z_j^{(i)},0)$.
 
 \begin{example}\label{ex:milp-dnn}
-    Consider the same property from \autoref{ex:smt-dnn}: $x_5 \ge 0$ for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$. We can encode this using the MILP formulation from \autoref{eq:mip}. For the DNN in \autoref{fig:dnn-a}, we have:
+    For the example in~\autoref{ex:smt-dnn}, we have the following MILP formulation representing the DNN in \autoref{fig:dnn-a} and the property $x_5 > 0$ for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$:
 
 \textbf{Input constraints:}
 \begin{align*}
