@@ -1696,6 +1696,7 @@ In this case, the SMT solver returns \sat{} and a satisfying assignment, e.g., $
 \end{example}
 
 
+
 \subsection{Limitations}\label{sec:smt-limitations} 
 
 While using symbolic excution and SMT solving is a straightforward way to verify DNNs, it has several practical limitations:
@@ -1708,21 +1709,22 @@ While using symbolic excution and SMT solving is a straightforward way to verify
     \item \textbf{Precision Issues:} SMT solvers may struggle with precision issues when dealing with floating-point arithmetic, which is common in DNNs. This can lead to incorrect results or false positives/negatives in the verification process.
 \end{itemize}
 
-%mention the work that treat DNN as a Java program and apply JPF.  
+For these reasons, SMT solving is mostly used to demonstrate the correctness of small DNNs, e.g., in a classroom setting.  Modern-based DNN verification tools do not use SMT solving, and instead, rely on more efficient techniques including abstraction and MILP solving (\autoref{sec:milp}).
 
 
-\section{MILP}
+\section{MILP}\label{sec:milp}
 
-As mentioned in~\autoref{sec:smt-limitations}, using a generic, off-the-shelf SMT solver to verify DNNs is inefficient for large DNNs with many neurons.
-To address this, we can use a Mixed Integer Linear Programming (MILP) solver, which is specialized for solving linear constraints and is more efficient for DNN verification. Indeed, many modern DNN verification tools~\cite{wang2018efficient,tjeng2019evaluating,duong2024harnessing} use industrial-strength MILP solvers such as Gurobi to help verify DNNs.
 
-Mixed Integer Linear Programming (MILP) is an optimization technique that solves problems involving both continuous variables (real numbers) and integer variables (including binary 0/1 variables), subject to linear constraints. Unlike SMT solvers that handle complex logical formulae with disjunctions, MILP solvers are specifically designed for linear constraints and can leverage decades of optimization research to solve large-scale problems efficiently.
+Due to scalability issues with SMT solvers (\autoref{sec:smt-limitations}), modern DNN verification techniques often rely on Mixed Integer Linear Programming (MILP) solving, which is specialized for linear constraints and is more efficient for DNN reasoning. Many state-of-the-art DNN verification tools~\cite{wang2018efficient,tjeng2019evaluating,duong2024harnessing} use the industrial-strength MILP solver Gurobi~\cite{TODO}.
 
-The key insight for DNN verification is that we can encode non-linear activation functions like ReLU using binary indicator variables and linear constraints. For each neuron, we introduce a binary variable that indicates whether the neuron is ``active'' (output equals input) or ``inactive'' (output is zero). This transforms the non-linear $\max(x,0)$ operation into a set of linear inequalities controlled by the binary variable.
+%\paragraph{MILP} Mixed Integer Linear Programming (MILP) is an optimization technique that solves problems involving both continuous variables (real numbers) and integer variables (including binary 0/1 variables), subject to linear constraints. Unlike SMT solvers that handle complex logical formulae with disjunctions, MILP solvers are specifically designed for linear constraints and can leverage decades of optimization research to solve large-scale problems efficiently.
 
-MILP solvers work by using techniques like branch-and-bound, where they systematically explore different assignments to the binary variables while using linear programming relaxations to efficiently prune infeasible regions of the search space. This makes them particularly effective for problems with many linear constraints and relatively few binary decisions, which is exactly the structure we get when encoding DNNs.
+To use MILP solving for DNN reasoning, we can encode non-linear activation functions like ReLU using \emph{binary indicator} variables and linear constraints. For each neuron, we introduce a binary variable that indicates whether the neuron is ``active'' (output equals input) or ``inactive'' (output is zero). This transforms the non-linear $\max(x,0)$ operation into a set of linear inequalities controlled by the binary variable. The general MILP encoding of a DNN is as follows:
 
-We can encode the DNN as a set of linear constraints and use an MILP solver to check that the constraints are satisfiable. The general MILP formulation for a DNN is:
+%\tvn{unclear, SMT solver works the same way too? they also use DPLL(T)}
+%MILP solvers work by using techniques like branch-and-bound, where they systematically explore different assignments to the binary variables while using linear programming relaxations to efficiently prune infeasible regions of the search space. This makes them particularly effective for problems with many linear constraints and relatively few binary decisions, which is exactly the structure we get when encoding DNNs.
+
+%We can encode the DNN as a set of linear constraints and use an MILP solver to check that the constraints are satisfiable. 
 
 \begin{equation}
     \begin{aligned}
@@ -1743,7 +1745,7 @@ The equations encode the semantics of a DNN as follows:
 (e) defines constraints on the upper, $u_j^{(i)}$, and lower, $l_j^{(i)}$, bounds of the pre-activation value of the $j$th neuron in the $i$th layer.
 Deactivating a neuron, $a_j^{(i)} = 0$, simplifies the first of the (e) constraints to $\hat{z}_j^{(i)} \le 0$, and activating a neuron simplifies the second to $\hat{z}_j^{(i)} \le z_j^{(i)}$, which is consistent with the semantics of $\hat{z}_j^{(i)} = max(z_j^{(i)},0)$.
 
-\begin{example}[MILP Encoding of a DNN]\label{ex:milp-dnn}
+\begin{example}\label{ex:milp-dnn}
     Consider the same property from \autoref{ex:smt-dnn}: $x_5 \ge 0$ for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$. We can encode this using the MILP formulation from \autoref{eq:mip}. For the DNN in \autoref{fig:dnn-a}, we have:
 
 \textbf{Input constraints:}
@@ -1798,7 +1800,7 @@ x_5 &= -2.5 + 0 - 1.0 = -3.5
 Since $x_5 = -3.5 < 0$, this assignment satisfies our search for $x_5 < 0$, so the solver stops.
 \end{example}
 
-\subsubsection{Limitations}\label{sec:milp-limitations}
+\subsection{Limitations}\label{sec:milp-limitations}
 
 
 
