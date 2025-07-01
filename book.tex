@@ -1719,7 +1719,36 @@ Due to scalability issues with SMT solvers (\autoref{sec:smt-limitations}), mode
 
 %\paragraph{MILP} Mixed Integer Linear Programming (MILP) is an optimization technique that solves problems involving both continuous variables (real numbers) and integer variables (including binary 0/1 variables), subject to linear constraints. Unlike SMT solvers that handle complex logical formulae with disjunctions, MILP solvers are specifically designed for linear constraints and can leverage decades of optimization research to solve large-scale problems efficiently.
 
-To use MILP solving for DNN reasoning, we can encode non-linear activation functions like ReLU using \emph{binary indicator} variables and linear constraints. For each neuron, we introduce a binary variable that indicates whether the neuron is ``active'' (output equals input) or ``inactive'' (output is zero). This transforms the non-linear $\max(x,0)$ operation into a set of linear inequalities controlled by the binary variable. The general MILP encoding of a DNN is as follows:
+To use MILP solving for DNN reasoning, we can encode non-linear activation functions like ReLU using \emph{binary indicator} variables and linear constraints. For each neuron, we introduce a binary variable that indicates whether the neuron is ``active'' (output equals input) or ``inactive'' (output is zero). This transforms the non-linear $\max(x,0)$ operation into a set of linear inequalities controlled by the binary variable. 
+
+\paragraph{ReLU Encoding} More specifically, to encode ReLU, we first introduce the following notation:
+\begin{itemize}
+    \item $\hat{z}$: the output after applying ReLU
+    \item $z$: the pre-activation value
+    \item $a \in \{0,1\}$: a binary indicator variable encoding whether the neuron is active ($z \geq 0$) or inactive ($z < 0$)
+    \item $l, u$: lower and upper bounds on $z$ over the input region
+\end{itemize}
+
+The MILP encoding of $\hat{z} = \max(z, 0)$ is:
+\begin{align*}
+    &\hat{z} \geq z \\
+    &\hat{z} \geq 0 \\
+    &\hat{z} \leq a \cdot u \\
+    &\hat{z} \leq z - l(1-a) \\
+    &a \in \{0,1\}
+\end{align*}
+where $l \leq z \leq u$.
+
+\begin{itemize}
+    \item If $a = 1$ (active, $z \geq 0$): the constraints enforce $\hat{z} = z$
+    \item If $a = 0$ (inactive, $z < 0$): the constraints enforce $\hat{z} = 0$
+\end{itemize}
+This encoding allows the MILP solver to reason precisely about the nonlinearity using only linear constraints and binary (integer) variables.
+
+
+
+
+The general MILP encoding of a DNN is as follows:
 
 %\tvn{unclear, SMT solver works the same way too? they also use DPLL(T)}
 %MILP solvers work by using techniques like branch-and-bound, where they systematically explore different assignments to the binary variables while using linear programming relaxations to efficiently prune infeasible regions of the search space. This makes them particularly effective for problems with many linear constraints and relatively few binary decisions, which is exactly the structure we get when encoding DNNs.
