@@ -383,36 +383,39 @@ where \(n\) is the number of input neurons and \(m\) is the number of output neu
 % \end{align}
 % \end{example}
 
+\newcommand{\mydnn}{
+\begin{tikzpicture}[scale=0.8, transform shape]
+    % Input nodes
+    \node[circle, draw] (x1) {$x_1$};
+    \node[circle, draw, below=2.2cm of x1]  (x2) {$x_2$};
+
+    % Hidden layer
+    \node[circle, draw, right=2.6cm of x1] (x3) {$x_3$};
+    \node[circle, draw, right=2.6cm of x2] (x4) {$x_4$};
+
+    % Output layer node (centered horizontally)
+    \coordinate (mid) at ($(x3)!0.5!(x4)$);
+    \node[circle, draw, right=2.8cm of mid] (x5) {$x_5$};
+
+    % Connections with weights
+    \draw[->] (x1) -- node[above left=-3pt] {$-0.5$} (x3);
+    \draw[->] (x1) -- node[pos=0.2] {$1.0$} (x4);
+    \draw[->] (x2) -- node[pos=0.2] {$0.5$} (x3);
+    \draw[->] (x2) -- node[below left=-3pt] {$1.0$} (x4);
+    \draw[->] (x3) -- node[above] {$-1.0$} (x5);
+    \draw[->] (x4) -- node[below] {$1.0$} (x5);
+
+    % Output weights under x3, x4, x5 (biases)
+    \node[below=0.1cm of x3] {$+1.0$};
+    \node[below=0.1cm of x4] {$-1.0$};
+    \node[below=0.1cm of x5] {$-1.0$};
+\end{tikzpicture}
+}
 
 \begin{figure}
     \centering
-    \begin{tikzpicture}[scale=0.8, transform shape]
-        % Input nodes
-        \node[circle, draw] (x1) {$x_1$};
-        \node[circle, draw, below=2.2cm of x1]  (x2) {$x_2$};
-
-        % Hidden layer
-        \node[circle, draw, right=2.6cm of x1] (x3) {$x_3$};
-        \node[circle, draw, right=2.6cm of x2] (x4) {$x_4$};
-
-        % Output layer node (centered horizontally)
-        \coordinate (mid) at ($(x3)!0.5!(x4)$);
-        \node[circle, draw, right=2.8cm of mid] (x5) {$x_5$};
-
-        % Connections with weights
-        \draw[->] (x1) -- node[above left=-3pt] {$-0.5$} (x3);
-        \draw[->] (x1) -- node[pos=0.2] {$1.0$} (x4);
-        \draw[->] (x2) -- node[pos=0.2] {$0.5$} (x3);
-        \draw[->] (x2) -- node[below left=-3pt] {$1.0$} (x4);
-        \draw[->] (x3) -- node[above] {$-1.0$} (x5);
-        \draw[->] (x4) -- node[below] {$1.0$} (x5);
-
-        % Output weights under x3, x4, x5 (biases)
-        \node[below=0.1cm of x3] {$+1.0$};
-        \node[below=0.1cm of x4] {$-1.0$};
-        \node[below=0.1cm of x5] {$-1.0$};
-    \end{tikzpicture}
-    \caption{\label{fig:dnn}A simple DNN.}
+    \mydnn
+    \caption{\label{fig:dnn}A simple DNN with two inputs $x_1,x_2$, two hidden neurons $x_3,x_4$, and one output neuron $x_5$.}
 \end{figure}
 
 \begin{example}\label{ex:dnn}
@@ -1545,7 +1548,7 @@ A DNN verifier attempts to find a \emph{counterexample} input to $N$ that satisf
 % \footnote{This is encoded as the differences of the inputs being within a certain small range  ($\phi_{in}$) implies the differences of the outputs still fall within a certain range in $\phi_{out}$)}.
 
 
-\begin{example}
+\begin{example}\label{ex:dnn}
 A valid property for the DNN in \autoref{fig:dnn} is that the output is $x_5 \le 0$ for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$. An invalid property is that $x_5 > 0$ for those similar inputs.
 A counterexample showing this property violation is $\{x_1=-1, x_2=2\}$, from which the DNN evaluates to $x_5=-3.5$. 
 \end{example}
@@ -1555,7 +1558,7 @@ A counterexample showing this property violation is $\{x_1=-1, x_2=2\}$, from wh
 
 \section{Satisfiability Formulation}\label{sec:satisfiability-and-activation-pattern-search}
 
- As with traditional software verification, DNN verification is often represented as a satisfiability problem.
+As with traditional software verification, DNN verification is often represented as a satisfiability problem, and check if a given property is satisfied by the DNN. 
 
 To do this, we first need to define a formula $\alpha$ to represent the network. Typically $\alpha$ is a conjunction ($\bigwedge$) of constraints representing the affine transformation (\autoref{sec:affine}) and activation function (\autoref{sec:activation}) of each neuron in the network.
 For example, for a fully-connected neural network (\autoref{sec:ffn}) with $L$ layers, $N$ ReLU neurons per layer, this formula is:
@@ -1634,32 +1637,43 @@ Specifying desirable properties for neural networks is not straightforward. Some
 \part{Constraint Solving and Abstraction}
 
 
-\chapter{Constraint Solving}
-
+\chapter{Constraint Solving}\label{chap:constraint-solving}
 
 \section{Symbolic Execution and SMT Solving}\label{sec:se-smt}
 
-As shown in~\autoref{eq:prob} the NNV problem can be represented as a satisfiability problem. Specifically, we can encode the network $N$ as a logical formula $\alpha$ and use an SMT solver to check that it satisfies the property $\phi$ of interest.
+As described in~\autoref{sec:satisfiability-and-activation-pattern-search} the Neural Network Verification (NNV) problem can be represented as a satisfiability problem. Specifically, we can encode the network $N$ as a logical formula $\alpha$, and use a constraint solver to check that $\alpha$ satisfies the property $\phi$ of interest.
 
 A straightforward way to do this encoding is using \emph{symbolic execution} (SE)~\cite{baldoni2018survey,king1976symbolic}, a well-known software testing technique for finding bugs.  SE executes a program on symbolic inputs, i.e., inputs represented as symbols rather than concrete values, and tracks the reachability of program state as symbolic expressions, i.e., logical formulae over symbolic inputs. The satisfiability of these formulae is then checked using an SMT solver, and satisfying assignments represent inputs leading to the undesirable (buggy) program state.
 
 \subsection{Symbolic Execution}\label{sec:se}
 We can adapt traditional SE to our problem by treating the DNN as a program and neurons as variables and executing the DNN on symbolic inputs. Affine transformations can easily be represented as logical formulae because they are linear functions. Activation functions such as ReLUs are translated to disjunctions of linear functions or if-then-else statements, i.e., $ReLU(x) = \max(x,0) \equiv x \ge 0 \land x \lor 0 \land \neg x$.
 
+\begin{example}[Symbolic Execution of a DNN]\label{ex:se-dnn}
 
-For example, for the DNN in \autoref{fig:dnn}, we can symbolically execute the DNN on symbolic inputs $x_1,x_2$ and return the symbolic output $x_5$ as 
+\begin{figure}
+\centering
+\mydnn
+\caption{\label{fig:dnn-a}A simple DNN (similar to~\autoref{fig:dnn}).}
+\end{figure}    
+
+To create a logical formula representing the DNN in \autoref{fig:dnn-a}, we can symbolically execute the DNN on symbolic inputs $x_1,x_2$ and track the values of the neurons $x_3, x_4, x_5$ as a set (conjunction) of logical formulae. The symbolic execution starts with the inputs $x_1$ and $x_2$ and computes the values of the neurons in the hidden layer, $x_3$ and $x_4$, using the affine transformations, followed by ReLUs. Finally, it computes the output neuron $x_5$ as a linear combination of the hidden layer neurons.
 
 \begin{equation}
     \begin{split}
-x_5 &= -x_3 + x_4 - 1 ~\land \\
+x_5 &= -x_3 + x_4 - 1.0 ~\land \\
 x_3 &= \max(-0.5x_1 + 0.5x_2 + 1.0, 0) ~\land \\
 x_4 &= \max(0.5x_1 - 0.5x_2 - 1.0, 0)
     \end{split}
 \end{equation}
 
+\end{example}
 
 \subsection{SMT Solving}\label{sec:smt}
-We can then use an SMT solver to check that the formula $x_5 \le 0$ is satisfiable for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$.
+We can then use an SMT solver to check that the property $x_5 \le 0$ is satisfiable for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$ (\autoref{ex:dnn}). Specifically, this property can be expressed as a formula $\phi$:
+\begin{align*}
+(x_1 \ge -1) \land (x_1 \le 1) \land (x_2 \ge -2) \land (x_2 \le 2) \quad \implies (x_5 < 0)
+\end{align*}
+
 
 
 \subsection{Limitations}\label{sec:smt-limitations} 
