@@ -1549,7 +1549,9 @@ A DNN verifier attempts to find a \emph{counterexample} input to $N$ that satisf
 
 
 \begin{example}\label{ex:dnn}
-A valid property for the DNN in \autoref{fig:dnn} is that the output is $x_5 \le 0$ for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$. An invalid property is that $x_5 > 0$ for those similar inputs.
+A \emph{valid} property for the DNN in \autoref{fig:dnn} is that the output is $x_5 \le 0$ for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$. 
+
+An \emph{invalid} property is that $x_5 > 0$ for those similar inputs.
 A counterexample showing this property violation is $\{x_1=-1, x_2=2\}$, from which the DNN evaluates to $x_5=-3.5$. 
 \end{example}
 
@@ -1586,13 +1588,13 @@ We represent the DNN in \autoref{fig:dnn} as:
          ~~& x_4' \equiv 0.5x_1 - 0.5x_2 + 1.0  ~\land~ x_4'' \equiv ReLU(x_4') ~\land \\
          ~~& x_5 \equiv -x_3'' + x_4'' - 1.0,
 \end{align*}
-\noindent and the property $x_5 \le 0$ for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$ as:
-\begin{align*}
-\phi_{in} &= (x_1 \ge -1) \land (x_1 \le 1) \land (x_2 \ge -2) \land (x_2 \le 2)\\
-\phi_{out} &= (x_5 < 0)
-\end{align*}
+\noindent and the property $x_5 > 0$ for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$ as:
+\begin{equation*}
+\phi_{in} = (-1 \le x_1 \le 1) \land (-1 \le x_2 \le 2); \qquad
+\phi_{out} = (x_5 > 0)
+\end{equation*}
 
-We can check the satisfiability of the formula $\alpha \land \phi_{in} \land \neg \phi_{out}$ using a constraint solver (e.g., an SMT solver).  In this case, the formula is satisfiable and the solver returns \sat{}, and we query the solver for a satisfying assignment to the input variables, e.g., $x_1=-1$ and $x_2=2$. This assignment is a counterexample (\autoref{sec:counterexamples}) to the property, as it satisfies the input constraint but violates the output constraint, i.e., $x_5 = -3.5 < 0$.
+We then check the satisfiability of $\alpha \land \phi_{in} \land \neg \phi_{out}$ using a constraint solver (e.g., an SMT solver).  In this case, the formula is satisfiable and the solver returns \sat{}, and we query the solver for a satisfying assignment to the input variables, e.g., $x_1=-1$ and $x_2=2$. This assignment is a counterexample (\autoref{sec:counterexamples}) to the property, as it satisfies the input constraint but violates the output constraint, i.e., $x_5 = -3.5$, which is  $< 0$.
 
 \end{example}
 
@@ -1643,22 +1645,20 @@ Specifying desirable properties for neural networks is not straightforward. Some
 
 As described in~\autoref{sec:satisfiability-and-activation-pattern-search} the Neural Network Verification (NNV) problem can be represented as a satisfiability problem. Specifically, we can encode the network $N$ as a logical formula $\alpha$, and use a constraint solver to check that $\alpha$ satisfies the property $\phi$ of interest.
 
-A straightforward way to do this encoding is using \emph{symbolic execution} (SE)~\cite{baldoni2018survey,king1976symbolic}, a well-known software testing technique for finding bugs.  This technique executes a program on symbolic inputs, i.e., inputs represented as symbols rather than concrete values, and tracks the reachability of program state as symbolic expressions, i.e., logical formulae over symbolic inputs. The satisfiability of these formulae is then checked using an SMT solver, and satisfying assignments represent inputs leading to the undesirable (buggy) program state.
+A straightforward way to do this encoding is using \emph{symbolic execution} (SE)~\cite{baldoni2018survey,king1976symbolic}, a well-known software testing technique for finding bugs.  SE executes a program on symbolic inputs, i.e., inputs represented as symbols rather than concrete values, and tracks the reachability of program state as symbolic expressions, i.e., logical formulae over symbolic inputs. The satisfiability of these formulae is then checked using an SMT solver, and satisfying assignments represent inputs leading to the undesirable (buggy) program state.
 
 \subsection{Symbolic Execution}\label{sec:se}
 We can adapt traditional SE to our problem by treating the DNN as a program and neurons as variables and executing the DNN on symbolic inputs. Affine transformations can easily be represented as logical formulae because they are linear functions. Activation functions such as ReLUs are translated to disjunctions of linear functions or if-then-else statements, i.e., $ReLU(x) = \max(x,0) \equiv x \ge 0 \land x \lor 0 \land \neg x$.
 
-\begin{example}[Symbolic Execution of a DNN]\label{ex:se-dnn}
 
+\begin{example}\label{ex:se-dnn}
 \begin{figure}
 \centering
 \mydnn
 \caption{\label{fig:dnn-a}A simple DNN (similar to~\autoref{fig:dnn}).}
 \end{figure}    
 
-To create a logical formula representing the DNN in \autoref{fig:dnn-a}, we can symbolically execute the DNN on symbolic inputs $x_1,x_2$ and track the values of the neurons $x_3, x_4, x_5$ as a set (conjunction) of logical formulae. 
-
-The symbolic execution starts with the inputs $x_1$ and $x_2$ and computes the values of the neurons in the hidden layer, $x_3$ and $x_4$, using the affine transformations, followed by ReLUs. Finally, it computes the output neuron $x_5$ as a linear combination of the hidden layer neurons.
+To create a logical formula representing the DNN in \autoref{fig:dnn-a}, we can symbolically execute the DNN on symbolic inputs $x_1,x_2$ and track the values of the neurons $x_3, x_4, x_5$ as a set (conjunction) of logical formulae.  The SE starts with the inputs $x_1$ and $x_2$ and computes the values of the neurons in the hidden layer, $x_3$ and $x_4$, using the affine transformations, followed by ReLUs. Finally, SE computes the output neuron $x_5$ as a linear combination of the hidden layer neurons.
 
 \begin{equation}\label{eq:se-dnn}
     \begin{split}
@@ -1676,20 +1676,19 @@ After obtaining the symbolic representation of the DNN, we can use an SMT solver
 
 
 \begin{example}\label{ex:smt-dnn}
-    Consider the property $x_5 \le 0$ for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$ (\autoref{ex:dnn-sat}), represented as:
+    To check that the DNN in~\autoref{fig:dnn-a} satisfies the property $x_5 \le 0$ for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$ (\autoref{ex:dnn-sat}), represented as:
 \begin{align*}
-\phi_{in} = (x_1 \ge -1) \land (x_1 \le 1) \land (x_2 \ge -2) \land (x_2 \le 2); \quad \phi_{out} = (x_5 \geq 0)
+\phi_{in} = (x_1 \ge -1) \land (x_1 \le 1) \land (x_2 \ge -2) \land (x_2 \le 2); \quad \phi_{out} = (x_5 \ge 0)
 \end{align*}
-Then we check the satisfiability of the formula:
+We check the satisfiability of $\alpha \land \phi_{in} \land \neg \phi_{out}$:
 \begin{align*}
-\alpha \land \phi_{in} \land \neg \phi_{out} &=
 \begin{split}
-    &(-x_3 + x_4 - 1.0 < 0) \land \\
-    &(x_1 \ge -1) \land (x_1 \le 1) \land (x_2 \ge -2) \land (x_2 \le 2) \land \\
-    &(\max(-0.5x_1 + 0.5x_2 + 1.0, 0) = x_3) \land \\
-    &(\max(0.5x_1 - 0.5x_2 - 1.0, 0) = x_4) \land \\
-    &(x_5 < 0)
-\end{split}
+x_5 &= -x_3 + x_4 - 1.0 ~\land \\
+x_3 &= \max(-0.5x_1 + 0.5x_2 + 1.0, 0) ~\land \\
+x_4 &= \max(0.5x_1 - 0.5x_2 - 1.0, 0) ~\land \\
+    &(x_1 \ge -1) \land (x_1 \le 1) \land (x_2 \ge -2) \land (x_2 \le 2)~\land \\
+    & (x_5 > 0) \\
+    \end{split}    
 \end{align*}    
 
 In this case, the SMT solver returns \sat{} and a satisfying assignment, e.g., $x_1=-1$ and $x_2=2$, which is a counterexample to the property. This means that for these inputs, the output $x_5 = -3.5$ violates the property $x_5 \geq 0$.
