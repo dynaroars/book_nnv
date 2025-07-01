@@ -1676,9 +1676,9 @@ After obtaining the symbolic representation of the DNN, we can use an SMT solver
 
 
 \begin{example}\label{ex:smt-dnn}
-    To check that the DNN in~\autoref{fig:dnn-a} satisfies the property $x_5 \le 0$ for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$ (\autoref{ex:dnn-sat}), represented as:
+    To check that the DNN in~\autoref{fig:dnn-a} satisfies the property $x_5 > 0$ for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$ (\autoref{ex:dnn-sat}), represented as:
 \begin{align*}
-\phi_{in} = (x_1 \ge -1) \land (x_1 \le 1) \land (x_2 \ge -2) \land (x_2 \le 2); \quad \phi_{out} = (x_5 \ge 0)
+\phi_{in} = (x_1 \ge -1) \land (x_1 \le 1) \land (x_2 \ge -2) \land (x_2 \le 2); \quad \phi_{out} = (x_5 > 0)
 \end{align*}
 We check the satisfiability of $\alpha \land \phi_{in} \land \neg \phi_{out}$:
 \begin{align*}
@@ -1686,23 +1686,34 @@ We check the satisfiability of $\alpha \land \phi_{in} \land \neg \phi_{out}$:
 x_5 &= -x_3 + x_4 - 1.0 ~\land \\
 x_3 &= \max(-0.5x_1 + 0.5x_2 + 1.0, 0) ~\land \\
 x_4 &= \max(0.5x_1 - 0.5x_2 - 1.0, 0) ~\land \\
-    &(x_1 \ge -1) \land (x_1 \le 1) \land (x_2 \ge -2) \land (x_2 \le 2)~\land \\
-    & (x_5 > 0) \\
+    &(x_1 \ge -1) \land (x_1 \le 1) \land (x_2 \ge -2) \land (x_2 \le 2) \quad \land
+    (x_5 \le 0) \\
     \end{split}    
 \end{align*}    
 
-In this case, the SMT solver returns \sat{} and a satisfying assignment, e.g., $x_1=-1$ and $x_2=2$, which is a counterexample to the property. This means that for these inputs, the output $x_5 = -3.5$ violates the property $x_5 \geq 0$.
+In this case, the SMT solver returns \sat{} and a satisfying assignment, e.g., $x_1=-1$ and $x_2=2$, which is a counterexample to the property. This means that for these inputs, the output $x_5 = -3.5$ violates the property $x_5 > 0$.
 
 \end{example}
 
 
 \subsection{Limitations}\label{sec:smt-limitations} 
+
+While using symbolic excution and SMT solving is a straightforward way to verify DNNs, it has several practical limitations:
+\begin{itemize}
+    \item \textbf{Path Explosion and Scalability}: the number of paths that the solver has to analyze can grow exponentially with the number of ReLU-based neurons and layers as each ReLU, represented as a disjunction of linear functions, has two possible outputs for any input.  This leads to the notorious 
+    \emph{path explosion} problem and becoming intractable for large DNNs.
+    
+    \item \textbf{Non-linearity:} Non-linear activation functions, such as Sigmoid or Tanh, can lead to complex disjunctions in the formula, making it harder to solve. SMT solvers are typically designed for linear constraints, and non-linear constraints can lead to inefficiencies or even unsolvable problems.
+
+    \item \textbf{Precision Issues:} SMT solvers may struggle with precision issues when dealing with floating-point arithmetic, which is common in DNNs. This can lead to incorrect results or false positives/negatives in the verification process.
+\end{itemize}
+
 %mention the work that treat DNN as a Java program and apply JPF.  
 
 
 \section{MILP}
 
-As mentioned in~\autoref{sec:smt-limitations}, using a generic, off-the-shelf SMT solver to verify DNNs can be inefficient because the computed formulae can be large and complex due to disjunctions representing non-linear activation functions.  This can lead to an explosion in the number of paths to explore, especially for large DNNs with many neurons.
+As mentioned in~\autoref{sec:smt-limitations}, using a generic, off-the-shelf SMT solver to verify DNNs is inefficient for large DNNs with many neurons.
 To address this, we can use a Mixed Integer Linear Programming (MILP) solver, which is specialized for solving linear constraints and is more efficient for DNN verification. Indeed, many modern DNN verification tools~\cite{wang2018efficient,tjeng2019evaluating,duong2024harnessing} use industrial-strength MILP solvers such as Gurobi to help verify DNNs.
 
 Mixed Integer Linear Programming (MILP) is an optimization technique that solves problems involving both continuous variables (real numbers) and integer variables (including binary 0/1 variables), subject to linear constraints. Unlike SMT solvers that handle complex logical formulae with disjunctions, MILP solvers are specifically designed for linear constraints and can leverage decades of optimization research to solve large-scale problems efficiently.
