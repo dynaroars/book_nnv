@@ -1708,6 +1708,7 @@ While using symbolic execution and SMT solving is a straightforward way to verif
 
 For these reasons, SMT solving is mostly used to demonstrate the correctness of small DNNs, e.g., in a classroom setting.  Modern-based DNN verification tools do not use SMT solving, and instead, rely on more efficient techniques including abstraction and MILP solving (\autoref{sec:milp}).
 
+\tvn{Hai, include some references or results, e.g., from Nguyen's, showing that SMT solvers are not scalable for DNN verification.}
 
 \section{MILP}\label{sec:milp}
 Due to scalability issues with SMT solvers (\autoref{sec:smt-limitations}), modern DNN verification techniques often rely on Mixed Integer Linear Programming (MILP) solving, which is specialized for linear constraints and is more efficient for DNN reasoning. Many state-of-the-art DNN verification tools~\cite{wang2018efficient,tjeng2019evaluating,duong2024harnessing} use the industrial-strength MILP solver Gurobi~\cite{gurobi}.
@@ -1716,7 +1717,7 @@ Due to scalability issues with SMT solvers (\autoref{sec:smt-limitations}), mode
 
 To use MILP solving for DNN reasoning, we can encode non-linear activation functions like ReLU using \emph{binary indicator} variables and linear constraints. For each neuron, we introduce a binary variable that indicates whether the neuron is ``active'' (output equals input) or ``inactive'' (output is zero). This transforms the non-linear $\max(x,0)$ operation into a set of linear inequalities controlled by the binary variable. 
 
-\paragraph{ReLU Encoding} Specifically, we define 
+\paragraph{ReLU Encoding} We define 
 \begin{itemize}
     \item $\hat{z}$: the output after applying ReLU
     \item $z$: the pre-activation value
@@ -1732,18 +1733,10 @@ The MILP encoding of $\hat{z} = \max(z, 0)$ is then:
     &\hat{z} \leq z - l(1-a) \\
     &a \in \{0,1\}
 \end{align*}
-where $l \leq z \leq u$.
-
-\begin{itemize}
-    \item If $a = 1$ (active, $z \geq 0$): the constraints enforce $\hat{z} = z$
-    \item If $a = 0$ (inactive, $z < 0$): the constraints enforce $\hat{z} = 0$
-\end{itemize}
-This encoding allows the MILP solver to reason precisely about the nonlinearity using only linear constraints and binary (integer) variables.
+where $l \leq z \leq u$. Note that the constraints enforce $\hat{z} = z$ when $a = 1$ (active, $z \geq 0$) and $\hat{z} = 0$ when $a = 0$ (inactive, $z < 0$). This encoding allows the MILP solver to reason precisely about the nonlinearity using only linear constraints and binary (integer) variables.
 
 
-
-
-\paragraph{General DNN Encoding} The general MILP encoding of a DNN is as follows:
+\paragraph{General Encoding} The general MILP encoding of a DNN is then:
 
 %\tvn{unclear, SMT solver works the same way too? they also use DPLL(T)}
 %MILP solvers work by using techniques like branch-and-bound, where they systematically explore different assignments to the binary variables while using linear programming relaxations to efficiently prune infeasible regions of the search space. This makes them particularly effective for problems with many linear constraints and relatively few binary decisions, which is exactly the structure we get when encoding DNNs.
@@ -1770,15 +1763,18 @@ where $x$ is input, $y$ is output, and $z^{(i)}$, $\hat{z}^{(i)}$, $W^{(i)}$, an
 Deactivating a neuron, $a_j^{(i)} = 0$, simplifies the first of the (e) constraints to $\hat{z}_j^{(i)} \le 0$, and activating a neuron simplifies the second to $\hat{z}_j^{(i)} \le z_j^{(i)}$, which is consistent with the semantics of $\hat{z}_j^{(i)} = max(z_j^{(i)},0)$.
 
 \begin{example}\label{ex:milp-dnn}
-    For the example in~\autoref{ex:smt-dnn}, we have the following MILP formulation representing the DNN in \autoref{fig:dnn-a} and the property $x_5 > 0$ for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$:
+    We create the following MILP formulation for the example in~\autoref{ex:smt-dnn}. Recall the DNN \autoref{fig:dnn-a} in the example has two inputs $x_1, x_2$, 1 hidden layer with 2 neurons $x_3, x_4$, each with its own ReLU output $\hat{x}_3, \hat{x}_4$, and 1 output neuron $x_5$.
+    We will use property $x_5 > 0$ for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$:
 
-\textbf{Input constraints:}
+
+
+\begin{enumerate}    
+\item Encoding precondition representing input bounds:
 \begin{align*}
-x_1 &\ge -1, \quad x_1 \le 1 \\
-x_2 &\ge -2, \quad x_2 \le 2
+-1 \le x_1 \le 1;\quad -2 \le x_2 \le 2
 \end{align*}
 
-\textbf{Hidden constraints:}
+\item Encoding hidden layer (pre- and post-activation): 
 \begin{align*}
 z_3 &= -0.5x_1 + 0.5x_2 + 1.0 \\
 z_4 &= 0.5x_1 - 0.5x_2 - 1.0 \\
@@ -1789,12 +1785,40 @@ a_3, a_4 &\in \{0, 1\} \\
 \hat{z}_4 &\le a_4 \cdot u_4, \quad \hat{z}_4 \le z_4 - l_4(1 - a_4)
 \end{align*}
 
-\textbf{Output layer constraints:}
+\item Step 2: Compute Pre-Activation Bounds. We compute the possible range for each pre-activation:
+\begin{align*}
+    z_3 &= -0.5x_1 + 0.5x_2 + 1.0 \\
+    z_3^{\min} &= -0.5 \cdot 1 + 0.5 \cdot (-2) + 1 = -0.5 - 1 + 1 = -0.5 \\
+    z_3^{\max} &= -0.5 \cdot (-1) + 0.5 \cdot 2 + 1 = 0.5 + 1 + 1 = 2.5 \\
+    z_4 &= 0.5x_1 - 0.5x_2 - 1.0 \\
+    z_4^{\min} &= 0.5 \cdot (-1) - 0.5 \cdot 2 - 1 = -0.5 - 1 - 1 = -2.5 \\
+    z_4^{\max} &= 0.5 \cdot 1 - 0.5 \cdot (-2) - 1 = 0.5 + 1 - 1 = 0.5
+\end{align*}
+Thus, $z_3 \in [-0.5, 2.5]$ and $z_4 \in [-2.5, 0.5]$.
+
+\item Step 3: MILP Constraints for ReLU. 
+For each hidden neuron, introduce binary indicator variables $a_3, a_4 \in \{0,1\}$ and encode ReLU using the standard big-M constraints:
+\begin{align*}
+    &\hat{z}_3 \geq z_3 \\
+    &\hat{z}_3 \geq 0 \\
+    &\hat{z}_3 \leq a_3 \cdot 2.5 \\
+    &\hat{z}_3 \leq z_3 + 0.5 (1 - a_3) \\
+    &a_3 \in \{0,1\}
+\end{align*}
+\begin{align*}
+    &\hat{z}_4 \geq z_4 \\
+    &\hat{z}_4 \geq 0 \\
+    &\hat{z}_4 \leq a_4 \cdot 0.5 \\
+    &\hat{z}_4 \leq z_4 + 2.5 (1 - a_4) \\
+    &a_4 \in \{0,1\}
+\end{align*}
+
+\item \textbf{Output layer constraints:}
 \begin{align*}
 x_5 &= -\hat{z}_3 + \hat{z}_4 - 1.0
 \end{align*}
 
-\textbf{Negated Output Property:}
+\item \textbf{Negated Output Property:}
 \begin{align*}
 x_5 &< 0
 \end{align*}
@@ -1807,7 +1831,7 @@ z_4 &\in [0.5 \cdot (-1) - 0.5 \cdot 2 - 1, 0.5 \cdot 1 - 0.5 \cdot (-2) - 1] = 
 
 So we set $l_3 = -0.5, u_3 = 2.5, l_4 = -2.5, u_4 = 0.5$. 
 
-\textbf{Substituting bounds into the constraints:}
+\item \textbf{Substituting bounds into the constraints:}
 \begin{align*}
 \hat{z}_3 &\le a_3 \cdot 2.5, \quad \hat{z}_3 \le z_3 - (-0.5)(1 - a_3) = z_3 + 0.5(1 - a_3) \\
 \hat{z}_4 &\le a_4 \cdot 0.5, \quad \hat{z}_4 \le z_4 - (-2.5)(1 - a_4) = z_4 + 2.5(1 - a_4)
@@ -1822,8 +1846,9 @@ a_4 &= 0, \hat{z}_4 = 0 \quad \text{(neuron inactive)} \\
 x_5 &= -2.5 + 0 - 1.0 = -3.5
 \end{align*}
 Since $x_5 = -3.5 < 0$, this assignment satisfies our search for $x_5 < 0$, so the solver stops.
-\end{example}
 
+\end{enumerate}
+\end{example}
 \subsection{Limitations}\label{sec:milp-limitations}
 
 
