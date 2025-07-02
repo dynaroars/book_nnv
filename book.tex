@@ -1692,20 +1692,17 @@ x_4 &= \max(0.5x_1 - 0.5x_2 - 1.0, 0) ~\land \\
 \end{align*}    
 
 In this case, the SMT solver returns \sat{} and a satisfying assignment, e.g., $x_1=-1$ and $x_2=2$, which is a counterexample to the property. This means that for these inputs, the output $x_5 = -3.5$ violates the property $x_5 > 0$.
-
 \end{example}
-
-
 
 \subsection{Limitations}\label{sec:smt-limitations} 
 
-While using symbolic excution and SMT solving is a straightforward way to verify DNNs, it has several practical limitations:
+While using symbolic execution and SMT solving is a straightforward way to verify DNNs, it has several practical limitations:
 \begin{itemize}
     \item \textbf{Path Explosion and Scalability}: the number of paths that the solver has to analyze can grow exponentially with the number of ReLU-based neurons and layers as each ReLU, represented as a disjunction of linear functions, has two possible outputs for any input.  This leads to the notorious 
     \emph{path explosion} problem and becoming intractable for large DNNs.
     
-    \item \textbf{Non-linearity:} Non-linear activation functions, such as Sigmoid or Tanh, can lead to complex disjunctions in the formula, making it harder to solve. SMT solvers are typically designed for linear constraints, and non-linear constraints can lead to inefficiencies or even unsolvable problems.
-
+    \item \textbf{Non-linearity:} Other non-linear activation functions (\autoref{sec:activation}), such as Sigmoid or Tanh, might not be easily representable as disjunctions of linear functions as ReLU. This can lead to complex formulae that are hard to reason about and/or result in a large search space for the SMT solver.
+    
     \item \textbf{Precision Issues:} SMT solvers may struggle with precision issues when dealing with floating-point arithmetic, which is common in DNNs. This can lead to incorrect results or false positives/negatives in the verification process.
 \end{itemize}
 
@@ -1713,15 +1710,13 @@ For these reasons, SMT solving is mostly used to demonstrate the correctness of 
 
 
 \section{MILP}\label{sec:milp}
-
-
-Due to scalability issues with SMT solvers (\autoref{sec:smt-limitations}), modern DNN verification techniques often rely on Mixed Integer Linear Programming (MILP) solving, which is specialized for linear constraints and is more efficient for DNN reasoning. Many state-of-the-art DNN verification tools~\cite{wang2018efficient,tjeng2019evaluating,duong2024harnessing} use the industrial-strength MILP solver Gurobi~\cite{TODO}.
+Due to scalability issues with SMT solvers (\autoref{sec:smt-limitations}), modern DNN verification techniques often rely on Mixed Integer Linear Programming (MILP) solving, which is specialized for linear constraints and is more efficient for DNN reasoning. Many state-of-the-art DNN verification tools~\cite{wang2018efficient,tjeng2019evaluating,duong2024harnessing} use the industrial-strength MILP solver Gurobi~\cite{gurobi}.
 
 %\paragraph{MILP} Mixed Integer Linear Programming (MILP) is an optimization technique that solves problems involving both continuous variables (real numbers) and integer variables (including binary 0/1 variables), subject to linear constraints. Unlike SMT solvers that handle complex logical formulae with disjunctions, MILP solvers are specifically designed for linear constraints and can leverage decades of optimization research to solve large-scale problems efficiently.
 
 To use MILP solving for DNN reasoning, we can encode non-linear activation functions like ReLU using \emph{binary indicator} variables and linear constraints. For each neuron, we introduce a binary variable that indicates whether the neuron is ``active'' (output equals input) or ``inactive'' (output is zero). This transforms the non-linear $\max(x,0)$ operation into a set of linear inequalities controlled by the binary variable. 
 
-\paragraph{ReLU Encoding} More specifically, to encode ReLU, we first introduce the following notation:
+\paragraph{ReLU Encoding} Specifically, we define 
 \begin{itemize}
     \item $\hat{z}$: the output after applying ReLU
     \item $z$: the pre-activation value
@@ -1729,7 +1724,7 @@ To use MILP solving for DNN reasoning, we can encode non-linear activation funct
     \item $l, u$: lower and upper bounds on $z$ over the input region
 \end{itemize}
 
-The MILP encoding of $\hat{z} = \max(z, 0)$ is:
+The MILP encoding of $\hat{z} = \max(z, 0)$ is then:
 \begin{align*}
     &\hat{z} \geq z \\
     &\hat{z} \geq 0 \\
@@ -1748,7 +1743,7 @@ This encoding allows the MILP solver to reason precisely about the nonlinearity 
 
 
 
-The general MILP encoding of a DNN is as follows:
+\paragraph{General DNN Encoding} The general MILP encoding of a DNN is as follows:
 
 %\tvn{unclear, SMT solver works the same way too? they also use DPLL(T)}
 %MILP solvers work by using techniques like branch-and-bound, where they systematically explore different assignments to the binary variables while using linear programming relaxations to efficiently prune infeasible regions of the search space. This makes them particularly effective for problems with many linear constraints and relatively few binary decisions, which is exactly the structure we get when encoding DNNs.
