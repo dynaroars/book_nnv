@@ -665,8 +665,25 @@ This means that softmax maps the input vector $x$ to a probability distribution 
 
 \section{Neural Network Architectures and Layers}
 
-Neural networks vary in architecture depending on how information flows through them and how computations are structured. Most models can be understood as variations on the \emph{feedforward neural network}, with additional structures or constraints layered on top. 
+Neural networks vary in architecture depending on how information flows through them and how computations are structured. Most common models are variations of the \emph{feedforward network}, with additional structures or constraints layered on top.  \autoref{tab:nn-types} summarizes several common NN architectures and their typical application domains.
 
+\begin{table}[ht]
+\caption{Popular NN Architectures and Applications}\label{tab:nn-types}
+\centering
+\small
+\begin{tabular}{llp{8cm}@{}}
+\toprule
+\textbf{Name} & \textbf{Acronym} & \textbf{Typical Applications} \\
+\midrule
+Feedforward NN & FNN / MLP & General function approximation, tabular data \\
+Convolutional NN & CNN & Image processing, video analysis \\
+Residual NN & ResNet & Deep image recognition, medical imaging \\
+Recurrent NN & RNN & Sequence modeling, NLP, time series \\
+Transformer & -- & NLP, summarization, code generation, vision \\
+Graph NN & GNN & Graph-structured data, molecule modeling, recommendation \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 
 
@@ -827,7 +844,7 @@ Finally, the first output is simply $y_1 = \hat{h}_1 - 1$.
     \draw[->, thick] (H3) to[out=60,in=120] node[above, pos=0.4] {$1$} (H5);
 
     \end{tikzpicture}
-    \caption{Residual Network (ResNet) block with weights on all connections and biases above nodes. Each node is labeled and typical ReLU is applied after each hidden sum.}\label{fig:resnet}
+    \caption{ResNet block with weights on all connections and biases above nodes. Each node is labeled and typical ReLU is applied after each hidden sum.}\label{fig:resnet}
 \end{figure}
 
 
@@ -950,27 +967,6 @@ For the second time step, the hidden state is $h_2 = \relu{2x_2 - h_1 + 0.5}$, a
 
 \paragraph{Graph Neural Networks (GNNs)} operate on graphs, allowing each node to aggregate information from its neighbors. They are used in applications involving structured data like molecules or social networks.
 
-\subsection{Architecture Summary}
-
-\autoref{tab:nn-types} summarizes several common NN architectures and their typical application domains.
-
-\begin{table}[ht]
-\caption{Popular NN Architectures and Applications}\label{tab:nn-types}
-\centering
-\small
-\begin{tabular}{llp{8cm}@{}}
-\toprule
-\textbf{Name} & \textbf{Acronym} & \textbf{Typical Applications} \\
-\midrule
-Feedforward NN & FNN / MLP & General function approximation, tabular data \\
-Convolutional NN & CNN & Image processing, video analysis \\
-Residual NN & ResNet & Deep image recognition, medical imaging \\
-Recurrent NN & RNN & Sequence modeling, NLP, time series \\
-Transformer & -- & NLP, summarization, code generation, vision \\
-Graph NN & GNN & Graph-structured data, molecule modeling, recommendation \\
-\bottomrule
-\end{tabular}
-\end{table}
 
 
 \section{ONNX: Modelling Neural Networks}\label{sec:onnx}
@@ -1446,25 +1442,25 @@ In SMT-LIB\tvn{is this also the VNN-LIB code? If not, add the VNN-LIB code}\hd{n
 
 
 
-\begin{example}[MNIST Network]
+% \begin{example}[MNIST Network]
 
-A CNN model for MNIST uses:
-\begin{itemize}
-    \item 2 convolutional layers (5x5 kernel, padding 2), followed by ReLU and MaxPool (2x2).
-    \item A flatten layer, then a fully connected layer with 10 outputs.
-    \item Input: $1 \times 28 \times 28$; Output: 10-class classification.
-\end{itemize}
+% A CNN model for MNIST uses:
+% \begin{itemize}
+%     \item 2 convolutional layers (5x5 kernel, padding 2), followed by ReLU and MaxPool (2x2).
+%     \item A flatten layer, then a fully connected layer with 10 outputs.
+%     \item Input: $1 \times 28 \times 28$; Output: 10-class classification.
+% \end{itemize}
 
-A robustness property around a sample $\hat{x}$ classified as class 9:
-\[
-\forall i \in [0, 783] : \hat{x}_i - \varepsilon \leq x_i \leq \hat{x}_i + \varepsilon
-\]
-\[
-\forall j \in [0,8] : y_j - y_9 \leq 0
-\]
+% A robustness property around a sample $\hat{x}$ classified as class 9:
+% \[
+% \forall i \in [0, 783] : \hat{x}_i - \varepsilon \leq x_i \leq \hat{x}_i + \varepsilon
+% \]
+% \[
+% \forall j \in [0,8] : y_j - y_9 \leq 0
+% \]
 
-\tvn{Need the VNN-LIB code here.}\hd{Working on it}
-\end{example}
+% \tvn{Need the VNN-LIB code here.}\hd{Working on it}
+% \end{example}
 
 % \subsubsection*{Variable Naming Convention}\tvn{what's the purpose of this section?}\hd{seems unnecessary}
 % \begin{itemize}
