@@ -1708,7 +1708,7 @@ While using symbolic execution and SMT solving is a straightforward way to verif
 
 For these reasons, SMT solving is mostly used to demonstrate the correctness of small DNNs, e.g., in a classroom setting.  Modern-based DNN verification tools do not use SMT solving, and instead, rely on more efficient techniques including abstraction and MILP solving (\autoref{sec:milp}).
 
-\tvn{Hai, include some references or results, e.g., from Nguyen's, showing that SMT solvers are not scalable for DNN verification.}
+\tvn{Hai, include some references or results, e.g., from Nguyen's, showing that SMT solvers are not scalable for DNN verification.}\hai{where can I find the results?}
 
 \section{MILP}\label{sec:milp}
 Due to scalability issues with SMT solvers (\autoref{sec:smt-limitations}), modern DNN verification techniques often rely on Mixed Integer Linear Programming (MILP) solving, which is specialized for linear constraints and is more efficient for DNN reasoning. Many state-of-the-art DNN verification tools~\cite{wang2018efficient,tjeng2019evaluating,duong2024harnessing} use the industrial-strength MILP solver Gurobi~\cite{gurobi}.
@@ -1820,7 +1820,7 @@ x_5 &= -\hat{z}_3 + \hat{z}_4 - 1.0
 
 \item \textbf{Negated Output Property:}
 \begin{align*}
-x_5 &< 0
+x_5 &\le 0
 \end{align*}
 
 The bounds $l_3, u_3, l_4, u_4$ can be computed by interval analysis over the input ranges. For instance, with $x_1 \in [-1,1]$ and $x_2 \in [-2,2]$:
@@ -1845,7 +1845,7 @@ a_3 &= 1, \hat{z}_3 = 2.5 \quad \text{(neuron active)} \\
 a_4 &= 0, \hat{z}_4 = 0 \quad \text{(neuron inactive)} \\
 x_5 &= -2.5 + 0 - 1.0 = -3.5
 \end{align*}
-Since $x_5 = -3.5 < 0$, this assignment satisfies our search for $x_5 < 0$, so the solver stops.
+Since $x_5 = -3.5 \le 0$, this assignment satisfies our search for $x_5 \le 0$, so the solver stops.
 
 \end{enumerate}
 \end{example}
