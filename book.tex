@@ -1,5 +1,9 @@
 \documentclass[oneside,11pt,dvipsnames]{book}
-
+\usepackage{xcolor}
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.97,0.97,0.97}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[margin=1.5in]{geometry}
@@ -46,17 +50,12 @@
 }
 \usepackage{cleveref}
 \usepackage{booktabs}
-
 \usepackage{tikz}
 \usetikzlibrary{calc,positioning}
 \usepackage{pgfplots}
 \pgfplotsset{compat=1.18}
 
-\usepackage{xcolor}
-\definecolor{codegreen}{rgb}{0,0.6,0}
-\definecolor{codegray}{rgb}{0.5,0.5,0.5}
-\definecolor{codepurple}{rgb}{0.58,0,0.82}
-\definecolor{backcolour}{rgb}{0.97,0.97,0.97}
+
 
 \usepackage{anyfontsize}
 \usepackage{sectsty}
@@ -106,7 +105,8 @@
 
 %\newcommand{\ignore}[1]{}
 
-
+\newcommand{\sat}{\texttt{SAT}}
+\newcommand{\unsat}{\texttt{UNSAT}}
 
 
 
@@ -317,12 +317,18 @@ A \emph{neural network} (\textbf{NN})~\cite{Goodfellow-et-al-2016} consists of a
 The output of an NN is obtained by iteratively computing  the  values  of  neurons  in  each  layer.
 The value of a neuron in the input layer is the input data. The value of a neuron in the hidden layers is computed by applying an \emph{affine transformation} (\autoref{sec:affine}) to values of neurons in the previous layers, then followed by an \emph{activation function} (\autoref{sec:activation}) such as ReLU and Sigmoid. The value of a neuron in the output layer is computed similarly but may skip the activation function.
 
+\paragraph{NN as a Function} We can view an NN as a function that maps input vectors to output vectors: 
+\begin{equation}
+f: \mathbb{R}^{n} \to \mathbb{R}^{m}
+\end{equation}
+where \(n\) is the number of input neurons and \(m\) is the number of output neurons. The neurons in the input layer are the inputs to the function, and the neurons in the output layer are the outputs of the function. The neurons in the hidden layers are also functions that transform the inputs from the previous layer to produce outputs for the next layer.
 
 %Fig.~\ref{fig:dnn}b shows the same network but with each hidden neuron $x$ split into two neurons $x'$ and $x''$ representing the result of affine transformation on $x$ and ReLU activation on $x'$, respectively, e.g.,  $x_3'=-x_1-0.5x_2-1.0$ and  $x_3'' = ReLU(x_3')$. This ReLU-slitting representation is adopted by \tool{} and other DNN analyses (e.g., ~\cite{katz2017reluplex,wang2018efficient,henriksen2020efficient}) 
 % including Reluplex~\cite{katz2017reluplex}, Neurify~\cite{wang2018efficient}, and VeriNet~\cite{henriksen2020efficient},
 %because it does not change the semantics or complexity of the problem and is easier to reason about as we will show in \S\ref{sec:overview}.
 
 % \section{The Basics}\label{sec:nn-basics}
+
 
 
 
@@ -377,40 +383,39 @@ The value of a neuron in the input layer is the input data. The value of a neuro
 % \end{align}
 % \end{example}
 
+\newcommand{\mydnn}{
+\begin{tikzpicture}[scale=0.8, transform shape]
+    % Input nodes
+    \node[circle, draw] (x1) {$x_1$};
+    \node[circle, draw, below=2.2cm of x1]  (x2) {$x_2$};
 
-% \subsection{Weights and Layers} The network structures described earlier can be generalized by allowing each node (except input nodes) to have \textbf{weights} and \textbf{biases}. With these parameters, each node computes its output by first applying an \textbf{affine transformation} to its inputs (a weighted sum plus a bias), and then applying a \textbf{non-linear activation} such as ReLU.
+    % Hidden layer
+    \node[circle, draw, right=2.6cm of x1] (x3) {$x_3$};
+    \node[circle, draw, right=2.6cm of x2] (x4) {$x_4$};
 
-% In most neural networks, nodes are grouped into \textbf{layers}, where each layer consists of multiple nodes that compute their outputs in parallel using the outputs from the previous layer as their inputs. The first layer that processes input data is called the \textbf{input layer}, the last layer producing the network's final outputs is called the \textbf{output layer}, and all layers in between are called \textbf{hidden layers}. The computation proceeds layer by layer, from inputs to outputs, forming a feedforward flow of information.
+    % Output layer node (centered horizontally)
+    \coordinate (mid) at ($(x3)!0.5!(x4)$);
+    \node[circle, draw, right=2.8cm of mid] (x5) {$x_5$};
+
+    % Connections with weights
+    \draw[->] (x1) -- node[above left=-3pt] {$-0.5$} (x3);
+    \draw[->] (x1) -- node[pos=0.2] {$0.5$} (x4);
+    \draw[->] (x2) -- node[pos=0.2] {$0.5$} (x3);
+    \draw[->] (x2) -- node[below left=-3pt] {$-0.5$} (x4);
+    \draw[->] (x3) -- node[above] {$-1.0$} (x5);
+    \draw[->] (x4) -- node[below] {$1.0$} (x5);
+
+    % Output weights under x3, x4, x5 (biases)
+    \node[below=0.1cm of x3] {$+1.0$};
+    \node[below=0.1cm of x4] {$-1.0$};
+    \node[below=0.1cm of x5] {$-1.0$};
+\end{tikzpicture}
+}
 
 \begin{figure}
     \centering
-    \begin{tikzpicture}[scale=0.8, transform shape]
-        % Input nodes
-        \node[circle, draw] (x1) {$x_1$};
-        \node[circle, draw, below=2.2cm of x1]  (x2) {$x_2$};
-
-        % Hidden layer
-        \node[circle, draw, right=2.6cm of x1] (x3) {$x_3$};
-        \node[circle, draw, right=2.6cm of x2] (x4) {$x_4$};
-
-        % Output layer node (centered horizontally)
-        \coordinate (mid) at ($(x3)!0.5!(x4)$);
-        \node[circle, draw, right=2.8cm of mid] (x5) {$x_5$};
-
-        % Connections with weights
-        \draw[->] (x1) -- node[above left=-3pt] {$-0.5$} (x3);
-        \draw[->] (x1) -- node[pos=0.2] {$1.0$} (x4);
-        \draw[->] (x2) -- node[pos=0.2] {$0.5$} (x3);
-        \draw[->] (x2) -- node[below left=-3pt] {$1.0$} (x4);
-        \draw[->] (x3) -- node[above] {$-1.0$} (x5);
-        \draw[->] (x4) -- node[below] {$1.0$} (x5);
-
-        % Output weights under x3, x4, x5 (biases)
-        \node[below=0.1cm of x3] {$+1.0$};
-        \node[below=0.1cm of x4] {$-1.0$};
-        \node[below=0.1cm of x5] {$-1.0$};
-    \end{tikzpicture}
-    \caption{\label{fig:dnn}A simple DNN.}
+    \mydnn
+    \caption{\label{fig:dnn}A simple DNN with two inputs $x_1,x_2$, two hidden neurons $x_3,x_4$, and one output neuron $x_5$.}
 \end{figure}
 
 \begin{example}\label{ex:dnn}
@@ -429,7 +434,7 @@ The value of a neuron in the input layer is the input data. The value of a neuro
     \]
 \end{itemize}
 
-Thus, this DNN computes a function \(f: \mathbb{R}^2 \to \mathbb{R}\) where:
+Thus, this NN computes a function \(f: \mathbb{R}^2 \to \mathbb{R}\) where:
 \[
 f(x_1, x_2) = -\relu{-0.5 x_1 + 0.5 x_2 + 1.0} + \relu{1.0 x_1 + 1.0 x_2 - 1.0} - 1.0.
 \]
@@ -454,7 +459,7 @@ In \autoref{fig:dnn}, neuron \(x_3\) receives inputs \(x_1\) and \(x_2\) with we
 
 
 \section{Activation Functions}\label{sec:activation}
-Several popular activation functions used in NNs include ReLU, Sigmoid, Tanh, and Softmax. All of these are non-linear\footnote{Non-linear means that the output of the function is not a linear combination of its inputs.} functions that introduce non-linearity to the network, allowing it to learn complex patterns in the data.
+Popular activation functions used in NNs include ReLU, Sigmoid, Tanh, and Softmax. All of these are non-linear\footnote{Non-linear means that the output of the function is not a linear combination of its inputs.} functions that introduce non-linearity to the network, allowing it to learn complex patterns in the data.
 
 
 
@@ -688,14 +693,15 @@ Graph NN & GNN & Graph-structured data, molecule modeling, recommendation \\
 
 
 
-\subsection{Feedforward Neural Networks (FNNs)}
+\subsection{Feedforward Neural Networks (FNNs)}\label{sec:ffn}
 
 In an FNN, information flows in one direction: from the input layer, through one or more hidden layers, and finally to the output layer. There are no loops or cycles in the computation graph. 
 
-
 Widely used feedforward architectures include fully connected, convolutional, and residual networks. Each architecture has its own strengths and is suited for different types of tasks.
 
-\paragraph{Fully Connected NNs} In fully connected NNs, each neuron in a layer is connected to every neuron in the next layer. Thus, every neuron in the input layer is connected to every neuron in the first hidden layer, every neuron in the first hidden layer is connected to every neuron in the second hidden layer, and so on, until the output layer. Fully connected NNs, sometimes called \emph{dense networks}, are the most basic type of FNNs and are commonly used for tasks like classification. 
+\paragraph{Fully Connected NNs}
+
+In fully connected NNs, each neuron in a layer is connected to every neuron in the next layer. Thus, every neuron in the input layer is connected to every neuron in the first hidden layer, every neuron in the first hidden layer is connected to every neuron in the second hidden layer, and so on, until the output layer. Fully connected NNs, sometimes called \emph{dense networks}, are the most basic type of FNNs and are commonly used for tasks like classification. 
 
 \begin{example}
 \autoref{fig:dnn} earlier showed a fully connected network with two inputs and one hidden layer with two neurons, and one output neuron. \autoref{fig:ffn} below shows a fully connected network with four inputs, two hidden layers with five neurons each, and three output neurons (weights and biases not shown for simplicity).
@@ -1250,11 +1256,7 @@ graph torch_jit (
 % \paragraph{$\epsilon$-robustness} A neural network is $\epsilon$-robust if the difference between any two inputs $x$ and $x'$ is within a small range $\epsilon$, the output $f$ of the network does not change significantly (or remain the same), i.e., $\|x-x'\| \leq \epsilon \implies f(x) \approx f(x')$.
 
 
-
-
-
-
-\chapter{Correctness Properties}
+\chapter{Properties}\label{chap:properties}
 
 Similar to software programs, neural networks have desirable properties to ensure the network behaves as expected. These could be specific to the applications modeled by the network, e.g., safety properties for a network modelling a collision avoidance system or general properties that are desired by all networks, e.g., robustness to adversarial attacks. 
 
@@ -1263,19 +1265,21 @@ expressed in a formal language supported by a DNN verifier. Additional propertie
 
 \section{Properties, Informally}
 
-Neural networks define functions of the form:
-\[
-f: \mathbb{R}^{n} \to \mathbb{R}^{m}
-\]
-where $n$ is the dimension of the input and $m$ is the dimension of the output. Properties are statements about the behavior of this function, specifying what we expect from the neural network under different conditions.
+As described in~\autoref{sec:basic} NNs define functions of the form $f: \mathbb{R}^{n} \to \mathbb{R}^{m}$, 
+where $n$ is the dimension of the input and $m$ is the dimension of the output. Thus, the properties (or specifications) of an NN---similarly to properties of software program---are defined in terms of its input and output:
 
 \begin{quote}
-\textit{For any input $x \in \mathbb{R}^{n}$, the neural network should produce an output $f(x) \in \mathbb{R}^{m}$ that satisfies a desired correctness property.}
+\textit{For any input $x \in \mathbb{R}^{n}$ satisfying a precondition $P$, the neural network should produce an output $f(x) \in \mathbb{R}^{m}$ that satisfies a postcondition $Q$.}
 \end{quote}
 
-These properties describe the expected relationship between the inputs and outputs, ignoring the internal workings of the neural network.
+This says that if the input $x$ satisfies the precondition $P$, then the output $f(x)$ should satisfy the postcondition $Q$.
 
-\section{Common Correctness Properties in Neural Networks}
+
+
+
+
+
+\section{Common Properties in Neural Networks}
 
 We now define some commonly studied correctness properties in neural network verification.
 
@@ -1308,10 +1312,28 @@ d_{intruder} > d_{threshold} \land v_{intruder} < v_{threshold} \implies v_{us} 
 where $d_{intruder}$ is the distance to the intruder, $d_{threshold}$ is a predefined safe distance, $v_{intruder}$ is the speed of the intruder, and $v_{us}$ is our speed.
 \end{example}
 
-\subsection{Other properties here} %, e.g., fariness, consistency, monotonicity
-% \subsection{Consistency}
+\section{Other properties}
 
-% \textbf{Consistency} ensures that a neural network behaves in a logically coherent manner, respecting basic axioms of the task at hand.
+\tvn{Hai:  talk about other properties such as consistency, monotonicity, etc.}
+
+\subsection{Consistency}
+
+\textbf{Consistency} ensures that a neural network behaves in a logically coherent manner, maintaining stable and predictable outputs under semantically equivalent or related inputs. This property requires that the network's predictions follow logical relationships and respect domain-specific invariants, preventing contradictory outputs that would violate fundamental assumptions of the problem domain. 
+
+\begin{example}[Logical Consistency in Large Language Models]
+    A consistency property in an LLM-based question answering system requires that the model provides logically coherent answers to related questions. For instance, given a set of related queries about the same factual information, the model should maintain consistency. Formally, consider queries $q_1$, $q_2$, and $q_3$ about a person's age:
+\[
+q_1: \text{"How old is person X?"}
+\]
+\[
+q_2: \text{"What year was person X born if they are currently Y years old?"}
+\]
+\[
+q_3: \text{"Will person X be Z years old in 2025?"}
+\]
+The consistency property requires that if the LLM outputs age $Y$ for $q_1$, then the birth year in $q_2$ should be $\text{current\_year} - Y$, and the answer to $q_3$ should be logically consistent with the stated age. This prevents scenarios where an LLM claims someone is 30 years old but was born in 1985 when the current year is 2024, ensuring logical coherence across related factual queries.
+\end{example}
+
 
 % \paragraph{Example: Object Position Consistency.}
 % Consider a neural network tracking the position of objects in a video frame. It should not report that an object is on the left in one frame and then immediately claim it is on the right in the next frame.
@@ -1323,24 +1345,29 @@ where $d_{intruder}$ is the distance to the intruder, $d_{threshold}$ is a prede
 % \quad \{ \text{consistent}(r_1, r_2) \}
 % \]
 
-% \subsection{Monotonicity}
+\subsection{Monotonicity}
 
-% \textbf{Monotonicity} ensures that larger inputs should lead to larger (or at least non-decreasing) outputs, capturing intuitive relationships between input variables and predictions.
+\textbf{Monotonicity} ensures that the neural network maintains a consistent ordering relationship between inputs and outputs, where an increase in certain input features always leads to a non-decreasing output value. This property is particularly important in applications where domain knowledge dictates logical ordering constraints, such as fairness-aware systems, medical diagnosis, and scientific applications where physical laws impose natural ordering relationships.
 
-% \paragraph{Example: Housing Price Prediction.}
-% A neural network $f$ predicts the price of a house based on various features. One would expect that increasing the square footage should not reduce the predicted price.
-% \[
-% \text{If } x \geq x' \text{ then } f(x) \geq f(x')
-% \]
+\begin{example}[Fairness with Gender Considerations]
+    A monotonicity property in an AI system should ensure that relevant merit-based features are monotonic while demographic features like gender have no effect on the outcome. For instance, in a university admissions system, the admission probability should be monotonically non-decreasing with respect to GPA and test scores, regardless of gender. Formally, for applicants with profiles $(p, s, g)$ and $(p', s', g')$ where $p, p'$ are GPAs, $s, s'$ are test scores, and $g, g'$ are gender indicators:
+\[
+p \leq p' \land s = s' \land g \neq g' \implies f(p, s, g) \leq f(p', s', g'),
+\]
+\[
+s \leq s' \land p = p' \land g \neq g' \implies f(p, s, g) \leq f(p, s', g'),
+\]
+where $f$ is the neural network computing admission probability. Additionally, for gender fairness:
+\[
+f(p, s, \text{male}) = f(p, s, \text{female}) \text{ for all } p, s,
+\]
+ensuring that applicants with identical academic qualifications receive the same treatment regardless of gender, while maintaining logical ordering based on academic merit.
+\end{example}
 
-% \paragraph{Formal Specification:}
-% \[
-% \{ x \geq x' \}
-% \quad r \gets f(x), \quad r' \gets f(x')
-% \quad \{ r \geq r' \}
-% \]
 
-\section{Counterexamples}
+
+\section{Counterexamples}\label{sec:counterexamples}
+
 A \textbf{counterexample} is a witness that falsifies the correctness property. A counterexample is an assignment to the input variables that satisfies the precondition but violates the postcondition.
 
 \begin{example}[Counterexample to Robustness Property]
@@ -1459,8 +1486,6 @@ In SMT-LIB\tvn{is this also the VNN-LIB code? If not, add the VNN-LIB code}\hd{n
 % \forall j \in [0,8] : y_j - y_9 \leq 0
 % \]
 
-% \tvn{Need the VNN-LIB code here.}\hd{Working on it}
-% \end{example}
 
 % \subsubsection*{Variable Naming Convention}\tvn{what's the purpose of this section?}\hd{seems unnecessary}
 % \begin{itemize}
@@ -1492,13 +1517,7 @@ In SMT-LIB\tvn{is this also the VNN-LIB code? If not, add the VNN-LIB code}\hd{n
 % \end{lstlisting}
 
 
-\section{Challenges in Specifying Properties}\tvn{TODO}
 
-Specifying desirable properties for neural networks is not straightforward. Some challenges include:
-\begin{itemize}
-    \item \textbf{Incomplete Specifications:} We may not be able to specify all desirable properties.
-    \item \textbf{Expressiveness} For tasks such as sentiment analysis or image recognition, functional correctness is hard to define precisely.
-\end{itemize}
 
 
 
@@ -1523,8 +1542,10 @@ A DNN verifier attempts to find a \emph{counterexample} input to $N$ that satisf
 % \footnote{This is encoded as the differences of the inputs being within a certain small range  ($\phi_{in}$) implies the differences of the outputs still fall within a certain range in $\phi_{out}$)}.
 
 
-\begin{example}
-A valid property for the DNN in \autoref{fig:dnn} is that the output is $x_5 \le 0$ for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$. An invalid property is that $x_5 > 0$ for those similar inputs.
+\begin{example}\label{ex:dnn}
+A \emph{valid} property for the DNN in \autoref{fig:dnn} is that the output is $x_5 \le 0$ for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$. 
+
+An \emph{invalid} property is that $x_5 > 0$ for those similar inputs.
 A counterexample showing this property violation is $\{x_1=-1, x_2=2\}$, from which the DNN evaluates to $x_5=-3.5$. 
 \end{example}
 
@@ -1533,34 +1554,41 @@ A counterexample showing this property violation is $\{x_1=-1, x_2=2\}$, from wh
 
 \section{Satisfiability Formulation}\label{sec:satisfiability-and-activation-pattern-search}
 
- As with traditional software verification, DNN verification is often represented as a satisfiability problem.
+As with traditional software verification, DNN verification is often represented as a satisfiability problem, and check if a given property is satisfied by the DNN. 
 
 To do this, we first need to define a formula $\alpha$ to represent the network. Typically $\alpha$ is a conjunction ($\bigwedge$) of constraints representing the affine transformation (\autoref{sec:affine}) and activation function (\autoref{sec:activation}) of each neuron in the network.
-For a network\tvn{does this have to be FC?}\hai{No, but FC is simpler to define than CNN} with $L$ layers, $N$ ReLU neurons per layer, this formula is:
+For example, for a fully-connected neural network (\autoref{sec:ffn}) with $L$ layers, $N$ ReLU neurons per layer, this formula is:
+
 \begin{align*}
 \alpha = &\bigwedge_{\begin{smallmatrix}i \in [1,L]\\ j \in [1,N]\end{smallmatrix}}~~v_{i,j} \equiv ReLU \Big( \sum_{k \in [1,N]} (w_{i-1,j,k} \cdot v_{i-1,j}) + b_{i,j}\Big)    \\
  = &\bigwedge_{\begin{smallmatrix}i \in [1,L]\\ j \in [1,N]\end{smallmatrix}}~~v_{i,j} \equiv \max \Big( \sum_{k \in [1,N]} (w_{i-1,j,k} \cdot v_{i-1,j}) + b_{i,j}, 0 \Big)
 \end{align*}
-With this definition NNV can be formulated as checking the satisfiability of the formula:
+
+With this definition the NNV problem can be formulated as checking the validity of the following formula:
+\begin{equation}\label{eq:nnv}
+    \alpha \implies (\phi_{in} \implies \phi_{out}).
+\end{equation}
+This formula checks if the network $N$ satisfies (implies) the property $\phi$, where $\phi_{in}$ is a precondition on the inputs and $\phi_{out}$ is a postcondition on the outputs. This validity checking can be reduced to checking the satisfiability of the formula:
+
 \begin{equation}\label{eq:prob}
   \alpha \land \phi_{in} \land \neg \phi_{out}
 \end{equation}
 If \autoref{eq:prob} is unsatisfiable, then $\phi$ is a valid property of $\mathcal{N}$. Otherwise, $\phi$ is not valid.  Moreover, we can extract a counterexample for the original problem from the satisfying assignment of \autoref{eq:prob}.
 
-\begin{example}
-We first represent the DNN in \autoref{fig:dnn} as:
+\begin{example}\label{ex:dnn-sat}
+We represent the DNN in \autoref{fig:dnn} as:
 \begin{align*}
 \alpha = ~~& x_3' \equiv -0.5x_1 + 0.5x_2 + 1.0 ~\land~ x_3'' \equiv ReLU(x_3') ~\land \\
          ~~& x_4' \equiv 0.5x_1 - 0.5x_2 + 1.0  ~\land~ x_4'' \equiv ReLU(x_4') ~\land \\
          ~~& x_5 \equiv -x_3'' + x_4'' - 1.0,
 \end{align*}
-\noindent and the property $x_5 \le 0$ for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$ as:
-\begin{align*}
-\phi_{in} &= (x_1 \ge -1) \land (x_1 \le 1) \land (x_2 \ge -2) \land (x_2 \le 2)\\
-\phi_{out} &= (x_5 < 0)
-\end{align*}
+\noindent and the property $x_5 > 0$ for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$ as:
+\begin{equation*}
+\phi_{in} = (-1 \le x_1 \le 1) \land (-1 \le x_2 \le 2); \qquad
+\phi_{out} = (x_5 > 0)
+\end{equation*}
 
-We can then check the satisfiability of the formula $\alpha \land \phi_{in} \land \neg \phi_{out}$, which is equivalent to checking if there exists an input $x_1, x_2$ such that the output $x_5 > 0$. In this case, the formula is satisfiable, and we can extract a counterexample input $\{x_1=-1, x_2=2\}$ that leads to $x_5 = -3.5$, thus violating the property.    
+We then check the satisfiability of $\alpha \land \phi_{in} \land \neg \phi_{out}$ using a constraint solver (e.g., an SMT solver).  In this case, the formula is satisfiable and the solver returns \sat{}, and we query the solver for a satisfying assignment to the input variables, e.g., $x_1=-1$ and $x_2=2$. This assignment is a counterexample (\autoref{sec:counterexamples}) to the property, as it satisfies the input constraint but violates the output constraint, i.e., $x_5 = -3.5$, which is  $< 0$.
 
 \end{example}
 
@@ -1576,7 +1604,7 @@ ReLU-based NNV is \NP{}-complete as shown in~\cite{katz2017reluplex,salzer2023re
 
 \section{Challenges} %TODO
 
-\paragraph{Scalability} Neural networks can be very large, with millions of parameters. This makes it difficult to verify their correctness, as the number of possible inputs grows exponentially with the size of the network.
+\subsection{Scalability} Neural networks can be very large, with millions of parameters. This makes it difficult to verify their correctness, as the number of possible inputs grows exponentially with the size of the network.
 
 %TODO: put somewhere else  
 For DNN verification, AF is straightforward to reason about because it is a linear function. However, AFs are often followed by non-linear activation functions, described next in \autoref{sec:activation}, which make the verification problem more challenging.
@@ -1585,21 +1613,31 @@ For DNN verification, AF is straightforward to reason about because it is a line
 For DNN verification, these non-linear activation functions make verification difficult because it introduces multiple possible outcomes for any input, making it hard to reason about the output of the network. For example, ReLU has two possible outputs for any input: 0 if the input is less than zero, and the input itself otherwise, and Sigmoid has a smooth curve with infinite possible outputs for any input.
 
 
-\paragraph{Formalization}
+\subsection{Formalization}
 
 
-\paragraph{Expressiveness}
+\subsection{Expressiveness}
+
+
+
+\section{Challenges in Specifying Properties}\tvn{TODO}
+
+Specifying desirable properties for neural networks is not straightforward. Some challenges include:
+\begin{itemize}
+    \item \textbf{Incomplete Specifications:} We may not be able to specify all desirable properties.
+    \item \textbf{Expressiveness} For tasks such as sentiment analysis or image recognition, functional correctness is hard to define precisely.
+\end{itemize}
+
 
 
 \part{Constraint Solving and Abstraction}
 
 
-\chapter{Constraint Solving}
-
+\chapter{Constraint Solving}\label{chap:constraint-solving}
 
 \section{Symbolic Execution and SMT Solving}\label{sec:se-smt}
 
-As shown in~\autoref{eq:prob} the NNV problem can be represented as a satisfiability problem. Specifically, we can encode the network $N$ as a logical formula $\alpha$ and use an SMT solver to check that it satisfies the property $\phi$ of interest.
+As described in~\autoref{sec:satisfiability-and-activation-pattern-search} the Neural Network Verification (NNV) problem can be represented as a satisfiability problem. Specifically, we can encode the network $N$ as a logical formula $\alpha$, and use a constraint solver to check that $\alpha$ satisfies the property $\phi$ of interest.
 
 A straightforward way to do this encoding is using \emph{symbolic execution} (SE)~\cite{baldoni2018survey,king1976symbolic}, a well-known software testing technique for finding bugs.  SE executes a program on symbolic inputs, i.e., inputs represented as symbols rather than concrete values, and tracks the reachability of program state as symbolic expressions, i.e., logical formulae over symbolic inputs. The satisfiability of these formulae is then checked using an SMT solver, and satisfying assignments represent inputs leading to the undesirable (buggy) program state.
 
@@ -1607,32 +1645,205 @@ A straightforward way to do this encoding is using \emph{symbolic execution} (SE
 We can adapt traditional SE to our problem by treating the DNN as a program and neurons as variables and executing the DNN on symbolic inputs. Affine transformations can easily be represented as logical formulae because they are linear functions. Activation functions such as ReLUs are translated to disjunctions of linear functions or if-then-else statements, i.e., $ReLU(x) = \max(x,0) \equiv x \ge 0 \land x \lor 0 \land \neg x$.
 
 
-For example, for the DNN in \autoref{fig:dnn}, we can symbolically execute the DNN on symbolic inputs $x_1,x_2$ and return the symbolic output $x_5$ as 
+\begin{example}\label{ex:se-dnn}
+\begin{figure}
+\centering
+\mydnn
+\caption{\label{fig:dnn-a}A simple DNN (similar to~\autoref{fig:dnn}).}
+\end{figure}    
 
-\begin{equation}
+To create a logical formula representing the DNN in \autoref{fig:dnn-a}, we can symbolically execute the DNN on symbolic inputs $x_1,x_2$ and track the values of the neurons $x_3, x_4, x_5$ as a set (conjunction) of logical formulae.  SE starts with the inputs $x_1$ and $x_2$ and computes the values of the neurons in the hidden layer, $x_3$ and $x_4$, using the affine transformations, followed by ReLUs. Finally, SE computes the output neuron $x_5$ as a linear combination of the hidden layer neurons.
+
+\begin{equation}\label{eq:se-dnn}
     \begin{split}
-x_5 &= -x_3 + x_4 - 1 ~\land \\
+x_5 &= -x_3 + x_4 - 1.0 ~\land \\
 x_3 &= \max(-0.5x_1 + 0.5x_2 + 1.0, 0) ~\land \\
 x_4 &= \max(0.5x_1 - 0.5x_2 - 1.0, 0)
     \end{split}
 \end{equation}
 
+\end{example}
 
 \subsection{SMT Solving}\label{sec:smt}
-We can then use an SMT solver to check that the formula $x_5 \le 0$ is satisfiable for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$.
+After obtaining the symbolic representation of the DNN, we can use an SMT solver~\cite{barrett2010smt} to check the satisfiability of the formula $\alpha \land \phi_{in} \land \neg \phi_{out} $, where $\alpha$ is the symbolic representation of the DNN, $\phi_{in}$ is the precondition on the inputs, and $\phi_{out}$ is the postcondition on the outputs. The solver checks if there exists an assignment to the symbolic inputs that satisfies the formula. If such an assignment exists, it means that the property is violated, and we can extract a counterexample from the satisfying assignment. Otherwise, if no such assignment exists, the property is valid
 
+
+
+\begin{example}\label{ex:smt-dnn}
+    To check that the DNN in~\autoref{fig:dnn-a} satisfies the property $x_5 > 0$ for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$ (\autoref{ex:dnn-sat}), represented as:
+\begin{align*}
+\phi_{in} = (x_1 \ge -1) \land (x_1 \le 1) \land (x_2 \ge -2) \land (x_2 \le 2); \quad \phi_{out} = (x_5 > 0)
+\end{align*}
+We check the satisfiability of $\alpha \land \phi_{in} \land \neg \phi_{out}$:
+\begin{align*}
+\begin{split}
+x_5 &= -x_3 + x_4 - 1.0 ~\land \\
+x_3 &= \max(-0.5x_1 + 0.5x_2 + 1.0, 0) ~\land \\
+x_4 &= \max(0.5x_1 - 0.5x_2 - 1.0, 0) ~\land \\
+    &(x_1 \ge -1) \land (x_1 \le 1) \land (x_2 \ge -2) \land (x_2 \le 2) \quad \land
+    (x_5 \le 0) \\
+    \end{split}    
+\end{align*}    
+
+In this case, the SMT solver returns \sat{} and a satisfying assignment, e.g., $x_1=-1$ and $x_2=2$, which is a counterexample to the property. This means that for these inputs, the output $x_5 = -3.5$ violates the property $x_5 > 0$.
+\end{example}
 
 \subsection{Limitations}\label{sec:smt-limitations} 
-%mention the work that treat DNN as a Java program and apply JPF.  
-\section{MILP}
 
-As mentioned in~\autoref{sec:smt-limitations}, using a generic, off-the-shelf SMT solver to verify DNNs can be inefficient because the computed formulae can be large and complex due to disjunctions representing non-linear activation functions.  This can lead to an explosion in the number of paths to explore, especially for large DNNs with many neurons.
-To address this, we can use a Mixed Integer Linear Programming (MILP) solver, which is specialized for solving linear constraints and is more efficient for DNN verification. Indeed, many modern DNN verification tools~\cite{wang2018efficient,katz2017reluplex,henriksen2020efficient} use industrial-strength MILP solvers such as Gurobi to help verify DNNs.
+While using symbolic execution and SMT solving is a straightforward way to verify DNNs, it has several practical limitations:
+\begin{itemize}
+    \item \textbf{Path Explosion and Scalability}: the number of paths that the solver has to analyze can grow exponentially with the number of ReLU-based neurons and layers as each ReLU, represented as a disjunction of linear functions, has two possible outputs for any input.  This leads to the notorious 
+    \emph{path explosion} problem and becoming intractable for large DNNs.
+    
+    \item \textbf{Non-linearity:} Other non-linear activation functions (\autoref{sec:activation}), such as Sigmoid or Tanh, might not be easily representable as disjunctions of linear functions as ReLU. This can lead to complex formulae that are hard to reason about and/or result in a large search space for the SMT solver.
+    
+    \item \textbf{Precision Issues:} SMT solvers may struggle with precision issues when dealing with floating-point arithmetic, which is common in DNNs. This can lead to incorrect results or false positives/negatives in the verification process.
+\end{itemize}
 
-We can encode the DNN as a set of linear constraints and use an MILP solver to check that the constraints are satisfiable. For example, the DNN in \autoref{fig:dnn} can be encoded as a set of linear constraints as follows:\tvn{Hai, fill out this section on MILP}
+For these reasons, SMT solving is mostly used to demonstrate the correctness of small DNNs, e.g., in a classroom setting.  Modern-based DNN verification tools do not use SMT solving, and instead, rely on more efficient techniques including abstraction and MILP solving (\autoref{sec:milp}).
+
+\tvn{Hai, include some references or results, e.g., from Nguyen's, showing that SMT solvers are not scalable for DNN verification.}\hai{where can I find the results?}\tvn{Not sure, I thought Nguyen record the results/graphs in some TeX document. Could you ask him?}
+
+\section{MILP}\label{sec:milp}
+Due to scalability issues with SMT solvers (\autoref{sec:smt-limitations}), modern DNN verification techniques often rely on Mixed Integer Linear Programming (MILP) solving, which is specialized for linear constraints and is more efficient for DNN reasoning. Many state-of-the-art DNN verification tools~\cite{wang2018efficient,tjeng2019evaluating,duong2024harnessing} use the industrial-strength MILP solver Gurobi~\cite{gurobi}.
+
+%\paragraph{MILP} Mixed Integer Linear Programming (MILP) is an optimization technique that solves problems involving both continuous variables (real numbers) and integer variables (including binary 0/1 variables), subject to linear constraints. Unlike SMT solvers that handle complex logical formulae with disjunctions, MILP solvers are specifically designed for linear constraints and can leverage decades of optimization research to solve large-scale problems efficiently.
+
+To use MILP solving for DNN reasoning, we can encode non-linear activation functions like ReLU using \emph{binary indicator} variables and linear constraints. For each neuron, we introduce a binary variable that indicates whether the neuron is ``active'' (output equals input) or ``inactive'' (output is zero). This transforms the non-linear $\max(x,0)$ operation into a set of linear inequalities controlled by the binary variable. 
+
+\paragraph{ReLU Encoding} We define 
+\begin{itemize}
+    \item $\hat{z}$: the output after applying ReLU
+    \item $z$: the pre-activation value
+    \item $a \in \{0,1\}$: a binary indicator variable encoding whether the neuron is active ($z \geq 0$) or inactive ($z < 0$)
+    \item $l, u$: lower and upper bounds on $z$ over the input region
+\end{itemize}
+
+The MILP encoding of $\hat{z} = \max(z, 0)$ is then:
+\begin{align*}
+    &\hat{z} \geq z \\
+    &\hat{z} \geq 0 \\
+    &\hat{z} \leq a \cdot u \\
+    &\hat{z} \leq z - l(1-a) \\
+    &a \in \{0,1\}
+\end{align*}
+where $l \leq z \leq u$. Note that the constraints enforce $\hat{z} = z$ when $a = 1$ (active, $z \geq 0$) and $\hat{z} = 0$ when $a = 0$ (inactive, $z < 0$). This encoding allows the MILP solver to reason precisely about the nonlinearity using only linear constraints and binary (integer) variables.
 
 
-\subsubsection{Limitations}\label{sec:milp-limitations}
+\paragraph{General Encoding} The general MILP encoding of a DNN is then:
+
+%\tvn{unclear, SMT solver works the same way too? they also use DPLL(T)}
+%MILP solvers work by using techniques like branch-and-bound, where they systematically explore different assignments to the binary variables while using linear programming relaxations to efficiently prune infeasible regions of the search space. This makes them particularly effective for problems with many linear constraints and relatively few binary decisions, which is exactly the structure we get when encoding DNNs.
+
+%We can encode the DNN as a set of linear constraints and use an MILP solver to check that the constraints are satisfiable. 
+
+\begin{equation}\label{eq:mip}
+    \begin{aligned}
+        &\mbox{(a)}\quad z^{(i)} = W^{(i)} \hat{z}^{(i-i)} + b^{(i)}; \\
+        &\mbox{(b)}\quad y = z^{(L)};  x = \hat{z}^{(0)}; \\
+        &\mbox{(c)}\quad \hat{z}_j^{(i)} \ge {z}_j^{(i)}; \hat{z}_j^{(i)} \ge 0; \\
+        &\mbox{(d)}\quad a_j^{(i)} \in \{ 0, 1\} ;\\
+        &\mbox{(e)}\quad \hat{z}_j^{(i)} \le {a}_j^{(i)} {u}_j^{(i)}; \hat{z}_j^{(i)} \le {z}_j^{(i)} - {l}_j^{(i)}(1 - {a}_j^{(i)}); \\
+    \end{aligned}
+\end{equation}
+where $x$ is input, $y$ is output, and $z^{(i)}$, $\hat{z}^{(i)}$, $W^{(i)}$, and $b^{(i)}$ are the pre-activation, post-activation, weight, and bias vectors for layer $i$. 
+\begin{enumerate}[label=(\alph*)]
+    \item defines the affine transformation computing the pre-activation value for a neuron in terms of outputs in the preceding layer;
+    \item defines the inputs and outputs in terms of the adjacent hidden layers;
+    \item asserts that post-activation values are non-negative and no less than pre-activation values;
+    \item defines that the neuron activation status indicator variables that are either 0 or 1; and
+    \item defines constraints on the upper, $u_j^{(i)}$, and lower, $l_j^{(i)}$, bounds of the pre-activation value of the $j$th neuron in the $i$th layer.
+\end{enumerate}
+Deactivating a neuron, $a_j^{(i)} = 0$, simplifies the first of the (e) constraints to $\hat{z}_j^{(i)} \le 0$, and activating a neuron simplifies the second to $\hat{z}_j^{(i)} \le z_j^{(i)}$, which is consistent with the semantics of $\hat{z}_j^{(i)} = max(z_j^{(i)},0)$.
+
+\begin{example}\label{ex:milp-dnn}
+    We create the following MILP formulation for the example in~\autoref{ex:smt-dnn}. Recall the DNN \autoref{fig:dnn-a} in the example has two inputs $x_1, x_2$, 1 hidden layer with 2 neurons $x_3, x_4$, each with its own ReLU output $\hat{x}_3, \hat{x}_4$, and 1 output neuron $x_5$.
+    We will use property $x_5 > 0$ for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$:
+
+
+
+\begin{enumerate}    
+\item Encoding precondition representing input bounds:
+\begin{align*}
+-1 \le x_1 \le 1;\quad -2 \le x_2 \le 2
+\end{align*}
+
+\item Encoding hidden layer (pre- and post-activation): 
+\begin{align*}
+z_3 &= -0.5x_1 + 0.5x_2 + 1.0 \\
+z_4 &= 0.5x_1 - 0.5x_2 - 1.0 \\
+\hat{z}_3 &\ge z_3, \quad \hat{z}_3 \ge 0 \\
+\hat{z}_4 &\ge z_4, \quad \hat{z}_4 \ge 0 \\
+a_3, a_4 &\in \{0, 1\} \\
+\hat{z}_3 &\le a_3 \cdot u_3, \quad \hat{z}_3 \le z_3 - l_3(1 - a_3) \\
+\hat{z}_4 &\le a_4 \cdot u_4, \quad \hat{z}_4 \le z_4 - l_4(1 - a_4)
+\end{align*}
+
+\item Step 2: Compute Pre-Activation Bounds. We compute the possible range for each pre-activation:
+\begin{align*}
+    z_3 &= -0.5x_1 + 0.5x_2 + 1.0 \\
+    z_3^{\min} &= -0.5 \cdot 1 + 0.5 \cdot (-2) + 1 = -0.5 - 1 + 1 = -0.5 \\
+    z_3^{\max} &= -0.5 \cdot (-1) + 0.5 \cdot 2 + 1 = 0.5 + 1 + 1 = 2.5 \\
+    z_4 &= 0.5x_1 - 0.5x_2 - 1.0 \\
+    z_4^{\min} &= 0.5 \cdot (-1) - 0.5 \cdot 2 - 1 = -0.5 - 1 - 1 = -2.5 \\
+    z_4^{\max} &= 0.5 \cdot 1 - 0.5 \cdot (-2) - 1 = 0.5 + 1 - 1 = 0.5
+\end{align*}
+Thus, $z_3 \in [-0.5, 2.5]$ and $z_4 \in [-2.5, 0.5]$.
+
+\item Step 3: MILP Constraints for ReLU. 
+For each hidden neuron, introduce binary indicator variables $a_3, a_4 \in \{0,1\}$ and encode ReLU using the standard big-M constraints:
+\begin{align*}
+    &\hat{z}_3 \geq z_3 \\
+    &\hat{z}_3 \geq 0 \\
+    &\hat{z}_3 \leq a_3 \cdot 2.5 \\
+    &\hat{z}_3 \leq z_3 + 0.5 (1 - a_3) \\
+    &a_3 \in \{0,1\}
+\end{align*}
+\begin{align*}
+    &\hat{z}_4 \geq z_4 \\
+    &\hat{z}_4 \geq 0 \\
+    &\hat{z}_4 \leq a_4 \cdot 0.5 \\
+    &\hat{z}_4 \leq z_4 + 2.5 (1 - a_4) \\
+    &a_4 \in \{0,1\}
+\end{align*}
+
+\item \textbf{Output layer constraints:}
+\begin{align*}
+x_5 &= -\hat{z}_3 + \hat{z}_4 - 1.0
+\end{align*}
+
+\item \textbf{Negated Output Property:}
+\begin{align*}
+x_5 &\le 0
+\end{align*}
+
+The bounds $l_3, u_3, l_4, u_4$ can be computed by interval analysis over the input ranges. For instance, with $x_1 \in [-1,1]$ and $x_2 \in [-2,2]$:
+\begin{align*}
+z_3 &\in [-0.5 \cdot 1 + 0.5 \cdot (-2) + 1, -0.5 \cdot (-1) + 0.5 \cdot 2 + 1] = [-0.5, 2.5] \\
+z_4 &\in [0.5 \cdot (-1) - 0.5 \cdot 2 - 1, 0.5 \cdot 1 - 0.5 \cdot (-2) - 1] = [-2.5, 0.5]
+\end{align*}
+
+So we set $l_3 = -0.5, u_3 = 2.5, l_4 = -2.5, u_4 = 0.5$. 
+
+\item \textbf{Substituting bounds into the constraints:}
+\begin{align*}
+\hat{z}_3 &\le a_3 \cdot 2.5, \quad \hat{z}_3 \le z_3 - (-0.5)(1 - a_3) = z_3 + 0.5(1 - a_3) \\
+\hat{z}_4 &\le a_4 \cdot 0.5, \quad \hat{z}_4 \le z_4 - (-2.5)(1 - a_4) = z_4 + 2.5(1 - a_4)
+\end{align*}
+
+The MILP solver will find a satisfying assignment if one exists, such as $x_1 = -1, x_2 = 2$, which leads to:
+\begin{align*}
+z_3 &= -0.5(-1) + 0.5(2) + 1.0 = 2.5 \\
+z_4 &= 0.5(-1) - 0.5(2) - 1.0 = -2.5 \\
+a_3 &= 1, \hat{z}_3 = 2.5 \quad \text{(neuron active)} \\
+a_4 &= 0, \hat{z}_4 = 0 \quad \text{(neuron inactive)} \\
+x_5 &= -2.5 + 0 - 1.0 = -3.5
+\end{align*}
+Since $x_5 = -3.5 \le 0$, this assignment satisfies our search for $x_5 \le 0$, so the solver stops.
+
+\end{enumerate}
+\end{example}
+\subsection{Limitations}\label{sec:milp-limitations}
 
 
 
@@ -3268,11 +3479,74 @@ Here we survey the latest benchmarks in DNN verification and how SOTA tools perf
 
 
 
-%\section{VNN-COMP'24 Benchmarks}
+\section{VNN-COMP Benchmarks}
 
-% Artifacts for all benchmarks are available in the repository\footnote{\url{https://github.com/ChristopherBrix/vnncomp2024_benchmarks/tree/main/benchmarks}}.
+%Artifacts for all benchmarks are available in the repository\footnote{\url{https://github.com/ChristopherBrix/vnncomp2024_benchmarks/tree/main/benchmarks}}.
 
-               
+\tvn{check this table with VNN-COMP'24 reports. The Report seems to have a lot more benchmarks for regular tracks. Also many numbers don't quite match. We should probably use the benchmarks from VNN-COMP'24 report. I also ? on place for you to fill in}
+
+\begin{table}
+    \caption{Benchmark instances. U: \texttt{unsat}, S: \texttt{sat}, ?: \texttt{unknown}.}\label{tab:benchmarks}
+    \resizebox{\textwidth}{!}{
+    \begin{tabular}{c|ccccc|cc}
+        \toprule
+        \multirow{2}{*}{\textbf{Benchmarks}} &\multicolumn{2}{c}{\textbf{Networks}} &  \multicolumn{3}{c|}{\textbf{Per Network}} &\multicolumn{2}{c}{\textbf{Tasks}} \\
+        & Type & Networks & Neurons & Parameters & Input Dim & Properties & Instances (U/S/?) \\
+        \midrule
+        
+        ACAS Xu & FNN & 45 & 300 & 13305 & 5 & 10 & 139/47/0 \\
+        \midrule
+    
+        MNISTFC & FNN & 3 &  0.5--1.5K & 269--532K & & 30 & 56/23/11\\
+        \midrule
+        
+        CIFAR2020 & FNN+CNN & 3 &  17--62K & 2.1--2.5M && 203 & 149/43/11 \\
+        \midrule
+        
+        RESNET\_A/B & CNN+ResNet & 2 & 11K & 354K & & 144 & 49/23/72 \\
+        \midrule
+        
+        CIFAR\_GDVB & FNN+CNN & 42 & 9--49K & 0.08--58M && 39 & 60/0/0 \\
+        \midrule
+        \midrule
+        VGGNet16 & CNN + ReLU + MaxPool& ? & ? & 138M & 150K & ? & ? \\
+        \bottomrule
+        \end{tabular}
+    }
+\end{table}
+
+
+
+\subsection{ACAS Xu}
+\paragraph{Networks} The ACASXu benchmark consists of ten properties defined over 45 neural networks used to issue turn advisories to aircraft to avoid collisions. The neural networks have 300 neurons arranged in 6 layers, with ReLU activation functions. There are five inputs corresponding to the aircraft states, and five network outputs, where the minimum output is used as the turn advisory the system ultimately produces.
+
+\paragraph{Specifications} We use the original 10 properties~\cite{katz2017reluplex}, where properties 1--4 are checked on all 45 networks as was done in later work by the original authors~\cite{katz2019marabou}. Properties 5--10 are checked on a single network. The total number of benchmarks is therefore 186.\tvn{does not match table}
+
+
+\subsection{Cifar2020}
+
+\paragraph*{Motivation} This benchmark combines two convolutional CIFAR10 networks from last year's VNN-COMP 2020 with a new, larger network with the goal to evaluate the progress made by the whole field of Neural Network verification.
+
+\paragraph*{Networks} The two ReLU networks \texttt{cifar\_10\_2\_255} and \texttt{cifar\_10\_8\_255} with two convolutional and two fully-connected layers were trained for $\ell_\infty$ perturbations of $\epsilon = \frac{2}{255}$ and $\frac{8}{255}$, respectively, using COLT \cite{balunovic:20}  and the larger \texttt{ConvBig} with four convolutional and three fully-connected networks, was trained using adversarial training \cite{madry:17} and $\epsilon = \frac{2}{255}$.
+
+\paragraph*{Specifications} We draw the first 100 images from the CIFAR10 test set and for every network reject incorrectly classified ones. For the remaining images, the specifications describe a correct classification under an $\ell_\infty$-norm perturbation of at most $\frac{2}{255}$ and $\frac{8}{255}$ for \texttt{cifar\_10\_2\_255} and \texttt{ConvBig} and \texttt{cifar\_10\_8\_255}, respectively and allow a per sample timeout of 5 minutes.
+
+
+\subsection{VGGNET16}
+\paragraph*{Proposed by} Stanley Bak, Stony Brook University
+
+\paragraph*{Motivation} This benchmark tries to scale up the size of networks being analyzed by using the well-studied VGGNET-16 architecture~\cite{simonyan2014very} that runs on ImageNet. Input-output properties are proposed on pixel-level perturbations that can lead to image misclassification. 
+
+\paragraph*{Networks} All properties are run on the same network, which includes 138 million parameters. The network features convolution layers, ReLU activation functions, as well as max pooling layers.
+
+\paragraph*{Specifications} Properties analyzed ranged from single-pixel perturbations to perturbations on all 150528 pixles (L-infinity perturbations). A subset of the images was used to create the specifications, one from each category, which was randomly chosen to attack. Pixels to perturb were also randomly selected according to a random seed.
+
+\paragraph*{Link} \url{https://github.com/stanleybak/vggnet16_benchmark2022/}
+
+
+
+
+
 % \begin{table}[h]
 %     \centering
 %     \caption{Overview of all scored benchmarks.}\label{tab:my_label}
@@ -3538,18 +3812,6 @@ Here we survey the latest benchmarks in DNN verification and how SOTA tools perf
 % \paragraph*{Paper} Available in~\cite{kirov2023benchmark} or on request.
 
 
-% \subsection{VGGNET16}
-% \paragraph*{Proposed by} Stanley Bak, Stony Brook University
-
-% \paragraph*{Motivation} This benchmark tries to scale up the size of networks being analyzed by using the well-studied VGGNET-16 architecture~\cite{simonyan2014very} that runs on ImageNet. Input-output properties are proposed on pixel-level perturbations that can lead to image misclassification. 
-
-% \paragraph*{Networks} All properties are run on the same network, which includes 138 million parameters. The network features convolution layers, ReLU activation functions, as well as max pooling layers.
-
-% \paragraph*{Specifications} Properties analyzed ranged from single-pixel perturbations to perturbations on all 150528 pixles (L-infinity perturbations). A subset of the images was used to create the specifications, one from each category, which was randomly chosen to attack. Pixels to perturb were also randomly selected according to a random seed.
-
-% \paragraph*{Link} \url{https://github.com/stanleybak/vggnet16_benchmark2022/}
-
-
 
 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -3660,19 +3922,8 @@ Here we survey the latest benchmarks in DNN verification and how SOTA tools perf
 % 199d2c26d0ec456e62906366b694a875a21ff7ef
 
 
-% %%%%%%% Unscored %%%%%%%
-% \subsection{ACAS Xu}
-% \paragraph{Networks} The ACASXu benchmark consists of ten properties defined over 45 neural networks used to issue turn advisories to aircraft to avoid collisions. The neural networks have 300 neurons arranged in 6 layers, with ReLU activation functions. There are five inputs corresponding to the aircraft states, and five network outputs, where the minimum output is used as the turn advisory the system ultimately produces.
 
-% \paragraph{Specifications} We use the original 10 properties~\cite{katz2017reluplex}, where properties 1-4 are checked on all 45 networks as was done in later work by the original authors~\cite{katz2019marabou}. Properties 5-10 are checked on a single network. The total number of benchmarks is therefore 186. The original verification times ranged from seconds to days---including some benchmark instances that did not finish. This year we used a timeout of around two minutes (116 seconds) for each property, in order to fit within a total maximum runtime of six hours.
 
-% % \subsection{Cifar2020 (unscored)}
-
-% % \paragraph*{Motivation} This benchmark combines two convolutional CIFAR10 networks from last year's VNN-COMP 2020 with a new, larger network with the goal to evaluate the progress made by the whole field of Neural Network verification.
-
-% % \paragraph*{Networks} The two ReLU networks \texttt{cifar\_10\_2\_255} and \texttt{cifar\_10\_8\_255} with two convolutional and two fully-connected layers were trained for $\ell_\infty$ perturbations of $\epsilon = \frac{2}{255}$ and $\frac{8}{255}$, respectively, using COLT \cite{balunovic:20}  and the larger \texttt{ConvBig} with four convolutional and three fully-connected networks, was trained using adversarial training \cite{madry:17} and $\epsilon = \frac{2}{255}$.
-
-% % \paragraph*{Specifications} We draw the first 100 images from the CIFAR10 test set and for every network reject incorrectly classified ones. For the remaining images, the specifications describe a correct classification under an $\ell_\infty$-norm perturbation of at most $\frac{2}{255}$ and $\frac{8}{255}$ for \texttt{cifar\_10\_2\_255} and \texttt{ConvBig} and \texttt{cifar\_10\_8\_255}, respectively and allow a per sample timeout of 5 minutes.
 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % \subsection{safeNLP}
@@ -3938,3 +4189,4 @@ Here we survey the latest benchmarks in DNN verification and how SOTA tools perf
 \appendix
 
 \end{document}
+
