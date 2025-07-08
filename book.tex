@@ -1705,13 +1705,13 @@ For these reasons, SMT solving is mostly used to demonstrate the correctness of 
 \tvn{Hai, include some references or results, e.g., from Nguyen's, showing that SMT solvers are not scalable for DNN verification.}\hai{where can I find the results?}\tvn{Not sure, I thought Nguyen record the results/graphs in some TeX document. Could you ask him?}
 
 \section{MILP}\label{sec:milp}
-Due to scalability issues with SMT solvers (\autoref{sec:smt-limitations}), modern DNN verification techniques often rely on Mixed Integer Linear Programming (MILP) solving, which is specialized for linear constraints and is more efficient for DNN reasoning. Many state-of-the-art DNN verification tools~\cite{wang2018efficient,tjeng2019evaluating,duong2024harnessing} use the industrial-strength MILP solver Gurobi~\cite{gurobi}.
+Due to scalability issues with SMT solvers (\autoref{sec:smt-limitations}), modern DNN verification techniques ~\cite{wang2018efficient,tjeng2019evaluating,duong2024harnessing} often rely on Mixed Integer Linear Programming (MILP) solving, which is specialized for linear constraints and more efficient for DNN reasoning. %Many state-of-the-art DNN verification tools use the industrial-strength MILP solver Gurobi~\cite{gurobi}.
 
 %\paragraph{MILP} Mixed Integer Linear Programming (MILP) is an optimization technique that solves problems involving both continuous variables (real numbers) and integer variables (including binary 0/1 variables), subject to linear constraints. Unlike SMT solvers that handle complex logical formulae with disjunctions, MILP solvers are specifically designed for linear constraints and can leverage decades of optimization research to solve large-scale problems efficiently.
 
 To use MILP solving for DNN reasoning, we can encode non-linear activation functions like ReLU using \emph{binary indicator} variables and linear constraints. For each neuron, we introduce a binary variable that indicates whether the neuron is ``active'' (output equals input) or ``inactive'' (output is zero). This transforms the non-linear $\max(x,0)$ operation into a set of linear inequalities controlled by the binary variable. 
 
-\paragraph{ReLU Encoding} We define 
+\paragraph{ReLU Encoding} We define
 \begin{itemize}
     \item $\hat{z}$: the output after applying ReLU
     \item $z$: the pre-activation value
