@@ -1733,7 +1733,27 @@ The MILP encoding of $\hat{z} = \max(z, 0)$ is then:
 
 These constraints enforce $\hat{z} = z$ when $a = 1$ (active, $z \geq 0$) and $\hat{z} = 0$ when $a = 0$ (inactive, $z < 0$), which capture the semantics of ReLU.
 
-Note the importance of the upper and lower bounds $u$ and $l$ on $z$. These bounds are critical not only for making the MILP encoding tight, but also for ensuring that the binary indicator $a$ can only take on values that are valid given the possible range of $z$. For example, if $u < 0$, then $z$ can never be non-negative, so the active phase ($a=1$) is infeasible (the constraints are not satisfiable) and should be ruled out by the MILP encoding; similarly, if $l \geq 0$, only the active phase is possible. As we will see later (e.g., \autoref{chap:abstractions}), the tightness of the bounds $l$ and $u$ is crucial for the efficiency of the MILP solver and a major focus of DNN reasoning is developing techniques to capture these bounds more precisely.
+
+
+
+Note the importance of the upper and lower bounds $u$ and $l$ on $z$. These bounds are critical not only for making the MILP encoding tight, but also for ensuring that the binary indicator $a$ can only take on values that are valid given the possible range of $z$. For example, if $u < 0$, then $z$ can never be non-negative, so the active phase ($a=1$) is infeasible (the constraints are not satisfiable) and should be ruled out by the MILP encoding; similarly, if $l \geq 0$, only the active phase is possible. Being able to eliminate infeasible cases is crucial for the efficiency of the MILP solver, as it reduces the search space. In general, the tightness of the bounds $l$ and $u$ is crucial for the efficiency of the MILP solver and a major focus of DNN reasoning is developing techniques to capture these bounds more precisely (\autoref{chap:abstractions}).
+
+To determine the pairs of values that achieve the lower and upper bounds of a linear expression such as
+\[
+x_3 = a_1 x_1 + a_2 x_2 + \ldots + b,
+\]
+where each variable $x_i$ ranges over $[l_i, u_i]$, proceed as follows:
+
+\begin{itemize}
+    \item \textbf{For the lower bound} ($l_3$):
+    For each variable $x_i$, use $u_i$ (its upper bound) if $a_i < 0$, and use $l_i$ (its lower bound) if $a_i \geq 0$.
+    \item \textbf{For the upper bound} ($u_3$):
+    For each variable $x_i$, use $l_i$ if $a_i < 0$, and use $u_i$ if $a_i \geq 0$.
+\end{itemize}
+
+This guarantees that the extreme values of $x_3$ are achieved at some corner of the input box, with the exact pair determined by the sign of each coefficient.
+
+
 
 
 \begin{example}
@@ -1741,9 +1761,14 @@ Note the importance of the upper and lower bounds $u$ and $l$ on $z$. These boun
     We have $x_3 = -0.5x_1 + 0.5x_2 + 1.0$ as the pre-activation value of $x_3$. The upper $u_3$ and lower $l_3$ bounds on $z_3$ over the input region $x_1 \in [-1,1]$ and $x_2\in[-2,2]$ are:
 \begin{align*}
     & z_3 = -0.5x_1 + 0.5x_2 + 1.0 \\
-    & l_3 = -0.5(-1) + 0.5(-2) + 1.0 = 0.0 \\
-    & u_3 = -0.5(1) + 0.5(2) + 1.0 = 1.0 \\
+    & l_3 = -0.5(1) + 0.5(-2) + 1.0 = -0.5 \\
+    & u_3 = -0.5(-1) + 0.5(2) + 1.0 = 1.0 \\
 \end{align*}
+
+Notice that we use different pairs of values to compute the lower (1,-2) and upper (-1,2) bounds.
+
+
+
 Let $\hat{x}_3$ be the output of neuron $x_3$ after applying ReLU, and let $a_3$ be a binary variable indicating whether neuron $x_3$ is active (1) or inactive (0).
 We encode the ReLU activation of neuron $x_3$:
 \begin{align*}
@@ -1752,21 +1777,13 @@ We encode the ReLU activation of neuron $x_3$:
     &\hat{x}_3 \leq a_3 \cdot u_3 \\
 \implies  &\hat{x}_3 \leq a_3 \cdot 1.0 \\
     &\hat{x}_3 \leq x_3 - l_3(1-a_3) \\
-\implies  &\hat{x}_3 \leq x_3 - 0.0(1-a_3)\\ 
-\implies  &\hat{x}_3 \leq x_3 \\
+\implies  &\hat{x}_3 \leq x_3 - (-0.5)(1-a_3) \\
+\implies  &\hat{x}_3 \leq x_3 + 0.5(1-a_3) \\
     &a_3 \in \{0,1\}
 \end{align*}
 
-Note that because $l_3 = 0$, $x_3$ can never be negative, so the active phase ($a_3 = 1$) is always feasible, and the inactive phase ($a_3 = 0$) is infeasible. The MILP encoding of $x_3$ can then be simplified to:
-\begin{align*}
-    &\hat{x}_3 \geq x_3 \\
-    &\hat{x}_3 \geq 0 \\
-    &\hat{x}_3 \leq 1.0 \\
-    &\hat{x}_3 \leq x_3 \\
-    &a_3 = 1
-\end{align*}
-This means that $\hat{x}_3 = x_3$ and $0.0 \le x_3 \le 1.0$ for any inputs $x_1 \in [-1,1]$ and $x_2\in[-2,2]$.
-\end{example}    
+Note that because $l_3 = 0$ and $u_3 = 1$, $a_3$ can be either 0 or 1, depending on the value of $x_3$. This is actually a worst-case scenario for the MILP solver, as it has to consider both cases. If we had different bounds, e.g., $l_3 = 0.1$ and $u_3 = 0.9$, then $a_3$ would be forced to be 1, as $x_3$ can never be less than 0.1, and the MILP solver would only have to consider the active case.
+\end{example}
 
 
 \subsection{DNN encoding} More generally, we can encode the DNN as a set of linear constraints as follows:
