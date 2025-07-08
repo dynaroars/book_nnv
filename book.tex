@@ -1855,7 +1855,22 @@ So we set $l_3 = -0.5, u_3 = 2.5, l_4 = -2.5, u_4 = 0.5$.
 \hat{z}_4 &\le a_4 \cdot 0.5, \quad \hat{z}_4 \le z_4 - (-2.5)(1 - a_4) = z_4 + 2.5(1 - a_4)
 \end{align*}
 
-The MILP solver will find a satisfying assignment if one exists, such as $x_1 = -1, x_2 = 2$, which leads to:
+\item \textbf{The final MILP encoding:}
+\begin{align*}
+& -1 \le x_1 \le 1; \quad -2 \le x_2 \le 2; \\
+& z_3 = -0.5x_1 + 0.5x_2 + 1.0; \\
+& z_4 = 0.5x_1 - 0.5x_2 - 1.0; \\
+& \hat{z}_3 \ge z_3, \quad \hat{z}_3 \ge 0; \\
+& \hat{z}_4 \ge z_4, \quad \hat{z}_4 \ge 0; \\
+& a_3, a_4 \in \{0, 1\}; \\
+& \hat{z}_3 \le a_3 \cdot 2.5, \quad \hat{z}_3 \le z_3 + 0.5(1 - a_3); \\
+& \hat{z}_4 \le a_4 \cdot 0.5, \quad \hat{z}_4 \le z_4 + 2.5(1 - a_4); \\
+& x_5 = -\hat{z}_3 + \hat{z}_4 - 1.0; \\
+& x_5 \le 0; \\
+& \text{where } z_3 \in [-0.5, 2.5], z_4 \in [-2.5, 0.5], \hat{z}_3 \in [0, 2.5], \hat{z}_4 \in [0, 0.5].
+\end{align*}
+
+\item \textbf{Solving} The MILP solver will find a satisfying assignment if one exists, such as $x_1 = -1, x_2 = 2$, which leads to:
 \begin{align*}
 z_3 &= -0.5(-1) + 0.5(2) + 1.0 = 2.5 \\
 z_4 &= 0.5(-1) - 0.5(2) - 1.0 = -2.5 \\
