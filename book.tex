@@ -1892,9 +1892,9 @@ Since $x_5 = -3.5 \le 0$, this assignment satisfies our search for $x_5 \le 0$, 
     
     Moreover, MILP solvers, even industrial-strength ones like Gurobi~\cite{gurobi}, are primarily CPU-based and does not leverage the massive parallelism provided by modern GPUs.
 
-    \item \textbf{Generic branch-and-bound algorithms:} While MILP solvers employ branch-and-bound (BaB) algorithms, these are generic and not tailored to DNNs. In contrast, specialized DNN verification algorithms leverage DNN-specific BaB strategies, such as layer-wise branching, abstract domain propagation, and neuron-specific heuristics, enabling greater efficiency.
+    %\item \textbf{Generic branch-and-bound algorithms:} While MILP solvers employ branch-and-bound (BaB) algorithms, these are generic and not tailored to DNNs. In contrast, specialized DNN verification algorithms leverage DNN-specific BaB strategies, such as layer-wise branching, abstract domain propagation, and neuron-specific heuristics, enabling greater efficiency.
 
-    \item \textbf{Advanced Abstraction:} Interval analysis is commonly used for computing neuron bounds, but it suffers from precision loss that accumulates across layers. Intervals cannot capture dependencies between neurons, leading to loose over-approximations in deeper networks. To address the limitations of intervals, more advanced abstract domains such as zonotopes (which capture linear relationships) and polytopes (which represent arbitrary linear constraints) are employed in state-of-the-art verification methods.
+    \item \textbf{Advanced Abstraction and Heuristics} Interval analysis is commonly used for computing neuron bounds, but it suffers from precision loss that accumulates across layers. Intervals cannot capture dependencies between neurons, leading to loose over-approximations in deeper networks. To address the limitations of intervals, more advanced abstract domains such as zonotopes (which capture linear relationships) and polytopes (which represent arbitrary linear constraints) are employed in state-of-the-art verification methods.
 \end{itemize}
 
 
