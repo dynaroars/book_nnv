@@ -1576,11 +1576,11 @@ This formula checks if the network $N$ satisfies (implies) the property $\phi$, 
 If \autoref{eq:prob} is unsatisfiable, then $\phi$ is a valid property of $\mathcal{N}$. Otherwise, $\phi$ is not valid.  Moreover, we can extract a counterexample for the original problem from the satisfying assignment of \autoref{eq:prob}.
 
 \begin{example}\label{ex:dnn-sat}
-We represent the DNN in \autoref{fig:dnn} as:
+We represent the DNN in \autoref{fig:dnn} as a formula $\alpha$ as follows:
 \begin{align*}
-\alpha = ~~& x_3' \equiv -0.5x_1 + 0.5x_2 + 1.0 ~\land~ x_3'' \equiv ReLU(x_3') ~\land \\
-         ~~& x_4' \equiv 0.5x_1 - 0.5x_2 + 1.0  ~\land~ x_4'' \equiv ReLU(x_4') ~\land \\
-         ~~& x_5 \equiv -x_3'' + x_4'' - 1.0,
+& x_3 = -0.5x_1 + 0.5x_2 + 1.0 ~\land~ \hat{x}_3 = \relu{x_3} ~\land \\
+& x_4 = 0.5x_1 - 0.5x_2 + 1.0  ~\land~ \hat{x}_4 = \relu{x_4} ~\land \\
+& x_5 = -\hat{x}_3 + \hat{x}_4 - 1.0,
 \end{align*}
 \noindent and the property $x_5 > 0$ for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$ as:
 \begin{equation*}
@@ -1588,7 +1588,7 @@ We represent the DNN in \autoref{fig:dnn} as:
 \phi_{out} = (x_5 > 0)
 \end{equation*}
 
-We then check the satisfiability of $\alpha \land \phi_{in} \land \neg \phi_{out}$ using a constraint solver (e.g., an SMT solver).  In this case, the formula is satisfiable and the solver returns \sat{}, and we query the solver for a satisfying assignment to the input variables, e.g., $x_1=-1$ and $x_2=2$. This assignment is a counterexample (\autoref{sec:counterexamples}) to the property, as it satisfies the input constraint but violates the output constraint, i.e., $x_5 = -3.5$, which is  $< 0$.
+We then check the satisfiability of $\alpha \land \phi_{in} \land \neg \phi_{out}$ using a constraint solver (e.g., an SMT solver).  In this case, the formula is satisfiable and the solver returns \sat{}, and we query the solver for a satisfying assignment to the input variables, e.g., $x_1=-1$ and $x_2=2$. This assignment is a counterexample (\autoref{sec:counterexamples}) to the property, as it satisfies the input constraint $\phi_{in}$ but violates the output constraint $\phi_{out}$, i.e., $x_5 = -3.5$, which is  $< 0$.
 
 \end{example}
 
@@ -1642,7 +1642,7 @@ As described in~\autoref{sec:satisfiability-and-activation-pattern-search} the N
 A straightforward way to do this encoding is using \emph{symbolic execution} (SE)~\cite{baldoni2018survey,king1976symbolic}, a well-known software testing technique for finding bugs.  SE executes a program on symbolic inputs, i.e., inputs represented as symbols rather than concrete values, and tracks the reachability of program state as symbolic expressions, i.e., logical formulae over symbolic inputs. The satisfiability of these formulae is then checked using an SMT solver, and satisfying assignments represent inputs leading to the undesirable (buggy) program state.
 
 \subsection{Symbolic Execution}\label{sec:se}
-We can adapt traditional SE to our problem by treating the DNN as a program and neurons as variables and executing the DNN on symbolic inputs. Affine transformations can easily be represented as logical formulae because they are linear functions. Activation functions such as ReLUs are translated to disjunctions of linear functions or if-then-else statements, i.e., $ReLU(x) = \max(x,0) \equiv x \ge 0 \land x \lor 0 \land \neg x$.
+We can adapt traditional SE to our problem by treating the DNN as a program and neurons as variables and executing the DNN on symbolic inputs. Affine transformations can easily be represented as logical formulae because they are linear functions. Activation functions such as ReLUs are translated to disjunctions of linear functions or if-then-else statements, i.e., $\relu{x} ~=~ \max(x,0) ~=~ x \ge 0 \land x \lor 0 \land \neg x$.
 
 
 \begin{example}\label{ex:se-dnn}
@@ -1884,22 +1884,42 @@ Since $x_5 = -3.5 \le 0$, this assignment satisfies our search for $x_5 \le 0$, 
 \end{example}
 \subsection{Limitations}\label{sec:milp-limitations}
 
-\tvn{Hai: add limitations to MILP solving, e.g., why can't we use this method of encoding for verifying DNNs? why not just let the MILP solver decides which branch to take (e.g., active or inactive)?  Why people need to create their own Brand and Bound or Reluplex algorithms?  Why do we need new abstraction and this interval abstraction is not sufficient for computing bounds? Provide simple examples would help demonstrate what you mean.}
-\hd{simple example will not be able to show the limitation, e.g., interval vs polytope are likely the same on small networks}
+%\tvn{Hai: add limitations to MILP solving, e.g., why can't we use this method of encoding for verifying DNNs? why not just let the MILP solver decides which branch to take (e.g., active or inactive)?  Why people need to create their own Brand and Bound or Reluplex algorithms?  Why do we need new abstraction and this interval abstraction is not sufficient for computing bounds? Provide simple examples would help demonstrate what you mean.}
+%\hd{simple example will not be able to show the limitation, e.g., interval vs polytope are likely the same on small networks}
 
-Despite its precision, MILP encoding faces severe scalability limitations that prevent its direct application to real-world DNNs. 
-The primary issue is the exponential explosion in the search space: each ReLU neuron introduces a binary variable $a$, and for a network with $n$ ReLU neurons, the MILP solver must potentially explore $2^n$ different activation patterns. 
-While industrial MILP solvers like Gurobi are highly optimized, they are designed for general optimization problems and cannot exploit the specific structure of neural networks. 
-Additionally, MILP solvers are primarily CPU-based and cannot leverage the massive parallelism of GPUs that modern DNNs rely upon, further limiting their computational efficiency. 
 
-While MILP solvers already employ BaB algorithms, they use general-purpose BaB designed for arbitrary linear programming problems, which cannot exploit the specific structure of neural networks. 
-% This motivates the development of specialized DNN verification algorithms like \reluplex{}~\cite{katz2017reluplex} and custom branch-and-bound techniques that integrate DNN-specific abstractions and propagation methods. 
-Unlike MILP's generic branching on arbitrary variables, DNN-specific BaB algorithms can exploit layer-wise structure, propagate bounds through activation functions using specialized abstract domains (intervals, zonotopes, polyhedra), and employ neuron-specific heuristics to select which neurons to branch. 
-For instance, \reluplex{} extends the Simplex algorithm with custom pivot rules for ReLU constraints, while \neuralsat{} integrates conflict-driven learning tailored to activation patterns and neuron stabilization techniques that can infer neurons proven to be always active or inactive---optimizations that are not available in general MILP frameworks.
 
-While interval abstraction provides a foundation for computing bounds, it suffers from significant precision loss that compounds through network layers, necessitating more sophisticated and precise abstractions. 
-The fundamental limitation is that intervals cannot capture correlations between variables---each neuron's bounds are computed independently, ignoring relationships with other neurons which leads to over-approximation that becomes increasingly loose in deeper networks. 
-More advanced abstractions like zonotopes can capture linear relationships between variables, while polytopes can represent arbitrary linear constraints. 
+\begin{itemize}
+    \item \textbf{Scalability:} While MILP is more efficient than SMT solving, it still cannot be applied directly to real-world DNNs due to the exponential growth of the search space. Each ReLU introduces a binary variable, leading to $2^n$ possible activation patterns for $n$ ReLUs.
+
+    \item \textbf{Limited exploitation of network structure:} Industrial MILP solvers, such as Gurobi~\cite{gurobi}, are highly optimized for general problems but do not exploit the layer-wise structure, sparsity, or other properties unique to neural networks.
+
+    \item \textbf{Inefficient parallelism:} MILP solvers are primarily CPU-based and does not leverage the massive parallelism provided by modern GPUs.
+
+    \item \textbf{Generic branch-and-bound algorithms:} While MILP solvers employ branch-and-bound (BaB) algorithms, these are generic and not tailored to DNNs. In contrast, specialized DNN verification algorithms leverage DNN-specific BaB strategies, such as layer-wise branching, abstract domain propagation, and neuron-specific heuristics, enabling greater efficiency.
+
+    \item \textbf{Advanced Abstraction:} Interval analysis is commonly used for computing neuron bounds, but it suffers from precision loss that accumulates across layers. Intervals cannot capture dependencies between neurons, leading to loose over-approximations in deeper networks. To address the limitations of intervals, more advanced abstract domains such as zonotopes (which capture linear relationships) and polytopes (which represent arbitrary linear constraints) are employed in state-of-the-art verification methods.
+\end{itemize}
+
+% ---
+
+% Let me know if you want this condensed further or expanded into sub-items for even more clarity!
+
+
+
+% Despite its precision, MILP encoding faces severe scalability limitations that prevent its direct application to real-world DNNs. 
+% The primary issue is the exponential explosion in the search space: each ReLU neuron introduces a binary variable $a$, and for a network with $n$ ReLU neurons, the MILP solver must potentially explore $2^n$ different activation patterns. 
+% While industrial MILP solvers like Gurobi are highly optimized, they are designed for general optimization problems and cannot exploit the specific structure of neural networks. 
+% Additionally, MILP solvers are primarily CPU-based and cannot leverage the massive parallelism of GPUs that modern DNNs rely upon, further limiting their computational efficiency. 
+
+% While MILP solvers already employ BaB algorithms, they use general-purpose BaB designed for arbitrary linear programming problems, which cannot exploit the specific structure of neural networks. 
+% % This motivates the development of specialized DNN verification algorithms like \reluplex{}~\cite{katz2017reluplex} and custom branch-and-bound techniques that integrate DNN-specific abstractions and propagation methods. 
+% Unlike MILP's generic branching on arbitrary variables, DNN-specific BaB algorithms can exploit layer-wise structure, propagate bounds through activation functions using specialized abstract domains (intervals, zonotopes, polyhedra), and employ neuron-specific heuristics to select which neurons to branch. 
+% For instance, \reluplex{} extends the Simplex algorithm with custom pivot rules for ReLU constraints, while \neuralsat{} integrates conflict-driven learning tailored to activation patterns and neuron stabilization techniques that can infer neurons proven to be always active or inactive---optimizations that are not available in general MILP frameworks.
+
+% While interval abstraction provides a foundation for computing bounds, it suffers from significant precision loss that compounds through network layers, necessitating more sophisticated and precise abstractions. 
+% The fundamental limitation is that intervals cannot capture correlations between variables---each neuron's bounds are computed independently, ignoring relationships with other neurons which leads to over-approximation that becomes increasingly loose in deeper networks. 
+% More advanced abstractions like zonotopes can capture linear relationships between variables, while polytopes can represent arbitrary linear constraints. 
 
 
 
