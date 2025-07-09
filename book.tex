@@ -1886,11 +1886,11 @@ Since $x_5 = -3.5 \le 0$, this assignment satisfies our search for $x_5 \le 0$, 
 
 
 \begin{itemize}
-    \item \textbf{Scalability:} While MILP is more efficient than SMT solving, it still cannot be applied directly to real-world DNNs due to the exponential growth of the search space. Each ReLU introduces a binary variable, leading to $2^n$ possible activation patterns for $n$ ReLUs.
+    \item \textbf{Scalability:} While MILP is more efficient than SMT solving\tvn{is it? due to what?}, it still cannot be applied directly to real-world DNNs due to the exponential growth of the search space. Each ReLU introduces a binary variable, leading to $2^n$ possible branches, and realistic DNNs can have millions of ReLUs, making the search space intractable.
 
-    \item \textbf{Limited exploitation of network structure:} Industrial MILP solvers, such as Gurobi~\cite{gurobi}, are highly optimized for general problems but do not exploit the layer-wise structure, sparsity, or other properties unique to neural networks.
-
-    \item \textbf{Inefficient parallelism:} MILP solvers are primarily CPU-based and does not leverage the massive parallelism provided by modern GPUs.
+    \item \textbf{Limited exploitation of network structure and modern hardware} General MILP solvers are designed for arbitrary linear programming problems and do not exploit DNN-specific structures such as\tvn{Hai, like what? mention those that DNN verification tools exploit}. 
+    
+    Moreover, MILP solvers, even industrial-strength ones like Gurobi~\cite{gurobi}, are primarily CPU-based and does not leverage the massive parallelism provided by modern GPUs.
 
     \item \textbf{Generic branch-and-bound algorithms:} While MILP solvers employ branch-and-bound (BaB) algorithms, these are generic and not tailored to DNNs. In contrast, specialized DNN verification algorithms leverage DNN-specific BaB strategies, such as layer-wise branching, abstract domain propagation, and neuron-specific heuristics, enabling greater efficiency.
 
