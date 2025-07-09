@@ -1884,10 +1884,6 @@ Since $x_5 = -3.5 \le 0$, this assignment satisfies our search for $x_5 \le 0$, 
 \end{example}
 \subsection{Limitations}\label{sec:milp-limitations}
 
-%\tvn{Hai: add limitations to MILP solving, e.g., why can't we use this method of encoding for verifying DNNs? why not just let the MILP solver decides which branch to take (e.g., active or inactive)?  Why people need to create their own Brand and Bound or Reluplex algorithms?  Why do we need new abstraction and this interval abstraction is not sufficient for computing bounds? Provide simple examples would help demonstrate what you mean.}
-%\hd{simple example will not be able to show the limitation, e.g., interval vs polytope are likely the same on small networks}
-
-
 
 \begin{itemize}
     \item \textbf{Scalability:} While MILP is more efficient than SMT solving, it still cannot be applied directly to real-world DNNs due to the exponential growth of the search space. Each ReLU introduces a binary variable, leading to $2^n$ possible activation patterns for $n$ ReLUs.
@@ -1901,6 +1897,8 @@ Since $x_5 = -3.5 \le 0$, this assignment satisfies our search for $x_5 \le 0$, 
     \item \textbf{Advanced Abstraction:} Interval analysis is commonly used for computing neuron bounds, but it suffers from precision loss that accumulates across layers. Intervals cannot capture dependencies between neurons, leading to loose over-approximations in deeper networks. To address the limitations of intervals, more advanced abstract domains such as zonotopes (which capture linear relationships) and polytopes (which represent arbitrary linear constraints) are employed in state-of-the-art verification methods.
 \end{itemize}
 
+
+\tvn{Hai, above you mention MILP also employs BaB algorithm, could you write a paragraph or so about how MILP solvers use BaB and briefly show how that would apply to example 4.2.2 (just briefly, no need a full step by step demonstration).}
 % ---
 
 % Let me know if you want this condensed further or expanded into sub-items for even more clarity!
