@@ -1738,11 +1738,11 @@ These constraints enforce $\hat{z} = z$ when $a = 1$ (active, $z \geq 0$) and $\
 
 Note the importance of the upper and lower bounds $u$ and $l$ on $z$. These bounds are critical not only for making the MILP encoding tight, but also for ensuring that the binary indicator $a$ can only take on values that are valid given the possible range of $z$. For example, if $u < 0$, then $z$ can never be non-negative, so the active phase ($a=1$) is infeasible (the constraints are not satisfiable) and should be ruled out by the MILP encoding; similarly, if $l \geq 0$, only the active phase is possible. Being able to eliminate infeasible cases is crucial for the efficiency of the MILP solver, as it reduces the search space. In general, the tightness of the bounds $l$ and $u$ is crucial for the efficiency of the MILP solver and a major focus of DNN reasoning is developing techniques to capture these bounds more precisely (\autoref{chap:abstractions}).
 
-To determine the pairs of values that achieve the lower and upper bounds of a linear expression such as
+\paragraph{Computing Bounds $l \le e \le u$}  To determine the pairs of values that achieve the lower and upper bounds of a linear expression $e$ such as
 \[
-x_3 = a_1 x_1 + a_2 x_2 + \ldots + b,
+ e = a_1 x_1 + a_2 x_2 + \ldots + b,
 \]
-where each variable $x_i$ ranges over $[l_i, u_i]$, proceed as follows:
+where each variable $x_i$ ranges over $[l_i, u_i]$, we proceed as follow:
 
 \begin{itemize}
     \item \textbf{For the lower bound} ($l_3$):
@@ -1751,7 +1751,7 @@ where each variable $x_i$ ranges over $[l_i, u_i]$, proceed as follows:
     For each variable $x_i$, use $l_i$ if $a_i < 0$, and use $u_i$ if $a_i \geq 0$.
 \end{itemize}
 
-This guarantees that the extreme values of $x_3$ are achieved at some corner of the input box, with the exact pair determined by the sign of each coefficient.
+This guarantees that the extreme values of $e$ are achieved at some corner of the input box, with the exact pair determined by the sign of each coefficient.
 
 
 
@@ -1762,7 +1762,7 @@ This guarantees that the extreme values of $x_3$ are achieved at some corner of 
 \begin{align*}
     & z_3 = -0.5x_1 + 0.5x_2 + 1.0 \\
     & l_3 = -0.5(1) + 0.5(-2) + 1.0 = -0.5 \\
-    & u_3 = -0.5(-1) + 0.5(2) + 1.0 = 1.0 \\
+    & u_3 = -0.5(-1) + 0.5(2) + 1.0 = 2.5 \\
 \end{align*}
 
 Notice that we use different pairs of values to compute the lower (1,-2) and upper (-1,2) bounds.
@@ -1775,14 +1775,14 @@ We encode the ReLU activation of neuron $x_3$:
     &\hat{x}_3 \geq x_3 \\
     &\hat{x}_3 \geq 0 \\
     &\hat{x}_3 \leq a_3 \cdot u_3 \\
-\implies  &\hat{x}_3 \leq a_3 \cdot 1.0 \\
+\implies  &\hat{x}_3 \leq a_3 \cdot 2.5 \\
     &\hat{x}_3 \leq x_3 - l_3(1-a_3) \\
 \implies  &\hat{x}_3 \leq x_3 - (-0.5)(1-a_3) \\
 \implies  &\hat{x}_3 \leq x_3 + 0.5(1-a_3) \\
     &a_3 \in \{0,1\}
 \end{align*}
 
-Note that because $l_3 = 0$ and $u_3 = 1$, $a_3$ can be either 0 or 1, depending on the value of $x_3$. This is actually a worst-case scenario for the MILP solver, as it has to consider both cases. If we had different bounds, e.g., $l_3 = 0.1$ and $u_3 = 0.9$, then $a_3$ would be forced to be 1, as $x_3$ can never be less than 0.1, and the MILP solver would only have to consider the active case.
+Note that because $l_3 = -0.5$ and $u_3 = 2.5$, $a_3$ can be either 0 or 1, depending on the value of $x_3$. This is actually a worst-case scenario for the MILP solver, as it has to consider both cases. If we had different bounds, e.g., $l_3 = 0.1$, then $a_3$ would be forced to be 1, as $x_3$ can never be less than 0.1, and the MILP solver would only have to consider the active case.
 \end{example}
 
 
@@ -1882,19 +1882,25 @@ Since $x_5 = -3.5 \le 0$, this assignment satisfies our search for $x_5 \le 0$, 
 
 \end{enumerate}
 \end{example}
+
+
+\tvn{So far we talk about bounds for pre-ReLU values, right? is that the same as post-ReLU?  In other words, when we talk about abstraction for ReLU, are we talking about these pre-ReLU bounds, which currently use intervals?  or the abstraction for ReLU refer to something else and not these pre-ReLU bounds?}
+
 \subsection{Limitations}\label{sec:milp-limitations}
 
 
 \begin{itemize}
     \item \textbf{Scalability:} While MILP is more efficient than SMT solving\tvn{is it? due to what?}, it still cannot be applied directly to real-world DNNs due to the exponential growth of the search space. Each ReLU introduces a binary variable, leading to $2^n$ possible branches, and realistic DNNs can have millions of ReLUs, making the search space intractable.
 
-    \item \textbf{Limited exploitation of network structure and modern hardware} General MILP solvers are designed for arbitrary linear programming problems and do not exploit DNN-specific structures such as\tvn{Hai, like what? mention those that DNN verification tools exploit}. 
+    \item \textbf{Limited exploitation of network structure and modern hardware} General MILP solvers are designed for arbitrary MILP problems and do not exploit DNN-specific structures such as\tvn{Hai, like what? mention those that DNN verification tools exploit}. 
     
-    Moreover, MILP solvers, even industrial-strength ones like Gurobi~\cite{gurobi}, are primarily CPU-based and does not leverage the massive parallelism provided by modern GPUs.
+    Moreover, MILP solvers, even industrial-strength ones such as Gurobi~\cite{gurobi}, are primarily CPU-based and does not leverage the massive parallelism provided by modern GPUs.
 
     %\item \textbf{Generic branch-and-bound algorithms:} While MILP solvers employ branch-and-bound (BaB) algorithms, these are generic and not tailored to DNNs. In contrast, specialized DNN verification algorithms leverage DNN-specific BaB strategies, such as layer-wise branching, abstract domain propagation, and neuron-specific heuristics, enabling greater efficiency.
 
-    \item \textbf{Advanced Abstraction and Heuristics} Interval analysis is commonly used for computing neuron bounds, but it suffers from precision loss that accumulates across layers. Intervals cannot capture dependencies between neurons, leading to loose over-approximations in deeper networks. To address the limitations of intervals, more advanced abstract domains such as zonotopes (which capture linear relationships) and polytopes (which represent arbitrary linear constraints) are employed in state-of-the-art verification methods.
+    \item \textbf{Advanced Abstraction and Heuristics} Interval analysis is efficient and commonly used for computing neuron bounds, but cannot capture dependencies between neurons, leading to precision loss in deeper networks. SOTA DNN verification tools (and in general program analyses) employ more advanced abstract domains such as zonotopes (which capture linear relationships) and polytopes (which represent arbitrary linear constraints) to improve precision.
+
+    Modern DNN verification tools also employ heuristics to decide which neurons to branch on and to determine stable neurons to avoid unnecessary branching. These heuristics are not available in general MILP solvers.
 \end{itemize}
 
 
@@ -1924,6 +1930,15 @@ Since $x_5 = -3.5 \le 0$, this assignment satisfies our search for $x_5 \le 0$, 
 
 
 \chapter{Abstractions}\label{chap:abstractions}
+
+
+As mentioned in~\autoref{sec:milp}, we need to compute the bounds of the neurons in a DNN
+
+
+. However, computing these bounds directly is often infeasible due to the complexity of the DNN structure and the non-linear activation functions. To address this, we use \emph{abstraction} techniques that allow us to over-approximate the set of possible values that a neuron can take, while still being able to reason about the DNN's behavior.
+
+
+\tvn{Hai, put in the Tikz picture showing different abstractions: ReLU, Interval, Zonotope, Polytope, etc.}
 
 \section{Interval}
 
