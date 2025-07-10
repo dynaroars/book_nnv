@@ -199,6 +199,40 @@
 \newcommand{\softmax}[1]{\mathrm{softmax}\left(#1\right)}
 
 
+\lstdefinelanguage{SMTLIB}{
+    morekeywords={assert, declare-const, declare-pwl, or, and, },
+    alsoletter={-},
+    morecomment=[l];,
+    morestring=[b]",
+    morekeywords=[2]{Real, Int, ReLU},
+    keywordstyle=[2]\color{codepurple},
+}
+
+\lstdefinestyle{SMTLIB-style}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{blue},
+    numberstyle=\tiny\color{black},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false, 
+    breaklines=true, 
+    captionpos=b, 
+    keepspaces=true, 
+    numbers=left, 
+    numbersep=5pt, 
+    showspaces=false, 
+    showstringspaces=false,
+    showtabs=false, 
+    tabsize=2,
+}
+
+\lstset{
+    language=SMTLIB,
+    style=SMTLIB-style
+}
+
+
 \begin{document}
 
 \pagestyle{empty}
@@ -1312,9 +1346,7 @@ d_{intruder} > d_{threshold} \land v_{intruder} < v_{threshold} \implies v_{us} 
 where $d_{intruder}$ is the distance to the intruder, $d_{threshold}$ is a predefined safe distance, $v_{intruder}$ is the speed of the intruder, and $v_{us}$ is our speed.
 \end{example}
 
-\section{Other properties}
-
-\tvn{Hai:  talk about other properties such as consistency, monotonicity, etc.}
+\section{Other properties}\label{sec:other-properties}
 
 \subsection{Consistency}
 
@@ -1368,7 +1400,7 @@ ensuring that applicants with identical academic qualifications receive the same
 
 \section{Counterexamples}\label{sec:counterexamples}
 
-A \textbf{counterexample} is a witness that falsifies the correctness property. A counterexample is an assignment to the input variables that satisfies the precondition but violates the postcondition.
+A \emph{counterexample} (\textbf{cex}) is a witness that falsifies the correctness property. A counterexample is an assignment to the input variables that satisfies the precondition but violates the postcondition.
 
 \begin{example}[Counterexample to Robustness Property]
 For the brightness robustness property:
@@ -1420,23 +1452,11 @@ A typical ACAS XU network maps 5D input to 5D output via 6 layers of 50 ReLU neu
 y_0 \leq y_1, \quad y_0 \leq y_2, \quad y_0 \leq y_3, \quad y_0 \leq y_4
 \]
 
-In SMT-LIB\tvn{is this also the VNN-LIB code? If not, add the VNN-LIB code}\hd{not VNNLIB}
-\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
-(declare-fun X0 () Real)
-...
-(declare-fun FC6_0 () Real)
-...
-(assert (<= X0 eps0))
-(assert (>= X0 (- eps0)))
-...
-(assert (<= (- FC6_0 FC6_1) 0.0))
-...
-\end{lstlisting}
-\end{example}
+The VNN-LIB code for this property is as follows:
 
-\hai{VNN-LIB code}
+\begin{lstlisting}[style=SMTLIB-style, language=SMTLIB,basicstyle=\ttfamily\scriptsize]
 
-\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+; declaring the input variables
 (declare-const X_0 Real)
 (declare-const X_1 Real)
 (declare-const X_2 Real)
@@ -1444,12 +1464,14 @@ In SMT-LIB\tvn{is this also the VNN-LIB code? If not, add the VNN-LIB code}\hd{n
 (declare-const X_4 Real)
 (declare-const X_5 Real)
 
+; declaring neuron outputs
 (declare-const Y_0 Real)
 (declare-const Y_1 Real)
 (declare-const Y_2 Real)
 (declare-const Y_3 Real)
 (declare-const Y_4 Real)
 
+; asserting the input relations
 (assert (<= X_0 eps0))
 (assert (>= X_0 -eps0))
 (assert (<= X_1 eps1))
@@ -1461,12 +1483,13 @@ In SMT-LIB\tvn{is this also the VNN-LIB code? If not, add the VNN-LIB code}\hd{n
 (assert (<= X_4 eps4))
 (assert (>= X_4 -eps4))
 
+; asserting the output relations
 (assert (<= Y_0 Y_1))
 (assert (<= Y_0 Y_2))
 (assert (<= Y_0 Y_3))
 (assert (<= Y_0 Y_4))
 \end{lstlisting}
-
+\end{example}
 
 
 % \begin{example}[MNIST Network]
@@ -2844,38 +2867,6 @@ Finally, \proofgen{} has an empty \texttt{ActPatterns}, stops the search, and re
 
 \section{Proof Language}\label{sec:prooflang}
 
-\lstdefinelanguage{SMTLIB}{
-    morekeywords={assert, declare-const, declare-pwl, or, and, },
-    alsoletter={-},
-    morecomment=[l];,
-    morestring=[b]",
-    morekeywords=[2]{Real, Int, ReLU},
-    keywordstyle=[2]\color{codepurple},
-}
-
-\lstdefinestyle{SMTLIB-style}{
-    backgroundcolor=\color{backcolour},   
-    commentstyle=\color{codegreen},
-    keywordstyle=\color{blue},
-    numberstyle=\tiny\color{black},
-    stringstyle=\color{codepurple},
-    basicstyle=\ttfamily\footnotesize,
-    breakatwhitespace=false, 
-    breaklines=true, 
-    captionpos=b, 
-    keepspaces=true, 
-    numbers=left, 
-    numbersep=5pt, 
-    showspaces=false, 
-    showstringspaces=false,
-    showtabs=false, 
-    tabsize=2,
-}
-
-\lstset{
-    language=SMTLIB,
-    style=SMTLIB-style
-}
 
 \newcommand{\lra}[1]{
     \textcolor{green!40!black}{\langle} 
