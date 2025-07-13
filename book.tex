@@ -105,9 +105,6 @@
 
 %\newcommand{\ignore}[1]{}
 
-\newcommand{\sat}{\texttt{SAT}}
-\newcommand{\unsat}{\texttt{UNSAT}}
-
 
 
 \newtcolorbox{mybox}{
@@ -197,6 +194,9 @@
 \newcommand{\sigmoid}[1]{\mathrm{sigmoid}\left(#1\right)}
 \newcommand{\mytanh}[1]{\mathrm{tanh}\left(#1\right)}
 \newcommand{\softmax}[1]{\mathrm{softmax}\left(#1\right)}
+
+\newcommand{\sat}{\texttt{SAT}}
+\newcommand{\unsat}{\texttt{UNSAT}}
 
 
 \lstdefinelanguage{SMTLIB}{
@@ -2633,10 +2633,195 @@ Finally, \bab{} has an empty \texttt{ActPatterns}, stops the search, and returns
 \chapter{The Reluplex Algorithm}\label{chap:reluplex}
 
 
-\chapter{The NeuralSAT Algorithm}\label{chap:neuralsat}
+\chapter{The \neuralsat{} Algorithm}\label{chap:neuralsat}
+
+
+\section{Overview}
+\begin{wrapfigure}{r}{0.3\textwidth}
+\vspace{-0.15in}
+    \centering
+    \includegraphics[width=1\linewidth]{figure/arch.pdf}
+    \caption{\label{fig:overview} \neuralsat{}.} 
+\end{wrapfigure}
+\neuralsat{} is a SMT-based DNN verifier that uses abstraction in its theory solver to  accelerate  unsatisfiability checking and the exploration of the space of variable assignments. 
+Fig.~\ref{fig:overview} gives an overview of \neuralsat{}, which follows the DPLL(T) framework (\S\ref{sec:background}) with some modification  and consists of standard DPLL components (light shades) and the theory solver (dark shade).
+
+\neuralsat{} constructs a propositional formula over Boolean variables that represent the activation status of neurons (\emph{Boolean Abstraction}).   Clauses in the formula assert that each neuron, e.g., neuron $i$, is active or inactive, e.g., $v_i \vee \overline{v_i}$.
+This abstraction allows us to  use standard DPLL components to search for truth values satisfying these clauses and a DNN-specific theory solver to check the feasibility of truth assignments with respect to the constraints encoding the DNN and the property of interest.
+
+\neuralsat{} now enters an iterative process to find assignments satisfying the activation clauses.
+First, \neuralsat{} assigns a truth value to an unassigned variable (\emph{Decide}), detects unit clauses caused by this assignment, and infers additional assignments (\emph{Boolean Constraint Propagation}).
+Next, \neuralsat{} invokes the theory solver or T-solver (\emph{Deduction}), which uses LP solving and abstraction to check the satisfiability of the constraints of the current assignment with the property of interest. The T-solver can also infer additional truth assignments.
+
+
+If the T-solver confirms satisfiability, \neuralsat{} continues with new assignments (\emph{Decide}). Otherwise, \neuralsat{} detects a conflict   (\emph{Analyze Conflict}) and learns clauses to remember it and backtrack to a previous decision  (\emph{Backtrack}).
+If \neuralsat{} detects local optima, it would restart (\emph{Restart}) the search by clearing all decisions that have been made to escape and the conflict clauses learned so far would be also recorded to avoid reaching the same state in the next runs.
+As we discuss later in \S\ref{sec:eval}, restarting especially benefits challenging DNN problems by enabling better clause learning and exploring different decision orderings.
+This process repeats until \neuralsat{} can no longer backtrack, and return \texttt{unsat}, indicating the DNN has the property, or it finds a total assignment for all boolean variables, and returns \texttt{sat} (and the user can query \neuralsat{} for a counterexample).
 
 
 
+
+
+\begin{example}
+We use \neuralsat{} to prove that for inputs $x_1 \in [-1, 1], x_2 \in [-2,2]$ the DNN in Fig.~\ref{fig:dnn} produces the output $x_5 \le 0$.
+\neuralsat{} takes as input the formula $\alpha$ representing the DNN:
+\begin{equation}\label{eq:ex}
+\begin{aligned}
+  x_3 = ReLU(-0.5x_1 + 0.5x_2 + 1)\;\;\;\land\;\;\;
+  x_4 = ReLU(x_1 + x_2 - 1) \;\;\;\land\; \;\;
+  x_5 = -x_3 + x_4 -1
+\end{aligned}
+\end{equation}
+and the formula $\phi$ representing the property:
+\begin{equation}\label{eq:valid_prop}
+    \phi : -1\le x_1 \le 1 \land -2 \le x_2 \le 2 \quad\Rightarrow\quad x_5 \le 0.
+  \end{equation}
+To prove $\alpha \Rightarrow \phi$, \neuralsat{} shows  that \emph{no} values of $x_1,x_2$ satisfying the input properties would result in $x_5 > 0$. Thus, we want \neuralsat{} to return \texttt{unsat} for  $\overline{\alpha \Rightarrow \phi}$: 
+\begin{equation}\label{eq:negprop}
+  \alpha\; \land\; -1 \le x_1 \le 1     \;\land\; -2 \le x_2 \le 2   \;\land\; x_5 > 0.
+\end{equation} 
+
+In the following, we write $x \mapsto v$ to denote that the variable $x$ is assigned with a truth value $v \in \{T,F\}$. This assignment can be either decided by \texttt{Decide} or inferred by \texttt{BCP}. We also write $x@dl$ and  $\overline{x}@dl$ to indicate the respective assignments $x \mapsto T$ and $x \mapsto F$  at decision level $dl$.
+
+\paragraph{Boolean Abstraction} First, \neuralsat{} creates two Boolean variables $v_3$ and $v_4$ to represent the
+%(pre-ReLU)
+activation status of the hidden neurons $x_3$ and $x_4$, respectively. For example, $v_3=T$ means $x_3$ is \texttt{active} and thus is the constraint $-0.5x_1 + 0.5x_2 + 1 > 0$. Similarly, $v_3=F$ means $x_3$ is \texttt{inactive} and therefore is $-0.5x_1 + 0.5x_2 + 1\le 0$. Next, \neuralsat{} forms two clauses  $\{v_3 \lor \overline{v_3} \;;\; v_4 \lor \overline{v_4}\}$ indicating these variables are either \texttt{active} or \texttt{inactive}.
+
+%Now, \neuralsat{} searches for truth assignments for activation variables to satisfy the clauses. %(and later check that they also satisfy the constraints of DNN implied by these variables and the properties to be proved).
+%We summarize the five iterations \neuralsat{} uses to determine that no such assignment exists (i.e., \texttt{unsat}).
+
+%We show how \neuralsat{} proves that network in Fig.~\ref{fig:dnn} has property in Eq.~\ref{eq:valid_prop}, i.e., for any inputs $x_1 \in [-1, 1], x_2 \in [-2,2]$, the network produces the output $x_5 \le 0$. 
+
+% \textbf{SAT formulation} \neuralsat{} first encodes the verification task into an SMT checking problem as described in \S\ref{sec:nnverif} by representing the network in Fig.~\ref{fig:dnn}b as the formula:
+
+% and negating of the property in Eq~\ref{eq:valid_prop}:
+% \begin{equation}\label{eq:negprop}
+%         -1 \le x_1 \le 1     \;\land\; -2 \le x_2 \le 2   
+%         \;\land\; x_5 > 0.
+% \end{equation} 
+
+%\hd{I might use different weight for DNN to trigger some technique in the tool.}\tvn{yes, that's fine, make it as easy to illustrate as possible, but should also be challenging enough to require at least 2-3 iterations.  Also good to demonstrate 2 cases:  sat and unsat. For example, focus on say unsat,  and then after illustrating that,  make a new subsection and change something so that it would be sat and briefly mentions how \neuralsat{} would work to return sat}\tvn{\tool is complex, so instead of using the Dynaplex example, which is a bit too easy,  maybe look at the illustrative example for the GenTree's paper---it has more details.  Or even look at the Reluplex's illustrative example in the Survey paper}.
+
+%We use an example\tvn{Hai: create an example, may be use the DNN from PA4 (or subset of that DNN)} to demonstrate how \neuralsat{} works.  Fig.~\ref{fig:ex} shows a small DNN ....  
+
+
+% \begin{figure}
+%   \centering
+%   \includegraphics[width=0.7\linewidth]{figure/example-b.pdf}
+%   \caption{Simple FNN with ReLU activation.} \label{fig:ex}
+% \end{figure}
+
+%\hd{Step 0: About the network - copy somewhere, need to rewrite}
+%\textbf{Running example}
+
+%We use an example of simple fully-connected feed-forward neural network with %ReLU activation shown in Fig.~\ref{fig:dnn} to demonstrate how \neuralsat{} works. 
+%This network has already been trained and we have the learned weights and bias shown in the figure. 
+%The network consists of three layers: an input layer, a hidden layer, and an output layer with two neurons each. 
+%The weights on the edges represent the learned coefficients of the weight matrix used by the affine transformations done at each layer. The learned bias for each neuron is shown above or below it. 
+
+
+% \neuralsat{} aims to find an assignment satisfying the conjunction of the formulae in Eq.~\ref{eq:ex} and~\ref{eq:negprop}. Such an assignment represents a counterexample violating the property, i.e., within the given ranges but does not satisfy the output requirement.
+% %If such an input does not exist, \neuralsat{} returns \texttt{unsat}, indicating the property is valid. Otherwise it returns \texttt{sat} and the input, which represents a counterexample violating the property.
+
+% Next, from the formula in Eq.~\ref{eq:ex}, \neuralsat{} creates two Boolean variables $v_3$ and $v_4$ to represent the status of the hidden pre-ReLU neurons $x_3'$ and $x_4'$. For example, $v_3=T$ means the status of $x_3$ is \texttt{on}, i.e., $-x_1-0.5x_2-1>0$ and $v_3=F$ means $x_4=\texttt{off}$, i.e.,  $-x_1-0.5x_2-1>0$. \neuralsat{} also forms two initial clauses indicating the status variables must be either \texttt{on} or \texttt{off}: $v_3 \lor \overline{v_3} \;;\; v_4 \lor \overline{v_4}$.
+
+
+
+% \begin{equation}\label{eq:newvars}
+%     \begin{aligned}
+%         v_3 \vee \overline{v_3} \\
+%         v_4 \vee \overline{v_4} 
+%     \end{aligned}
+% \end{equation}
+
+
+
+
+% \begin{table*}
+%   \caption{\neuralsat{}'s run producing \texttt{unsat}. The notation $x@dl$ and $\overline{x}@dl$ mean the assignments $x \mapsto T$ and $x \mapsto F$ at decision level $dl$, respectively.}\label{tab:valid}
+%   \centering
+%   \footnotesize
+%     \begin{tabular}{c|c|cc|c|cc}
+%     \toprule
+%     Iter & \textbf{BCP} & \multicolumn{2}{c|}{\textbf{DEDUCTION}}& \textbf{DECIDE} & \multicolumn{2}{c}{\textbf{ANALYZE-CONFLICT}} \\
+%       &&Constraints&Bounds&&Backtrack&Learned Clauses\\
+%       \midrule
+%       Init &-& $I = -1 \le x_1 \le 1; -2 \le x_2 \le 2$ & $-1 \le x_1 \le 1; -2 \le x_2\le 2$ & - &-&$C = \{v_3 \lor \overline{v_3};\; v_4 \lor \overline{v_4}\}$\\
+      
+%       1 &-&$I$ & $ x_5 \le 1 $& $\overline{v_4}@1$&-&-\\
+      
+%       2 &-&$I; x_4=\texttt{off}$&$ x_5 \le -1$& - & 0 &  $C = C \cup \{v_4\}$\\
+      
+%       3 &$v_4@0$&$I; x_4=\texttt{on} $&$ x_3 \ge 0.5; x_5 \le 0.5$ & $v_3@0$&-&-\\
+      
+%       4 &-&$I; x_3=\texttt{on}; x_4=\texttt{on}$&-&- & \bf{-1} & $C = C\cup \{\overline{v_4}\}$\\
+      
+%       % 5 &$v_4@0$&$I; x_3=\texttt{on}; x_4=\texttt{on}$&-&- & \bf{-1}& $C = C \cup \overline{v_3}\lor \overline{v_4}$\\
+      
+%        \bottomrule
+%     \end{tabular}
+% \end{table*}
+
+\paragraph{DPLL(T) Iterations} \neuralsat{} searches for an assignment to satisfy the clauses and the constraints they represent.
+For this example, \neuralsat{} uses four iterations, summarized in Tab.~\ref{tab:valid}, to determine that no such assignment exists and the problem is thus \texttt{unsat}.
+
+
+\begin{table*}
+    \centering
+    \caption{\neuralsat{}'s run producing \texttt{unsat}.}\label{tab:valid}    
+    \footnotesize
+      \begin{tabular}{ccccccc}
+      \toprule
+      Iter & \textbf{BCP} & \multicolumn{2}{c}{\textbf{DEDUCTION}}& \textbf{DECIDE} & \multicolumn{2}{c}{\textbf{ANALYZE-CONFLICT}} \\
+        &&Constraints&Bounds&&Bt&Learned Clauses\\
+        \midrule
+        Init &-& $I = -1 \le x_1 \le 1; -2 \le x_2 \le 2$ & $-1 \le x_1 \le 1; -2 \le x_2\le 2$ & - &-&$C = \{v_3 \lor \overline{v_3};\; v_4 \lor \overline{v_4}\}$\\
+        
+        1 &-&$I$ & $ x_5 \le 1 $& $\overline{v_4}@1$&-&-\\
+        
+        2 &-&$I; x_4=\texttt{off}$&$ x_5 \le -1$& - & 0 &  $C = C \cup \{v_4\}$\\
+        
+        3 &$v_4@0$&$I; x_4=\texttt{on} $&$ x_3 \ge 0.5; x_5 \le 0.5$ & $v_3@0$&-&-\\
+        
+        4 &-&$I; x_3=\texttt{on}; x_4=\texttt{on}$&-&- & \bf{-1} & $C = C\cup \{\overline{v_4}\}$\\
+        
+        % 5 &$v_4@0$&$I; x_3=\texttt{on}; x_4=\texttt{on}$&-&- & \bf{-1}& $C = C \cup \overline{v_3}\lor \overline{v_4}$\\
+        
+         \bottomrule
+      \end{tabular}
+  \end{table*}
+
+  
+%\emph{Initially}, the set of constraints  consists of the given bounds over the inputs, and the set of the clauses contains the two clauses in Eq.~\ref{eq:newvars}.
+
+In \emph{iteration 1}, as shown in Fig.~\ref{fig:overview}, \neuralsat{} starts with \texttt{BCP}, which has no effects because the current clauses and (empty) assignment produce no unit clauses.
+In \texttt{Deduction}, \neuralsat{} uses an LP solver to determine that the current set of constraints, which contains just the initial input bounds, is feasible\footnote{We use the terms feasible, from the LP community, and satisfiable, from the SAT community, interchangeably.}. \neuralsat{} then uses abstraction to approximate an output upper bound $x_5 \le 1$ and thus deduces that satisfying the output $x_5 >0$ might be feasible. \neuralsat{} continues with \texttt{Decide}, which uses a heuristic to select the unassigned variable $v_4$ and sets $v_4=F$.  \neuralsat{} also increments the decision level ($dl$) to 1 and associates $dl=1$ to the assignment, i.e., $\overline{v_4}@1$. Note that this process of selecting and assigning (random) values to variables representing neurons is commonly called \emph{neuron splitting} because it splits the search tree into subtrees corresponding into the assigned values (e.g., see \S\ref{sec:restart-tree}).
+
+In \emph{iteration 2}, \texttt{BCP} again has no effect because it does not detect any unit clauses. In \texttt{Deduction}, \neuralsat{} determines that current set of constraints, which contains $x_1 + x_2 - 1 \le 0$ due to the assignment $v_4\mapsto F$ (i.e., $x_4=\texttt{off}$), is feasible. \neuralsat{} then approximates a new output upper bound $x_5\le -1$, which means satisfying the output $x_5 > 0$ constraint is \emph{infeasible}.
+
+\neuralsat{} now enters \texttt{AnalyzeConflict} and determines that $v_4$ causes the conflict ($v_4$ is the only variable assigned so far).  From the assignment $\overline{v_4}@1$, \neuralsat{} learns a "backjumping" clause $v_4$, i.e., $v_4$ must be $T$. \neuralsat{} now backtracks to $dl$ $0$ and erases all assignments decided \emph{after} this level. Thus, $v_4$ is now unassigned and the constraint  $x_1 + x_2 - 1 \le 0$ is also removed.
+
+In \emph{iteration 3}, \texttt{BCP} determines that the learned clause is also a unit clause $v_4$ and infers $v_4@0$. In \texttt{Deduction}, we now have the new constraint $x_1 + x_2 - 1 > 0$ due to $v_4 \mapsto T$ (i.e., $x_4=\texttt{on}$).  With the new constraint, \neuralsat{} 
+%\hd{tightens input bounds and get $0 \le x_2 \le 2$, then} 
+approximates the output upper bound $x_5 \le  0.5$, which means $x_5>0$ might be satisfiable.
+Also, \neuralsat{} computes new bounds $0.5 \le x_3 \le 2.5$ and $0 < x_4 \le 2.0$, and deduces that $x_3$ must be positive because its lower bound is 0.5  Thus, \neuralsat{} has a new assignment $v_3@0$ ($dl$ stays unchanged due to the implication). Note that this process of inferring new assignments from the T-solver is referred to theory propagation in DPLL(T).
+
+In \emph{iteration 4}, \texttt{BCP} has no effects because we have no new unit clauses.  In \texttt{Deduction}, \neuralsat{} determines that the current set of constraints, which contains the new constraint $-0.5x_1+0.5x_2+1 > 0$ (due to $v_3 \mapsto T$), is \emph{infeasible}. Thus, \neuralsat{} enters \texttt{AnalyzeConflict} and determines that $v_4$, which was set at $dl=0$ (by \texttt{BCP} in iteration 3), causes the conflict. 
+\neuralsat{} then learns a clause $\overline{v_4}$ (the conflict occurs due to the assignment $\{v_3 \mapsto T; v_4 \mapsto T\}$, but $v_3$ was implied and thus making $v_4$ the conflict).
+However, because $v_4$ was assigned at decision level 0, \neuralsat{} can no longer backtrack and thus sets $dl=-1$ and returns \texttt{unsat}. %Note that we can also see that the learned clauses $\{v_4, \overline{v_4} \}$ are not satisfiable.
+
+
+% Note that because we backtrack to $dl=0$, we do not erase the assignment $v_3=T$ because it was decided at $dl=0$ (by BCP in iteration 3).
+
+% In \emph{iteration 5}, because of the new clause $\overline{v_3} \lor v4$ and $v_3$ is already set to $T$, BCD infers $v_4=T$ at dl=0.  In DEDUCTION, \neuralsat{} determines that set of constraints, which contains $-0.5x_1+x_2+1> 0$ for $x_4'=\texttt{on}$ (because $v_4=T$), is infeasible. In ANALYZE-CONFLICT, \neuralsat{} determines $v_4$ causes the conflict  and learns the new clause $\overline{v3} \lor \overline{v4}$ (because the current assignment $v_3=1;v_4=1$ cause the conflict).
+% \neuralsat{} then sets $dl=-1$ (because $v_4=T$ was decided at level 0) and realizes that it can no longer backtrack, and thus returns \texttt{unsat}.  Note that we can also see that the learned clauses $\{v_3, \overline{v_3} \lor v_4, \overline{v_3} \lor \overline{v_4}\}$ are not satisfiable.
+
+%\tvn{do we use restart for this example?}\hd{we do not, it would be very long as in FSE paper.}
+This \texttt{unsat} result shows that the DNN has the property because we cannot find a counterexample violating it, i.e., no inputs $x_1 \in[-1,1] ,x_2\in [-2,2]$ that results in $x_5 > 0$.
+
+Note that this example is too simple to illustrate the use of \emph{restart}, which is described in~\S\ref{sec:restart-tree} and \ref{sec:restart} and crucial for more complicated and nontrivial problems.
+\end{example}
 
 \part{Optimizations and Strategies}\label{part:optimizations}
 
@@ -4347,6 +4532,38 @@ Here we survey the latest benchmarks in DNN verification and how SOTA tools perf
 \chapter{Logics and Linear Programming}\label{app:logics}
 
 \section{Logics and Satisfiability}\label{app:logics}
+
+
+\subsection{Satisfiability (SAT)}\label{app:sat}
+The classical satisfiability (SAT) problem asks if a given propositional formula over Boolean variables can be satisfied~\cite{biere2009handbook}.  Given a formula $f$, a SAT solver returns \sat if it can find a satisfying assignment that maps truth values to variables of $f$ that makes $f$ evaluate to true, and \unsat if it cannot find any satisfying assignments. The problem is \NP-Complete and research into methods for efficiently solving  problem instances has been ongoing for multiple decades.
+
+\begin{figure}
+  \includegraphics[width=0.8\linewidth]{figure/dpll.pdf}
+  \caption{\label{fig:dpll} The classicial DPLL Algorithm.}
+\end{figure}
+
+\paragraph{DPLL} Fig.~\ref{fig:dpll} gives an overview of \textbf{DPLL}, a SAT solving technique introduced in 1961 by Davis, Putnam, Logemann, and Loveland~\cite{davis1962machine}. DPLL is an iterative algorithm that takes as input a propositional formula and (i) decides an unassigned variable and assigns it a truth value, (ii) performs Boolean constraint propagation (BCP or also called Unit Propagation),  which detects single literal clauses that either force a literal to be true in a satisfying assignment or give rise to a conflict; (iii) analyzes the conflict to backtrack to a previous decision level \texttt{dl}; and (iv) erases assignments at levels greater than \texttt{dl} to try new  assignments. These steps repeat until DPLL finds  a satisfying assignment and returns \texttt{sat}, or decides that it cannot backtrack (\texttt{dl}=-1) and returns \texttt{unsat}.
+
+
+%DPLL is both sound (its results are correct) and complete (it can find a solution for any input in finite time). %Since its introduction, many heuristics have been introduced to make DPLL more efficient,
+%However, because SAT solving is NP-Complete and DPLL has a worst-case exponential time complexity. %However, many heuristics have been developed to help DPLL efficient in practice,  e.g., choosing variables to assign values and decision levels to backtrack to~\cite{TODO}.
+
+
+\paragraph{CDCL} Modern DPLL solving improves the original version with Conflict-Driven Clause Learning (\emph{CDCL}~\cite{bayardo1997using,marques1999grasp,569607}).
+DPLL with CDCL can \emph{learn new clauses} to avoid past conflicts and backtrack more intelligently (e.g., using non-chronologically backjumping).
+%Similar to DPLL, CDCL is sound and complete, but also incurs an exponential complexity.  However, 
+Due to its ability to learn new clauses, CDCL can significantly  reduce the search space and allow SAT solvers to scale to large problems.
+In the following, whenever we refer to DPLL, we mean DPLL with CDCL.
+
+\paragraph{DPLL(T)} DPLL(T)~\cite{nieuwenhuis2006solving} extends DPLL for propositional formulae to check SMT formulae involving non-Boolean variables, e.g., real numbers and data structures such as strings, arrays, lists.
+DPLL(T) combines DPLL with dedicated \emph{theory solvers} to analyze formulae in those theories\footnote{SMT is Satisfiability Modulo Theories and the T in DPLL(T) stands for Theories.}.  %Examples of SMT formulae include those involving numerical variables with linear or nonlinear arithmetics (formale involving nonlinear operations such as multiplication and division among variables),
+For example, to check a formula involving linear arithmetic over the reals (LRA), DPLL(T) may use a theory solver that uses linear programming to check the  constraints in the formula.
+Modern DPLL(T)-based SMT solvers such as Z3~\cite{moura2008z3} and CVC4~\cite{barrett2011cvc4} 
+include solvers supporting a wide range of theories including linear arithmetic, nonlinear arithmetic, string, and arrays~\cite{kroening2016decision}.
+
+
+
+
 \section{Linear Programming}\label{app:lp}
 
 \tvn{Hai, give some LP background here.}
