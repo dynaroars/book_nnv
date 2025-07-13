@@ -1730,6 +1730,7 @@ For these reasons, SMT solving is mostly used to demonstrate the correctness of 
 
 \section{MILP}\label{sec:milp}
 Due to scalability issues with SMT solvers (\autoref{sec:smt-limitations}), modern DNN verification techniques ~\cite{wang2018efficient,tjeng2019evaluating,duong2024harnessing} often rely on Mixed Integer Linear Programming (MILP) solving, which is specialized for linear constraints and more efficient for DNN reasoning. %Many state-of-the-art DNN verification tools use the industrial-strength MILP solver Gurobi~\cite{gurobi}.
+At a high level, MILP solving~\cite{} is a mathematical optimization technique that can efficiently handle large linear problems with both continuous and discrete variables. \tvn{what are the main differences compared to SMT solving?}
 
 %\paragraph{MILP} Mixed Integer Linear Programming (MILP) is an optimization technique that solves problems involving both continuous variables (real numbers) and integer variables (including binary 0/1 variables), subject to linear constraints. Unlike SMT solvers that handle complex logical formulae with disjunctions, MILP solvers are specifically designed for linear constraints and can leverage decades of optimization research to solve large-scale problems efficiently.
 
@@ -1755,14 +1756,13 @@ The MILP encoding of $\hat{z} = \max(z, 0)$ is then:
     &a \in \{0,1\}
 \end{align*}
 
-These constraints enforce $\hat{z} = z$ when $a = 1$ (active, $z \geq 0$) and $\hat{z} = 0$ when $a = 0$ (inactive, $z < 0$), which capture the semantics of ReLU.
-
+These constraints enforce $\hat{z} = z$ when $a = 1$ (active, $z \geq 0$) and $\hat{z} = 0$ when $a = 0$ (inactive, $z < 0$), which capture the semantics of ReLU. Notice that these constraints are linear and involve both continuous variable $\hat{z}$ and binary variable $a$.
 
 
 
 Note the importance of the upper and lower bounds $u$ and $l$ on $z$. These bounds are critical not only for making the MILP encoding tight, but also for ensuring that the binary indicator $a$ can only take on values that are valid given the possible range of $z$. For example, if $u < 0$, then $z$ can never be non-negative, so the active phase ($a=1$) is infeasible (the constraints are not satisfiable) and should be ruled out by the MILP encoding; similarly, if $l \geq 0$, only the active phase is possible. Being able to eliminate infeasible cases is crucial for the efficiency of the MILP solver, as it reduces the search space. In general, the tightness of the bounds $l$ and $u$ is crucial for the efficiency of the MILP solver and a major focus of DNN reasoning is developing techniques to capture these bounds more precisely (\autoref{chap:abstractions}).
 
-\paragraph{Computing Bounds $l \le e \le u$}  To determine the pairs of values that achieve the lower and upper bounds of a linear expression $e$ such as
+\paragraph{Computing Bounds $l \le e \le u$}  To determine the pairs of values that achieve the lower and upper bounds of a linear expression $e$:
 \[
  e = a_1 x_1 + a_2 x_2 + \ldots + b,
 \]
@@ -2630,6 +2630,13 @@ Finally, \bab{} has an empty \texttt{ActPatterns}, stops the search, and returns
 \section{Beyond the Basic BaB} What described above is the basic and minimal BaB algorithm. However, modern DNN verifiers implement several optimizations and strategies to improve the performance of the search. For example, after the \functiontextformat{Deduce} step, if the problem is infeasible, \bab{} can analyze the conflict and add a new clause to the set of clauses (\texttt{clauses}) to prevent the same activation pattern from being selected again. This is similar to conflict-driven clause learning (CDCL) in SAT and SMT  solvers and is implemented in the \neuralsat{} verifier~\cite{duong2025neuralsat}. In addition, heuristics are also used to select, e.g., which neuron to split next (\functiontextformat{Decide}). We explore these optimizations and strategies in \autoref{part:optimizations}.
 
 %\tvn{TODO: this basic BnB is also used to create a proof tree, which is used to generate a proof in the \prooflang{} format. We will discuss this in \autoref{chapter:proof-gen-check}.}
+\chapter{The Reluplex Algorithm}\label{chap:reluplex}
+
+
+\chapter{The NeuralSAT Algorithm}\label{chap:neuralsat}
+
+
+
 
 \part{Optimizations and Strategies}\label{part:optimizations}
 
