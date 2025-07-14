@@ -2598,9 +2598,9 @@ If \functiontextformat{Deduce} determines that the problem is feasible (using th
 \tvn{briefly describe what Decide do? in particular what does it do to determine/create an cex when the activation pattern is partially assigned?}
 
 
-If \functiontextformat{Deduce} determines that the problem is infeasible, it loops back to \autoref{line:dpllstart} to process the next activation pattern.\bab{} terminates when there are no more activation patterns to process, at which point it returns \unsat, indicating that the property is valid.
+If \functiontextformat{Deduce} determines that the problem is infeasible, it loops back to \autoref{line:dpllstart} to process the next activation pattern. \bab{} terminates when there are no more activation patterns to process, at which point it returns \unsat, indicating that the property is valid.
 
-
+\tvn{shows that \bab{} often does not exhaust all activation patterns, but rather prunes the search space by deducing infeasibility of some activation patterns.  May be use a tree example to illustrate this?}
 
 %it analyzes the conflict and adds a new clause to the set of clauses (\texttt{clauses}) to prevent the same activation pattern from being selected again.
 %The algorithm continues until there are no more activation patterns to process, at which point it returns \unsat, indicating that the property is valid. If a counterexample is found during the search, it returns \sat along with the counterexample. 
@@ -2619,7 +2619,7 @@ If \functiontextformat{Deduce} determines that the problem is infeasible, it loo
 
 \begin{example} 
     
-    \autoref{fig:example1}a illustrates a DNN and how \bab{} verifies that this DNN has the property 
+    \tvn{We should change this example to the 5-neuron DNN we have always been using.}\autoref{fig:example1}a illustrates a DNN and how \bab{} verifies that this DNN has the property 
 \[
 (x_1, x_2) \in [-2.0, 2.0] \times [-1.0, 1,0] \Rightarrow (y_1 > y_2).
 \] 
