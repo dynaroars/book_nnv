@@ -1733,7 +1733,17 @@ For these reasons, SMT solving is mostly used to demonstrate the correctness of 
 
 \section{MILP}\label{sec:milp}
 Due to scalability issues with SMT solvers (\autoref{sec:smt-limitations}), modern DNN verification techniques ~\cite{wang2018efficient,tjeng2019evaluating,duong2024harnessing} often rely on Mixed Integer Linear Programming (MILP) solving, which is specialized for linear constraints and more efficient for DNN reasoning. %Many state-of-the-art DNN verification tools use the industrial-strength MILP solver Gurobi~\cite{gurobi}.
-At a high level, MILP solving~\cite{} is a mathematical optimization technique that can efficiently handle large linear problems with both continuous and discrete variables. \tvn{what are the main differences compared to SMT solving?}
+
+The fundamental distinction between SMT and MILP solving lies in their problem formulation and solution approach. 
+SMT solvers address satisfiability problems: given a logical formula, determine whether there exist variable assignments that make the formula true. 
+SMT solvers can handle diverse mathematical theories including non-linear arithmetic.
+MILP solvers address optimization problems: find the best solution (according to some objective function) among all feasible solutions that satisfy a set of linear constraints. 
+Note that MILP is restricted to linear constraints.
+
+MILP solvers cannot directly solve general SMT problems because they are restricted to linear constraints and cannot handle the non-linear theories and complex logical structures that SMT problems often contain. 
+While SMT solvers could theoretically encode MILP problems as satisfiability queries, they are not designed for optimization and would be highly inefficient. 
+Despite both approaches having exponential worst-case complexity, MILP solvers often demonstrate superior practical performance due to their restriction to linear constraints, which enables several key optimizations such as linear relaxations, preprocessing techniques, and specialized algorithms. 
+
 
 %\paragraph{MILP} Mixed Integer Linear Programming (MILP) is an optimization technique that solves problems involving both continuous variables (real numbers) and integer variables (including binary 0/1 variables), subject to linear constraints. Unlike SMT solvers that handle complex logical formulae with disjunctions, MILP solvers are specifically designed for linear constraints and can leverage decades of optimization research to solve large-scale problems efficiently.
 
@@ -1912,6 +1922,7 @@ Since $x_5 = -3.5 \le 0$, this assignment satisfies our search for $x_5 \le 0$, 
 
 
 \tvn{So far we talk about bounds for pre-ReLU values, right? is that the same as post-ReLU?  In other words, when we talk about abstraction for ReLU, are we talking about these pre-ReLU bounds, which currently use intervals?  or the abstraction for ReLU refer to something else and not these pre-ReLU bounds?}
+\hd{no, we are referring to post-ReLU bounds. For example, a pre-ReLU interval is  $z_3 \in [-0.5, 2.5]$ --- indicating an unstable neuron, and we will abstraction to compute bounds for the post-ReLU e.g., $\hat{z}_3$.}
 
 \subsection{Limitations}\label{sec:milp-limitations}
 
