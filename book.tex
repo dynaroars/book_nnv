@@ -1,4 +1,6 @@
 \documentclass[oneside,11pt,dvipsnames]{book}
+\setcounter{secnumdepth}{3}
+
 \usepackage{xcolor}
 \definecolor{codegreen}{rgb}{0,0.6,0}
 \definecolor{codegray}{rgb}{0.5,0.5,0.5}
@@ -143,7 +145,7 @@
 
 % for captions
 %\def\Section{\S}
-\newcommand{\Section}{\textsection}
+%\newcommand{\Section}{\textsection\@gobble}
 \renewcommand{\figurename}{Fig.}
 \renewcommand{\tablename}{Tab.}
 \renewcommand{\algorithmcfname}{Alg.}
@@ -187,6 +189,7 @@
 \newcommand{\planet}{\texttt{Planet}}
 \newcommand{\bab}{\texttt{BaB$_{\text{NV}}$}}
 \newcommand{\neuralsat}{\texttt{NeuralSAT}}
+\newcommand{\tool}{\texttt{NeuralSAT}}
 \newcommand{\mipverify}{\texttt{MIPVerify}}
 \newcommand{\crowndefault}{\texttt{$\alpha\beta$-CROWN} (default)}
 
@@ -195,8 +198,8 @@
 \newcommand{\mytanh}[1]{\mathrm{tanh}\left(#1\right)}
 \newcommand{\softmax}[1]{\mathrm{softmax}\left(#1\right)}
 
-\newcommand{\sat}{\texttt{SAT}}
-\newcommand{\unsat}{\texttt{UNSAT}}
+\newcommand{\sat}{\texttt{sat}}
+\newcommand{\unsat}{\texttt{unsat}}
 
 
 \lstdefinelanguage{SMTLIB}{
@@ -1956,10 +1959,7 @@ Since $x_5 = -3.5 \le 0$, this assignment satisfies our search for $x_5 \le 0$, 
 \chapter{Abstractions}\label{chap:abstractions}
 
 
-As mentioned in~\autoref{sec:milp}, we need to compute the bounds of the neurons in a DNN
-
-
-. However, computing these bounds directly is often infeasible due to the complexity of the DNN structure and the non-linear activation functions. To address this, we use \emph{abstraction} techniques that allow us to over-approximate the set of possible values that a neuron can take, while still being able to reason about the DNN's behavior.
+As mentioned in~\autoref{sec:milp}, we need to compute the bounds of the neurons in a DNN. However, computing these bounds directly is often infeasible due to the complexity of the DNN structure and the non-linear activation functions. To address this, we use \emph{abstraction} techniques that allow us to over-approximate the set of possible values that a neuron can take, while still being able to reason about the DNN's behavior.
 
 
 \tvn{Hai, put in the Tikz picture showing different abstractions: ReLU, Interval, Zonotope, Polytope, etc.}
@@ -2520,8 +2520,9 @@ Therefore, DeepPoly achieves a balance, combining the expressiveness of polyhedr
 \SetKwData{clause}{clause}
 \SetKwData{igraph}{igraph}
 \SetKwData{cex}{cex}
-\SetKwData{sat}{sat}
-\SetKwData{unsat}{unsat}
+\SetKwData{mysat}{sat}
+\SetKwData{myunsat}{unsat}
+
 
 \SetKwData{submodel}{sub\_model}
 
@@ -2539,7 +2540,7 @@ Therefore, DeepPoly achieves a balance, combining the expressiveness of polyhedr
 \begin{algorithm}
     \footnotesize
     \Input{DNN $\mathcal{N}$, property $\phi_{in} \Rightarrow \phi_{out}$}
-    \Output{$\unsat$ if property is valid, otherwise ($\sat, \counterexample$)}
+    \Output{$\myunsat$ if property is valid, otherwise ($\mysat, \counterexample$)}
     \BlankLine
 
     $\problems \leftarrow \{ \emptyset \}$ \tcp{initialize verification problems} 
@@ -2552,7 +2553,7 @@ Therefore, DeepPoly achieves a balance, combining the expressiveness of polyhedr
             \If{\Deduce{$\mathcal{N}, \phi_{in}, \phi_{out}, \sigma_i$}}{\label{line:deduce}
                 $(\counterexample, v_i) \leftarrow \Decide(\mathcal{N}, \phi_{in}, \phi_{out}, \sigma_i)$ \\ \label{line:decide}
                 \If(\tcp*[h]{found a valid counter-example}){$\counterexample$}{
-                    \Return{$(\sat, \counterexample)$} 
+                    \Return{$(\mysat, \counterexample)$} 
                 }
                 \tcp{create new activation patterns}
                 $\problems \leftarrow \problems \cup \{ \sigma_i \land v_i ~;~ \sigma_i \land \overline{v_i} \}$ \;
@@ -2566,7 +2567,7 @@ Therefore, DeepPoly achieves a balance, combining the expressiveness of polyhedr
         % }
         
     }\label{line:dpllend}
-    \Return{\unsat}
+    \Return{\myunsat}
     
     \caption{The \bab{} algorithm.}\label{alg:bab}
 \end{algorithm}
@@ -2636,41 +2637,38 @@ Finally, \bab{} has an empty \texttt{ActPatterns}, stops the search, and returns
 \chapter{The \neuralsat{} Algorithm}\label{chap:neuralsat}
 
 
-\section{Overview}
-\begin{wrapfigure}{r}{0.3\textwidth}
-\vspace{-0.15in}
+\section{Overview}\label{sec:neuralsat:overview}
+\begin{figure}[h]
     \centering
-    \includegraphics[width=1\linewidth]{figure/arch.pdf}
-    \caption{\label{fig:overview} \neuralsat{}.} 
-\end{wrapfigure}
-\neuralsat{} is a SMT-based DNN verifier that uses abstraction in its theory solver to  accelerate  unsatisfiability checking and the exploration of the space of variable assignments. 
-Fig.~\ref{fig:overview} gives an overview of \neuralsat{}, which follows the DPLL(T) framework (\S\ref{sec:background}) with some modification  and consists of standard DPLL components (light shades) and the theory solver (dark shade).
+    \includegraphics[width=0.5\linewidth]{figure/arch.pdf}
+    \caption{\label{fig:overview} The \neuralsat{} DPLL(T) Algorithm.} 
+\end{figure}
 
-\neuralsat{} constructs a propositional formula over Boolean variables that represent the activation status of neurons (\emph{Boolean Abstraction}).   Clauses in the formula assert that each neuron, e.g., neuron $i$, is active or inactive, e.g., $v_i \vee \overline{v_i}$.
-This abstraction allows us to  use standard DPLL components to search for truth values satisfying these clauses and a DNN-specific theory solver to check the feasibility of truth assignments with respect to the constraints encoding the DNN and the property of interest.
+Fig.~\ref{fig:overview} gives an overview of \neuralsat{}, which follows the DPLL(T) framework (\autoref{sec:sat}), and consists of standard DPLL components (light shades) and the theory solver (dark shade).
 
-\neuralsat{} now enters an iterative process to find assignments satisfying the activation clauses.
+\neuralsat{} constructs a propositional formula over Boolean variables that represent the activation status of neurons (\emph{Boolean Abstraction}). Clauses in the formula assert that each neuron, e.g., neuron $i$, is active or inactive, e.g., $v_i \vee \overline{v_i}$.
+This abstraction allows us to  use standard DPLL components to search for truth values satisfying these clauses and a DNN-specific theory solver to check the feasibility of truth assignments---the \emph{activation pattern} (\autoref{sec:activation-pattern})---with respect to the constraints encoding the DNN and the property of interest.
+
+\neuralsat{} now enters an iterative process to find an activation pattern satisfying the activation clauses.
 First, \neuralsat{} assigns a truth value to an unassigned variable (\emph{Decide}), detects unit clauses caused by this assignment, and infers additional assignments (\emph{Boolean Constraint Propagation}).
 Next, \neuralsat{} invokes the theory solver or T-solver (\emph{Deduction}), which uses LP solving and abstraction to check the satisfiability of the constraints of the current assignment with the property of interest. The T-solver can also infer additional truth assignments.
 
 
 If the T-solver confirms satisfiability, \neuralsat{} continues with new assignments (\emph{Decide}). Otherwise, \neuralsat{} detects a conflict   (\emph{Analyze Conflict}) and learns clauses to remember it and backtrack to a previous decision  (\emph{Backtrack}).
 If \neuralsat{} detects local optima, it would restart (\emph{Restart}) the search by clearing all decisions that have been made to escape and the conflict clauses learned so far would be also recorded to avoid reaching the same state in the next runs.
-As we discuss later in \S\ref{sec:eval}, restarting especially benefits challenging DNN problems by enabling better clause learning and exploring different decision orderings.
-This process repeats until \neuralsat{} can no longer backtrack, and return \texttt{unsat}, indicating the DNN has the property, or it finds a total assignment for all boolean variables, and returns \texttt{sat} (and the user can query \neuralsat{} for a counterexample).
+Restarting especially benefits challenging DNN problems by enabling better clause learning and exploring different decision orderings.
+
+This iterative process repeats until \neuralsat{} can no longer backtrack, and returns \unsat{}, indicating the DNN has the property, or it finds a total assignment for all boolean variables, and returns \sat{} (and the user can query \neuralsat{} for a counterexample).
 
 
-
-
-
-\begin{example}
+\begin{example}\label{ex:neuralsat}
 We use \neuralsat{} to prove that for inputs $x_1 \in [-1, 1], x_2 \in [-2,2]$ the DNN in Fig.~\ref{fig:dnn} produces the output $x_5 \le 0$.
 \neuralsat{} takes as input the formula $\alpha$ representing the DNN:
 \begin{equation}\label{eq:ex}
 \begin{aligned}
-  x_3 = ReLU(-0.5x_1 + 0.5x_2 + 1)\;\;\;\land\;\;\;
-  x_4 = ReLU(x_1 + x_2 - 1) \;\;\;\land\; \;\;
-  x_5 = -x_3 + x_4 -1
+  x_3 = & \relu{-0.5x_1 + 0.5x_2 + 1}\;\;\;\land\\
+  x_4 = &\relu{x_1 + x_2 - 1} \;\;\;\land\\
+  x_5 = &-x_3 + x_4 - 1.0
 \end{aligned}
 \end{equation}
 and the formula $\phi$ representing the property:
@@ -2776,8 +2774,8 @@ For this example, \neuralsat{} uses four iterations, summarized in Tab.~\ref{tab
       Iter & \textbf{BCP} & \multicolumn{2}{c}{\textbf{DEDUCTION}}& \textbf{DECIDE} & \multicolumn{2}{c}{\textbf{ANALYZE-CONFLICT}} \\
         &&Constraints&Bounds&&Bt&Learned Clauses\\
         \midrule
-        Init &-& $I = -1 \le x_1 \le 1; -2 \le x_2 \le 2$ & $-1 \le x_1 \le 1; -2 \le x_2\le 2$ & - &-&$C = \{v_3 \lor \overline{v_3};\; v_4 \lor \overline{v_4}\}$\\
-        
+        Init &-& $I = -1 \le x_1 \le 1; $& $-1 \le x_1 \le 1;$  & - &-&$C = \{v_3 \lor \overline{v_3};\; v_4 \lor \overline{v_4}\}$\\
+        && $-2 \le x_2 \le 2$ & $-2 \le x_2\le 2$& & & \\
         1 &-&$I$ & $ x_5 \le 1 $& $\overline{v_4}@1$&-&-\\
         
         2 &-&$I; x_4=\texttt{off}$&$ x_5 \le -1$& - & 0 &  $C = C \cup \{v_4\}$\\
@@ -2822,6 +2820,841 @@ This \texttt{unsat} result shows that the DNN has the property because we cannot
 
 Note that this example is too simple to illustrate the use of \emph{restart}, which is described in~\S\ref{sec:restart-tree} and \ref{sec:restart} and crucial for more complicated and nontrivial problems.
 \end{example}
+\SetKwInOut{Input}{input}
+\SetKwInOut{Output}{output}
+\SetKw{Break}{break}
+\SetKw{Continue}{continue}
+\SetKwFunction{Backtrack}{Backtrack}
+\SetKwFunction{Decide}{Decide}
+\SetKwFunction{BCP}{BCP}
+\SetKwFunction{Deduction}{Deduction}
+\SetKwFunction{AnalyzeConflict}{AnalyzeConflict}
+\SetKwFunction{BooleanAbstraction}{BooleanAbstraction}
+\SetKwFunction{AddClause}{AddClause}
+\SetKwFunction{isTotal}{isTotal}
+\SetKwFunction{randomattack}{RandomAttack}
+\SetKwFunction{pgd}{PGDAttack}
+
+\SetKwFunction{DPLLT}{DPLLT}
+\SetKwFunction{isValid}{isValid}
+\SetKwFunction{LPSolver}{LPSolver}
+\SetKwFunction{Solve}{Solve}
+\SetKwFunction{FindLayerNodes}{FindLayerNodes}
+\SetKwFunction{TightenInputBounds}{TightenInputBounds}
+\SetKwFunction{Abstract}{Abstract}
+\SetKwFunction{Check}{Check}
+\SetKwFunction{Decide}{Decide}
+\SetKwFunction{Imply}{Imply}
+\SetKwFunction{Lower}{LowerBound}
+\SetKwFunction{Upper}{UpperBound}
+\SetKwFunction{GetInputBounds}{GetInputBounds}
+\SetKwFunction{GetInputs}{GetInputs}
+\SetKwFunction{GetNumInputs}{GetNumInputs}
+\SetKwFunction{CurrentConflictClause}{CurrentConflictClause}
+\SetKwFunction{StopCriterion}{StopCriterion}
+\SetKwFunction{LastAssignedLiteral}{LastLiteral}
+\SetKwFunction{LiteralToVariable}{LiteralToVariable}
+\SetKwFunction{Antecedent}{Antecedent}
+\SetKwFunction{BinRes}{BinRes}
+\SetKwFunction{BacktrackLevel}{BacktrackLevel}
+\SetKwFunction{AddClause}{AddClause}
+\SetKwFunction{ActivationStatus}{ActivationStatus}
+
+\SetKwData{implicationgraph}{igraph}
+\SetKwData{literal}{lit}
+\SetKwData{variable}{var}
+\SetKwData{antecedent}{ante}
+\SetKwData{conflict}{conflict}
+\SetKwData{none}{none}
+\SetKwData{layerid}{lid}
+\SetKwData{hiddenbounds}{hidden\_bounds}
+\SetKwData{layerbounds}{lbounds}
+\SetKwData{inputs}{inputs}
+\SetKwData{inputbounds}{input\_bounds}
+\SetKwData{outputbounds}{output\_bounds}
+\SetKwData{infeasible}{INFEASIBLE}
+\SetKwData{unreachable}{UNREACHABLE}
+\SetKwData{maxinputs}{MAX\_NUM\_INPUT}
+\SetKwData{assignment}{$\sigma$}
+\SetKwData{network}{$\alpha$}
+\SetKwData{dl}{dl}
+\SetKwData{lpmodel}{solver}
+\SetKwData{clauses}{clauses}
+\SetKwData{conflict}{conflict}
+\SetKwData{clause}{clause}
+\SetKwData{igraph}{igraph}
+\SetKwData{cex}{cex}
+
+\SetKwData{true}{true}
+\SetKwData{false}{false}
+\DontPrintSemicolon
+    
+    
+% \begin{algorithm}[t]
+%   \small
+%   \DontPrintSemicolon
+
+%   \Input{DNN $\alpha$, property $\phi_{in} \Rightarrow \phi_{out}$}
+%   \Output{\texttt{unsat} if the property is valid and \texttt{sat} otherwise}
+%   \BlankLine
+
+%   $\clauses \leftarrow \BooleanAbstraction(\alpha)$\;\label{line:Booleanabstraction}
+%   $\sigma \leftarrow \emptyset$\tcp*{current assignment}\label{line:varsa}
+%   $\dl \leftarrow 0$\tcp*{current decision level}
+%   $\igraph \leftarrow \none$\tcp*{implication graph}\label{line:varsb}
+
+%   \hd{rewrite and add restart}
+  
+%   \While{\true}{\label{line:dpllstart}
+%     % \While{$\BCP(\sigma, \igraph) \equiv \conflict \lor \Deduce(\sigma, \alpha, \phi_{in}, \phi_{out}) \equiv \conflict$}{\label{line:bcpdeduction}
+%     \While{\true}{
+%         \If{$\BCP(\sigma, \dl, \igraph)$}{\label{line:bcp}
+%           \If{$\Deduce(\sigma, \dl, \alpha, \phi_{in}, \phi_{out})$}{\label{line:deduction}
+%             \Break \tcp{no conflict}
+%             }
+%         }
+        
+%         \tcp{conflict at decision level 0, return unsat}        
+%         \lIf{$\dl \equiv 0$}{\label{line:unsat}
+%           \Return{\unsat}
+%         }
+        
+%       $\clause = \AnalyzeConflict(\igraph)$\;
+%       $\dl \leftarrow \Backtrack(\sigma, \clause)$\;\label{line:backtrack}
+%       $\clauses \leftarrow \clauses \cup \{\clause\}$\;\label{line:learn}
+%     }
+%     $\dl \leftarrow \dl + 1$\;  
+    
+%     \If{$!\Decide(\sigma, \dl)$}{\label{line:decide}
+      
+%       \Return{\sat}\tcp*{total assignment, return sat}\label{line:returnsat}
+%     }
+    
+%   }\label{line:dpllend}
+  
+%   \caption{The  \tool{}  DPLL(T) algorithm}\label{fig:alg}
+% \end{algorithm}
+
+\SetKwFunction{Restart}{Restart}
+
+\SetKwData{issat}{is\_sat}
+\SetKwData{conflictclause}{conflict\_clause}
+\SetKwData{isconflict}{is\_conflict}
+
+\begin{algorithm}[t]
+    \small
+    \DontPrintSemicolon
+    
+    \Input{DNN $\alpha$, property $\phi_{in} \Rightarrow \phi_{out}$}
+    \Output{\texttt{unsat} if the property is valid and \texttt{sat} otherwise}
+    \BlankLine
+    
+    $\clauses \leftarrow \BooleanAbstraction(\alpha)$\;\label{line:Booleanabstraction}
+  
+    \While{\true}{
+        $\sigma \leftarrow \emptyset$ \tcp{initial assignment}\label{line:varsa}
+        $\dl \leftarrow 0$ \tcp{initial decision level}
+        $\igraph \leftarrow \emptyset$ \tcp{initial implication graph}\label{line:varsb}
+        \While{\true}{\label{line:dpllstart}
+            $\isconflict \leftarrow \true$ \;
+        
+            \If{$\BCP(\clauses, \sigma, \dl, \igraph)$}{\label{line:bcp}
+                \If{$\Deduction(\sigma, \dl, \alpha, \phi_{in}, \phi_{out})$}{ \label{line:deduction}
+                    $\issat, v_i \leftarrow \Decide(\alpha, \phi_{in}, \phi_{out}, \dl, \sigma)$ \tcp{decision heuristic} \label{line:decide} 
+                    \lIf(\tcp*[h]{total assignment}){\issat}{
+                        \Return{$\sat$} \label{line:returnsat} 
+                    }
+                    $\sigma \leftarrow \sigma \land v_i$\;% \tcp{decide new variable}
+                    $\dl \leftarrow \dl + 1$\;% \tcp{increase decision level by 1}
+                    $\isconflict \leftarrow \false$ \tcp{mark as no conflict}
+                }
+            }
+            \If{\isconflict}{
+                \lIf(\tcp*[h]{conflict at decision level 0}){$\dl \equiv 0$}{ 
+                    \Return{\unsat}  \label{line:unsat}
+                }
+                $\clause \leftarrow \AnalyzeConflict(\igraph)$\;
+                $\dl \leftarrow \Backtrack(\sigma, \clause)$ \;\label{line:backtrack}
+                $\clauses \leftarrow \clauses \cup \{\clause\}$ \tcp{learn conflict clauses} \label{line:learn}
+            }
+            
+            \lIf(\tcp*[h]{restart heuristic}){$\Restart{}$}{\label{line:restart}
+                \Break
+            }
+        }\label{line:dpllend}
+    }
+    \caption{The  \tool{}  DPLL(T) algorithm.}\label{fig:alg}
+  
+\end{algorithm} 
+
+
+\subsection{The search tree of \tool{}}\label{sec:restart-tree}
+
+\begin{figure}[t]
+    \begin{minipage}[b]{\textwidth}
+    \centering
+        \begin{minipage}[t]{0.495\textwidth}
+            \centering  
+            \includegraphics[width=\linewidth]{figure/cdcl-tree-clause.png}
+            % \includegraphics[width=\linewidth]{figure/cdcl-tree-clause.pdf}
+            \caption*{(a) \tool{}}
+        \end{minipage}
+        % \hspace{0.5cm}
+        \hfill
+        \begin{minipage}[t]{0.44\textwidth}
+            \centering
+            \includegraphics[width=\linewidth]{figure/none-cdcl-tree.pdf}
+            \caption*{(b) Others}
+        \end{minipage}
+        % \hfill
+        \vspace{-0.1in}
+        \caption{Search tree explored by \tool{} (a) and other verifiers (b) during a verification run.
+        %Note that we are assuming both verifiers use abstraction and both do splits.
+        The notation $\{...\}$ indicates learned clauses; red is  infeasibility; white is feasibility; yellow is BCP application; and blue is current consideration.
+        The search tree of \tool{} is smaller than the tree of the other techniques because \tool{} was able to prune various branches, e.g., through BCPs (e.g., ${v_3}$ and $\overline{v_5}$) and non-chronological backtracks (e.g., $\overline{v_3}$).}
+        % \hd{missing a paragraph writing about this figure.}\tvn{yes, may be in the overview or intro if appropriate}\hd{still thinking of incorporating learned clauses.}
+        \label{fig:tree}
+    \end{minipage}
+\end{figure}
+
+\tvn{TODO: talk about how \tool{} is BnB but has things such as CDCL to help prune the search space.}
+
+%modern DPLL implementations restart the DPLL procedure whenever the search is not making enough progress according to some measure. The rationale behind this idea is that upon each restart, the additional knowledge of the search space compiled into the newly learned lemmas will lead the heuristics for Decide to behave differently, and possibly cause the procedure to explore the search space in a more compact way. The combination of learning and restarts has been shown to be powerful not only in practice, but also in theory. Essentially, any Basic DPLL derivation to FailState is equivalent to a tree-like refutation by resolution. But for some classes of problems tree-like proofs are always exponentially larger than the smallest general, that is, DAG-like, resolution ones [Bonet et al. 2000]. The good news is that DPLL with learning and restarts becomes again equivalent to general resolution with respect to such notions of proof complexity [Beame et al. 2003].
+
+
+
+As mentioned in \autoref{sec:complexity}, ReLU-based DNN verification is NP-complete, and for difficult problem instances DNN verification tools often have to exhaustively search a very large space, making scalability a main concern for modern DNN verification. 
+
+%One major difference that sets \tool{} apart from other DNN approaches is how it tackles and prunes such large search space.
+
+Fig.~\ref{fig:tree} shows the difference between \tool{} and another DNN verification tool (e.g., using the popular Branch-and-Bound (BaB) approach) in how they navigate the search space.  We assume both tools employ similar abstraction and neuron splitting.
+Fig.~\ref{fig:tree}b shows that the other tool performs splitting to explore different parts of the tree (e.g., splitting $v_1$ and explore the branches with $v_1=T$ and $v_1=F$ and so on). Note that the other tool needs to consider the tree shown regardless if it runs sequentially or in parallel. 
+
+% \tvn{Hai, could you change the LaTeX neg to overline?}\hd{yes}
+In contrast, \tool{} has a smaller search space shown in Fig.~\ref{fig:tree}a.  
+\tool{} follows the path $v_1$, $v_2$ and then $\overline{v_2}$ (just like the tool on the right).
+However, because of the learned clause $v_2\lor v_3$, \tool{} performs a BCP step that sets $v_3$ (and therefore prunes the branch with $\overline{v_3}$ that needs to be considered in the other tree). 
+Then \tool{} splits $v_4$, and like the other tool, determines infeasibility for both branches. Now \tool{}'s conflict analysis determines from learned clauses that it needs to backtrack to $v_3$ (yellow node) instead of $v_1$.  Without learned clauses and non-chronological backtracking, \tool{} would backtrack to decision $v_1$ and continues with the $\overline{v_1}$ branch, just like the other tool in Fig.~\ref{fig:tree}b. 
+
+Thus, \tool{} was able to generate non-chronological backtracks and use BCP to prune various parts of the search tree.  In contrast, the other tool would have to move through the exponential search space to eventually reach the same result as \tool{}.
+
+
+\section{Algorithm}\label{sec:neuralsat-alg}
+
+Fig.~\ref{fig:alg} shows the \tool{} algorithm, which takes as input the formula $\alpha$ representing the ReLU-based DNN $N$ and the formulae $\phi_{in}\Rightarrow \phi_{out}$ representing the property $\phi$ to be proved.
+Internally, \tool{} checks the satisfiability of the formula
+\begin{equation}\label{eq:prob}
+  \alpha \land \phi_{in} \land \overline{\phi_{out}}.
+\end{equation}
+\tool{} returns \texttt{unsat} if the formula unsatisfiable, indicating  that $\phi$ is a valid property of $N$, and \texttt{sat} if it is satisfiable, indicating the $N$ is not a valid property of $\phi$.
+
+\tool{} uses a  DPLL(T)-based algorithm to check unsatisfiability.
+First, the input formula in Eq.~\ref{eq:prob} is abstracted to a propositional formula
+with variables encoding neuron activation status (\texttt{BooleanAbstraction}).
+Next, \tool{} assign values to Boolean variables (\texttt{Decide}) and checks for conflicts the assignment has with the real-valued constraints of the DNN and the property of interest (\texttt{BCP} and \texttt{Deduction}). 
+If conflicts arise, \tool{} determines the assignment decisions causing the conflicts (\texttt{AnalyzeConflict}), backtracks to erase such decisions (\texttt{Backtrack}), and learns clauses to avoid those decisions in the future. 
+\tool{} repeats these decisions and checking steps until it finds a total or full assignment for all Boolean variables, in which it returns \texttt{sat}, or until it no longer can backtrack, in which it returns \texttt{unsat}.
+Note that \tool{} also resets its search (if it thinks that it is stuck in a local optima) and tries different decision orderings to enable better clause learning and avoid similar ``bad'' decisions in the previous runs.
+We describe these steps in more detail below.
+
+
+
+\subsection{Boolean Abstraction}
+\texttt{BooleanAbstraction} (Fig.~\ref{fig:alg} line~\ref{line:Booleanabstraction}) encodes the DNN verification problem into a Boolean constraint to be solved by DPLL.  This step creates Boolean variables to represent the \emph{activation status} of hidden neurons in the DNN. Observe that when evaluating the DNN on any concrete input, the value of each hidden neuron \emph{before} applying ReLU is either $>0$ (the neuron is \emph{active} and the input is passed through to the output) or $\le 0$ (the neuron is \emph{inactive} because the output is 0).
+This allows partial assignments to these variables to represent neuron activation patterns within the DNN.
+
+From the given network, \tool{} first creates Boolean variables representing the activation status of neurons. Next, \tool{} forms a set of initial clauses ensuring that each status variable is either \texttt{T} or \texttt{F}, indicating that each neuron is either active or inactive, respectively.
+For example, for the DNN in Fig.~\ref{fig:dnn}, \tool{} creates two status variables $v_3,v_4$ for neurons $x_3,x_4$, respectively, and two initial clauses $v_3\lor \overline{v_3}$ and $v_4 \lor \overline{v_4}$. The assignment $\{x_3=T, x_4=F \}$ creates the constraint $0.5x_1-0.5x_2-1>0 \land x_1 + x_2 -2 \le 0$.
+
+
+% neural network of verification task into set of clauses, then feed them to the solver.
+% To do this, we encode each hidden node $h_i$ of the network correspond to one variable $v_i$ of the decidability problem.
+% The number of variables for each hidden layer is equal to number of neurons that feed into the ReLU activation (because we want to decide the status of each ReLU node).
+% In particular, in case of the linear layer, the number of hidden nodes is the hidden size $H$ of the layer itself.
+% Therefore, $H$ hidden nodes are encoded as $\{v_i, v_{i+1}, ..., v_{i+H-1} \}$.
+% In case of the 2-D convolution layer with input shape of $(N, C_{in}, H_{in}, W_{in})$, and output shape $(N, C_{out}, H_{out}, W_{out})$, where $N$ is the batch size, number of variables for this layer is:
+% \begin{equation*}
+%     H = C_{out} \times H_{out} \times W_{out}
+% \end{equation*}
+% After encoding all the hidden neurons into the corresponding variables, we construct a set of clauses (init\_clauses in Line 1 of Algo~\ref{fig:alg}):
+% \begin{equation} \label{eq:clause}
+%     (v_0 \lor \overline{v_0}) \land (v_1 \lor \overline{v_1}) \land ... \land (v_i \lor \overline{v_i}) \land (v_{i+1} \lor \overline{v_{i+1}}) \land ...
+% \end{equation}
+% With this form in Eq~\ref{eq:clause}, the \tool{} needs to decide all the variables to find a satisfiable solution if it exists, then returns SAT, or returns UNSAT if it could not find one.
+
+
+
+
+%thus in the first step we exploit the structure of the network to create a Boolean abstraction for DPLL.  
+
+%and backtracks assignment decisions when conflicts arise.
+%However, the variables in the SMT formula representing the FNN and property are real-valued, thus we exploit the structure of network to create a Boolean abstraction for DPLL.
+
+
+%Thus, during preprocessing, \tool{} also creates Boolean variables representing the status values of hidden pre-ReLU neurons and an initial set of clause enforcing that each variable needs to be either $T$ (\texttt{on}) or $F$ (\texttt{off}).
+
+\subsection{DPLL}\label{sec:dpll}
+
+After \texttt{BooleanAbstraction}, \tool{} iteratively searches for an assignment satisfying the status clauses (Fig.~\ref{fig:alg}, lines~\ref{line:dpllstart}--~\ref{line:dpllend}).
+% \tvn{something is wrong with the line ?? here} \hd{fixed} 
+\tool{} combines  DPLL components (e.g., \texttt{Decide}, \texttt{BCP}, \texttt{AnalyzeConflict}, \texttt{Backtrack} and \texttt{Restart}) to assign truth values with a theory solver (\S\ref{sec:deduction}), consisting of abstraction and linear programming solving, to check the feasibility of the constraints implied by the assignment with respect to the network and property of interest.
+
+\tool{} maintains several variables (Fig.~\ref{fig:alg}, lines~\ref{line:Booleanabstraction}--~\ref{line:varsb}). These include $\clauses$, a set of \emph{clauses} consisting of the initial activation clauses and learned clauses;   $\sigma$, a \emph{truth assignment} mapping status variables to truth values; $igraph$, an \emph{implication graph} used for analyzing conflicts; and  $dl$, a non-zero \emph{decision level} used for assignment and backtracking.
+
+
+%needs to analyze both \emph{Boolean constraints} (i.e., clauses involving status variables) and \emph{non-Boolean constraints} involving the nonlinear representation of the activation function and linear constraints encoding the network and status variables,  e.g., $v_3=\texttt{F}$ means $x_3'=\texttt{off}=0.5x_1-0.5x_2-1.0 \le 0$.
+%To analyze both kinds of constraints,
+
+%Fig.~\ref{fig:overview} gives an overview of \tool{}, which takes as input a DNN $N$ and a property $P$ and returns \texttt{unsat} if $P$ is a valid property of $N$ and \texttt{sat} otherwise. In the case of \texttt{sat}, \tool{} can also return a satisfying assignment representing a counterexample input violating $P$.
+
+\subsubsection{Decide}\label{sec:decide}
+
+From the current assignment, \texttt{Decide} (Fig.~\ref{fig:alg}, line~\ref{line:decide}) uses a heuristic to choose an unassigned variable and assigns it a random truth value at the current decision level. 
+\tool{} applies the Filtered Smart Branching (FSB) heuristic~\cite{bunel2018unified,de2021improved}. For each unassigned variable, FSB assumes that it has been decided (i.e., the corresponding neuron has been split) and computes a fast approximation of the lower and upperbounds of the network output variables.  FSB then prioritizes unassigned variables with the best differences among the bounds that would help make the input formula unsatisfiable (which helps prove the property of interest). 
+Note that if the current assignment is full, i.e., all variables have assigned values, \texttt{Decide} returns \texttt{False} (from which \tool{} returns \texttt{sat}).
+
+% In the current implementation of \tool{}, we use two heuristics to decide unassigned variables representing activation status of neurons. 
+% The first is based on the bounds computed for the neurons and the second is based objective improvement approach proposed in~\cite{bunel2018unified}.
+
+
+
+% \subsection{DPLL - CDCL}
+% Modern SAT solvers employ the CDCL (Conflict-Driven Clause Learning) algorithm \cite{cdcl}, which combines the classical DPLL \cite{dpll} (Davis-Putnam-Logemann-Loveland) algorithm with clause learning. 
+
+% \textbf{DPLL} DPLL has three main components: assigning truth values to variables, inferring additional assignments from current assignments, and analyzing conflicts and backtracking to a previous decision level to try new assignments.
+% Viewing the process as a search on a binary tree, each decision is associated with a decision level, which is the depth in the binary decision tree at which it is made, starting from 1.
+% The assignments implied by a decision are associated with its decision level at which it occurred. 
+
+% The process of BCP is best illustrated with an implication graph. 
+% An implication graph represents the current partial assignment and the reason for each of the implications.
+% The root nodes of an implication graph correspond to decisions, and the internal nodes to implications through BCP.
+% A conflict node with incoming edges labeled with $c$ represents the fact that the BCP process has reached a conflict, by assigning 0 (False) to all the literals in the clause $c$ (i.e., $c$ is conflicting).
+
+% \textbf{CDCL} CDCL also has these DPLL components but extends conflict analysis to learn clauses, which help avoid conflicts and backtrack more effectively.
+
+% \textbf{DPLL(T)} DPLL(T) combines DPLL/CDCL with theory solvers to analyze formulae in different theories (e.g., using an LP solver for linear constraints).
+% State-of-the-art SMT solvers such as Z3 \cite{z3} and CVC \cite{cvc} employ the DPLL(T) algorithm \cite{dpllt} to check the satisfiability of an SMT formula involving non-Boolean variables, e.g., real numbers or strings.
+
+
+
+%\tool{} follows the DPLL(T) architecture and consists of the several main components as follows.
+
+\subsubsection{Boolean Constraint Propagation (BCP)}\label{sec:bcp}
+
+From the current assignment and clauses, \texttt{BCP} (Fig.~\ref{fig:alg}, line~\ref{line:bcp}) detects \emph{unit clauses}\footnote{A unit clause is a clause that has a single unassigned literal.} and infers values for variables in these clauses.
+For example, after the decision $a\mapsto F$, \texttt{BCP} determines that the clause $a\vee b$ becomes unit, and infers that $b \mapsto T$.
+Moreover, each assignment due to \texttt{BCP} is associated with the current decision level because instead of being ``guessed'' by \texttt{Decide} the chosen value is logically implied by other assignments.
+Moreover, because each {BCP} implication might cause other clauses to become unit, \texttt{BCP} is applied repeatedly until it can no longer find unit clauses.
+\textsc{BCP} returns \texttt{False} if it obtains contradictory implications (e.g., one BCP application infers $a \mapsto F$ while another infers $a \mapsto T$), and returns \texttt{True} otherwise.
+
+\paragraph{Implication Graph} \texttt{BCP} uses an \emph{implication graph}~\cite{barrett2013decision} to represent the current assignment and the reason for each BCP implication. In this graph, a node represents the assignment and an edge $i \xrightarrow{c} j$ means that \texttt{BCP} infers the assignment represented in node $j$ due to the unit clause $c$ caused by the assignment represented by node $i$.
+The implication graph is used by both BCP, which iteratively constructs the graph on each BCP application and uses it to determine conflict, and \texttt{AnalyzeConflict} (\S\ref{sec:analyze-conflicts}), which analyzes the conflict in the graph to learn clauses.
+
+\begin{figure}
+    \begin{minipage}[c]{0.17\textwidth}
+        \centering
+        \small
+        \begin{equation*}
+            \begin{aligned}
+                c_1 &= (\overline{v_1} \lor v_2) \\
+                c_2 &= (\overline{v_1} \lor v_3 \lor v_5) \\
+                c_3 &= (\overline{v_2} \lor v_4) \\
+                c_4 &= (\overline{v_3} \lor \overline{v_4}) 
+            \end{aligned}      
+        \end{equation*}
+        \caption*{(a)}
+    \end{minipage}
+    \begin{minipage}[c]{0.40\textwidth}
+        \centering
+        \includegraphics[width=1\linewidth]{figure/implication_graph.pdf}
+        \caption*{(b)}
+    \end{minipage}
+    \begin{minipage}[c]{0.33\textwidth}
+        \centering
+        \small
+        \begin{tabular}{ccccc}
+            name & cl & lit & var & ante \\
+            \midrule
+            $c_4$ &$\overline{v_3} \lor \overline{v_4}$   & $\overline{v_3}$ &$v_3$   &     $c_2$\\
+            & $\overline{v_4} \lor \overline{v_1} \lor v_5$  & $\overline{v_4}$   &     $v_4$  &      $c_3$\\
+            &$\overline{v_1} \lor v_5 \lor \overline{v_2}$   & $\overline{v_2}$   &     $v_2$  &      $c_1$\\
+            $c_5$      & $\overline{v_1} \lor v_5$
+        \end{tabular}
+        \caption*{(c)}        
+    \end{minipage}
+    \caption{(a) A set of clauses, (b) an implication graph, and (c) learning a new clause.\label{fig:igraph}}
+\end{figure}
+
+  
+\begin{example}  
+    Assume we have the clauses in Fig.~\ref{fig:igraph}(a), the assignments $\overline{v_5}@3$ and $v_1@6$ (represented in the graph in Fig.~\ref{fig:igraph}(b) by nodes  $\overline{v_5}@3$ and $v_1@6$, respectively), and are currently at decision level $dl$ 6.
+Because of assignment $v_1@6$, \texttt{BCP} infers $v_2@6$ from the unit clause $c_1$ and captures that implication with edge $v_1@6 \xrightarrow{c_1} v_2@6$.
+Next, because of assignment $v_2@6$, \texttt{BCP} infers $v_4@6$ from the unit clause $c_3$ as shown by edge $v_2@6 \xrightarrow{c_3} v_4@6$.
+
+Similarly, \texttt{BCP} creates edges $v_1@6 \xrightarrow{c_2} v_3@6$ and $\overline{v_5}@ \xrightarrow{c_2} v_3@6$ to capture  the inference $v_3@6$ from the unit clause $c_2$ due to assignments $\overline{v_5}@3$ and $v_1@6$.
+Now, \texttt{BCP} detects a conflict because clause $c_4=\overline{v_3} \lor \overline{v_4}$ cannot be satisfied with the assignments $v_4@6$ and $v_3@6$ (i.e., both $v_3$ and $v_4$ are $T$)  and creates two edges to the (red) node $\kappa$: $v_4@6 \xrightarrow{c_4} \kappa$ and $v_3@6 \xrightarrow{c_4} \kappa$ to capture this conflict. 
+
+Note that in this example \texttt{BCP} has the implication order $v_2,v_4,v_3$ (and then reaches a conflict). In the current implementation, \tool{} makes an arbitrary decision and thus could have a different order, e.g., $v_3, v_4,v_2$.
+\end{example}
+
+%While many SAT solvers use such arbitrary BCP implications, some use heuristics to make decisions to help reach a conflict faster~\cite{pipatsrisawat2007lightweight}. 
+
+
+%The implication graph is sensitive to the order in which the implications are propagated in BCP, which means that the graph is not unique for a given partial assignment. In most SAT solvers, this order is rather arbitrary (in particular, BCP progresses along a list of clauses that contain a given literal, and the order of clauses in this list can be sensitive to the order of clauses in the input CNF formula). In some other SAT solvers, this order is not arbitrary; rather, it is biased towards reaching a conflict faster. \tvn{what about in \tool{}, is the order arbitrary?}
+
+% To illustrate the technique, we use some notations as in \cite{barrett2013decision}.
+% If a variable $v_i$ is assigned 1 (owing to either a decision or an implication) at decision level \textit{dl}, we write $v_i@dl$. Similarly, $\overline{v_i}@dl$ reflects an assignment of False to this variable at decision level \textit{dl}. 
+% Where appropriate, we refer only to the truth assignment, omitting the decision level, in order to make the notation simpler.
+
+% Consider, for example, a formula that contains the following set of conflict clauses, among others:
+% \begin{equation}
+%     \begin{aligned}
+%         c_1 &= (\overline{v_1} \lor v_2) \\
+%         c_2 &= (\overline{v_1} \lor v_3 \lor v_5) \\
+%         c_3 &= (\overline{v_2} \lor v_4) \\
+%         c_4 &= (\overline{v_3} \lor \overline{v_4}) \\ 
+%         c_5 &= (v_1 \lor v_5 \lor \overline{v_2}) \\
+%         c_6 &= (v_2 \lor v_3) \\
+%         c_7 &= (v_2 \lor \overline{v_3}) \\
+%         c_8 &= (v_6 \lor \overline{v_5}) 
+%     \end{aligned}
+% \end{equation}
+
+
+
+
+\subsubsection{Conflict Analysis}\label{sec:analyze-conflicts}
+
+Given an implication graph with a conflict such as the one in Fig.~\ref{fig:igraph}(b), \texttt{AnalyzeConflict} learns a new \emph{clause} to avoid past decisions causing the conflict.
+The algorithm traverses the implication graph backward, starting from the conflicting node $\kappa$, while constructing a new clause through a series of resolution steps.
+\texttt{AnalyzeConflict} aims to obtain an \emph{asserting} clause, which is a clause that will force an immediate BCP implication after backtracking. 
+
+
+\begin{wrapfigure}{r}{0.50\textwidth}
+\begin{minipage}{\linewidth}
+\vspace{-0.2in}
+\begin{algorithm}[H]
+    \small
+    \Input{implication graph \implicationgraph}
+    \Output{\clause}
+    \BlankLine
+    $\clause \gets \CurrentConflictClause(\implicationgraph)$\;\label{line:conflict}
+    \While{$\neg \StopCriterion(\clause)$}{\label{line:loopstart} 
+      $\literal \gets \LastAssignedLiteral(\implicationgraph, \clause)$\;\label{line:lit}
+      $\variable \gets \LiteralToVariable(\literal)$\;\label{line:var}      
+      $\antecedent \gets \Antecedent(\implicationgraph,\literal)$\;\label{line:ante}
+      $\clause \gets \BinRes(\clause, \antecedent, \variable)$\;\label{line:resolve}
+    }\label{line:loopend}
+    \Return{$\clause$}
+    \caption{\textsc{AnalyzeConflict}}\label{alg:conflict}
+  \end{algorithm}
+  \end{minipage}
+\end{wrapfigure}
+\texttt{AnalyzeConflict}, shown in Fig.~\ref{alg:conflict}, first extracts the conflicting clause $cl$ (line~\ref{line:conflict}), represented by the edges connecting to the conflicting node $\kappa$ in the implication graph.
+Next, the algorithm refines this clause to achieve an asserting clause (lines~\ref{line:loopstart}--~\ref{line:loopend}).
+It obtains the literal $lit$ that was assigned last in $cl$ (line~\ref{line:lit}), the variable $var$ associated with $lit$ (line~\ref{line:var}), and the antecedent clause $ante$ of that $var$ (line~\ref{line:ante}), which contains $\overline{lit}$ as the only satisfied literal in the clause. Now, \texttt{AnalyzeConflict} resolves $cl$ and $ante$ to eliminate literals involving $var$ (line~\ref{line:resolve}). The result of the resolution is a clause, which is then refined in the next iteration.
+
+\paragraph{Resolution.} We use the standard \emph{binary resolution rule} to learn a new clause implied by two (\emph{resolving}) clauses $a_1 \lor ... \lor a_n \lor \beta$ and $b_1 \lor ... \lor b_m \lor \overline{\beta}$ containing complementary literals involving the (\emph{resolution}) variable $\beta$:
+\begin{equation} \label{eq:binary-resolution}
+    \frac{(a_1 \lor ... \lor a_n \lor \beta) \quad \quad (b_1 \lor ... \lor b_m \lor \overline{\beta})}{(a_1 \lor ... \lor a_n \lor b_1 \lor ... \lor b_m)} \quad  (\textsc{Binary-Resolution})
+\end{equation}
+The resulting (\emph{resolvant}) clause $a_1 \lor ... \lor a_n \lor b_1 \lor ... \lor b_m$ contains all the literals that do not have complements $\beta$ and $\neg{\beta}$.
+%A well-known result obtained by Robinson \cite{robinson1965machine} shows that a deductive system based on the \textbf{binary resolution} rule as its single inference rule is \textbf{sound} and \textbf{complete}. 
+%In other words, a CNF formula is unsatisfiable if and only if there exists a finite series of binary resolution steps ending with the empty clause.
+
+%The function \textsc{Binary-Resolution}($c_1, c_2, v$) used in line 10 of Algorithm~\ref{alg:conflict} returns the resolvent of clauses $c_1, c_2$, where the \textbf{resolution variable} is $v$ ($\beta$ in the Equation~\ref{eq:binary-resolution}).
+
+%\textbf{Stopping Criteria} \hd{Learned conflict clause is a special kind of conflict clause, called an \textbf{asserting} clause: it forces an immediate implication after backtracking. Empirical studies show that a good strategy for stopping criteria is to  return \textbf{true} if and only if the learned conflict clause $cl$ contains the negation of the first UIP as its single literal at the current decision level. This negated literal becomes asserted immediately after backtracking. In short, the learned conflict clause $cl$ should be an \textbf{asserting} clause.}
+%(to obtain an asserting clause
+
+% using the clauses in Fig.~\ref{fig:igraph}a and implication graph in Fig.~\ref{fig:igraph}b developed in
+\begin{example} 
+    
+    Fig.~\ref{fig:igraph}(c) demonstrates \texttt{AnalyzeConflict} using the example in \S\ref{sec:bcp} with the BCP implication order $v_2,v_4,v_3$ and the conflicting clause $cl$ (connecting to node $\kappa$ in the graph in Fig.~\ref{fig:igraph}(b)) $c_4=\overline{v_3} \lor \overline{v_4}$. From $c_4$, we determine the last assigned literal is $lit=\overline{v_3}$, which contains the variable $var=v_3$, and the antecedent clause containing $v_3$ is $c_2=\overline{v_1} \lor v_3 \lor v_5$ (from the implication graph in Fig.~\ref{fig:igraph}(b), we determine that assignments $v_1@6$ and $\overline{v_5}@3$ cause the BCP implication $v_3@6$ due to clause $c_2$). Now we resolve the two clauses $cl$ and $c_2$ using the resolution variable $v_3$ to obtain the clause $\overline{v_4} \lor \overline{v_1} \lor v_5$.
+Next, from the new clause, we obtain $lit=\overline{v_4}, var=v_4, ante=c_3$ and apply resolution to get the clause $\overline{v_1} \vee v_5 \lor \overline{v_2}$.
+Similarly, from this clause, we obtain $lit=\overline{v_2}, var=v_2, ante=c_1$ and apply resolution to obtain the clause $v_1 \lor v_5$.
+% \begin{figure}
+%   \centering
+%   \begin{tabular}{ccccc}
+%     name & cl & lit & var & ante \\
+%     \midrule
+%     $c_4$ &$\overline{v_3} \lor \overline{v_4}$   & $\overline{v_3}$ &$v_3$   &     $c_2$\\
+%          & $\overline{v_4} \lor \overline{v_1} \lor v_5$  & $\overline{v_4}$   &     $v_4$  &      $c_3$\\
+%          &$\overline{v_1} \lor v_5 \lor \overline{v_2}$   & $\overline{v_2}$   &     $v_2$  &      $c_1$\\
+%     $c_5$      & $\overline{v_1} \lor v_5$
+                 
+%   \end{tabular}
+%   \caption{Learning a new clause.}\label{fig:igraphc}
+% \end{figure}
+
+At this point, \texttt{AnalyzeConflict} determines that this is an asserting clause, which would force an immediate BCP implication after backtracking. As will be shown in \S\ref{sec:backtrack}, \tool{} will backtrack to level 3 and erases all assignments after this level (so the assignment $\overline{v_5}@3$ is not erased, but assignments after level 3 are erased).  Then, \texttt{BCP} will find that $c_5$ is a unit clause because $\overline{v_5}@3$ and infers $\overline{v_1}$.
+Once obtaining the asserting clause, \texttt{AnalyzeConflict} stops the search, and \tool{} adds  $v_1\lor v_5$ as the new clause $c_5$ to the set of existing four clauses.
+
+\end{example}
+
+%is a main benefit of CDCL and 
+The process of learning clauses allows \tool{} to learn from its past mistakes.
+While such clauses are logically implied by the formula in Eq.~\ref{eq:prob} and therefore do not change the result, they help prune the search space and allow DPLL and therefore \tool{} to scale. For example, after learning the clause $c_5$, together with assignment $v_5@3$, we immediately infer $v_1 \mapsto F$ through BCP instead of having to guess through \texttt{Decide}.
+
+%The literal lit is the literal in cl assigned last, and var denotes its associated variable. The antecedent clause of var, denoted by ante, contains ¬lit as the only satisfied literal, and other literals, all of which are currently unsatisfied. The clauses cl and ante thus contain lit and ¬lit, respectively, and can therefore be resolved with the resolution variable var. The resolvent clause is again a conflicting clause, which is the basis for the next resolution step.
+
+
+%% After detecting the conflict, the solver determines which decision level to backtrack to according to the \textbf{conflict-driven backtracking} strategy.
+%% According to this strategy, the backtracking level is set to the second most recent decision level in the conflict clause, while erasing all decisions and implications made after that level.
+
+%% There are two special cases: when learning a \textit{unary} clause, the solver backtracks to the ground level; when the conflict is at the ground level, the backtracking level is set to –1 and the solver exits and declares the formula to be \textbf{unsatisfiable}.
+
+%In the case of $c_9$, the solver backtracks to decision level 3 (the decision level of $v_5$), and erases all assignments from decision level 4 onwards, including the assignments to $v_1@6, v_2@6, v_3@6$, and $v_4@6$.
+%The newly added conflict clause $c_9$ becomes a unit clause since $\overline{v_5}@3$, and therefore the assignment $\overline{v_1}@3$ is implied.
+%This new implication restarts the BCP process at level 3.
+
+
+%% Formally, the process of the analyze conflict is described in Algorithm~\ref{alg:conflict}.
+%% For a given unit clause $C$ with an unassigned literal $l$, we say that $l$ is implied by $C$ and that $C$ is the \textbf{antecedent clause} of $l$, denoted by \textsc{Antecedent}($l$). 
+%% For example, in the example in Sec \ref{sec:bcp}, at decision level 3 the decision was $\overline{v_6}@3$, which implied $\overline{v_5}@3$ owing to clause $c_8$, hence \textsc{Antecedent}($\overline{v_5}$) = $c_8$.
+
+
+%% The other functions and variables are self-explanatory.
+
+
+%% The implication graph on the Fig.~\ref{fig:igraph}b demonstrates the BCP process at the current decision level 6 until, in this case, a conflict is detected. 
+%% The roots of this graph, namely $\overline{v_5}@3$ and $v_1@6$, constitute a sufficient condition for creating this conflict. 
+%% Therefore, we can safely add to our formula the \textbf{conflict clause}:
+%% \begin{equation}
+%%     c_9 = (v_5 \lor \overline{v_1})
+%% \end{equation}
+
+
+\subsubsection{Backtrack} \label{sec:backtrack} 
+From the clause returned by \texttt{AnalyzeConflict}, \texttt{Backtrack}  (Fig.~\ref{fig:alg}, line~\ref{line:backtrack}) computes a backtracking level and erases all decisions and implications made after that level.
+If the clause is \emph{unary} (containing just a single literal), then we backtrack to level 0. % (and if we obtain further conflict with this clause, then the formula is unsatisfiable).
+
+Currently, \tool{} uses the standard \emph{conflict-drive backtracking} strategy~\cite{barrett2013decision}, which sets the backtracking level to the \emph{second most recent} decision level in the clause.
+Intuitively, by backtracking to the second most recent level, which means erasing assignments made \emph{after} that level, this strategy encourages trying new assignments for more recently decided variables.
+%\hd{Other backtracking scheme in Chaff~\cite{moskewicz2001chaff}: always stop clause learning at the first UIP --- This form of clause learning, and associated backtracking procedure, is referred to as first UIP clause learning. Existing results indicate that the first UIP clause learning procedure may end up doing more backtracking than the original clause learning of GRASP~\cite{zhang2001efficient}. However, Chaff creates significantly fewer clauses and is significantly more effective at backtracking. As a result, the first UIP learning scheme is now commonly used by the majority of CDCL SAT solvers.}
+
+%\tvn{Intuitively this is because} \hd{Intuitively, backtracking to 2nd most recent $dl$ in $cl$ to flip the assignment of the most recent decided literal (True to False or False to True). For example, \{$\neg x_5@3, x_1@6$\} causes the conflict, the most recent decided literal is $x_1$, then we need to flip $x_1$ from True to False. But now $x_1$ is associated with decision level 3 (dl 3 is decision level of $x_5$ --- the literal which has 2nd most recent decision level in the learned conflict clause.)}.
+
+
+
+\begin{example}
+    
+    From the clause $c_5=\overline{v_1} \lor v_5$ learned in \texttt{AnalyzeConflict}, we backtrack to decision level 3, the second most recent decision level in the clause (because assignments $v_1@6$  and $\overline{v_5}@3$ were decided at levels 6 and 3, respectively). Next, we erase all assignments from decision level 4 onward (i.e., the assignments to $v_1,v_2,v_3,v_4$ as shown in the implication graph in Fig.~\ref{fig:igraph}). This thus makes these more recently assigned variables (after decision level 3) available for new assignments (in fact, as shown by the example in \S\ref{sec:bcp}, \texttt{BCP} will immediately infer $v_1=T$ by noticing that $c_5$ is now a unit clause).
+\end{example}
+
+%\tvn{Discussion: waste of time for erasing everything from dl?} \hd{If we don't erase information from $dl$ when backtrack occurs, it will require a lot of memories to save the redundant information of implication graph from decision level $dl$ onwards.}
+% \subsection{Clause Learning}
+% \tvn{write pseudo code if it is complicated enough}
+% \tvn{Describe }
+
+% \tvn{Give small illustration using example in SEct 3}
+
+% \subsection{Backtracking}
+% \tvn{write pseudo code if it is complicated enough}
+% \tvn{Describe }
+
+% \tvn{Give small illustration using example in SEct 3}
+
+
+
+%% \subsubsection{Backtrack} Given a conflict clause, \textbf{Backtrack}  (Fig.~\ref{fig:alg}, line~\ref{line:backtrack}) compute a decision level to backtrack to. Currently, we use the \emph{conflict-drive backtracking}~\cite{barrett2013decision}, which sets the backtracking level to the \emph{second most recent} decision level in the conflict clause \tvn{Intuitively this is because}.
+%% Next, Backtrack erases decisions by Decide and implications by BCP and Deduce made after that level.
+%% Note that if we learn a \emph{unary} clause, which contain just a single literal, then we backtrack to level 0 (and if we obtain further conflict with this clause (a conflict at level $dl=0$, line~\ref{line:unsat}), i.e., the formula is unsatisfiable).
+
+\subsubsection{Restart}\label{sec:restart}
+
+
+As with any stochastic algorithm, \tool{} can perform poorly if it gets into a subspace of the search that does not quickly lead to a solution, e.g., due to choosing a bad sequence of neurons to split~\cite{bunel2018unified,de2021improved}.  
+% In the development of modern SAT solver (e.g.PicoSAT~\cite{biere2008picosat}), researchers has realized most practical problems, even very large or complex, can be easily solved if they follow 
+This problem, which has been recognized in early SAT solving, motivates the introduction of restarting the search~\cite{gomes1998boosting} to avoid being stuck in such a \emph{local optima}.
+
+
+
+
+%because the initial clause is too simple (e.g., $v_i \lor \overline{v_i}$) to make clause learning effective.
+
+%\tvn{some more explanation on why this make clause learning ineffective}
+%\hd{simple and trivial clauses lead to simple chronological backtracks by the binary resolution during conflict analysis step}
+%Having said that without using restart, the non-chronological backtracks would never get used by \tool{} since these backtracks need more complex implication graph to be jumped into.
+
+\tool{} uses a simple restart heuristic (Fig.~\ref{fig:alg}, line~\ref{line:restart}) that triggers a restart when either the number of processed assignments (nodes) exceeds a pre-defined number (e.g., 300 nodes) or the current runtime exceeds a pre-defined threshold (e.g., 50 seconds).
+% \tvn{what are these number and threshold?}\hd{added}
+After a restart, \tool{} avoids using the same decision order of previous runs (i.e., it would use a different sequence of neuron splittings). It also resets all internal information (e.g., decisions and implication graph) except the learned conflict clauses, which are kept and reused as these are \textit{facts} about the given constraint system.
+This allows a restarted search to quickly prune parts of the  space of assignments.
+
+
+%For \tool{} and DNN verification problem, we found that restart is especially important for solving difficult problem. 
+%Restart, which is only triggered for expensive searches, allows for a different decision ordering and assignments that might solve the problem quicker. Moreover, 
+
+We found the combination of clause learning and restarts effective for DNN verification. In particular, while restart resets information  it keeps learned clauses, which  are \emph{facts} implied by the problem, and therefore enables quicker BCP applications and non-chronological backtracking (e.g., as illustrated in Fig.~\ref{fig:tree}).
+
+It is worth noting that while it is possible to add a restart to existing DNN verification approaches. This is unlikely to help, because these techniques do not learn conflict clauses and therefore restart will just randomize order but carry no information forward to prune the search space.
+
+%... \mbd{discuss possibility of restart for other tools, but it will just randomize order but carry no information forward to prune search.}
+
+% \tvn{these are standard arguments for restart.  For \tool{} and DNN verifcation problem,  restart is even more important because the inital clause is too simple to make clause learning effective.  You should say something here about that issue.  Just write all of them here and we can clean it up}
+
+
+\subsection{Deduction (Theory Solving)}\label{sec:deduction}
+
+\begin{algorithm}[t]
+    \small
+
+    \Input{ DNN $\network$, input property $\phi_{in}$, output property $\phi_{out}$, decision level $dl$ and current assignment $\assignment$}
+    \Output{{\false} if infeasibility occurs, {\true} otherwise}
+
+    \BlankLine
+
+    $\lpmodel \leftarrow \LPSolver(\assignment, \network \land \phi_{in} \land \overline{\phi_{out}})$\;\label{line:lpsolver}
+    \lIf{$\Solve(\lpmodel) \equiv \infeasible$}{\Return {\false}}\label{line:solve}
+    \lIf(\tcp*[h]{orig prob (Eq.~\ref{eq:prob}) is satisfiable}){$\isTotal(\assignment)$}{\Return {\true} }\label{line:full}
+    %$\inputs = \GetInputs(\phi_{in})$
+    % $\ninputs \leftarrow \GetNumInputs(\network)$
+    % $\layernodes = \FindLayerNodes(\assignment)$\;
+
+    % \If{$|\inputs| \le \maxinputs$}{
+    %     $\inputbounds = \TightenBounds(\lpmodel, \inputs)$\;\label{line:tighteninpsb}
+    % }
+    % \Else{$\inputbounds = \GetInputBounds(\phi_{in})$\;\label{line:inputbounds}
+    % }
+
+    $\inputbounds \leftarrow \TightenInputBounds(\lpmodel, \phi_{in})$\;\label{line:absstart}
+    $\outputbounds, \hiddenbounds \leftarrow \Abstract(\network, \assignment, \inputbounds$)\;\label{line:abstraction}
+
+    \lIf{$\Check(\outputbounds, \overline{\phi_{out}}) \equiv \infeasible$}{\Return {\false}}\label{line:checkfeasibility}
+
+    \For{$v \in \hiddenbounds$} {\label{line:infera}
+      $x \leftarrow \ActivationStatus(v)$\;
+      \lIf{$x \in \sigma \lor \neg{x} \in \sigma$}{\Continue}
+      \lIf{$\Lower(v) > 0$}{$\assignment \leftarrow \assignment \cup x@dl$}
+        \lElseIf{$\Upper(v) \le 0$}{$\assignment \leftarrow \assignment \cup \overline{x}@dl$}\label{line:inferb}
+    }
+
+    \Return {\true}\;\label{line:absend}
+
+    \caption{\textsc{Deduction}}\label{alg:deduction}
+\end{algorithm}
+
+\texttt{Deduction} (Fig.~\ref{fig:alg}, line~\ref{line:deduction}) is the theory or T-solver, i.e., the T in DPLL(T). The main purpose of the T-solver is to check the feasibility of the constraints represented by the current propositional variable assignment; as shown in the formalization in \S\ref{sec:formalization} this amounts to just \emph{linear equation} solving for verifying piecewise linear DNNs. However, \tool{} is able to leverage specific information from the DNN problem, including input and output properties, for more aggressive feasibility checking.  Specifically, \texttt{Deduction} has three tasks: (i) checking feasibility using linear programming (LP) solving, (i) further checking feasibility with input tightening and abstraction, and (iii) inferring literals that are unassigned and are implied by the abstracted constraint.
+
+%The algorithm returns conflict if the current assignment does not satisfy the constraints of the network and property. 
+%Similar to \textsc{BCP}, Deduce also perform assignment inferencing.
+
+
+Fig.~\ref{alg:deduction} describes \texttt{Deduction}, which returns \texttt{False} if infeasibility occurs and  \texttt{True} otherwise.
+%\textsc{Deduce} is a theory solver that takes the arguments including: the current assignment $\sigma$, neural network $\alpha$, precondition $\phi_{in}$ over inputs and postcondition $\phi_{out}$ over outputs.
+First, it creates a linear constraint system from the input assignment $\sigma$ and $\alpha \land \phi_{in} \land \overline{\phi_{out}}$, i.e., the formula in Eq.~\ref{eq:prob} representing the original problem  (line~\ref{line:lpsolver}).
+The key idea is that we can remove ReLU activation for hidden neurons whose activation status have been decided. 
+For constraints in $\alpha$ associated with variables that are not in the $\sigma$,  we ignore them and just consider the cutting planes introduced by the partial assignment.  
+%Fixup preceding sentence based on answer.}
+%\hd{Yes, you're correct. We ignore constraints generated by unassigned variables and only consider the cutting planes introduced by the partial assignment}
+For example, for the assignment $v_3\mapsto T, v_4 \mapsto F$, the non-linear ReLU constraints $x_3=ReLU(-0.5x_1+0.5x_2+1)$ and  $x_4=ReLU(x_1+x_2-1)$ for the DNN in Fig.~\ref{fig:dnn} become linear constraints $x_3=-0.5x_1+0.5x_2$ and $x_4=0$, respectively.
+
+Next, an LP solver checks the feasibility of the linear constraints (line~\ref{line:solve}).
+If the solver returns infeasible,  \texttt{Deduction} returns \texttt{False} so that \tool{} can analyze the assignment and backtrack. 
+If the constraints are feasible, then there are two cases to handle. First, if the assignment is total (i.e., all variables are assigned), then that means that the original problem is satisfiable (line~\ref{line:full}) and \tool{} returns \texttt{sat}.
+
+\paragraph{ReLU Abstraction.} Second, if the assignment is not total then \texttt{Deduction} applies abstraction to check satisfiability (lines~\ref{line:absstart}--\ref{line:checkfeasibility}).
+Specifically, we over-approximate  ReLU computations to obtain the upper and lower bounds of the output values and check if the output properties are feasible with respect to these bounds. For example, the output $x_5 > 0$ is \emph{not} feasible if the upperbound is $x_5 \le 0$ and \emph{might be} feasible if the upperbound is $x_5 \le 0.5$ (``might be'' because this is an upper-bound). If abstraction results in infeasibility, then \texttt{Deduction} returns \texttt{False} for \tool{} to analyze the current assignment (line~\ref{line:checkfeasibility}).
+
+\begin{figure}
+    \begin{minipage}[b]{1\linewidth}
+        \centering
+        \begin{minipage}[c]{0.24\linewidth}
+            \includegraphics[width=\linewidth]{figure/interval-3.pdf}
+            \vspace*{-10mm}
+            \caption*{(a) interval}
+        \end{minipage}
+        % \hspace{0.05\textwidth}%
+        \begin{minipage}[c]{0.24\linewidth}
+            \includegraphics[width=\linewidth]{figure/zonotope-3.pdf}
+            \vspace*{-10mm}
+            \caption*{(b) zonotope}
+        \end{minipage}
+        % \hspace{0.05\textwidth}%
+        \begin{minipage}[c]{0.24\linewidth}
+            \includegraphics[width=\linewidth]{figure/polytope-3.pdf}
+            \vspace*{-10mm}
+            \caption*{(c) DeepPoly}
+        \end{minipage}
+        \begin{minipage}[c]{0.24\linewidth}
+            \includegraphics[width=\linewidth]{figure/lirpa-3.pdf}
+            \vspace*{-10mm}
+            \caption*{(d) LiRPA}
+        \end{minipage}
+        \vspace*{-3mm}
+        \caption{Abstractions for ReLU: (a) interval, (b) zonotope, and (c-d) polytopes. Notice that ReLU is a non-convex region (red line) while all abstractions are convex regions. Note that (c) and (d) are both polytopes.}\label{fig:abs}
+    \end{minipage}
+\end{figure}
+
+\tool{} uses abstraction to approximate the lower and upper bounds of hidden and output neurons.
+Fig.~\ref{fig:abs} compares the (a) interval~\cite{wang2018formal}, (b) zonotope~\cite{singh2018fast}, and (c, d) polytope~\cite{xu2020fast,singh2019abstract,wang2021beta} abstraction domains to compute the lower $l_y(x)$ and upper $u_y(x)$ bounds of a ReLU computation $y=\texttt{ReLU(x)}$ (non-convex red line).
+\tool{} can employ any existing abstract domains, though currently it adopts the \emph{LiRPA} polytope (Fig.~\ref{fig:abs}d)~\cite{xu2020fast,xu2020automatic,wang2021beta} because it has a good trade-off between precision and efficiency.
+
+%Note that in some cases we can compute a better abstraction for output bounds by first tightening the input bounds (line~\ref{line:absstart}). We discuss this input bound tightening heuristic in \S\ref{sec:inputboundstigthten}.
+%\hd{remove this sentence?}
+
+\paragraph{Inference} If abstraction results in feasible constraints, \texttt{Deduction} next attempts to infer implied literals (lines~\ref{line:infera}--~\ref{line:inferb}). To obtain the bounds of the output neurons, abstraction also needs to compute the bounds of hidden neurons, including those with undecided activation status (i.e., not yet in $\sigma$). 
+This allows us to assign the activation variable of a hidden neuron the value
+\texttt{True} if the lowerbound of that neuron is greater than 0 (the neuron is active) and
+\texttt{False} otherwise.
+Since each literal is considered, this would be considered exhaustive theory propagation.  Whereas the literature~\cite{nieuwenhuis2006solving,kroening2016decision} suggests that this is an inefficient strategy, we find that it does not incur significant overhead (average overhead is about 4\% and median is 2\% with outliners being large CIFAR2020 networks described in \S\ref{sec:expsettings}).  
+
+%\mbd{forward pointer to data on this in evaluation section.}
+%\hd{Maximum overhead is about 39\% of runtime, all cases which have overhead > 30\% belong to CIFAR networks from CIFAR2020 benchmark which are large (cifar10\_2\_255, convBigRELU\_PGD), average overhead is about 4\%, apply median filter and average will be 2\%}
+
+\begin{example} For the illustrative example in \autoref{ex:neuralsat}, in iteration 3, the current assignment $\sigma$ is  $\{v_4=1\}$, corresponding to a constraint $x_1 + x_2 - 1 > 0$. With the new constraint, we optimize the input bounds and compute the new bounds for hidden neurons $0.5 \le x_3 \le 2.5$, $0 < x_4 \le 2.0$ and output neuron  $x_5 \le 0.5$ (and use this to determine that the postcondition $x_5 > 0$ might be feasible). We also infer $v_3=1$ because of the positive lower bound $0.5 \le x_3$.
+\end{example}
+
+%reason 
+%with trade-offs between computational complexity and precision.
+
+%\tvn{Describe how ABstractDomain works, e.g., are hidden\_bounds the bounds of values of hidden neurons? Also, how does CheckReachability work? why does it require $\phi_{in}$?}
+
+%in which we know that the original problem is satisfiable and return (and \tool{} will return \texttt{sat}).
+%The second case is when the assignment was not full, i.e., we 
+
+%% For every assignment $x\mapsto $
+%% Base on the current assignment $\alpha$, first step is to build linear equations for each status variable over the input variables using back substitution.
+%% The key idea here is that we could be able to remove the ReLU activation at layer $i$ if the pre-activation variables in the layer $i$ are fully assigned.
+%% The ReLU function originally is non-linear (e.g., $y = max(0, x)$), but it becomes a linear function when we know about the value of its input (base on the value of assigned nodes, we could have the pre-activation values either greater or less than 0).
+
+%% For example, the network in Figure~\ref{fig:dnn} is represented as the formula:
+%% \begin{gather}
+%%         x_3 = -0.5x_1 + 0.5x_2 + 1 \;\land\; x_3' = ReLU(x_3) \;\land\; \nonumber\\
+%%         x_4 = x_1 + x_2 - 1 \;\land\; x_4' = ReLU(x_4)  \;\land\; \\
+%%         x_5 = -x_3' + x_4' - 1 \;\nonumber
+%% \end{gather}
+%% If \tool{} decides $v_3 = True$ ($v_3$ is status variable of neuron $x_3'$) and $v_4$ is undecided, we cannot have the linear relationship between $x_5$ and the inputs $x_1, x_2$, because the first layer is not fully decided, then we cannot remove the ReLU layer.
+%% Otherwise, \tool{} decides $v_3 = True$ and $v_4 = False$, then $x_3' = -0.5x_1 + 0.5x_2 + 1$ and $x_4' = 0$, also $x_5 = 0.5x_1 - 0.5x_2 - 2$.
+%% The first layer now is fully assigned, then the ReLU layer no longer exists, that makes we could build linear relationship of $x_5$ over $x_1, x_2$.
+
+%When all the neurons of the network are decided, the network becomes a linear one, then we could build a linear solver to check the feasibility of the model w.r.t the specification, with the constraints as linear equations of outputs over inputs.
+%Branch-and-Bound based methods without the step of checking feasibility when all split neurons are also considered as \textbf{incomplete}.
+
+%Next, these equations is added to a LP solver that follow the rule of ReLU activation: if a status variable is decided to be True, which means that neuron is in active region, its equation will be greater than 0, and constraint $eq(x) > 0$ is added to the solver; otherwise constraint $eq(x) \le 0$ is added to the solver (Line 2 in Algorithm~\ref{alg:deduction}).
+%For example, $v_3 = True$ then $x_3 > 0$ and a constraint $-0.5x_1 + 0.5x_2 + 1 > 0$ is added into the LP solver.
+
+%Then, solver runs optimization step without objective function to check the feasibility of model  (Line 3).
+%If the model is infeasible, the current assignment will lead to UNSAT state, the Theory Deduce will raise ``conflict'' status so that the core DPLL could make a conflict analysis to handle it.
+
+%Otherwise, the process continues with checking the reachability of the current assignment bases on the abstraction, described in Sec~\ref{sec:theory_abstraction}. 
+%Without this step, the Theory Deduce is unable to quickly decide an assignment is unreachable.
+%Thus, this step uses an over-approximation technique to estimate the possible output ranges w.r.t the given input ranges and the current assignment.
+%Two well-known abstraction techniques are adapted/adopted in our \tool{}, which are \textbf{DeepPoly} in ERAN verifier \cite{singh2019abstract} and \textbf{LiRPA} in $\alpha$-$\beta$-CROWN verifier\cite{wang2021beta} (Line 7).
+%\hd{when does \tool{} use DeepPoly/LiRPA? Small number of inputs (<50), use LP to tighten input ranges then apply DeepPoly. Otherwise, jointly optimize hidden bounds and output bounds using LiRPA (same as ab-crown) --- Actually, in small number of inputs cases, it's reimplementation of DeepPoly with adaptation of learnable \textit{slopes} as in ab-crown. Depend on the input ranges, the abstraction will compute output ranges directly use original version or use optimized slopes version of DeepPoly to get better bounds.}
+%The estimated output ranges could be used to check the reachability, as shown in Sec~\ref{sec:unsat}.
+%If the output property is unreachable, the Theory Deduce will raise ``conflict'' status, otherwise, the output property might be reachable, we could not decide the reachability status of the current assignment.
+
+\subsection{Optimizations}\label{sec:optimizations}
+Like some other verifiers~\cite{katz2019marabou,katz2022reluplex,bak2021nnenum}, 
+\tool{} implements \emph{input splitting} to quickly deal with \emph{small} verification problems, such as ACAS Xu discussed in \S\ref{sec:expsettings}. %\tvn{Hai, could you quickly summarize input splitting this in 1 or 2 sentences at most?}
+% \hd{For networks with small inputs, \tool{} uses LP solving to tighten input bounds and then applies abstraction to achieve greater estimation.}
+This technique divides the original verification problem into subproblems, each checking whether the DNN produces the desired output from a smaller input region and returns \texttt{unsat} if all subproblems are verified and \texttt{sat} if a counterexample is found in any subproblem.
+
+\ignore{
+
+\subsubsection{Input Bounds Tightening}\label{sec:inputboundstigthten}
+For networks with small inputs (currently set to those with $\le 50$ inputs), \tool{} uses a more aggressive abstraction process in the theory solver described in \S\ref{sec:deduction}. Specifically,  we use LP solving to compute the tightest bounds for all input variables from the generated linear constraints. This computation is efficient when the number of inputs is small.
+After tightening input bounds we apply abstraction (line~\ref{line:abstraction}, Fig.~\ref{alg:deduction}) to approximate the output bounds, which can be more precise with better input bounds.
+For networks with large number of inputs, we obtain input bounds from the input property $\phi_{in}$.
+
+\paragraph{Decision Heuristics}\label{sec:decision-heuristics}
+Decision or branching heuristics decide free variables to make assignments and thus are crucial for the scalability of DPLL by reducing assignment mistakes~\cite{kroening2016decision,beyer2022progress}.
+
+For networks with small inputs, \tool{} prioritizes variables representing neurons with the \emph{furthest bounds} from the decision value 0 of ReLU, i.e., the 0 in $\max(x,0)$.
+Such neurons have wider bounds and therefore are more difficult to tighten during abstraction compared to other neurons.
+This heuristic helps input bounds tightening as described in \S\ref{sec:inputboundstigthten} (which is also applied only for networks with small inputs). It is also cheap because we can reuse the computed boundaries of hidden neurons during abstraction.
+}
+
+
+\ignore{
+\subsubsection{Multiprocessing} \label{sec:input_split}
+
+For networks with small inputs, \tool{} uses a simple approach to create and solve subproblems in parallel.
+Given a verification problem $N_{orig} = (\alpha, \phi_{in}, \phi_{out})$, where $\alpha$ is the DNN and $\phi_{in} \Rightarrow \phi_{out}$ is the desired property, \tool{} creates subproblems $N_i = (\alpha, \phi_{{in}_i}, \phi_{out})$, where $\phi_{{in}_i}$ is the $i$-th subregion of the input region specified by $\phi_{in}$.
+Intuitively, each subproblem checks if the DNN produces the output $\phi_{out}$  from a smaller input region $\phi_{{in}_i}$.
+The combination of these subproperties $\bigwedge \phi_{{in}_i} \Rightarrow \phi_{out}$ is logically equivalent to the original property $\phi_{in} \Rightarrow \phi_{out}$.
+
+
+Given $k$ available threads, \tool{} splits the original input region to obtain subproblems as described and and runs DPLL(T) on $k$ subproblems in parallel. % and iteratively splits any subproblem which cannot be solved within pre-defined amount of time, e.g., 2 seconds.
+\tool{} returns \texttt{unsat} if it verifies all subproblems and \texttt{sat} if it found a counterexample in any subproblem. %In the current implementation, \tool{} uses the number of available threads to determine the number of created subproblems.
+For example, we split the input region $\{x_1 \in [-1,1] , x_2 \in [-2,2]\}$ into four subregions 
+$\{x_1 \in [-1,0] , x_2 \in [-2,0]\}$, 
+$\{x_1 \in [-1,0] , x_2 \in [0,2]\}$ , 
+$\{x_1 \in [0,1] , x_2 \in [-2,0]\}$, and 
+$\{x_1 \in [0,1], x_2 \in [0,2]\}$.  
+Note that the formula $-1 \le x_1 \le 1 \land -2 \le x_2 \le 2$ representing the original input region is equivalent to the formula $(-1 \le x_1 \le 0 \lor 0 \le x \le 1) \land (-2 \le x_2 \le 0 \lor 0 \le x_2 \le 2)$ representing the combination of the created subregions.
+
+%\hd{Updated.}
+
+
+%We note that this input splitting technique is different than other input splitting techniques whe
+
+%% can be split into the subproblems  $-1 \le x_1 \le 1 \land -2 \le x_2 \le 2  \Rightarrow x_5 \le 0$
+
+%% \tvn{hm .. if you have multiple inputs, how do you create regions from those?  e.g., if $\phi = 5\le i_1 \le 10 \land 10 \le i_2 \le 20$, then what is $\phi_k$?}
+%% \hd{Split each input at a time, e.g., split $i_1$ from $5\le i_1 \le 10$ to $(5\le i_1 \le 8) \lor (8\le i_1 \le 10)$. Now original problem is $\phi = [(5\le i_1 \le 8) \lor (8\le i_1 \le 10)] \land (10 \le i_2 \le 20)$, or we could rewrite that formula in DNF form like $\phi = [(5\le i_1 \le 8) \land (10 \le i_2 \le 20)] \lor [(8\le i_1 \le 10) \land (10 \le i_2 \le 20)]$}\tvn{so if for i1 you make k1 splits,  i2 you make k2 splits,  .., then the number of sub probs is k1*k2*...kn?}\hd{yes, this thing is very trivial, I did it when I had no idea to optimize during that time}
+%% After that, \tool{} creates multiple CDCL verification instances, and each of them will solve a subproblem independently\tvn{how do you determine the number of subregions? is it automatically based on the number of avail threads?} \hd{I did split based on number of threads for now.}
+
+
+
+
+%In the input splitting used in~\cite{wang2018formal,wang2021beta}, they only compute the abstraction over each subregion once to get estimated output. 
+%If the subregion causes UNSAT, it will be eliminate immediately. 
+%Otherwise, they split that current subregion into multiple instances, and continue at the aforementioned abstraction step.
+%In the other hand, in \tool{}, each CDCL instance takes input of a subregion and run for verifying it with iterations as in Fig.~\ref{fig:alg}.
+
+
+
+%% \textbf{Discussion}
+%% Testing. Does not affect soundness and helps with completeness.
+%% Since the procedure is sampling-based, it is applicable to neural networks with any type of activation function.
+%% Does not affect performance of DPLL(T) and helps quickly knock out easy instances as shown in experimentation.
+%% Used by some verification tools. \tvn{SAT/SMT solvers also do that?} \hd{Not SAT/SMT solver, other verifiers, like ERAN, abcrown, also do that}
+
+
+%% The falsification algorithm is \textbf{sound} but \textbf{not complete}. 
+%% When a falsifying input has been found by our algorithm, it terminates by declaring the network as \textbf{unsafe} and the reported counterexample indeed violates the safety property of the network. 
+%% However, when it terminates before finding any falsifying input, one cannot guarantee the absence of any falsifying input and consequently, the safety of the network with respect to the property.
+
+%% % \subsection{Other DPLL components}
+
+%% % Describe other DPLL components (BCP, Decide using VSIDS, etc).  If they are complicated enough,  give it its own section.  
+
+%% \subsection{Properties of \tool{}}
+
+%% \textbf{Sound} \tool{} is sound because the main DPLL algorithm is sound, also the abstraction domain are over-approximated techniques, then they are sound. 
+
+%% \textbf{Complete} Deduce/Theory solver calls LP solver over the reals?
+
+%% \textbf{Complexity} The worst-case complexity of \tool{} is exponential in the number of neurons. More specifically, the algorithm works by assigning activation status for each neuron (either on or off) and thus in the worst-case \tool{} will try all $2^n$ possible combinations of assignments, where $n$ is the number of neurons.  %Moreover, for each combination, \tool{} also performs linear programming solving to check for assignment feasibility.
+
+%% \hd{
+%%     This section is duplicated elsewhere
+    
+%%     \subsection{Difference between of \tool{} and BaB-based verifiers}
+    
+%%     For example, the network has 5 neurons corresponding to 5 variables, e.g., $\{v_1, v_2, v_3, v_4, v_5\}$. 
+%%     Also, \tool{} already assigned $v_1@0, v_2@0, v_3@0$, and suppose that it has generated a conflict clause $c = \overline{v_2} \lor v_4 \lor v_5$.
+%%     If \tool{} continue to split an unsigned neurons (e.g., $v_4$ or $v_5$), e.g., \tool{} chooses $v_4$.
+%%     If $v_4@1$, there will be 2 cases for $v_5$, e.g., $v_5@2$ and $\overline{v_5}@2$.
+%%     If $\overline{v_4}@1$, there will be only one case for $v_5$, that is, $v_5@2$, because of the generated conflict clause $c$.
+%%     In total, there will be \textbf{at most} 3 splits to check with help of the learnt conflict clause $c$.
+    
+%%     In the other hand, if the BaB-based algorithm reached the same state above, e.g, there remains 2 unstable neurons $v_4, v_5$, and they need to check \textbf{at most} 4 splits.
+
+
+%%     In short, we might be able to decrease some iterations with the help of the conflict clause learning technique.
+%% }
+}
+
+Moreover, like other DNN verifiers~\cite{ferrari2022complete,zhang2022general}, \tool{} tool implements a fast-path optimization that attempts to disprove or falsify the property before running DPLL(T).
+\tool{} uses two \emph{adversarial attack} algorithms to find counterexamples to falsify properties.
+First, we try a randomized attack approach~\cite{das2021fast}, which is a derivative-free sampling-based optimization~\cite{yu2016derivative}, to generate a potential counterexample.
+If this approach fails, we then use a gradient-based approach~\cite{madry2017towards} to create another potential counterexample. 
+If either attack algorithm gives a valid counterexample, \tool{} returns \texttt{sat}, indicating that property is invalid. If both algorithms cannot find a valid counterexample or they exceed a predefined timeout, \tool{} continues with its DPLL(T) search.
+
 
 \part{Optimizations and Strategies}\label{part:optimizations}
 
@@ -4529,13 +5362,13 @@ Here we survey the latest benchmarks in DNN verification and how SOTA tools perf
 \end{tabular}    
 \end{table}
 
-\chapter{Logics and Linear Programming}\label{app:logics}
+\chapter{Logics and Linear Programming}\label{chap:logics}
 
-\section{Logics and Satisfiability}\label{app:logics}
+\section{Logics and Satisfiability}\label{sec:logics-sat}
 
 
-\subsection{Satisfiability (SAT)}\label{app:sat}
-The classical satisfiability (SAT) problem asks if a given propositional formula over Boolean variables can be satisfied~\cite{biere2009handbook}.  Given a formula $f$, a SAT solver returns \sat if it can find a satisfying assignment that maps truth values to variables of $f$ that makes $f$ evaluate to true, and \unsat if it cannot find any satisfying assignments. The problem is \NP-Complete and research into methods for efficiently solving  problem instances has been ongoing for multiple decades.
+\subsection{Satisfiability (SAT)}\label{sec:sat}
+The classical satisfiability (SAT) problem asks if a given propositional formula over Boolean variables can be satisfied~\cite{biere2009handbook}.  Given a formula $f$, a SAT solver returns \sat{} if it can find a satisfying assignment that maps truth values to variables of $f$ that makes $f$ evaluate to true, and \unsat{} if it cannot find any satisfying assignments. The problem is \NP-Complete and research into methods for efficiently solving  problem instances has been ongoing for multiple decades.
 
 \begin{figure}
   \includegraphics[width=0.8\linewidth]{figure/dpll.pdf}
