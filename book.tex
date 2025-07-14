@@ -160,6 +160,7 @@
 \renewcommand{\chapterautorefname}{\textsection\@gobble}
 \renewcommand{\sectionautorefname}{\textsection\@gobble}
 \renewcommand{\subsectionautorefname}{\textsection\@gobble}
+\renewcommand{\subsubsectionautorefname}{\textsection\@gobble}
 \renewcommand{\appendixautorefname}{\textsection\@gobble}
 
 % \renewcommand{\chapterautorefname}{\S\@gobble}
@@ -2655,10 +2656,11 @@ Finally, \bab{} has an empty \texttt{ActPatterns}, stops the search, and returns
     \caption{\label{fig:overview} The \neuralsat{} DPLL(T) Algorithm.} 
 \end{figure}
 
-Fig.~\ref{fig:overview} gives an overview of \neuralsat{}, which follows the DPLL(T) framework (\autoref{sec:sat}), and consists of standard DPLL components (light shades) and the theory solver (dark shade).
+The \neuralsat{} approach follows the DPLL(T) framework (\autoref{sec:sat}) and is therefore an SMT solver with respect to a theory, in this case, the theory of DNNs.
 
-\neuralsat{} constructs a propositional formula over Boolean variables that represent the activation status of neurons (\emph{Boolean Abstraction}). Clauses in the formula assert that each neuron, e.g., neuron $i$, is active or inactive, e.g., $v_i \vee \overline{v_i}$.
-This abstraction allows us to  use standard DPLL components to search for truth values satisfying these clauses and a DNN-specific theory solver to check the feasibility of truth assignments---the \emph{activation pattern} (\autoref{sec:activation-pattern})---with respect to the constraints encoding the DNN and the property of interest.
+Fig.~\ref{fig:overview} gives an overview of , and consists of standard DPLL components (light shades) and the theory solver (dark shade).
+\neuralsat{} first constructs a propositional formula over Boolean variables that represent the activation status of neurons (\emph{Boolean Abstraction}). Clauses in the formula assert that each neuron, e.g., neuron $i$, is active or inactive, e.g., $v_i \vee \overline{v_i}$.
+This representation allows us to  use standard DPLL components to search for truth values satisfying these clauses and a DNN-specific theory solver to check the feasibility of truth assignments---the \emph{activation pattern} (\autoref{sec:activation-pattern})---with respect to the constraints encoding the DNN and the property of interest.
 
 \neuralsat{} now enters an iterative process to find an activation pattern satisfying the activation clauses.
 First, \neuralsat{} assigns a truth value to an unassigned variable (\emph{Decide}), detects unit clauses caused by this assignment, and infers additional assignments (\emph{Boolean Constraint Propagation}).
@@ -2675,27 +2677,31 @@ This iterative process repeats until \neuralsat{} can no longer backtrack, and r
 \begin{example}\label{ex:neuralsat}
 We use \neuralsat{} to prove that for inputs $x_1 \in [-1, 1], x_2 \in [-2,2]$ the DNN in Fig.~\ref{fig:dnn} produces the output $x_5 \le 0$.
 \neuralsat{} takes as input the formula $\alpha$ representing the DNN:
-\begin{equation}\label{eq:ex}
+
+\begin{equation*}%\label{eq:ex}
 \begin{aligned}
-  x_3 = & \relu{-0.5x_1 + 0.5x_2 + 1}\;\;\;\land\\
-  x_4 = &\relu{x_1 + x_2 - 1} \;\;\;\land\\
-  x_5 = &-x_3 + x_4 - 1.0
+  x_3 &=  \relu{-0.5x_1 + 0.5x_2 + 1} ~\land\\
+  x_4 &= \relu{x_1 + x_2 - 1} ~\land\\
+  x_5 &= -x_3 + x_4 - 1.0
 \end{aligned}
-\end{equation}
+\end{equation*}
 and the formula $\phi$ representing the property:
-\begin{equation}\label{eq:valid_prop}
+
+\begin{equation*}\label{eq:valid_prop}
     \phi : -1\le x_1 \le 1 \land -2 \le x_2 \le 2 \quad\Rightarrow\quad x_5 \le 0.
-  \end{equation}
-To prove $\alpha \Rightarrow \phi$, \neuralsat{} shows  that \emph{no} values of $x_1,x_2$ satisfying the input properties would result in $x_5 > 0$. Thus, we want \neuralsat{} to return \texttt{unsat} for  $\overline{\alpha \Rightarrow \phi}$: 
+\end{equation*}
+
+To prove $\alpha \Rightarrow \phi$, \neuralsat{} needs to show  that \emph{no} values of $x_1,x_2$ satisfying the input properties would result in $x_5 > 0$. In other words, \neuralsat{} needs to return \texttt{unsat} for: 
 \begin{equation}\label{eq:negprop}
   \alpha\; \land\; -1 \le x_1 \le 1     \;\land\; -2 \le x_2 \le 2   \;\land\; x_5 > 0.
 \end{equation} 
 
-In the following, we write $x \mapsto v$ to denote that the variable $x$ is assigned with a truth value $v \in \{T,F\}$. This assignment can be either decided by \texttt{Decide} or inferred by \texttt{BCP}. We also write $x@dl$ and  $\overline{x}@dl$ to indicate the respective assignments $x \mapsto T$ and $x \mapsto F$  at decision level $dl$.
+\textbf{Notation:} In the following, we write $x \mapsto v$ to denote that the variable $x$ is assigned with a truth value $v \in \{T,F\}$. This assignment can be either decided by \texttt{Decide} or inferred by \texttt{BCP}. We also write $x@dl$ and  $\overline{x}@dl$ to indicate the respective assignments $x \mapsto T$ and $x \mapsto F$  at decision level $dl$.
 
 \paragraph{Boolean Abstraction} First, \neuralsat{} creates two Boolean variables $v_3$ and $v_4$ to represent the
 %(pre-ReLU)
-activation status of the hidden neurons $x_3$ and $x_4$, respectively. For example, $v_3=T$ means $x_3$ is \texttt{active} and thus is the constraint $-0.5x_1 + 0.5x_2 + 1 > 0$. Similarly, $v_3=F$ means $x_3$ is \texttt{inactive} and therefore is $-0.5x_1 + 0.5x_2 + 1\le 0$. Next, \neuralsat{} forms two clauses  $\{v_3 \lor \overline{v_3} \;;\; v_4 \lor \overline{v_4}\}$ indicating these variables are either \texttt{active} or \texttt{inactive}.
+activation status of the hidden neurons $x_3$ and $x_4$, respectively. For example, $v_3=T$ means $x_3$ is \texttt{active} and thus gives the constraint $-0.5x_1 + 0.5x_2 + 1 > 0$. Similarly, $v_3=F$ means $x_3$ is \texttt{inactive} and therefore gives $-0.5x_1 + 0.5x_2 + 1\le 0$. Next, \neuralsat{} forms two clauses  $\{v_3 \lor \overline{v_3} \;;\; v_4 \lor \overline{v_4}\}$ indicating these variables are either \texttt{active} or \texttt{inactive}.
+
 
 %Now, \neuralsat{} searches for truth assignments for activation variables to satisfy the clauses. %(and later check that they also satisfy the constraints of DNN implied by these variables and the properties to be proved).
 %We summarize the five iterations \neuralsat{} uses to determine that no such assignment exists (i.e., \texttt{unsat}).
@@ -2772,8 +2778,10 @@ activation status of the hidden neurons $x_3$ and $x_4$, respectively. For examp
 %     \end{tabular}
 % \end{table*}
 
-\paragraph{DPLL(T) Iterations} \neuralsat{} searches for an assignment to satisfy the clauses and the constraints they represent.
-For this example, \neuralsat{} uses four iterations, summarized in Tab.~\ref{tab:valid}, to determine that no such assignment exists and the problem is thus \texttt{unsat}.
+%The goal is to find an activation pattern---a truth assignment for these variables---that satisfies the conjunction of the clauses in~\autoref{eq:negprop}. Such an assignment represents a counterexample violating the property, i.e., within the given ranges but does not satisfy the output requirement. If no such assignment exists, \neuralsat{} returns \texttt{unsat}, indicating the property is valid.
+
+\paragraph{DPLL(T) Iterations} \neuralsat{} searches for a satisfying \emph{activation pattern}---truth assignment for the Boolean variables to satisfy the clauses and the constraints they represent with respect to the formula in Eq.~\ref{eq:negprop}.
+For this example, \neuralsat{} uses four iterations, summarized in~\autoref{tab:valid}, to determine that no such assignment exists and the problem is thus \texttt{unsat}.
 
 
 \begin{table*}
@@ -2805,11 +2813,12 @@ For this example, \neuralsat{} uses four iterations, summarized in Tab.~\ref{tab
 %\emph{Initially}, the set of constraints  consists of the given bounds over the inputs, and the set of the clauses contains the two clauses in Eq.~\ref{eq:newvars}.
 
 In \emph{iteration 1}, as shown in Fig.~\ref{fig:overview}, \neuralsat{} starts with \texttt{BCP}, which has no effects because the current clauses and (empty) assignment produce no unit clauses.
-In \texttt{Deduction}, \neuralsat{} uses an LP solver to determine that the current set of constraints, which contains just the initial input bounds, is feasible\footnote{We use the terms feasible, from the LP community, and satisfiable, from the SAT community, interchangeably.}. \neuralsat{} then uses abstraction to approximate an output upper bound $x_5 \le 1$ and thus deduces that satisfying the output $x_5 >0$ might be feasible. \neuralsat{} continues with \texttt{Decide}, which uses a heuristic to select the unassigned variable $v_4$ and sets $v_4=F$.  \neuralsat{} also increments the decision level ($dl$) to 1 and associates $dl=1$ to the assignment, i.e., $\overline{v_4}@1$. Note that this process of selecting and assigning (random) values to variables representing neurons is commonly called \emph{neuron splitting} because it splits the search tree into subtrees corresponding into the assigned values (e.g., see \S\ref{sec:restart-tree}).
+In \texttt{Deduction}, \neuralsat{} uses an LP solver to determine that the current set of constraints, which contains just the initial input bounds, is feasible\footnote{We use the terms feasible, from the LP community, and satisfiable, from the SAT community, interchangeably.}. \neuralsat{} then uses abstraction to approximate an output upper bound $x_5 \le 1$ and thus deduces that satisfying the output $x_5 >0$ might be feasible. \neuralsat{} continues with \texttt{Decide}, which uses a heuristic to select the unassigned variable $v_4$ and sets $v_4=F$---essentially a \emph{guess} that neuron $x_4$ is inactive. \neuralsat{} increments the decision level ($dl$) to 1 and associates $dl=1$ to the assignment, i.e., $\overline{v_4}@1$.
+
 
 In \emph{iteration 2}, \texttt{BCP} again has no effect because it does not detect any unit clauses. In \texttt{Deduction}, \neuralsat{} determines that current set of constraints, which contains $x_1 + x_2 - 1 \le 0$ due to the assignment $v_4\mapsto F$ (i.e., $x_4=\texttt{off}$), is feasible. \neuralsat{} then approximates a new output upper bound $x_5\le -1$, which means satisfying the output $x_5 > 0$ constraint is \emph{infeasible}.
 
-\neuralsat{} now enters \texttt{AnalyzeConflict} and determines that $v_4$ causes the conflict ($v_4$ is the only variable assigned so far).  From the assignment $\overline{v_4}@1$, \neuralsat{} learns a "backjumping" clause $v_4$, i.e., $v_4$ must be $T$. \neuralsat{} now backtracks to $dl$ $0$ and erases all assignments decided \emph{after} this level. Thus, $v_4$ is now unassigned and the constraint  $x_1 + x_2 - 1 \le 0$ is also removed.
+\neuralsat{} now enters \texttt{AnalyzeConflict} and determines that $v_4$ causes the conflict ($v_4$ is the only variable assigned so far).  From the assignment $\overline{v_4}@1$, \neuralsat{} learns a ``backjumping'' clause $v_4$, i.e., $v_4$ must be $T$. \neuralsat{} now backtracks to $dl$ $0$ and erases all assignments decided \emph{after} this level. Thus, $v_4$ is now unassigned and the constraint  $x_1 + x_2 - 1 \le 0$ is also removed.
 
 In \emph{iteration 3}, \texttt{BCP} determines that the learned clause is also a unit clause $v_4$ and infers $v_4@0$. In \texttt{Deduction}, we now have the new constraint $x_1 + x_2 - 1 > 0$ due to $v_4 \mapsto T$ (i.e., $x_4=\texttt{on}$).  With the new constraint, \neuralsat{} 
 %\hd{tightens input bounds and get $0 \le x_2 \le 2$, then} 
@@ -2829,8 +2838,9 @@ However, because $v_4$ was assigned at decision level 0, \neuralsat{} can no lon
 %\tvn{do we use restart for this example?}\hd{we do not, it would be very long as in FSE paper.}
 This \texttt{unsat} result shows that the DNN has the property because we cannot find a counterexample violating it, i.e., no inputs $x_1 \in[-1,1] ,x_2\in [-2,2]$ that results in $x_5 > 0$.
 
-Note that this example is too simple to illustrate the use of \emph{restart}, which is described in~\S\ref{sec:restart-tree} and \ref{sec:restart} and crucial for more complicated and nontrivial problems.
+%Note that this example is too simple to illustrate the use of \emph{restart}, which is described in~\autoref{sec:restart-tree} and~\autoref{sec:restart} and crucial for more complicated and nontrivial problems.
 \end{example}
+
 \SetKwInOut{Input}{input}
 \SetKwInOut{Output}{output}
 \SetKw{Break}{break}
@@ -2999,7 +3009,10 @@ Note that this example is too simple to illustrate the use of \emph{restart}, wh
 \end{algorithm} 
 
 
-\subsection{The search tree of \tool{}}\label{sec:restart-tree}
+\subsection{\tool{} vs. BnB}\label{sec:restart-tree}
+
+
+
 
 \begin{figure}[t]
     \begin{minipage}[b]{\textwidth}
@@ -3020,7 +3033,7 @@ Note that this example is too simple to illustrate the use of \emph{restart}, wh
         % \hfill
         \vspace{-0.1in}
         \caption{Search tree explored by \tool{} (a) and other verifiers (b) during a verification run.
-        %Note that we are assuming both verifiers use abstraction and both do splits.
+        \tvn{Hai, instead of other verifiers can we say this search tree is for a native/general BnB approach?}
         The notation $\{...\}$ indicates learned clauses; red is  infeasibility; white is feasibility; yellow is BCP application; and blue is current consideration.
         The search tree of \tool{} is smaller than the tree of the other techniques because \tool{} was able to prune various branches, e.g., through BCPs (e.g., ${v_3}$ and $\overline{v_5}$) and non-chronological backtracks (e.g., $\overline{v_3}$).}
         % \hd{missing a paragraph writing about this figure.}\tvn{yes, may be in the overview or intro if appropriate}\hd{still thinking of incorporating learned clauses.}
@@ -3031,6 +3044,14 @@ Note that this example is too simple to illustrate the use of \emph{restart}, wh
 \tvn{TODO: talk about how \tool{} is BnB but has things such as CDCL to help prune the search space.}
 
 %modern DPLL implementations restart the DPLL procedure whenever the search is not making enough progress according to some measure. The rationale behind this idea is that upon each restart, the additional knowledge of the search space compiled into the newly learned lemmas will lead the heuristics for Decide to behave differently, and possibly cause the procedure to explore the search space in a more compact way. The combination of learning and restarts has been shown to be powerful not only in practice, but also in theory. Essentially, any Basic DPLL derivation to FailState is equivalent to a tree-like refutation by resolution. But for some classes of problems tree-like proofs are always exponentially larger than the smallest general, that is, DAG-like, resolution ones [Bonet et al. 2000]. The good news is that DPLL with learning and restarts becomes again equivalent to general resolution with respect to such notions of proof complexity [Beame et al. 2003].
+
+
+
+
+\tvn{rewrite: technically we don't split if the guess was right}
+Note that this process of selecting and assigning (guessing) values to variables representing neurons is the \emph{branching} phase in BnB. It is also commonly called \emph{neuron splitting} because  it splits the search tree into subtrees corresponding into the assigned values (e.g., see~\autoref{sec:restart-tree}).
+
+
 
 
 
@@ -3057,7 +3078,7 @@ Internally, \tool{} checks the satisfiability of the formula
 \begin{equation}\label{eq:prob}
   \alpha \land \phi_{in} \land \overline{\phi_{out}}.
 \end{equation}
-\tool{} returns \texttt{unsat} if the formula unsatisfiable, indicating  that $\phi$ is a valid property of $N$, and \texttt{sat} if it is satisfiable, indicating the $N$ is not a valid property of $\phi$.
+\tool{} returns \texttt{unsat} if the formula unsatisfiable, indicating  that $\phi$ is a valid property of $N$, and \texttt{sat} if it is satisfiable, indicating the $N$ is not a valid property.
 
 \tool{} uses a  DPLL(T)-based algorithm to check unsatisfiability.
 First, the input formula in Eq.~\ref{eq:prob} is abstracted to a propositional formula
@@ -3350,7 +3371,7 @@ Intuitively, by backtracking to the second most recent level, which means erasin
 
 \begin{example}
     
-    From the clause $c_5=\overline{v_1} \lor v_5$ learned in \texttt{AnalyzeConflict}, we backtrack to decision level 3, the second most recent decision level in the clause (because assignments $v_1@6$  and $\overline{v_5}@3$ were decided at levels 6 and 3, respectively). Next, we erase all assignments from decision level 4 onward (i.e., the assignments to $v_1,v_2,v_3,v_4$ as shown in the implication graph in Fig.~\ref{fig:igraph}). This thus makes these more recently assigned variables (after decision level 3) available for new assignments (in fact, as shown by the example in \S\ref{sec:bcp}, \texttt{BCP} will immediately infer $v_1=T$ by noticing that $c_5$ is now a unit clause).
+    From the clause $c_5=\overline{v_1} \lor v_5$ learned in \texttt{AnalyzeConflict}, we backtrack to decision level 3, the second most recent decision level in the clause (because assignments $v_1@6$  and $\overline{v_5}@3$ were decided at levels 6 and 3, respectively). Next, we erase all assignments from decision level 4 onward (i.e., the assignments to $v_1,v_2,v_3,v_4$ as shown in the implication graph in~\autoref{fig:igraph}). This thus makes these more recently assigned variables (after decision level 3) available for new assignments (in fact, as shown by the example in~\autoref{sec:bcp}, \texttt{BCP} will immediately infer $v_1=T$ by noticing that $c_5$ is now a unit clause).
 \end{example}
 
 %\tvn{Discussion: waste of time for erasing everything from dl?} \hd{If we don't erase information from $dl$ when backtrack occurs, it will require a lot of memories to save the redundant information of implication graph from decision level $dl$ onwards.}
