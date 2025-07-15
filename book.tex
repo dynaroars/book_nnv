@@ -157,6 +157,7 @@
 \renewcommand{\figureautorefname}{Fig.}
 \renewcommand{\tableautorefname}{Tab.}
 \renewcommand{\equationautorefname}{Eq.}
+\renewcommand{\exampleautorefname}{Ex.}
 \renewcommand{\chapterautorefname}{\textsection\@gobble}
 \renewcommand{\sectionautorefname}{\textsection\@gobble}
 \renewcommand{\subsectionautorefname}{\textsection\@gobble}
@@ -2636,7 +2637,7 @@ In the third iteration, \bab{} has two subproblems for $v_4 \land v_2$ and $v_4 
 
 In the fourth iteration, \bab{} has two subproblems for $v_4 \land v_2 \land v_1$ and $v_4 \land v_2 \land \overline{v_1}$. Both subproblems are determined to be unsatisfiable.
 
-Finally, \bab{} has an empty \texttt{ActPatterns}, stops the search, and returns \texttt{unsat}.
+Finally, \bab{} has an empty \texttt{ActPatterns}, stops the search, and returns \unsat{}---the property is valid.
 
 \end{example}
 
@@ -2652,7 +2653,7 @@ Finally, \bab{} has an empty \texttt{ActPatterns}, stops the search, and returns
 \section{Overview}\label{sec:neuralsat:overview}
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.5\linewidth]{figure/arch.pdf}
+    \includegraphics[width=0.4\linewidth]{figure/arch.pdf}
     \caption{\label{fig:overview} The \neuralsat{} DPLL(T) Algorithm.} 
 \end{figure}
 
@@ -2823,11 +2824,13 @@ In \emph{iteration 2}, \texttt{BCP} again has no effect because it does not dete
 In \emph{iteration 3}, \texttt{BCP} determines that the learned clause is also a unit clause $v_4$ and infers $v_4@0$. In \texttt{Deduction}, we now have the new constraint $x_1 + x_2 - 1 > 0$ due to $v_4 \mapsto T$ (i.e., $x_4=\texttt{on}$).  With the new constraint, \neuralsat{} 
 %\hd{tightens input bounds and get $0 \le x_2 \le 2$, then} 
 approximates the output upper bound $x_5 \le  0.5$, which means $x_5>0$ might be satisfiable.
-Also, \neuralsat{} computes new bounds $0.5 \le x_3 \le 2.5$ and $0 < x_4 \le 2.0$, and deduces that $x_3$ must be positive because its lower bound is 0.5  Thus, \neuralsat{} has a new assignment $v_3@0$ ($dl$ stays unchanged due to the implication). Note that this process of inferring new assignments from the T-solver is referred to theory propagation in DPLL(T).
+Also, \neuralsat{} computes new bounds $0.5 \le x_3 \le 2.5$ and $0 < x_4 \le 2.0$, and deduces that $x_3$ must be positive because its lower bound is 0.5. 
+Thus, \neuralsat{} has a new assignment $v_3@0$ ($dl$ stays unchanged due to the implication). 
+This new assignment inference from the T-solver is known as \emph{theory propagation} in DPLL(T).
 
 In \emph{iteration 4}, \texttt{BCP} has no effects because we have no new unit clauses.  In \texttt{Deduction}, \neuralsat{} determines that the current set of constraints, which contains the new constraint $-0.5x_1+0.5x_2+1 > 0$ (due to $v_3 \mapsto T$), is \emph{infeasible}. Thus, \neuralsat{} enters \texttt{AnalyzeConflict} and determines that $v_4$, which was set at $dl=0$ (by \texttt{BCP} in iteration 3), causes the conflict. 
 \neuralsat{} then learns a clause $\overline{v_4}$ (the conflict occurs due to the assignment $\{v_3 \mapsto T; v_4 \mapsto T\}$, but $v_3$ was implied and thus making $v_4$ the conflict).
-However, because $v_4$ was assigned at decision level 0, \neuralsat{} can no longer backtrack and thus sets $dl=-1$ and returns \texttt{unsat}. %Note that we can also see that the learned clauses $\{v_4, \overline{v_4} \}$ are not satisfiable.
+However, because $v_4$ was assigned at decision level 0, \neuralsat{} can no longer backtrack and thus sets $dl=-1$ and returns \unsat{}, i.e , the property is valid.
 
 
 % Note that because we backtrack to $dl=0$, we do not erase the assignment $v_3=T$ because it was decided at $dl=0$ (by BCP in iteration 3).
@@ -2836,7 +2839,6 @@ However, because $v_4$ was assigned at decision level 0, \neuralsat{} can no lon
 % \neuralsat{} then sets $dl=-1$ (because $v_4=T$ was decided at level 0) and realizes that it can no longer backtrack, and thus returns \texttt{unsat}.  Note that we can also see that the learned clauses $\{v_3, \overline{v_3} \lor v_4, \overline{v_3} \lor \overline{v_4}\}$ are not satisfiable.
 
 %\tvn{do we use restart for this example?}\hd{we do not, it would be very long as in FSE paper.}
-This \texttt{unsat} result shows that the DNN has the property because we cannot find a counterexample violating it, i.e., no inputs $x_1 \in[-1,1] ,x_2\in [-2,2]$ that results in $x_5 > 0$.
 
 %Note that this example is too simple to illustrate the use of \emph{restart}, which is described in~\autoref{sec:restart-tree} and~\autoref{sec:restart} and crucial for more complicated and nontrivial problems.
 \end{example}
@@ -3420,7 +3422,7 @@ This allows a restarted search to quickly prune parts of the  space of assignmen
 
 We found the combination of clause learning and restarts effective for DNN verification. In particular, while restart resets information  it keeps learned clauses, which  are \emph{facts} implied by the problem, and therefore enables quicker BCP applications and non-chronological backtracking (e.g., as illustrated in Fig.~\ref{fig:tree}).
 
-It is worth noting that while it is possible to add a restart to existing DNN verification approaches. This is unlikely to help, because these techniques do not learn conflict clauses and therefore restart will just randomize order but carry no information forward to prune the search space.
+%It is worth noting that while it is possible to add a restart to existing DNN verification approaches. This is unlikely to help, because these techniques do not learn conflict clauses and therefore restart will just randomize order but carry no information forward to prune the search space.
 
 %... \mbd{discuss possibility of restart for other tools, but it will just randomize order but carry no information forward to prune search.}
 
@@ -3530,7 +3532,7 @@ Fig.~\ref{fig:abs} compares the (a) interval~\cite{wang2018formal}, (b) zonotope
 This allows us to assign the activation variable of a hidden neuron the value
 \texttt{True} if the lowerbound of that neuron is greater than 0 (the neuron is active) and
 \texttt{False} otherwise.
-Since each literal is considered, this would be considered exhaustive theory propagation.  Whereas the literature~\cite{nieuwenhuis2006solving,kroening2016decision} suggests that this is an inefficient strategy, we find that it does not incur significant overhead (average overhead is about 4\% and median is 2\% with outliners being large CIFAR2020 networks described in \S\ref{sec:expsettings}).  
+Since each literal is considered, this would be considered exhaustive theory propagation.  Whereas the literature~\cite{nieuwenhuis2006solving,kroening2016decision} suggests that this is an inefficient strategy, we find that it does not incur significant overhead (average overhead is about 4\% and median is 2\%).  
 
 %\mbd{forward pointer to data on this in evaluation section.}
 %\hd{Maximum overhead is about 39\% of runtime, all cases which have overhead > 30\% belong to CIFAR networks from CIFAR2020 benchmark which are large (cifar10\_2\_255, convBigRELU\_PGD), average overhead is about 4\%, apply median filter and average will be 2\%}
@@ -3578,119 +3580,9 @@ Since each literal is considered, this would be considered exhaustive theory pro
 %The estimated output ranges could be used to check the reachability, as shown in Sec~\ref{sec:unsat}.
 %If the output property is unreachable, the Theory Deduce will raise ``conflict'' status, otherwise, the output property might be reachable, we could not decide the reachability status of the current assignment.
 
-\subsection{Optimizations}\label{sec:optimizations}
-Like some other verifiers~\cite{katz2019marabou,katz2022reluplex,bak2021nnenum}, 
-\tool{} implements \emph{input splitting} to quickly deal with \emph{small} verification problems, such as ACAS Xu discussed in \S\ref{sec:expsettings}. %\tvn{Hai, could you quickly summarize input splitting this in 1 or 2 sentences at most?}
-% \hd{For networks with small inputs, \tool{} uses LP solving to tighten input bounds and then applies abstraction to achieve greater estimation.}
-This technique divides the original verification problem into subproblems, each checking whether the DNN produces the desired output from a smaller input region and returns \texttt{unsat} if all subproblems are verified and \texttt{sat} if a counterexample is found in any subproblem.
-
-\ignore{
-
-\subsubsection{Input Bounds Tightening}\label{sec:inputboundstigthten}
-For networks with small inputs (currently set to those with $\le 50$ inputs), \tool{} uses a more aggressive abstraction process in the theory solver described in \S\ref{sec:deduction}. Specifically,  we use LP solving to compute the tightest bounds for all input variables from the generated linear constraints. This computation is efficient when the number of inputs is small.
-After tightening input bounds we apply abstraction (line~\ref{line:abstraction}, Fig.~\ref{alg:deduction}) to approximate the output bounds, which can be more precise with better input bounds.
-For networks with large number of inputs, we obtain input bounds from the input property $\phi_{in}$.
-
-\paragraph{Decision Heuristics}\label{sec:decision-heuristics}
-Decision or branching heuristics decide free variables to make assignments and thus are crucial for the scalability of DPLL by reducing assignment mistakes~\cite{kroening2016decision,beyer2022progress}.
-
-For networks with small inputs, \tool{} prioritizes variables representing neurons with the \emph{furthest bounds} from the decision value 0 of ReLU, i.e., the 0 in $\max(x,0)$.
-Such neurons have wider bounds and therefore are more difficult to tighten during abstraction compared to other neurons.
-This heuristic helps input bounds tightening as described in \S\ref{sec:inputboundstigthten} (which is also applied only for networks with small inputs). It is also cheap because we can reuse the computed boundaries of hidden neurons during abstraction.
-}
-
-
-\ignore{
-\subsubsection{Multiprocessing} \label{sec:input_split}
-
-For networks with small inputs, \tool{} uses a simple approach to create and solve subproblems in parallel.
-Given a verification problem $N_{orig} = (\alpha, \phi_{in}, \phi_{out})$, where $\alpha$ is the DNN and $\phi_{in} \Rightarrow \phi_{out}$ is the desired property, \tool{} creates subproblems $N_i = (\alpha, \phi_{{in}_i}, \phi_{out})$, where $\phi_{{in}_i}$ is the $i$-th subregion of the input region specified by $\phi_{in}$.
-Intuitively, each subproblem checks if the DNN produces the output $\phi_{out}$  from a smaller input region $\phi_{{in}_i}$.
-The combination of these subproperties $\bigwedge \phi_{{in}_i} \Rightarrow \phi_{out}$ is logically equivalent to the original property $\phi_{in} \Rightarrow \phi_{out}$.
-
-
-Given $k$ available threads, \tool{} splits the original input region to obtain subproblems as described and and runs DPLL(T) on $k$ subproblems in parallel. % and iteratively splits any subproblem which cannot be solved within pre-defined amount of time, e.g., 2 seconds.
-\tool{} returns \texttt{unsat} if it verifies all subproblems and \texttt{sat} if it found a counterexample in any subproblem. %In the current implementation, \tool{} uses the number of available threads to determine the number of created subproblems.
-For example, we split the input region $\{x_1 \in [-1,1] , x_2 \in [-2,2]\}$ into four subregions 
-$\{x_1 \in [-1,0] , x_2 \in [-2,0]\}$, 
-$\{x_1 \in [-1,0] , x_2 \in [0,2]\}$ , 
-$\{x_1 \in [0,1] , x_2 \in [-2,0]\}$, and 
-$\{x_1 \in [0,1], x_2 \in [0,2]\}$.  
-Note that the formula $-1 \le x_1 \le 1 \land -2 \le x_2 \le 2$ representing the original input region is equivalent to the formula $(-1 \le x_1 \le 0 \lor 0 \le x \le 1) \land (-2 \le x_2 \le 0 \lor 0 \le x_2 \le 2)$ representing the combination of the created subregions.
-
-%\hd{Updated.}
-
-
-%We note that this input splitting technique is different than other input splitting techniques whe
-
-%% can be split into the subproblems  $-1 \le x_1 \le 1 \land -2 \le x_2 \le 2  \Rightarrow x_5 \le 0$
-
-%% \tvn{hm .. if you have multiple inputs, how do you create regions from those?  e.g., if $\phi = 5\le i_1 \le 10 \land 10 \le i_2 \le 20$, then what is $\phi_k$?}
-%% \hd{Split each input at a time, e.g., split $i_1$ from $5\le i_1 \le 10$ to $(5\le i_1 \le 8) \lor (8\le i_1 \le 10)$. Now original problem is $\phi = [(5\le i_1 \le 8) \lor (8\le i_1 \le 10)] \land (10 \le i_2 \le 20)$, or we could rewrite that formula in DNF form like $\phi = [(5\le i_1 \le 8) \land (10 \le i_2 \le 20)] \lor [(8\le i_1 \le 10) \land (10 \le i_2 \le 20)]$}\tvn{so if for i1 you make k1 splits,  i2 you make k2 splits,  .., then the number of sub probs is k1*k2*...kn?}\hd{yes, this thing is very trivial, I did it when I had no idea to optimize during that time}
-%% After that, \tool{} creates multiple CDCL verification instances, and each of them will solve a subproblem independently\tvn{how do you determine the number of subregions? is it automatically based on the number of avail threads?} \hd{I did split based on number of threads for now.}
-
-
-
-
-%In the input splitting used in~\cite{wang2018formal,wang2021beta}, they only compute the abstraction over each subregion once to get estimated output. 
-%If the subregion causes UNSAT, it will be eliminate immediately. 
-%Otherwise, they split that current subregion into multiple instances, and continue at the aforementioned abstraction step.
-%In the other hand, in \tool{}, each CDCL instance takes input of a subregion and run for verifying it with iterations as in Fig.~\ref{fig:alg}.
-
-
-
-%% \textbf{Discussion}
-%% Testing. Does not affect soundness and helps with completeness.
-%% Since the procedure is sampling-based, it is applicable to neural networks with any type of activation function.
-%% Does not affect performance of DPLL(T) and helps quickly knock out easy instances as shown in experimentation.
-%% Used by some verification tools. \tvn{SAT/SMT solvers also do that?} \hd{Not SAT/SMT solver, other verifiers, like ERAN, abcrown, also do that}
-
-
-%% The falsification algorithm is \textbf{sound} but \textbf{not complete}. 
-%% When a falsifying input has been found by our algorithm, it terminates by declaring the network as \textbf{unsafe} and the reported counterexample indeed violates the safety property of the network. 
-%% However, when it terminates before finding any falsifying input, one cannot guarantee the absence of any falsifying input and consequently, the safety of the network with respect to the property.
-
-%% % \subsection{Other DPLL components}
-
-%% % Describe other DPLL components (BCP, Decide using VSIDS, etc).  If they are complicated enough,  give it its own section.  
-
-%% \subsection{Properties of \tool{}}
-
-%% \textbf{Sound} \tool{} is sound because the main DPLL algorithm is sound, also the abstraction domain are over-approximated techniques, then they are sound. 
-
-%% \textbf{Complete} Deduce/Theory solver calls LP solver over the reals?
-
-%% \textbf{Complexity} The worst-case complexity of \tool{} is exponential in the number of neurons. More specifically, the algorithm works by assigning activation status for each neuron (either on or off) and thus in the worst-case \tool{} will try all $2^n$ possible combinations of assignments, where $n$ is the number of neurons.  %Moreover, for each combination, \tool{} also performs linear programming solving to check for assignment feasibility.
-
-%% \hd{
-%%     This section is duplicated elsewhere
-    
-%%     \subsection{Difference between of \tool{} and BaB-based verifiers}
-    
-%%     For example, the network has 5 neurons corresponding to 5 variables, e.g., $\{v_1, v_2, v_3, v_4, v_5\}$. 
-%%     Also, \tool{} already assigned $v_1@0, v_2@0, v_3@0$, and suppose that it has generated a conflict clause $c = \overline{v_2} \lor v_4 \lor v_5$.
-%%     If \tool{} continue to split an unsigned neurons (e.g., $v_4$ or $v_5$), e.g., \tool{} chooses $v_4$.
-%%     If $v_4@1$, there will be 2 cases for $v_5$, e.g., $v_5@2$ and $\overline{v_5}@2$.
-%%     If $\overline{v_4}@1$, there will be only one case for $v_5$, that is, $v_5@2$, because of the generated conflict clause $c$.
-%%     In total, there will be \textbf{at most} 3 splits to check with help of the learnt conflict clause $c$.
-    
-%%     In the other hand, if the BaB-based algorithm reached the same state above, e.g, there remains 2 unstable neurons $v_4, v_5$, and they need to check \textbf{at most} 4 splits.
-
-
-%%     In short, we might be able to decrease some iterations with the help of the conflict clause learning technique.
-%% }
-}
-
-Moreover, like other DNN verifiers~\cite{ferrari2022complete,zhang2022general}, \tool{} tool implements a fast-path optimization that attempts to disprove or falsify the property before running DPLL(T).
-\tool{} uses two \emph{adversarial attack} algorithms to find counterexamples to falsify properties.
-First, we try a randomized attack approach~\cite{das2021fast}, which is a derivative-free sampling-based optimization~\cite{yu2016derivative}, to generate a potential counterexample.
-If this approach fails, we then use a gradient-based approach~\cite{madry2017towards} to create another potential counterexample. 
-If either attack algorithm gives a valid counterexample, \tool{} returns \texttt{sat}, indicating that property is invalid. If both algorithms cannot find a valid counterexample or they exceed a predefined timeout, \tool{} continues with its DPLL(T) search.
-
-
 \part{Optimizations and Strategies}\label{part:optimizations}
 
-\chapter{Adversarial Attacks}
+\chapter{Adversarial Attacks}\label{chap:adversarial-attacks}
 
 Modern DNN verifiers (\crown{}, \neuralsat{}, etc) often first run an adversarial attack technique to check for obvious counterexamples. If one is found, the property is violated (and the verifier returns \sat). If no counterexample is found, the verifier proceeds to the more expensive search-based verification algorithm (e.g., \bab{} as shown in~\autoref{chap:search-algorithms}).
 
@@ -3783,6 +3675,123 @@ So, the PGD attack finds a counterexample at $(x_1 = -1,\ x_2 = 0.75)$.
 % 	•	x_5 = 2*(-1) - 1.5*2 + 1 = -2 - 3 + 1 = -4 (violation found!).
 
 \end{example}
+
+
+\subsection{Optimizations}\label{sec:optimizations}
+
+\paragraph{Input Splitting} Like some other verifiers~\cite{katz2019marabou,katz2022reluplex,bak2021nnenum}, 
+\tool{} implements \emph{input splitting} to quickly deal with \emph{small} verification problems, such as those in the ACAS Xu benchmark. %\tvn{Hai, could you quickly summarize input splitting this in 1 or 2 sentences at most?}
+% \hd{For networks with small inputs, \tool{} uses LP solving to tighten input bounds and then applies abstraction to achieve greater estimation.}
+This technique divides the original verification problem into subproblems, each checking whether the DNN produces the desired output from a smaller input region and returns \unsat{} if all subproblems are verified and \sat{}} if a counterexample is found in any subproblem.
+
+\ignore{
+
+\subsubsection{Input Bounds Tightening}\label{sec:inputboundstigthten}
+For networks with small inputs (currently set to those with $\le 50$ inputs), \tool{} uses a more aggressive abstraction process in the theory solver described in \S\ref{sec:deduction}. Specifically,  we use LP solving to compute the tightest bounds for all input variables from the generated linear constraints. This computation is efficient when the number of inputs is small.
+After tightening input bounds we apply abstraction (line~\ref{line:abstraction}, Fig.~\ref{alg:deduction}) to approximate the output bounds, which can be more precise with better input bounds.
+For networks with large number of inputs, we obtain input bounds from the input property $\phi_{in}$.
+
+\paragraph{Decision Heuristics}\label{sec:decision-heuristics}
+Decision or branching heuristics decide free variables to make assignments and thus are crucial for the scalability of DPLL by reducing assignment mistakes~\cite{kroening2016decision,beyer2022progress}.
+
+For networks with small inputs, \tool{} prioritizes variables representing neurons with the \emph{furthest bounds} from the decision value 0 of ReLU, i.e., the 0 in $\max(x,0)$.
+Such neurons have wider bounds and therefore are more difficult to tighten during abstraction compared to other neurons.
+This heuristic helps input bounds tightening as described in \S\ref{sec:inputboundstigthten} (which is also applied only for networks with small inputs). It is also cheap because we can reuse the computed boundaries of hidden neurons during abstraction.
+}
+
+
+\ignore{
+\subsubsection{Multiprocessing} \label{sec:input_split}
+
+For networks with small inputs, \tool{} uses a simple approach to create and solve subproblems in parallel.
+Given a verification problem $N_{orig} = (\alpha, \phi_{in}, \phi_{out})$, where $\alpha$ is the DNN and $\phi_{in} \Rightarrow \phi_{out}$ is the desired property, \tool{} creates subproblems $N_i = (\alpha, \phi_{{in}_i}, \phi_{out})$, where $\phi_{{in}_i}$ is the $i$-th subregion of the input region specified by $\phi_{in}$.
+Intuitively, each subproblem checks if the DNN produces the output $\phi_{out}$  from a smaller input region $\phi_{{in}_i}$.
+The combination of these subproperties $\bigwedge \phi_{{in}_i} \Rightarrow \phi_{out}$ is logically equivalent to the original property $\phi_{in} \Rightarrow \phi_{out}$.
+
+
+Given $k$ available threads, \tool{} splits the original input region to obtain subproblems as described and and runs DPLL(T) on $k$ subproblems in parallel. % and iteratively splits any subproblem which cannot be solved within pre-defined amount of time, e.g., 2 seconds.
+\tool{} returns \texttt{unsat} if it verifies all subproblems and \texttt{sat} if it found a counterexample in any subproblem. %In the current implementation, \tool{} uses the number of available threads to determine the number of created subproblems.
+For example, we split the input region $\{x_1 \in [-1,1] , x_2 \in [-2,2]\}$ into four subregions 
+$\{x_1 \in [-1,0] , x_2 \in [-2,0]\}$, 
+$\{x_1 \in [-1,0] , x_2 \in [0,2]\}$ , 
+$\{x_1 \in [0,1] , x_2 \in [-2,0]\}$, and 
+$\{x_1 \in [0,1], x_2 \in [0,2]\}$.  
+Note that the formula $-1 \le x_1 \le 1 \land -2 \le x_2 \le 2$ representing the original input region is equivalent to the formula $(-1 \le x_1 \le 0 \lor 0 \le x \le 1) \land (-2 \le x_2 \le 0 \lor 0 \le x_2 \le 2)$ representing the combination of the created subregions.
+
+%\hd{Updated.}
+
+
+%We note that this input splitting technique is different than other input splitting techniques whe
+
+%% can be split into the subproblems  $-1 \le x_1 \le 1 \land -2 \le x_2 \le 2  \Rightarrow x_5 \le 0$
+
+%% \tvn{hm .. if you have multiple inputs, how do you create regions from those?  e.g., if $\phi = 5\le i_1 \le 10 \land 10 \le i_2 \le 20$, then what is $\phi_k$?}
+%% \hd{Split each input at a time, e.g., split $i_1$ from $5\le i_1 \le 10$ to $(5\le i_1 \le 8) \lor (8\le i_1 \le 10)$. Now original problem is $\phi = [(5\le i_1 \le 8) \lor (8\le i_1 \le 10)] \land (10 \le i_2 \le 20)$, or we could rewrite that formula in DNF form like $\phi = [(5\le i_1 \le 8) \land (10 \le i_2 \le 20)] \lor [(8\le i_1 \le 10) \land (10 \le i_2 \le 20)]$}\tvn{so if for i1 you make k1 splits,  i2 you make k2 splits,  .., then the number of sub probs is k1*k2*...kn?}\hd{yes, this thing is very trivial, I did it when I had no idea to optimize during that time}
+%% After that, \tool{} creates multiple CDCL verification instances, and each of them will solve a subproblem independently\tvn{how do you determine the number of subregions? is it automatically based on the number of avail threads?} \hd{I did split based on number of threads for now.}
+
+
+
+
+%In the input splitting used in~\cite{wang2018formal,wang2021beta}, they only compute the abstraction over each subregion once to get estimated output. 
+%If the subregion causes UNSAT, it will be eliminate immediately. 
+%Otherwise, they split that current subregion into multiple instances, and continue at the aforementioned abstraction step.
+%In the other hand, in \tool{}, each CDCL instance takes input of a subregion and run for verifying it with iterations as in Fig.~\ref{fig:alg}.
+
+
+
+
+
+
+%% \textbf{Discussion}
+%% Testing. Does not affect soundness and helps with completeness.
+%% Since the procedure is sampling-based, it is applicable to neural networks with any type of activation function.
+%% Does not affect performance of DPLL(T) and helps quickly knock out easy instances as shown in experimentation.
+%% Used by some verification tools. \tvn{SAT/SMT solvers also do that?} \hd{Not SAT/SMT solver, other verifiers, like ERAN, abcrown, also do that}
+
+
+%% The falsification algorithm is \textbf{sound} but \textbf{not complete}. 
+%% When a falsifying input has been found by our algorithm, it terminates by declaring the network as \textbf{unsafe} and the reported counterexample indeed violates the safety property of the network. 
+%% However, when it terminates before finding any falsifying input, one cannot guarantee the absence of any falsifying input and consequently, the safety of the network with respect to the property.
+
+%% % \subsection{Other DPLL components}
+
+%% % Describe other DPLL components (BCP, Decide using VSIDS, etc).  If they are complicated enough,  give it its own section.  
+
+%% \subsection{Properties of \tool{}}
+
+%% \textbf{Sound} \tool{} is sound because the main DPLL algorithm is sound, also the abstraction domain are over-approximated techniques, then they are sound. 
+
+%% \textbf{Complete} Deduce/Theory solver calls LP solver over the reals?
+
+%% \textbf{Complexity} The worst-case complexity of \tool{} is exponential in the number of neurons. More specifically, the algorithm works by assigning activation status for each neuron (either on or off) and thus in the worst-case \tool{} will try all $2^n$ possible combinations of assignments, where $n$ is the number of neurons.  %Moreover, for each combination, \tool{} also performs linear programming solving to check for assignment feasibility.
+
+%% \hd{
+%%     This section is duplicated elsewhere
+    
+%%     \subsection{Difference between of \tool{} and BaB-based verifiers}
+    
+%%     For example, the network has 5 neurons corresponding to 5 variables, e.g., $\{v_1, v_2, v_3, v_4, v_5\}$. 
+%%     Also, \tool{} already assigned $v_1@0, v_2@0, v_3@0$, and suppose that it has generated a conflict clause $c = \overline{v_2} \lor v_4 \lor v_5$.
+%%     If \tool{} continue to split an unsigned neurons (e.g., $v_4$ or $v_5$), e.g., \tool{} chooses $v_4$.
+%%     If $v_4@1$, there will be 2 cases for $v_5$, e.g., $v_5@2$ and $\overline{v_5}@2$.
+%%     If $\overline{v_4}@1$, there will be only one case for $v_5$, that is, $v_5@2$, because of the generated conflict clause $c$.
+%%     In total, there will be \textbf{at most} 3 splits to check with help of the learnt conflict clause $c$.
+    
+%%     In the other hand, if the BaB-based algorithm reached the same state above, e.g, there remains 2 unstable neurons $v_4, v_5$, and they need to check \textbf{at most} 4 splits.
+
+
+%%     In short, we might be able to decrease some iterations with the help of the conflict clause learning technique.
+%% }
+}
+
+\paragraph{Adversarial Attacks (\autoref{chap:adversarial-attacks})} Like other DNN verifiers~\cite{ferrari2022complete,zhang2022general}, \tool{} tool implements a fast-path optimization that attempts to disprove or falsify the property before running DPLL(T).
+\tool{} uses two \emph{adversarial attack} algorithms to find counterexamples to falsify properties.
+First, we try a randomized attack approach~\cite{das2021fast}, which is a derivative-free sampling-based optimization~\cite{yu2016derivative}, to generate a potential counterexample.
+If this approach fails, we then use a gradient-based approach~\cite{madry2017towards} to create another potential counterexample. 
+
+If either attack algorithm gives a valid counterexample, \tool{} returns \texttt{sat}, indicating that property is invalid. If both algorithms cannot find a counterexample or they exceed a predefined timeout, \tool{} continues with its DPLL(T) search.
+
+
 \chapter{GPU and Multicore Parallelism}
 
 
