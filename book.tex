@@ -157,7 +157,7 @@
 \renewcommand{\figureautorefname}{Fig.}
 \renewcommand{\tableautorefname}{Tab.}
 \renewcommand{\equationautorefname}{Eq.}
-\renewcommand{\exampleautorefname}{Ex.}
+%\renewcommand{\exampleautorefname}{Ex.}
 \renewcommand{\chapterautorefname}{\textsection\@gobble}
 \renewcommand{\sectionautorefname}{\textsection\@gobble}
 \renewcommand{\subsectionautorefname}{\textsection\@gobble}
@@ -2659,23 +2659,23 @@ Finally, \bab{} has an empty \texttt{ActPatterns}, stops the search, and returns
 
 The \neuralsat{} approach follows the DPLL(T) framework (\autoref{sec:sat}) and is therefore an SMT solver with respect to a theory, in this case, the theory of DNNs.
 
-Fig.~\ref{fig:overview} gives an overview of , and consists of standard DPLL components (light shades) and the theory solver (dark shade).
+Fig.~\ref{fig:overview} gives an overview of \neuralsat{}, which consists of standard DPLL components (light shades) and the theory solver (dark shade).
 \neuralsat{} first constructs a propositional formula over Boolean variables that represent the activation status of neurons (\emph{Boolean Abstraction}). Clauses in the formula assert that each neuron, e.g., neuron $i$, is active or inactive, e.g., $v_i \vee \overline{v_i}$.
-This representation allows us to  use standard DPLL components to search for truth values satisfying these clauses and a DNN-specific theory solver to check the feasibility of truth assignments---the \emph{activation pattern} (\autoref{sec:activation-pattern})---with respect to the constraints encoding the DNN and the property of interest.
+This representation enables using standard DPLL to search for truth values satisfying these clauses and a DNN-specific theory solver to check the feasibility of truth assignments with respect to the constraints encoding the DNN and the property of interest.
 
-\neuralsat{} now enters an iterative process to find an activation pattern satisfying the activation clauses.
+\neuralsat{} now enters an iterative process to find a truth assignment---\emph{activation pattern} (\autoref{sec:activation-pattern})---satisfying the activation clauses.
 First, \neuralsat{} assigns a truth value to an unassigned variable (\emph{Decide}), detects unit clauses caused by this assignment, and infers additional assignments (\emph{Boolean Constraint Propagation}).
-Next, \neuralsat{} invokes the theory solver or T-solver (\emph{Deduction}), which uses LP solving and abstraction to check the satisfiability of the constraints of the current assignment with the property of interest. The T-solver can also infer additional truth assignments.
+Next, \neuralsat{} invokes the theory solver or T-solver (\emph{Deduction}), which uses LP solving and abstraction to check the satisfiability of the constraints of the current assignment with the property of interest. %The T-solver can also infer additional truth assignments.
 
 
 If the T-solver confirms satisfiability, \neuralsat{} continues with new assignments (\emph{Decide}). Otherwise, \neuralsat{} detects a conflict   (\emph{Analyze Conflict}) and learns clauses to remember it and backtrack to a previous decision  (\emph{Backtrack}).
-If \neuralsat{} detects local optima, it would restart (\emph{Restart}) the search by clearing all decisions that have been made to escape and the conflict clauses learned so far would be also recorded to avoid reaching the same state in the next runs.
-Restarting especially benefits challenging DNN problems by enabling better clause learning and exploring different decision orderings.
+If \neuralsat{} detects local optima, it would restart (\emph{Restart}) the search by clearing all decisions that have been made, but save the conflict clauses learned so far to avoid reaching the same state in the next runs.
+%Restarting especially benefits challenging DNN problems by enabling better clause learning and exploring different decision orderings.
 
-This iterative process repeats until \neuralsat{} can no longer backtrack, and returns \unsat{}, indicating the DNN has the property, or it finds a total assignment for all boolean variables, and returns \sat{} (and the user can query \neuralsat{} for a counterexample).
+This iterative process repeats until \neuralsat{} can no longer backtrack, and returns \unsat{}, indicating the DNN has the property, or it finds a total assignment for all boolean variables, and returns \sat{}. % (and the user can query \neuralsat{} for a counterexample).
 
 
-\begin{example}\label{ex:neuralsat}
+\begin{example}[Complete Illustration]\label{ex:neuralsat}
 We use \neuralsat{} to prove that for inputs $x_1 \in [-1, 1], x_2 \in [-2,2]$ the DNN in Fig.~\ref{fig:dnn} produces the output $x_5 \le 0$.
 \neuralsat{} takes as input the formula $\alpha$ representing the DNN:
 
@@ -3088,17 +3088,21 @@ with variables encoding neuron activation status (\texttt{BooleanAbstraction}).
 Next, \tool{} assign values to Boolean variables (\texttt{Decide}) and checks for conflicts the assignment has with the real-valued constraints of the DNN and the property of interest (\texttt{BCP} and \texttt{Deduction}). 
 If conflicts arise, \tool{} determines the assignment decisions causing the conflicts (\texttt{AnalyzeConflict}), backtracks to erase such decisions (\texttt{Backtrack}), and learns clauses to avoid those decisions in the future. 
 \tool{} repeats these decisions and checking steps until it finds a total or full assignment for all Boolean variables, in which it returns \texttt{sat}, or until it no longer can backtrack, in which it returns \texttt{unsat}.
-Note that \tool{} also resets its search (if it thinks that it is stuck in a local optima) and tries different decision orderings to enable better clause learning and avoid similar ``bad'' decisions in the previous runs.
-We describe these steps in more detail below.
+
+%Note that \tool{} also resets its search (if it thinks that it is stuck in a local optima) and tries different decision orderings to enable better clause learning and avoid similar ``bad'' decisions in the previous runs.
 
 
 
 \subsection{Boolean Abstraction}
-\texttt{BooleanAbstraction} (Fig.~\ref{fig:alg} line~\ref{line:Booleanabstraction}) encodes the DNN verification problem into a Boolean constraint to be solved by DPLL.  This step creates Boolean variables to represent the \emph{activation status} of hidden neurons in the DNN. Observe that when evaluating the DNN on any concrete input, the value of each hidden neuron \emph{before} applying ReLU is either $>0$ (the neuron is \emph{active} and the input is passed through to the output) or $\le 0$ (the neuron is \emph{inactive} because the output is 0).
+\texttt{BooleanAbstraction} (\autoref{fig:alg}~\autoref{line:Booleanabstraction}) encodes the DNN verification problem into a Boolean constraint to be solved by DPLL.  This step creates Boolean variables to represent the \emph{activation status} of hidden neurons in the DNN. Observe that when evaluating the DNN on any concrete input, the value of each hidden neuron \emph{before} applying ReLU is either $>0$ (the neuron is \emph{active} and the input is passed through to the output) or $\le 0$ (the neuron is \emph{inactive} because the output is 0).
 This allows partial assignments to these variables to represent neuron activation patterns within the DNN.
 
-From the given network, \tool{} first creates Boolean variables representing the activation status of neurons. Next, \tool{} forms a set of initial clauses ensuring that each status variable is either \texttt{T} or \texttt{F}, indicating that each neuron is either active or inactive, respectively.
-For example, for the DNN in Fig.~\ref{fig:dnn}, \tool{} creates two status variables $v_3,v_4$ for neurons $x_3,x_4$, respectively, and two initial clauses $v_3\lor \overline{v_3}$ and $v_4 \lor \overline{v_4}$. The assignment $\{x_3=T, x_4=F \}$ creates the constraint $0.5x_1-0.5x_2-1>0 \land x_1 + x_2 -2 \le 0$.
+From the given network, \tool{} first creates Boolean variables representing the activation status of neurons. Next, \tool{} forms a set of initial clauses ensuring that each status variable is either \texttt{T} or \texttt{F}, indicating that each neuron is either active or inactive, respectively. A truth assignment over the variable $v_i$ creates a constraint on the pre-ReLU neuron $x_i$.
+
+
+\begin{example}
+For the DNN in Fig.~\ref{fig:dnn}, \tool{} creates two status variables $v_3,v_4$ for neurons $x_3,x_4$, respectively, and two initial clauses $v_3\lor \overline{v_3}$ and $v_4 \lor \overline{v_4}$. The assignment $\{x_3=T, x_4=F \}$ creates the constraint $0.5x_1-0.5x_2-1>0 \land x_1 + x_2 -2 \le 0$.
+\end{example}
 
 
 % neural network of verification task into set of clauses, then feed them to the solver.
@@ -3182,10 +3186,10 @@ Moreover, because each {BCP} implication might cause other clauses to become uni
 \textsc{BCP} returns \texttt{False} if it obtains contradictory implications (e.g., one BCP application infers $a \mapsto F$ while another infers $a \mapsto T$), and returns \texttt{True} otherwise.
 
 \paragraph{Implication Graph} \texttt{BCP} uses an \emph{implication graph}~\cite{barrett2013decision} to represent the current assignment and the reason for each BCP implication. In this graph, a node represents the assignment and an edge $i \xrightarrow{c} j$ means that \texttt{BCP} infers the assignment represented in node $j$ due to the unit clause $c$ caused by the assignment represented by node $i$.
-The implication graph is used by both BCP, which iteratively constructs the graph on each BCP application and uses it to determine conflict, and \texttt{AnalyzeConflict} (\S\ref{sec:analyze-conflicts}), which analyzes the conflict in the graph to learn clauses.
+The implication graph is used by both BCP, which iteratively constructs the graph on each BCP application and uses it to determine conflict, and \texttt{AnalyzeConflict} (\autoref{sec:analyze-conflicts}), which analyzes the conflict in the graph to learn clauses.
 
 \begin{figure}
-    \begin{minipage}[c]{0.17\textwidth}
+    \begin{minipage}[c]{0.15\textwidth}
         \centering
         \small
         \begin{equation*}
@@ -3205,7 +3209,7 @@ The implication graph is used by both BCP, which iteratively constructs the grap
     \end{minipage}
     \begin{minipage}[c]{0.33\textwidth}
         \centering
-        \small
+        \footnotesize
         \begin{tabular}{ccccc}
             name & cl & lit & var & ante \\
             \midrule
@@ -3259,7 +3263,7 @@ Note that in this example \texttt{BCP} has the implication order $v_2,v_4,v_3$ (
 
 \subsubsection{Conflict Analysis}\label{sec:analyze-conflicts}
 
-Given an implication graph with a conflict such as the one in Fig.~\ref{fig:igraph}(b), \texttt{AnalyzeConflict} learns a new \emph{clause} to avoid past decisions causing the conflict.
+Given an implication graph with a conflict (e.g.,~\autoref{fig:igraph}b), \texttt{AnalyzeConflict} learns a new \emph{clause} to avoid past decisions causing the conflict.
 The algorithm traverses the implication graph backward, starting from the conflicting node $\kappa$, while constructing a new clause through a series of resolution steps.
 \texttt{AnalyzeConflict} aims to obtain an \emph{asserting} clause, which is a clause that will force an immediate BCP implication after backtracking. 
 
@@ -3586,7 +3590,7 @@ Since each literal is considered, this would be considered exhaustive theory pro
 
 Modern DNN verifiers (\crown{}, \neuralsat{}, etc) often first run an adversarial attack technique to check for obvious counterexamples. If one is found, the property is violated (and the verifier returns \sat). If no counterexample is found, the verifier proceeds to the more expensive search-based verification algorithm (e.g., \bab{} as shown in~\autoref{chap:search-algorithms}).
 
-Thus in this first phase of running adversarial attacks, the goal to \emph{falsify} the property, i.e., find a counterexample that violates the property. If this fails, then the goal is to \emph{verify} the property, i.e., prove that no counterexample exists. Of course, during the verification phase, the verifier may also discover counterexamples that the falsify phase misses.
+Thus, in the first phase of running adversarial attacks, the goal to \emph{falsify} the property, i.e., find a counterexample that violates the property. If this fails, then the goal is to \emph{verify} the property, i.e., prove that no counterexample exists. Of course, during the verification phase, the verifier may also discover counterexamples that the falsify phase misses.
 
 \section{Random Search Attack}
 Random search (RS) is a simple method for adversarial attack.  It randomly samples points in the allowed input ranges and checks if any samples violate the property; if so, a counterexample is found.
@@ -3682,7 +3686,7 @@ So, the PGD attack finds a counterexample at $(x_1 = -1,\ x_2 = 0.75)$.
 \paragraph{Input Splitting} Like some other verifiers~\cite{katz2019marabou,katz2022reluplex,bak2021nnenum}, 
 \tool{} implements \emph{input splitting} to quickly deal with \emph{small} verification problems, such as those in the ACAS Xu benchmark. %\tvn{Hai, could you quickly summarize input splitting this in 1 or 2 sentences at most?}
 % \hd{For networks with small inputs, \tool{} uses LP solving to tighten input bounds and then applies abstraction to achieve greater estimation.}
-This technique divides the original verification problem into subproblems, each checking whether the DNN produces the desired output from a smaller input region and returns \unsat{} if all subproblems are verified and \sat{}} if a counterexample is found in any subproblem.
+This technique divides the original verification problem into subproblems, each checking whether the DNN produces the desired output from a smaller input region and returns \unsat{} if all subproblems are verified and \sat{} if a counterexample is found in any subproblem.
 
 \ignore{
 
