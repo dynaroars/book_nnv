@@ -4269,9 +4269,10 @@ Future work will explore tuning $N$ to a given verification problem.
 \subsubsection{Parallelization} Finally, the structure of \prooflang{} proof tree is designed to be easily parallelized.  Each tree path is an independent sub-proof and partitions of the tree allow checker to leverage multiprocessing to check large proof trees efficiently. \proofcheck{} uses a parameter $k$ to control the number of leaf nodes to be checked in parallel.
 
 
-\subsubsection{Correctness} These three optimizations preserve the correctness of the \proofcheck{} algorithm (\autoref{sec:checker-core-correctness}). First, neuron stabilization just simplifies the MILP problem and removes irrelevant, i.e., stable, neurons, which by definition are not affected by activation patterns. Second, while backtracking allows the checker to skip some nodes, this is sound because the structure of the proof tree guarantees that the constraints of a child is more restrictive than its parent, and thus if the parent is unsatisfiable, the children must also be. Finally, parallelization is sound because each tree path is independent and the checker will eventually check all nodes.
+\section{Rounding Errors}\label{sec:rounding-errors}
 
-%\subsection{The \proofcheck{} Algorithm and Implementation}
+\tvn{Give concrete examples of rounding errors in VNN-COMP}
+
 
 
 % \section{Evaluation}\label{sec:evaluation}  
