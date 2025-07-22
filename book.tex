@@ -4219,23 +4219,40 @@ Here we survey the latest benchmarks in DNN verification and how SOTA tools perf
         \multirow{2}{*}{\textbf{Benchmarks}} &\multicolumn{2}{c}{\textbf{Networks}} &  \multicolumn{3}{c|}{\textbf{Per Network}} &\multicolumn{2}{c}{\textbf{Tasks}} \\
         & Type & Networks & Neurons & Parameters & Input Dim & Properties & Instances (U/S/?) \\
         \midrule
-        
-        ACAS Xu & FNN & 45 & 300 & 13305 & 5 & 10 & 139/47/0 \\
-        \midrule
-    
-        MNISTFC & FNN & 3 &  0.5--1.5K & 269--532K & & 30 & 56/23/11\\
-        \midrule
-        
-        CIFAR2020 & FNN+CNN & 3 &  17--62K & 2.1--2.5M && 203 & 149/43/11 \\
-        \midrule
-        
-        RESNET\_A/B & CNN+ResNet & 2 & 11K & 354K & & 144 & 49/23/72 \\
-        \midrule
-        
-        CIFAR\_GDVB & FNN+CNN & 42 & 9--49K & 0.08--58M && 39 & 60/0/0 \\
-        \midrule
-        \midrule
-        VGGNet16 & CNN + ReLU + MaxPool& ? & ? & 138M & 150K & ? & ? \\
+      cGan &  Conv. + Vision Trans. & & & 500K--68M & 5 &  &  \\
+      NN4Sys & ReLU + Sigmoid       & & & 33k--37M & 1--308 & & \\
+      LinearizeNN & FC. + Conv. + & && 203k & 4 && \\
+      &Vision Trans. + Res. + ReLU &&&&&&\\
+      \midrule
+      Collins RUL CNN & Conv. + ReLU, Dropout  &&& 60k--262k  & 400--800 &&\\
+      cifar100 &FC + Conv. + Res., & &&2.5M--3.8M & 3072 & &\\
+                                             &ReLU + BatchNorm &&&&&&\\
+      tinyimagenet &FC + Conv. + Res., &&& 3.6M & 9408 & &\\
+      & ReLU + BatchNorm &&&&&&\\
+      Metaroom & Conv. + FC, ReLU &&& 466k--7.4M & 5376 & &\\
+
+      \midrule
+
+      TLL Verify Bench & Two-Level Lattice NN (FC. + ReLU)  &&& 17k--67M & 2 &&\\
+      Acas XU & FC. + ReLU &45&300& 13k & 5 &10&139/47/0\\
+      %ACAS Xu & FNN & 45 & 300 & 13305 & 5 & 10 & 139/47/0 \\
+      Dist Shift & FC. + ReLU + Sigmoid &&& 342k -- 855k & 792 &&\\
+      safeNLP & FC. + ReLU &&& 4k & 30 &&\\
+      CORA & FC. + ReLU &&& 575k, 1.1M & 784, 3072 &&\\
+
+
+        % MNISTFC & FNN & 3 &  0.5--1.5K & 269--532K & & 30 & 56/23/11\\
+
+        % %CIFAR2020 & FNN+CNN & 3 &  17--62K & 2.1--2.5M && 203 & 149/43/11 \\
+        % \midrule
+
+        % RESNET\_A/B & CNN+ResNet & 2 & 11K & 354K & & 144 & 49/23/72 \\
+        % \midrule
+
+        % CIFAR\_GDVB & FNN+CNN & 42 & 9--49K & 0.08--58M && 39 & 60/0/0 \\
+        % \midrule
+        % \midrule
+        % VGGNet16 & CNN + ReLU + MaxPool& ? & ? & 138M & 150K & ? & ? \\
         \bottomrule
         \end{tabular}
     }
@@ -4289,28 +4306,25 @@ Here we survey the latest benchmarks in DNN verification and how SOTA tools perf
 %     Track
 %     \\
 %     \midrule
-%     \multirow{8}{*}{Complex} 
+%     \multirow{8}{*}{Complex}
 %     %& Carvana UNet  & Image Segmentation & Complex UNet              & 275k - 373k & 4.3k \\
 %     & cGAN & \makecell{Image Generation \\ \& Image Prediction} & Conv. + Vision Transformer & 500k - 68M & 5 & regular \\
 %     & NN4Sys & \makecell{Dataset Indexing \\ \&  Cardinality Prediction}   & ReLU + Sigmoid & 33k - 37M & 1-308 & regular \\
-%     & LinearizeNN & NN controller approximation & FC. + Conv. + Vision Transformer + Residual + ReLU & 203k & 4 & regular \\
 %     %& ml4acopf & Power System & Complex (ReLU + Trigonometric + Sigmoid) & 4k-680k & 22 - 402 & extended \\
 %     %& ViT & Vision & Conv. + Residual + Softmax + BatchNorm & 68k - 76k & 3072 & extended \\
 %     %& Collins Aerospace & - & FC + Conv. + Residual, LeakyReLU + MaxPool + Square & 1.8M & 1.2M & extended \\
 %     %& LSNC & Lyapunov stability of NN controllers & FC + Residual, ReLU + Sin + Cos & 210, 406 & 8 & extended \\
 %     %& CCTSDB & - & FC + Conv. + Residual, ReLU +  MaxPool + Clip & 100k & 2 & extended \\
 %     %\cmidrule(lr){1-7}
-%     %\multirow{7}{*}{\makecell{CNN \\ \& ResNet}} 
+%     %\multirow{7}{*}{\makecell{CNN \\ \& ResNet}}
 %     % & Cifar Bias Field      & Image Classification & Conv. + ReLU  & 45k   & 16 \\
-%     & Collins RUL CNN & Condition Based Maintenance & Conv. + ReLU, Dropout  & 60k - 262k   & 400 - 800 & regular \\
+
 %     % & Large ResNets         & Image Classification & ResNet (Conv. + ReLU)  & 55k - 286k   & 3.1k - 12k \\
 %     % & Oval21 & Image Classification & Conv. + ReLU  & 3.1k - 6.2k   & 3.1k \\
 %     % & SRI ResNet A/B & Image Classification  & ResNet (Conv. + ReLU)  & 11k   & 3.1k \\
 %     %& VGGNet16 & Image Classification & Conv. + ReLU + MaxPool    & 138M & 150k & extended \\
 %     & Traffic Signs Recognition & Image Classification & Conv. + Sign + MakPool + BatchNorm & 905k - 1.7M & 2.7k - 12k & extended \\
-%     % & cifar100 & Image Classification & FC + Conv. + Residual, ReLU + BatchNorm & 2.5M - 3.8M & 3072 & regular \\
-%     % & tinyimagenet & Image Classification & FC + Conv. + Residual, ReLU + BatchNorm & 3.6M & 9408 & regular \\
-%     % & Metaroom & - & Conv. + FC, ReLU & 466k - 7.4M & 5376 & regular \\
+
 %     % & Yolo & - & FC + Conv. + Residual, ReLU + Sigmoid & 22k - 37M & 1 - 308 & extended \\
 %     % %
 %     % \cmidrule(lr){1-7} %
@@ -4318,36 +4332,31 @@ Here we survey the latest benchmarks in DNN verification and how SOTA tools perf
 %     % %& MNIST FC & Image Classification & FC. + ReLU    & 512 - 1.5k & 784 \\
 %     % %& Reach Prob Density    & Probability density estimation & FC. + ReLU    & 64 - 192 & 3 - 14 \\
 %     % %& RL Benchmarks  & Reinforcement Learning & FC. + ReLU    & 128 - 512  & 4 - 8 \\
-%     % & TLL Verify Bench & Two-Level Lattice NN & \makecell{Two-Level Lattice NN \\(FC. + ReLU)}  & 17k - 67M & 2 & regular \\
-%     % & Acas XU & Collision Detection & FC. + ReLU & 13k & 5 & regular \\
-%     % & Dist Shift & Distribution Shift Detection & FC. + ReLU + Sigmoid & 342k - 855k & 792 & regular \\
-%     % & safeNLP & Sentence classification & FC. + ReLU & 4k & 30 & regular \\
-%     % & CORA & Image Classification & FC. + ReLU & 575k, 1.1M & 784, 3072 & regular \\
 %     \bottomrule
 %     \end{tabular}
 %     }
 % \end{table}
 
 
-% \subsection{cGAN}
-% \paragraph*{Proposed by} Feiyang Cai, Ali Arjomandbigdeli, Stanley Bak (Stony Brook Univ.). Link: \url{https://github.com/feiyang-cai/cgan_benchmark2023}
+\subsection{cGAN}
+\paragraph*{Proposed by} Feiyang Cai, Ali Arjomandbigdeli, Stanley Bak (Stony Brook Univ.). Link: \url{https://github.com/feiyang-cai/cgan_benchmark2023}
 
-% This benchmark targets robustness verification for generative models—an area often overlooked compared to discriminative networks.
-% It uses conditional GANs trained to generate images of vehicles at specific distances. The generator takes a 1D distance input and a 4D noise vector; the discriminator outputs a real/fake score and a predicted distance.
-% Models vary in architecture (CNNs, vision transformers) and image size (32×32, 64×64).
-% The verification task checks whether the predicted distance from the generated image matches the input condition, under small input perturbations.
+This benchmark targets robustness verification for generative models—an area often overlooked compared to discriminative networks.
+It uses conditional GANs trained to generate images of vehicles at specific distances. The generator takes a 1D distance input and a 4D noise vector; the discriminator outputs a real/fake score and a predicted distance.
+Models vary in architecture (CNNs, vision transformers) and image size (32×32, 64×64).
+The verification task checks whether the predicted distance from the generated image matches the input condition, under small input perturbations.
 
 
-% % \paragraph*{Motivation}
-% % While existing neural network verification benchmarks focus on discriminative models, the exploration of practical and widely used generative networks remains neglected in terms of robustness assessment.
-% % This benchmark introduces a set of image generation networks specifically designed for verifying the robustness of the generative networks.
-% % \paragraph*{Networks}
-% % The generative networks are trained using conditional generative adversarial networks (cGAN), whose objective is to generate camera images that contain a vehicle obstacle located at a specific distance in front of the ego vehicle, where the distance is controlled by the input distance condition.
-% % The network to be verified is the concatenation of a generator and a discriminator.  The generator takes two inputs: 1) a distance condition (1D scalar) and 2) a noise vector controlling the environment (4D vector). The output of the generator is the generated image. The discriminator takes the generated image as input and outputs two values: 1) a real/fake score (1D scalar) and 2) a predicted distance (1D scalar).
-% % Several different models with varying architectures (CNN and vision transformer) and image sizes (32x32, 64x64) are provided for different difficulty levels.
-% % \paragraph*{Specifications}
-% % The verification task is to check whether the generated image aligns with the input distance condition, or in other words, verify whether the input distance condition matches the predicted distance of the generated image.
-% % In each specification, the inputs (condition distance and latent variables) are constrained in small ranges, and the output is the predicted distance with the same center as the condition distance but with slightly larger range.
+\paragraph*{Motivation}
+While existing neural network verification benchmarks focus on discriminative models, the exploration of practical and widely used generative networks remains neglected in terms of robustness assessment.
+This benchmark introduces a set of image generation networks specifically designed for verifying the robustness of the generative networks.
+\paragraph*{Networks}
+The generative networks are trained using conditional generative adversarial networks (cGAN), whose objective is to generate camera images that contain a vehicle obstacle located at a specific distance in front of the ego vehicle, where the distance is controlled by the input distance condition.
+The network to be verified is the concatenation of a generator and a discriminator.  The generator takes two inputs: 1) a distance condition (1D scalar) and 2) a noise vector controlling the environment (4D vector). The output of the generator is the generated image. The discriminator takes the generated image as input and outputs two values: 1) a real/fake score (1D scalar) and 2) a predicted distance (1D scalar).
+Several different models with varying architectures (CNN and vision transformer) and image sizes (32x32, 64x64) are provided for different difficulty levels.
+\paragraph*{Specifications}
+The verification task is to check whether the generated image aligns with the input distance condition, or in other words, verify whether the input distance condition matches the predicted distance of the generated image.
+In each specification, the inputs (condition distance and latent variables) are constrained in small ranges, and the output is the predicted distance with the same center as the condition distance but with slightly larger range.
 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
