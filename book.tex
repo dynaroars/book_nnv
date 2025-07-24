@@ -1975,7 +1975,7 @@ As mentioned in~\autoref{sec:milp}, we need to compute the bounds of the neurons
 \tvn{Hai, put in the Tikz picture showing different abstractions: ReLU, Interval, Zonotope, Polytope, etc.}
 \begin{figure}[h]
     \centering
-    \begin{tikzpicture}[scale=1.6]
+    \begin{tikzpicture}[scale=2]
         % Colors
         \definecolor{myred}{RGB}{255,100,100}
         \definecolor{myfill}{RGB}{255,245,200}
@@ -1988,7 +1988,7 @@ As mentioned in~\autoref{sec:milp}, we need to compute the bounds of the neurons
         \fill[myfill] (\lx,\ly) rectangle (\ux,\uy);
         % Axes
         \draw[thick,->] ({\lx-0.2},0) -- ({\ux+0.3},0) node[right] {$x$};
-        \draw[thick,->] (0,{\ly-0.2}) -- (0,{\uy+0.3}) node[above] {$y$};
+        \draw[thick,->] (0,{\ly-0.3}) -- (0,{\uy+0.3}) node[above] {$y$};
         % Dashed bounds
         \draw[dashed] (\lx,{\ly-0.1}) -- (\lx,{\uy+0.2});
         \draw[dashed] (\ux,{\ly-0.1}) -- (\ux,{\uy+0.2});
