@@ -1659,7 +1659,6 @@ Specifying desirable properties for neural networks is not straightforward. Some
 
 \part{Constraint Solving and Abstraction}
 
-
 \chapter{Constraint Solving}\label{chap:constraint-solving}
 
 \section{Symbolic Execution and SMT Solving}\label{sec:se-smt}
@@ -2438,7 +2437,7 @@ Therefore, DeepPoly achieves a balance, combining the expressiveness of polyhedr
 \part{DNN Verification Algorithms}
 \chapter{The Branch and Bound Search Algorithm}\label{chap:bab}
 
-Most modern DNN verifiers adopt the branch-and-bound (BaB) approach to search for activation patterns (\autoref{sec:activation-pattern}).  A standard (minimal) BaB search consists of two main components: (branch) splitting into the problem smaller subproblems
+Modern DNN verifiers typically adopt the Branch-and-Bound (BaB) approach to search for activation patterns (\autoref{sec:activation-pattern}).  A standard (minimal) BaB search consists of two main components: (branch) splitting into the problem smaller subproblems
 by using \emph{neuron splitting}, which decides boolean values representing neuron activation status,
 and (bound) using abstraction and LP solving to approximate bounds on neuron values to determine
 the satisfiability of the partial activation pattern formed by the split.
