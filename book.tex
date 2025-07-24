@@ -1973,7 +1973,39 @@ As mentioned in~\autoref{sec:milp}, we need to compute the bounds of the neurons
 
 
 \tvn{Hai, put in the Tikz picture showing different abstractions: ReLU, Interval, Zonotope, Polytope, etc.}
-
+\begin{figure}[h]
+    \centering
+    \begin{tikzpicture}[scale=1.6]
+        % Colors
+        \definecolor{myred}{RGB}{255,100,100}
+        \definecolor{myfill}{RGB}{255,245,200}
+        % Parameters
+        \def\lx{-1.0}
+        \def\ux{1.0}
+        \def\ly{0}
+        \def\uy{1.0}
+        % Fill region
+        \fill[myfill] (\lx,\ly) rectangle (\ux,\uy);
+        % Axes
+        \draw[thick,->] ({\lx-0.2},0) -- ({\ux+0.3},0) node[right] {$x$};
+        \draw[thick,->] (0,{\ly-0.2}) -- (0,{\uy+0.3}) node[above] {$y$};
+        % Dashed bounds
+        \draw[dashed] (\lx,{\ly-0.1}) -- (\lx,{\uy+0.2});
+        \draw[dashed] (\ux,{\ly-0.1}) -- (\ux,{\uy+0.2});
+        \draw[dashed] (\lx,\uy) -- (\ux,\uy);
+        % ReLU line
+        \draw[ultra thick,myred] (\lx,\ly) -- (0,\ly) -- (\ux,\uy);
+        % Labels
+        \node[below] at (\lx,0) {$l_x$};
+        \node[below] at (\ux,-0.05) {$u_x$};
+        \node[left] at (-0.1,\ly-0.2) {$l_y(x)$};
+        \node[above] at (\ux-0.5,\uy) {$u_y(x)$};
+        % Origin
+        \node[below right] at (0,0) {$0$};
+    \end{tikzpicture}
+    \caption{Interval abstraction for ReLU: $y = \max(0, x)$, with $x \in [l_x, u_x]$ and $y \in [l_y(x), u_y(x)]$.}
+    \label{fig:relu-interval-abstraction}
+\end{figure}
 
 \tvn{Hai, create concrete examples with numbers to show how the abstractions work, e.g., for interval, zonotope, polytope, etc. We want to use one example to show the differences in the approximation,  not multiple examples which would be less effective.}
 \section{Interval}
