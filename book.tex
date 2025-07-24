@@ -2648,15 +2648,20 @@ Finally, \bab{} has an empty \texttt{ActPatterns}, stops the search, and returns
 
 \chapter{Common Engineerings and Optimizations}\label{chap:common-engineering}
 
-A full BaB search (\autoref{chap:bab}) is typically expensive and slow. Thus, DNN verifiers often begin by applying a range of optimizations and engineering techniques that aim to quickly eliminate easy cases, such as when the network has a small number of inputs or when easy counterexamples exist.
+A full BaB search (\autoref{chap:bab}) is typically expensive and slow. Thus, DNN verifiers often begin by applying a range of optimizations and engineering techniques that aim to quickly eliminate easy cases, such as when the network has a small number of inputs.
 
-\section{Input Splitting} Modern DNN verifiers~\cite{katz2019marabou,katz2022reluplex,bak2021nnenum,duong2025neuralsat} implement a technique called \emph{input splitting} to quickly deal with small verification problems, such as those in the ACAS Xu benchmark~\autoref{sec:acasxu} where the networks have a small number of inputs (e.g., 50 or fewer). The idea is to split the original verification problem into subproblems, each checking whether the DNN produces the desired output from a smaller input region and returns \unsat{} if all subproblems are verified and \sat{} if a counterexample is found in any subproblem.\tvn{Hai, check and give a small example of input splitting. Perhaps use some existing example.}
+\section{Input Splitting} Modern DNN verifiers~\cite{katz2019marabou,katz2022reluplex,bak2021nnenum,duong2025neuralsat} implement a technique called \emph{input splitting} to quickly deal with small verification problems, such as those in the ACAS Xu benchmark~\autoref{sec:acasxu} where the networks have a small number of inputs. Currently many work set the threshold to 50 inputs, i.e., if the network has more than 50 inputs, it is considered large and input splitting is not applied.
+
+The idea is to split the original verification problem into subproblems, each checking whether the DNN produces the desired output from a smaller input region and returns \unsat{} if all subproblems are verified and \sat{} if a counterexample is found in any subproblem.\tvn{Hai, check and give a small example of input splitting. Perhaps use some existing example.}
 
 
 \section{Input Bounds Tightening}\label{sec:inputboundstigthten}
-For networks with small inputs (currently set to those with $\le 50$ inputs), \tool{} uses a more aggressive abstraction process in the theory solver described in \S\ref{sec:deduction}. Specifically,  we use LP solving to compute the tightest bounds for all input variables from the generated linear constraints. This computation is efficient when the number of inputs is small.
-After tightening input bounds we apply abstraction (line~\ref{line:abstraction}, Fig.~\ref{alg:deduction}) to approximate the output bounds, which can be more precise with better input bounds.
-For networks with large number of inputs, we obtain input bounds from the input property $\phi_{in}$.
+For networks with small inputs, DNN verification tools use a more aggressive abstraction process to achieve more precise computation. Specifically, they use LP solving to compute the tightest bounds for all input variables from the generated linear constraints. This computation is efficient when the number of inputs is small.
+
+%(line~\ref{line:abstraction}, Fig.~\ref{alg:deduction})
+After tightening input bounds DNN verification tools apply abstraction to approximate the output bounds, which can be more precise with better input bounds.
+For networks with large number of inputs, we obtain input bounds from the input property $\phi_{in}$.\tvn{Vu: to rewrite}
+
 \ignore{
 \subsection{Decision Heuristics}\label{sec:decision-heuristics}
 Decision or branching heuristics decide free variables to make assignments and thus are crucial for the scalability of DPLL by reducing assignment mistakes~\cite{kroening2016decision,beyer2022progress}.
