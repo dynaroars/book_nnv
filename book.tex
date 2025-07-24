@@ -1342,7 +1342,7 @@ where $\|x - c\| \leq \epsilon$ indicates that the difference between the two im
 \textbf{Safety} ensures that the network conforms to certain safety constraints, often specific to the application domain. This is particularly important in safety-critical applications, such as autonomous vehicles or medical diagnosis systems, where incorrect outputs can lead to catastrophic consequences. For example, in a self-driving car, we want to ensure that the car maintains a safe distance from other vehicles and pedestrians under all scenarios.
 
 \begin{example}[Collision Avoidance System]
-    A safety property in a collision avoidance system might be that if the intruder is distant and significantly slower than us, then we stay below a certain velocity threshold. Formally, this can be expressed as:
+    A safety property in a collision avoidance system such as an autonomous vehicle might be that if the intruder is distant and significantly slower than us, then we stay below a certain velocity threshold. Formally, this can be expressed as:
 \[
 d_{intruder} > d_{threshold} \land v_{intruder} < v_{threshold} \implies v_{us} < v_{threshold},
 \]
@@ -1384,7 +1384,7 @@ The consistency property requires that if the LLM outputs age $Y$ for $q_1$, the
 
 \textbf{Monotonicity} ensures that the neural network maintains a consistent ordering relationship between inputs and outputs, where an increase in certain input features always leads to a non-decreasing output value. This property is particularly important in applications where domain knowledge dictates logical ordering constraints, such as fairness-aware systems, medical diagnosis, and scientific applications where physical laws impose natural ordering relationships.
 
-\begin{example}[Fairness with Gender Considerations]
+\begin{example}[Fairness]
     A monotonicity property in an AI system should ensure that relevant merit-based features are monotonic while demographic features like gender have no effect on the outcome. For instance, in a university admissions system, the admission probability should be monotonically non-decreasing with respect to GPA and test scores, regardless of gender. Formally, for applicants with profiles $(p, s, g)$ and $(p', s', g')$ where $p, p'$ are GPAs, $s, s'$ are test scores, and $g, g'$ are gender indicators:
 \[
 p \leq p' \land s = s' \land g \neq g' \implies f(p, s, g) \leq f(p', s', g'),
@@ -1447,7 +1447,7 @@ Properties are encoded in \textbf{SMT-LIB2}, referencing input/output variable n
 
 \begin{example}[ACAS XU Network]
 
-A typical ACAS XU network maps 5D input to 5D output via 6 layers of 50 ReLU neurons. A local robustness property is:
+A typical ACAS XU network (\autoref{sec:acasxu}) maps 5D input to 5D output via 6 layers of 50 ReLU neurons. A local robustness property is:
 \[
 -\varepsilon_i \leq x_i \leq \varepsilon_i \quad (0 \leq i < 5)
 \]
@@ -1664,7 +1664,7 @@ Specifying desirable properties for neural networks is not straightforward. Some
 
 \section{Symbolic Execution and SMT Solving}\label{sec:se-smt}
 
-As described in~\autoref{sec:satisfiability-and-activation-pattern-search} the Neural Network Verification (NNV) problem can be represented as a satisfiability problem. Specifically, we can encode the network $N$ as a logical formula $\alpha$, and use a constraint solver to check that $\alpha$ satisfies the property $\phi$ of interest.
+As described in~\autoref{sec:satisfiability-and-activation-pattern-search} the Neural Network Verification (NNV) problem can be represented as a satisfiability problem. Specifically, we encode the network $N$ as a logical formula $\alpha$, and use a constraint solver to check that $\alpha$ satisfies the property $\phi$ of interest.
 
 A straightforward way to do this encoding is using \emph{symbolic execution} (SE)~\cite{baldoni2018survey,king1976symbolic}, a well-known software testing technique for finding bugs.  SE executes a program on symbolic inputs, i.e., inputs represented as symbols rather than concrete values, and tracks the reachability of program state as symbolic expressions, i.e., logical formulae over symbolic inputs. The satisfiability of these formulae is then checked using an SMT solver, and satisfying assignments represent inputs leading to the undesirable (buggy) program state.
 
