@@ -3054,6 +3054,8 @@ Note that the work in~\cite{tjeng2019evaluating} uses the MILP system in Eq.~\re
 In contrast, \tool{} creates this system based on the current assignment, which has significantly fewer constraints.
 Moreover, we only use the computed bounds of hidden neurons from this system, and thus even if it cannot be solved, \tool{} will still continue.
 
+\SetKwFunction{GetUnassignedVariable}{GetUnassignedVariable}
+\SetKwFunction{Sort}{Sort}
 
 \begin{algorithm}[t]
     \footnotesize
