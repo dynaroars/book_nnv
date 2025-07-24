@@ -1975,6 +1975,7 @@ As mentioned in~\autoref{sec:milp}, we need to compute the bounds of the neurons
 \tvn{Hai, put in the Tikz picture showing different abstractions: ReLU, Interval, Zonotope, Polytope, etc.}
 \begin{figure}[h]
     \centering
+    
     \begin{tikzpicture}[scale=2]
         % Colors
         \definecolor{myred}{RGB}{255,100,100}
@@ -2009,43 +2010,85 @@ As mentioned in~\autoref{sec:milp}, we need to compute the bounds of the neurons
 
 \begin{figure}[h]
     \centering
-    \begin{tikzpicture}[scale=2]
-        % Colors
-        \definecolor{myred}{RGB}{255,100,100}
-        \definecolor{myfill}{RGB}{255,245,200}
-        % Parameters
-        \def\lx{-1.0}
-        \def\ux{1.0}
-        % Zonotope (band width)
-        \def\d{0.5}
-        % Zonotope corners
-        \coordinate (A) at (\lx, 0+\d*\lx);    % bottom left
-        \coordinate (B) at (\lx, 0.01);    % top left
-        \coordinate (C) at (0, \d*0);          % top middle
-        \coordinate (D) at (0, -\d*0);         % bottom middle
-        \coordinate (E) at (\ux, \ux+0.01);  % top right
-        \coordinate (F) at (\ux, \ux-\d*\ux);  % bottom right
-        % Fill zonotope
-        \fill[myfill] (A) -- (B) -- (E) -- (F) -- cycle;
-        % Axes
-        \draw[thick,->] ({\lx-0.2},0) -- ({\ux+0.3},0) node[right] {$x$};
-        \draw[thick,->] (0,{-0.6}) -- (0,{\ux+0.2}) node[above] {$y$};
-        % Bounded region
-        \draw[dashed] (\lx,{-0.6}) -- (\lx,{\ux+0.1});
-        \draw[dashed] (\ux,{-0.6}) -- (\ux,{\ux+0.1});
-        % Zonotope boundaries
-        \draw[dashed] (\lx, 0) -- (\ux, \ux+0.01);
-        \draw[dashed] (\lx, \d*\lx) -- (\ux, \ux-\d*\ux);
-        % ReLU line
-        \draw[ultra thick,myred] (\lx,0) -- (0,0) -- (\ux,\ux);
-        % Labels
-        \node[below] at (\lx-0.1,0) {$l_x$};
-        \node[below] at (\ux+0.12,-0.05) {$u_x$};
-        \node[below] at ({\lx/2},-0.3) {$l_{y}(x)$};
-        \node[above] at (\ux/2,\ux/2+0.3) {$u_{y}(x)$};
-        % Origin
-        \node[below right] at (0,0) {$0$};
-    \end{tikzpicture}
+    \begin{subfigure}{0.49\linewidth}
+        \begin{tikzpicture}[scale=2]
+            % Colors
+            \definecolor{myred}{RGB}{255,100,100}
+            \definecolor{myfill}{RGB}{255,245,200}
+            % Parameters
+            \def\lx{-1.0}
+            \def\ux{1.0}
+            % Zonotope (band width)
+            \def\d{0.5}
+            % Zonotope corners
+            \coordinate (A) at (\lx, 0+\d*\lx);    % bottom left
+            \coordinate (B) at (\lx, 0.01);    % top left
+            \coordinate (C) at (0, \d*0);          % top middle
+            \coordinate (D) at (0, -\d*0);         % bottom middle
+            \coordinate (E) at (\ux, \ux+0.01);  % top right
+            \coordinate (F) at (\ux, \ux-\d*\ux);  % bottom right
+            % Fill zonotope
+            \fill[myfill] (A) -- (B) -- (E) -- (F) -- cycle;
+            % Axes
+            \draw[thick,->] ({\lx-0.2},0) -- ({\ux+0.3},0) node[right] {$x$};
+            \draw[thick,->] (0,{-0.6}) -- (0,{\ux+0.2}) node[above] {$y$};
+            % Bounded region
+            \draw[dashed] (\lx,{-0.6}) -- (\lx,{\ux+0.1});
+            \draw[dashed] (\ux,{-0.6}) -- (\ux,{\ux+0.1});
+            % Zonotope boundaries
+            \draw[dashed] (\lx, 0) -- (\ux, \ux+0.01);
+            \draw[dashed] (\lx, \d*\lx) -- (\ux, \ux-\d*\ux);
+            % ReLU line
+            \draw[ultra thick,myred] (\lx,0) -- (0,0) -- (\ux,\ux);
+            % Labels
+            \node[below] at (\lx-0.1,0) {$l_x$};
+            \node[below] at (\ux+0.12,-0.05) {$u_x$};
+            \node[below] at ({\lx/2},-0.3) {$l_{y}(x)$};
+            \node[above] at (\ux/2,\ux/2+0.3) {$u_{y}(x)$};
+            % Origin
+            \node[below right] at (0,0) {$0$};
+        \end{tikzpicture}
+    \end{subfigure}
+    \begin{subfigure}{0.49\linewidth}
+        \begin{tikzpicture}[scale=2]
+            % Colors
+            \definecolor{myred}{RGB}{255,100,100}
+            \definecolor{myfill}{RGB}{255,245,200}
+            % Parameters
+            \def\lx{-1.0}
+            \def\ux{1.0}
+            % Zonotope (band width)
+            \def\d{0.5}
+            % Zonotope corners
+            \coordinate (A) at (\lx, 0+\d*\lx+0.1);    % bottom left
+            \coordinate (B) at (\lx, 0.2);    % top left
+            \coordinate (C) at (0, \d*0);          % top middle
+            \coordinate (D) at (0, -\d*0);         % bottom middle
+            \coordinate (E) at (\ux, \ux+0.01);  % top right
+            \coordinate (F) at (\ux, \ux-\d*\ux-0.1);  % bottom right
+            % Fill zonotope
+            \fill[myfill] (A) -- (B) -- (E) -- (F) -- cycle;
+            % Axes
+            \draw[thick,->] ({\lx-0.2},0) -- ({\ux+0.3},0) node[right] {$x$};
+            \draw[thick,->] (0,{-0.6}) -- (0,{\ux+0.2}) node[above] {$y$};
+            % Bounded region
+            \draw[dashed] (\lx,{-0.6}) -- (\lx,{\ux+0.1});
+            \draw[dashed] (\ux,{-0.6}) -- (\ux,{\ux+0.1});
+            % Zonotope boundaries
+            \draw[dashed] (\lx, 0.2) -- (\ux, \ux+0.01);
+            \draw[dashed] (\lx, \d*\lx+0.1) -- (\ux, \ux-\d*\ux-0.1);
+            % ReLU line
+            \draw[ultra thick,myred] (\lx,0) -- (0,0) -- (\ux,\ux);
+            % Labels
+            \node[below] at (\lx-0.1,0) {$l_x$};
+            \node[below] at (\ux+0.12,-0.05) {$u_x$};
+            \node[below] at ({\lx/2},-0.3) {$l_{y}(x)$};
+            \node[above] at (\ux/2,\ux/2+0.3) {$u_{y}(x)$};
+            % Origin
+            \node[below right] at (0,0) {$0$};
+        \end{tikzpicture}
+    \end{subfigure}
+
     \caption{Zonotope abstraction for ReLU: $y = \max(0,x)$, with $x \in [l_x, u_x]$. The band shows the zonotope over-approximation.}
     \label{fig:relu-zonotope-abstraction}
 \end{figure}
