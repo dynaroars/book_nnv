@@ -2751,9 +2751,12 @@ Next, \neuralsat{} invokes the theory solver or T-solver (\emph{Deduction}), whi
 
 If the T-solver confirms satisfiability, \neuralsat{} continues with new assignments (\emph{Decide}). Otherwise, \neuralsat{} detects a conflict   (\emph{Analyze Conflict}) and learns clauses to remember it and backtrack to a previous decision  (\emph{Backtrack}).
 If \neuralsat{} detects local optima, it would restart (\emph{Restart}) the search by clearing all decisions that have been made, but save the conflict clauses learned so far to avoid reaching the same state in the next runs.
-%Restarting especially benefits challenging DNN problems by enabling better clause learning and exploring different decision orderings.
+Restarting especially benefits challenging DNN problems by enabling better clause learning and exploring different decision orderings.
 
 This iterative process repeats until \neuralsat{} can no longer backtrack, and returns \unsat{}, indicating the DNN has the property, or it finds a total assignment for all boolean variables, and returns \sat{}. % (and the user can query \neuralsat{} for a counterexample).
+
+\autoref{sec:neuralsat-alg} provides more details on the \neuralsat{} algorithm, describing the main components of \neuralsat{} and how they work together to verify DNNs.
+
 
 \section{Illustration}
 \begin{example}\label{ex:neuralsat}
@@ -2975,10 +2978,12 @@ However, because $v_4$ was assigned at decision level 0, \neuralsat{} can no lon
 
 \section{\tool{}'s Optimizations}\label{sec:optimizations}
 
-In addition to common engineering techniques described in~\autoref{chap:common-engineering}, \neuralsat{} implements several unique optimizations~\cite{duong2024harnessing} to improve the performance of the search. These are neuron stability, restart tree, and restart.
+\tool{}implements several optimizations to improve the performance of the search. First are the common optimizations used by other DNN verifiers, such as input splittings (\autoref{chap:common-engineering}) and adversarial attacks (\autoref{chap:adversarial-attacks}). In addition, \neuralsat{} implements several unique optimizations~\cite{duong2024harnessing} to improve the performance of the search. These are neuron stability, restart tree, and restart.
 
 
 \subsection{Neuron Stability}\label{sec:stabilization}
+A neuron is \emph{stable} if its activation status does not change regardless of the input values. In contrast, a neuron is \emph{unstable} if its activation status can change depending on the input values. For example, in the DNN in Fig.~\ref{fig:dnn}, \tvn{any neuron stable? or they are all unstable?}
+
 The key idea in using neuron stability is that if we can determine that a neuron is stable,  we can assign the exact truth value for the corresponding Boolean variable instead of having to guess. This has a similar effect as \functiontextformat{BCP} -- reducing mistaken assignments by \functiontextformat{Decide} -- but it operates at the theory level not the propositional Boolean level.
 
 %First, the T-solver creates a linear constraint system from the input assignment $\sigma$ and $\alpha \land \phi_{in} \land \overline{\phi_{out}}$, i.e., the formula in Eq.~\ref{eq:prob} representing the original problem  (line~\ref{line:lpsolver}).
@@ -3032,29 +3037,6 @@ Deactivating a neuron, $a_j^{(i)} = 0$, simplifies the first of the (e) constrai
 
 %Even if \functiontextformat{Stabilize} fails to stabilize, \tool{} still can solve problem by other components, e.g., parallel DPLL(T) search.
 
-
-Fig.~\ref{fig:stabilize} describes Stabilize solves this equation system.
-First,  a MILP problem is created from the current assignment, the DNN, and the property of interest using formulation in Eq.~\ref{eq:mip}.
-Note that the neuron lower (${l}_j^{(i)}$) and upper bounds (${u}_j^{(i)}$) can be quickly computed by polytope abstraction.
-
-Next, it collects a list of all unassigned variables which are candidates being stabilized (line~\ref{line:find}).
-In general, there are too many unassigned neurons, so
-\functiontextformat{Stabilize} restricts consideration to $k$ candidates.
-Because each neuron has a different impact on abstraction precision we prioritize the candidates.
-In \functiontextformat{Stabilize}, neurons are prioritized based on their interval boundaries (line~\ref{line:sort}) with a preference for neurons with either lower or upper bounds that are closer to zero.
-The intuition is that neurons with bounds close to zero are more likely to become stable after tightening.
-
-We then select the top-$k$ (line~\ref{line:topk}) candidates and seek to further tighten their interval bounds.
-The order of optimizing bounds of select neurons is decided by its boundaries, e.g., if the lower bound is closer to zero than the upper bound then the lower bound would be optimized first.
-These optimization processes, i.e., \functiontextformat{Maximize} (line~\ref{line:maximize1} or line~\ref{line:maximize2}) and \functiontextformat{Minimize} (line~\ref{line:minimize1} or line~\ref{line:minimize2}), are performed by an external LP solver (e.g., Gurobi~\cite{gurobi}).
-
-Note that the work in~\cite{tjeng2019evaluating} uses the MILP system in Eq.~\ref{eq:mip} to encode the entire verification problem and thus is limited to the encodings of small networks that can be handled by an LP solver.
-%This MILP system is used by~\cite{tjeng2019evaluating} to encode the entire verification problem. It is passed to an LP solver to optimize the output of the network with respect to the the property of interest.
-%This approach only works small networks whose constraints can be handled by LP solving.
-In contrast, \tool{} creates this system based on the current assignment, which has significantly fewer constraints.
-Moreover, we only use the computed bounds of hidden neurons from this system, and thus even if it cannot be solved, \tool{} will still continue.
-
-
 \begin{algorithm}[t]
     \footnotesize
 
@@ -3094,6 +3076,33 @@ Moreover, we only use the computed bounds of hidden neurons from this system, an
 \end{algorithm}
 
 
+
+\autoref{fig:stabilize} describes Stabilize solves this equation system.
+First,  a MILP problem is created from the current assignment, the DNN, and the property of interest using formulation in Eq.~\ref{eq:mip}.
+Note that the neuron lower (${l}_j^{(i)}$) and upper bounds (${u}_j^{(i)}$) can be quickly computed by polytope abstraction.
+
+Next, it collects a list of all unassigned variables which are candidates being stabilized (line~\ref{line:find}).
+In general, there are too many unassigned neurons, so
+\functiontextformat{Stabilize} restricts consideration to $k$ candidates.
+Because each neuron has a different impact on abstraction precision we prioritize the candidates.
+In \functiontextformat{Stabilize}, neurons are prioritized based on their interval boundaries (line~\ref{line:sort}) with a preference for neurons with either lower or upper bounds that are closer to zero.
+The intuition is that neurons with bounds close to zero are more likely to become stable after tightening.
+
+We then select the top-$k$ (line~\ref{line:topk}) candidates and seek to further tighten their interval bounds.
+The order of optimizing bounds of select neurons is decided by its boundaries, e.g., if the lower bound is closer to zero than the upper bound then the lower bound would be optimized first.
+These optimization processes, i.e., \functiontextformat{Maximize} (line~\ref{line:maximize1} or line~\ref{line:maximize2}) and \functiontextformat{Minimize} (line~\ref{line:minimize1} or line~\ref{line:minimize2}), are performed by an external LP solver (e.g., Gurobi~\cite{gurobi}).
+
+%Note that the work in~\cite{tjeng2019evaluating} uses the MILP system in Eq.~\ref{eq:mip} to encode the entire verification problem and thus is limited to the encodings of small networks that can be handled by an LP solver.
+%This MILP system is used by~\cite{tjeng2019evaluating} to encode the entire verification problem. It is passed to an LP solver to optimize the output of the network with respect to the the property of interest.
+%This approach only works small networks whose constraints can be handled by LP solving.
+%In contrast, \tool{} creates this system based on the current assignment, which has significantly fewer constraints.
+%Moreover, we only use the computed bounds of hidden neurons from this system, and thus even if it cannot be solved, \tool{} will still continue.
+
+
+
+\begin{example}
+  \tvn{Need a concrete example here.  Use the DNN in Fig.~\ref{fig:dnn} and create the MILP system in Eq.~\ref{eq:mip}.}
+\end{example}
 
 \subsubsection{Parallel Search}\label{sec:parallel-search}
 % Things need to write about
