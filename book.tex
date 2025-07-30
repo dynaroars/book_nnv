@@ -2934,8 +2934,186 @@ Note that the formula $-1 \le x_1 \le 1 \land -2 \le x_2 \le 2$ representing the
 
 
 
-\chapter{The Reluplex Algorithm}\label{chap:reluplex}
+\chapter{The \reluplex{} Algorithm}\label{chap:reluplex}
 
+Reluplex~\cite{katz2017reluplex} is a well-known approach for verifying (or finding counterexamples) of properties of neural networks. The technique extends the simplex method~\cite{nelder1965simplex} to support the RELU activation function (Reluplex = \textbf{Relu} + sim\textbf{plex}). Reluplex takes as input a set of constraints encoding the NN and the property to be proved, and returns \texttt{unsat} if the property is valid and \texttt{sat} and a counterexample if the property is invalid.  Reluplex is one of the earliest techniques that work on large NN's and it is still the standard that many state of the art techniques compares against.
+
+\subsubsection{Example}
+
+\begin{figure}[h]
+    \centering
+    \begin{minipage}{0.49\linewidth}
+        \centering
+        \includegraphics[width=0.6\linewidth]{reluplexA.pdf}
+        \caption{A DNN example}\label{fig:reluplex}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.50\linewidth}
+        \centering
+        \includegraphics[width=0.9\linewidth]{reluplexB.pdf}
+        \caption{Separating nodes to represent RELU}\label{fig:reluplexB}
+    \end{minipage}
+  \end{figure}
+
+  We use the DNN in Fig.~\ref{fig:reluplex} to demonstrate Reluplex.
+  This network is a subset of the one in Fig.~\ref{fig:ex1},
+  but it is sufficient for us to demonstrate the main ideas in Reluplex (applying Reluplex on the complete DNN in Fig.~\ref{fig:ex1} would contain many repetitive iterations and operations).
+
+
+  Assume we want to check if the DNN has the property
+\begin{equation}\label{eq:prop1}
+  (0 \le i_0 \le 0.5 \land -2 \le i_1 \le -1) \implies ( n_{10}< 0 \lor n_{10} > 0.5).
+\end{equation}
+That is, when the inputs $i_0, i_1$ fall within certain ranges, then the result $n_{10}$ has certain values.
+Reluplex, like Simplex and SAT solving, aims to find value assignments satisfying given constraints.  Thus, we negate the property into a formula in which an \texttt{unsat} result indicates the validity of the property and a \texttt{sat} result indicates a violation of the property.  For this example, we negate the property in Eq.~\ref{eq:prop1} and ask Reluplex to check that negation is \texttt{unsat}:
+\begin{equation}\label{eq:negprop1}
+    ( 0 \le i_0 \le 0.5 \land -2 \le i_1 \le -1) \land 0 \le n_{10} \le 0.5.
+  \end{equation}
+
+  \paragraph{Problem Encoding}  A DNN can be encoded as a conjunctions of constraints.  The ReLU node $v$ can be encoded as a pair of variables $v'$ and $v''$, where $v'$ is used to connect the nodes of previous layers to $v$, and $v''$ is used to connect $v$ to the next layer.
+
+  For example, in Fig~\ref{fig:reluplex}, the ReLU node $n00=\max(i0 -1i1,0)$ is encoded using two variables $n00'=i0 -1i1$ and $n00''=\max(n00',0)$.  The DNN in Fig.~\ref{fig:reluplexB} shows the network in Fig.~\ref{fig:reluplex} with additional nodes representing ReLU encoding.
+
+
+
+    The first step to use Repluplex is to encode the constraints representing the DNN and the problem into a format that Reluplex accepts.
+    The DNN in Fig.~\ref{fig:reluplex} can be encoded as a conjunction of equalities:
+
+\begin{gather*}%\label{eq:reluplex1}
+    n00' = i_0 - i_1,\quad n00'' = \max(n00',0),\\
+    n01' = i_0 + i_1, \quad n01'' = \max(n01',0),\\
+    n_{10} = 0.5n00'' - 0.2n01''
+\end{gather*}
+In addition, we introduce three new \emph{basic} (auxilliary or slack) variables to store the relationships of the DNN's constraints:
+\begin{gather}
+  a_1 = i_0 - v^b_{12} - n00'\label{eq:reluplex2a},\\
+  a_2 = i_0 + v^b_{12} - n01'\label{eq:reluplex2b},\\
+  a_3 = 0.5n00'' -0.2 n01'' - n_{10}\label{eq:reluplex2c}
+\end{gather}
+\tvn{basic vs non-basic}
+
+\paragraph{Iteration} Reluplex starts by assigning 0 to all variables in the constraints in Eq's~\ref{eq:reluplex2a}--~\ref{eq:reluplex2c}.  This assignment would likely cause issues such as variables violating their bounds.  Reluplex works by iteratively fixing these invalid values until it finds a feasible assignment (and returns \texttt{sat}) or cannot do so (and returns \texttt{unsat}).
+
+This process can be demonstrated through a sequence of configuration updates over the variables.
+Tab.~\ref{tab:reluplex1} shows the initial configuration with all values assigned to 0.
+Observe that the lower and upper bounds of the inputs $i_0, i_1$ and output $n_{10}$ are specified in the property in Eq.~\ref{eq:negprop1}, the lower bounds of $v_f$'s representing ReLU are 0, and the other hidden variables are unbounded.
+
+\begin{table}[h]
+    \centering
+\begin{tabular}{ccccccccccc}
+     & $i_0$ & $i_1$ & $n00'$ & $n00''$ & $n01'$ & $n01''$ & $n_{10}$ &$a_1$&$a_2$&$a_3$ \\
+    \midrule
+    LB & 0 & -2 & $-\infty$&0&$-\infty$& 0 & 0 & 0 & 0 &0\\
+    Val& 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
+    UP & 0.5 & -1 &$\infty$&$\infty$&$\infty$&$\infty$&0.5& 0 & 0 & 0\\\
+\end{tabular}
+\caption{Configuration \#1}\label{tab:reluplex1}
+\end{table}
+
+Tab.~\ref{tab:reluplex1} shows that $i_1$ is out-of-bounds because $0 \notin [-2,-1]$. To fix $i_1$, which is non-basic, Reluplex simply updates it to a valid value, e.g., $i_1 \texttt{+=} -1.0 = -1.0$, which means adding -1.0 to the current value of $i_1$ and thus having $i_1= -1.0$.
+Now, because $a_1, a_2$ depend on $i_1$ as shown in Eq's.~\ref{eq:reluplex2a} and~\ref{eq:reluplex2b}, respectively, this update to $i_1$ also changes $a_1,a_2$:
+    \begin{align*}
+        a_1 ~+=~ 1.0 = 1.0   &~\text{because}~ a_1=i_0 - i_1 - n00', \\
+        a_2 ~+=~ -1.0 = -1.0  & ~\text{because}~ a_2=i_0 + i_1 - n01'.\\
+    \end{align*}
+
+
+
+Tab.~\ref{tab:reluplex2} shows the new configuration.
+Tab.~\ref{tab:reluplex2} also shows $a_1, a_2$ violate their bounds and need to be fixed. Assume Reluplex picks $a_1$. To fix $a_1$, which is a basic variable, Reluplex pivots (swaps) it with one of the variables it depends on as shown in the constraint $ a_1 = i_0 - v^b_{12} - n00'$ in Eq.~\ref{eq:reluplex2a}. Assume Reluplex pivots $a_1$ with $n00'$, we get
+\begin{equation}\label{eq:reluplex5}
+n00' = i_0 - v^b_{12} - a_1.
+\end{equation}
+
+
+\begin{table}[h]
+    \centering
+\begin{tabular}{ccccccccccc}
+     & $i_0$ & $i_1$ & $n00'$ & $n00''$ & $n01'$ & $n01''$ & $n_{10}$ &$a_1$&$a_2$&$a_3$ \\
+    \midrule
+    LB & 0 & -2 & $-\infty$&0&$-\infty$& 0 & 0 & 0 & 0 &0\\
+    Val& 0 & \textbf{-1} & 0 & 0 & 0 & 0 & 0 & \textbf{1} & \textbf{-1} & 0\\
+    UP & 0.5 & -1 &$\infty$&$\infty$&$\infty$&$\infty$&0.5& 0 & 0 & 0\\\
+\end{tabular}
+\caption{Configuration \#2}\label{tab:reluplex2}
+\end{table}
+
+
+Reluplex now updates the non-basic $a_1$ to 0 ($a_1 \text{+=} -1.0 = 0$). This also changes $n00'$  to 1.0 ($n00'+=1.0 = 1.0)$ because $n00'$ depends on $a_1$ as shown in Eq.~\ref{eq:reluplex5}.
+
+\begin{table}[h]
+    \centering
+\begin{tabular}{ccccccccccc}
+     & $i_0$ & $i_1$ & $n00'$ & $n00''$ & $n01'$ & $n01''$ & $n_{10}$ &$a_1$&$a_2$&$a_3$ \\
+    \midrule
+    LB & 0 & -2 & $-\infty$&0&$-\infty$& 0 & 0 & 0 & 0 &0\\
+    Val& 0 & -1 & \textbf{1} & 0 & 0 & 0 & 0 & \textbf{0} & -1 & 0\\
+    UP & 0.5 & -1 &$\infty$&$\infty$&$\infty$&$\infty$&0.5& 0 & 0 & 0\\\
+\end{tabular}
+\caption{Configuration \#3}\label{tab:reluplex3}
+\end{table}
+
+Tab.~\ref{tab:reluplex3} shows the new configuration. Tab.~\ref{tab:reluplex3} also shows the basic variable $a_2$ is out-of-bound.  To fix it, Reluplex pivots $a_2$ with a variable it depends on as shown in the constraint $a_2 = i_0 + v^b_{12} - n01'$ in Eq~\ref{eq:reluplex2b}.  Assume Reluplex pivots $a_2$ with $n01'$, we get
+\begin{equation}\label{eq:reluplex6}
+  n01' = i_0 + v^b_{12} - a_2
+\end{equation}
+Now $a_2$ becomes non-basic and is updated to 0 through $a_2+= 1.0 = 0$. As $n01'$ depends on $a_1$ as shown in Eq.~\ref{eq:reluplex6}, we make the change $n01' ~\texttt{-=}~1.0 = -1.0$.
+
+
+\begin{table}[h]
+    \centering
+\begin{tabular}{ccccccccccc}
+     & $i_0$ & $i_1$ & $n00'$ & $n00''$ & $n01'$ & $n01''$ & $n_{10}$ &$a_1$&$a_2$&$a_3$ \\
+    \midrule
+    LB & 0 & -2 & $-\infty$&0&$-\infty$& 0 & 0 & 0 & 0 &0\\
+    Val& 0 & -1 & 1 & 0 & \textbf{-1} & 0 & 0 & 0 & \textbf{0} & 0\\
+    UP & 0.5 & -1 &$\infty$&$\infty$&$\infty$&$\infty$&0.5& 0 & 0 & 0\\\
+\end{tabular}
+\caption{Configuration \#4}\label{tab:reluplex4}
+\end{table}
+
+Tab.~\ref{tab:reluplex4} shows the new configuration.
+At this point, we no longer have out-of-bound variables, but have inconsistent values for the pair of RELU variables $n00', n00''$. This is because $n00'' = \max(n00',0)$ but  we have $n00'=1$ thus $\max(1,0)=1$, which is not $n00''=0$.  Thus, Reluplex needs to fix either $n00''$ or $n00'$.
+
+Assume Reluplex picks $n00''$. Because $n00''$ is non-basic, we simply update it, i.e.,  $n00'' = \text{+} 1 = 1$.  As $a_3$ depends on $n01''$, i.e., $ a_3 = 0.5n00'' -0.2 n01'' - n_{10}$, Reluplex also makes the change $a_3+= 0.5\times 1.0=0.5$.
+
+
+
+\begin{table}[h]
+    \centering
+\begin{tabular}{ccccccccccc}
+     & $i_0$ & $i_1$ & $n00'$ & $n00''$ & $n01'$ & $n01''$ & $n_{10}$ &$a_1$&$a_2$&$a_3$ \\
+    \midrule
+    LB & 0 & -2 & $-\infty$&0&$-\infty$& 0 & 0 & 0 & 0 &0\\
+    Val& 0 & -1 & 1 & \textbf{1} & -1 & 0 & 0 & 0 & 0 & \textbf{0.5}\\
+    UP & 0.5 & -1 &$\infty$&$\infty$&$\infty$&$\infty$&0.5& 0 & 0 & 0\\\
+\end{tabular}
+\caption{Configuration \#5}\label{tab:reluplex5}
+\end{table}
+
+Tab.~\ref{tab:reluplex5} shows the new configuration.
+In the new configuration, $a_3$ is out-of-bound. To fix this basic variable, we pivot $a_3$ with one of the variables $n00'', n01'', n_{10}$ because of the constraint $a_3 = 0.5n00'' -0.2 n01'' - n_{10}$ in Eq.~\ref{eq:reluplex2c}. Assume we pivot $a_3$ with $n_{10}$, we get
+\begin{equation}\label{eq:reluplex7}
+  n_{10} = 0.5n00'' -0.2 n01'' - a_3
+\end{equation}
+
+Now, $a_3$ becomes non-basic and we update it to 0 through $a_3+=-0.5=0$.  As $n_{10}$ depends on $a_3$ as shown in Eq~\ref{eq:reluplex7}, we make the change $n_{10} += 0.5=0.5$.
+
+\begin{table}[h]
+    \centering
+\begin{tabular}{ccccccccccc}
+     & $i_0$ & $i_1$ & $n00'$ & $n00''$ & $n01'$ & $n01''$ & $n_{10}$ &$a_1$&$a_2$&$a_3$ \\
+    \midrule
+    LB & 0 & -2 & $-\infty$&0&$-\infty$& 0 & 0 & 0 & 0 &0\\
+    Val& 0 & -1 & 1 & \textbf{1} & -1 & 0 & \textbf{0.5} & 0 & 0 & \textbf{0}\\
+    UP & 0.5 & -1 &$\infty$&$\infty$&$\infty$&$\infty$&0.5& 0 & 0 & 0\\\
+\end{tabular}
+\caption{Configuration \#6}\label{tab:reluplex6}
+\end{table}
+
+Tab~\ref{tab:reluplex6} shows the new configuration.
+At this point, Reluplex no longer has any out-of-bound or inconsinstent values, and thus stops and returns \texttt{SAT} with the values in the \textbf{Val} row in Tab.~\ref{tab:reluplex6} as the satisfying assignment for the formula in Eq~\ref{eq:negprop1}.
+Thus, we conclude that property in Eq.~\ref{eq:prop1} is \emph{not valid} for the DNN in Fig.~\ref{fig:reluplex} because for the inputs $i_0=0,v_{-12}=-1$, the DNN gives the output $n_{10}=0.5$, which violates the property in Eq.~\ref{eq:prop1}.
 
 \chapter{The \neuralsat{} Algorithm}\label{chap:neuralsat}
 
