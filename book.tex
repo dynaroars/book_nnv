@@ -21,6 +21,7 @@
 \theoremstyle{definition}
 \newtheorem{definition}{Definition}[section]
 \newtheorem{example}{Example}[section]
+\newtheorem{exercise}{Exercise}[section]
 
 \theoremstyle{remark}
 \newtheorem{remark}{Remark}
@@ -1625,6 +1626,11 @@ Modern DNN verification techniques~\cite{bunel2020branch,wang2021beta,ferrari202
 
 \tvn{example of activation pattern search? using the above DNN example}
 \hai{I will pull the example from our paper, but I think we also should create a tree to demonstrate how it proceeds -- I will work on this}
+
+
+\tvn{Partial Activation Pattern}
+
+
 \section{Complexity}\label{sec:complexity}
 
 ReLU-based NNV is \NP{}-complete as shown in~\cite{katz2017reluplex,salzer2023reachability}. This means that the problem of checking whether a given ReLu-based DNN satisfies a property is computationally hard, and no polynomial-time algorithm is known to solve it in the general case.
@@ -1747,15 +1753,15 @@ Despite both approaches having exponential worst-case complexity, MILP solvers o
 %\paragraph{MILP} Mixed Integer Linear Programming (MILP) is an optimization technique that solves problems involving both continuous variables (real numbers) and integer variables (including binary 0/1 variables), subject to linear constraints. Unlike SMT solvers that handle complex logical formulae with disjunctions, MILP solvers are specifically designed for linear constraints and can leverage decades of optimization research to solve large-scale problems efficiently.
 
 
-\subsection{ReLU Encoding} 
+\subsection{ReLU Encoding}\label{sec:relu-encoding}
 
 To use MILP solving, we encode non-linear activation functions like ReLU using \emph{binary indicator} variables and linear constraints. For each neuron, we introduce a binary variable that indicates whether the neuron is ``active'' (output equals input) or ``inactive'' (output is zero). This transforms the non-linear $\max(x,0)$ operation into a set of linear inequalities controlled by the binary variable. 
 We define 
 
 \begin{itemize}
-    \item $z$: the pre-activation value    
-    \item $\hat{z}$: the output after applying ReLU
-    \item $a \in \{0,1\}$: a binary indicator variable encoding whether the neuron is active ($z \geq 0$) or inactive ($z < 0$)
+    \item $z$: the pre-activation value, i.e., the value that goes into ReLU
+    \item $\hat{z}$: the post-activation value, i.e., the output of ReLU
+    \item $a \in \{0,1\}$: a binary indicator variable encoding whether the neuron is active ($z \le 0$) or inactive ($z < 0$)
     \item $l, u$: lower and upper bounds on $z$ ($l \leq z \leq u$) over the input region 
 \end{itemize}
 
@@ -2644,11 +2650,10 @@ Therefore, DeepPoly achieves a balance, combining the expressiveness of polyhedr
 \part{DNN Verification Algorithms}
 \chapter{The Branch and Bound Search Algorithm}\label{chap:bab}
 
-Modern DNN verifiers typically adopt the Branch-and-Bound (BaB) approach to search for activation patterns (\autoref{sec:activation-pattern}).  A standard (minimal) BaB search consists of two main components: (branch) splitting into the problem smaller subproblems
+Modern DNN verifiers typically adopt the Branch-and-Bound (BaB) approach to search for activation patterns (\autoref{sec:activation-pattern}).  At its core, a BaB search consists of two main components: (branch) splitting into the problem smaller subproblems
 by using \emph{neuron splitting}, which decides boolean values representing neuron activation status,
 and (bound) using abstraction and LP solving to approximate bounds on neuron values to determine
-the satisfiability of the partial activation pattern formed by the split.
-
+the satisfiability of the partial activation pattern (\autoref{sec:activation-pattern}) formed by the split.
 
 \section{The Algorithm}\label{sec:bab-alg}
 
@@ -2934,192 +2939,12 @@ Note that the formula $-1 \le x_1 \le 1 \land -2 \le x_2 \le 2$ representing the
 
 
 
-\chapter{The \reluplex{} Algorithm}\label{chap:reluplex}
-
-Reluplex~\cite{katz2017reluplex} is a well-known approach for verifying (or finding counterexamples) of properties of neural networks. The technique extends the simplex method~\cite{nelder1965simplex} to support the RELU activation function (Reluplex = \textbf{Relu} + sim\textbf{plex}). Reluplex takes as input a set of constraints encoding the NN and the property to be proved, and returns \texttt{unsat} if the property is valid and \texttt{sat} and a counterexample if the property is invalid.  Reluplex is one of the earliest techniques that work on large NN's and it is still the standard that many state of the art techniques compares against.
-
-\subsubsection{Example}
-
-\begin{figure}[h]
-    \centering
-    \begin{minipage}{0.49\linewidth}
-        \centering
-        \includegraphics[width=0.6\linewidth]{reluplexA.pdf}
-        \caption{A DNN example}\label{fig:reluplex}
-    \end{minipage}
-    \hfill
-    \begin{minipage}{0.50\linewidth}
-        \centering
-        \includegraphics[width=0.9\linewidth]{reluplexB.pdf}
-        \caption{Separating nodes to represent RELU}\label{fig:reluplexB}
-    \end{minipage}
-  \end{figure}
-
-  We use the DNN in Fig.~\ref{fig:reluplex} to demonstrate Reluplex.
-  This network is a subset of the one in Fig.~\ref{fig:ex1},
-  but it is sufficient for us to demonstrate the main ideas in Reluplex (applying Reluplex on the complete DNN in Fig.~\ref{fig:ex1} would contain many repetitive iterations and operations).
-
-
-  Assume we want to check if the DNN has the property
-\begin{equation}\label{eq:prop1}
-  (0 \le i_0 \le 0.5 \land -2 \le i_1 \le -1) \implies ( n_{10}< 0 \lor n_{10} > 0.5).
-\end{equation}
-That is, when the inputs $i_0, i_1$ fall within certain ranges, then the result $n_{10}$ has certain values.
-Reluplex, like Simplex and SAT solving, aims to find value assignments satisfying given constraints.  Thus, we negate the property into a formula in which an \texttt{unsat} result indicates the validity of the property and a \texttt{sat} result indicates a violation of the property.  For this example, we negate the property in Eq.~\ref{eq:prop1} and ask Reluplex to check that negation is \texttt{unsat}:
-\begin{equation}\label{eq:negprop1}
-    ( 0 \le i_0 \le 0.5 \land -2 \le i_1 \le -1) \land 0 \le n_{10} \le 0.5.
-  \end{equation}
-
-  \paragraph{Problem Encoding}  A DNN can be encoded as a conjunctions of constraints.  The ReLU node $v$ can be encoded as a pair of variables $v'$ and $v''$, where $v'$ is used to connect the nodes of previous layers to $v$, and $v''$ is used to connect $v$ to the next layer.
-
-  For example, in Fig~\ref{fig:reluplex}, the ReLU node $n00=\max(i0 -1i1,0)$ is encoded using two variables $n00'=i0 -1i1$ and $n00''=\max(n00',0)$.  The DNN in Fig.~\ref{fig:reluplexB} shows the network in Fig.~\ref{fig:reluplex} with additional nodes representing ReLU encoding.
-
-
-
-    The first step to use Repluplex is to encode the constraints representing the DNN and the problem into a format that Reluplex accepts.
-    The DNN in Fig.~\ref{fig:reluplex} can be encoded as a conjunction of equalities:
-
-\begin{gather*}%\label{eq:reluplex1}
-    n00' = i_0 - i_1,\quad n00'' = \max(n00',0),\\
-    n01' = i_0 + i_1, \quad n01'' = \max(n01',0),\\
-    n_{10} = 0.5n00'' - 0.2n01''
-\end{gather*}
-In addition, we introduce three new \emph{basic} (auxilliary or slack) variables to store the relationships of the DNN's constraints:
-\begin{gather}
-  a_1 = i_0 - v^b_{12} - n00'\label{eq:reluplex2a},\\
-  a_2 = i_0 + v^b_{12} - n01'\label{eq:reluplex2b},\\
-  a_3 = 0.5n00'' -0.2 n01'' - n_{10}\label{eq:reluplex2c}
-\end{gather}
-\tvn{basic vs non-basic}
-
-\paragraph{Iteration} Reluplex starts by assigning 0 to all variables in the constraints in Eq's~\ref{eq:reluplex2a}--~\ref{eq:reluplex2c}.  This assignment would likely cause issues such as variables violating their bounds.  Reluplex works by iteratively fixing these invalid values until it finds a feasible assignment (and returns \texttt{sat}) or cannot do so (and returns \texttt{unsat}).
-
-This process can be demonstrated through a sequence of configuration updates over the variables.
-Tab.~\ref{tab:reluplex1} shows the initial configuration with all values assigned to 0.
-Observe that the lower and upper bounds of the inputs $i_0, i_1$ and output $n_{10}$ are specified in the property in Eq.~\ref{eq:negprop1}, the lower bounds of $v_f$'s representing ReLU are 0, and the other hidden variables are unbounded.
-
-\begin{table}[h]
-    \centering
-\begin{tabular}{ccccccccccc}
-     & $i_0$ & $i_1$ & $n00'$ & $n00''$ & $n01'$ & $n01''$ & $n_{10}$ &$a_1$&$a_2$&$a_3$ \\
-    \midrule
-    LB & 0 & -2 & $-\infty$&0&$-\infty$& 0 & 0 & 0 & 0 &0\\
-    Val& 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
-    UP & 0.5 & -1 &$\infty$&$\infty$&$\infty$&$\infty$&0.5& 0 & 0 & 0\\\
-\end{tabular}
-\caption{Configuration \#1}\label{tab:reluplex1}
-\end{table}
-
-Tab.~\ref{tab:reluplex1} shows that $i_1$ is out-of-bounds because $0 \notin [-2,-1]$. To fix $i_1$, which is non-basic, Reluplex simply updates it to a valid value, e.g., $i_1 \texttt{+=} -1.0 = -1.0$, which means adding -1.0 to the current value of $i_1$ and thus having $i_1= -1.0$.
-Now, because $a_1, a_2$ depend on $i_1$ as shown in Eq's.~\ref{eq:reluplex2a} and~\ref{eq:reluplex2b}, respectively, this update to $i_1$ also changes $a_1,a_2$:
-    \begin{align*}
-        a_1 ~+=~ 1.0 = 1.0   &~\text{because}~ a_1=i_0 - i_1 - n00', \\
-        a_2 ~+=~ -1.0 = -1.0  & ~\text{because}~ a_2=i_0 + i_1 - n01'.\\
-    \end{align*}
-
-
-
-Tab.~\ref{tab:reluplex2} shows the new configuration.
-Tab.~\ref{tab:reluplex2} also shows $a_1, a_2$ violate their bounds and need to be fixed. Assume Reluplex picks $a_1$. To fix $a_1$, which is a basic variable, Reluplex pivots (swaps) it with one of the variables it depends on as shown in the constraint $ a_1 = i_0 - v^b_{12} - n00'$ in Eq.~\ref{eq:reluplex2a}. Assume Reluplex pivots $a_1$ with $n00'$, we get
-\begin{equation}\label{eq:reluplex5}
-n00' = i_0 - v^b_{12} - a_1.
-\end{equation}
-
-
-\begin{table}[h]
-    \centering
-\begin{tabular}{ccccccccccc}
-     & $i_0$ & $i_1$ & $n00'$ & $n00''$ & $n01'$ & $n01''$ & $n_{10}$ &$a_1$&$a_2$&$a_3$ \\
-    \midrule
-    LB & 0 & -2 & $-\infty$&0&$-\infty$& 0 & 0 & 0 & 0 &0\\
-    Val& 0 & \textbf{-1} & 0 & 0 & 0 & 0 & 0 & \textbf{1} & \textbf{-1} & 0\\
-    UP & 0.5 & -1 &$\infty$&$\infty$&$\infty$&$\infty$&0.5& 0 & 0 & 0\\\
-\end{tabular}
-\caption{Configuration \#2}\label{tab:reluplex2}
-\end{table}
-
-
-Reluplex now updates the non-basic $a_1$ to 0 ($a_1 \text{+=} -1.0 = 0$). This also changes $n00'$  to 1.0 ($n00'+=1.0 = 1.0)$ because $n00'$ depends on $a_1$ as shown in Eq.~\ref{eq:reluplex5}.
-
-\begin{table}[h]
-    \centering
-\begin{tabular}{ccccccccccc}
-     & $i_0$ & $i_1$ & $n00'$ & $n00''$ & $n01'$ & $n01''$ & $n_{10}$ &$a_1$&$a_2$&$a_3$ \\
-    \midrule
-    LB & 0 & -2 & $-\infty$&0&$-\infty$& 0 & 0 & 0 & 0 &0\\
-    Val& 0 & -1 & \textbf{1} & 0 & 0 & 0 & 0 & \textbf{0} & -1 & 0\\
-    UP & 0.5 & -1 &$\infty$&$\infty$&$\infty$&$\infty$&0.5& 0 & 0 & 0\\\
-\end{tabular}
-\caption{Configuration \#3}\label{tab:reluplex3}
-\end{table}
-
-Tab.~\ref{tab:reluplex3} shows the new configuration. Tab.~\ref{tab:reluplex3} also shows the basic variable $a_2$ is out-of-bound.  To fix it, Reluplex pivots $a_2$ with a variable it depends on as shown in the constraint $a_2 = i_0 + v^b_{12} - n01'$ in Eq~\ref{eq:reluplex2b}.  Assume Reluplex pivots $a_2$ with $n01'$, we get
-\begin{equation}\label{eq:reluplex6}
-  n01' = i_0 + v^b_{12} - a_2
-\end{equation}
-Now $a_2$ becomes non-basic and is updated to 0 through $a_2+= 1.0 = 0$. As $n01'$ depends on $a_1$ as shown in Eq.~\ref{eq:reluplex6}, we make the change $n01' ~\texttt{-=}~1.0 = -1.0$.
-
-
-\begin{table}[h]
-    \centering
-\begin{tabular}{ccccccccccc}
-     & $i_0$ & $i_1$ & $n00'$ & $n00''$ & $n01'$ & $n01''$ & $n_{10}$ &$a_1$&$a_2$&$a_3$ \\
-    \midrule
-    LB & 0 & -2 & $-\infty$&0&$-\infty$& 0 & 0 & 0 & 0 &0\\
-    Val& 0 & -1 & 1 & 0 & \textbf{-1} & 0 & 0 & 0 & \textbf{0} & 0\\
-    UP & 0.5 & -1 &$\infty$&$\infty$&$\infty$&$\infty$&0.5& 0 & 0 & 0\\\
-\end{tabular}
-\caption{Configuration \#4}\label{tab:reluplex4}
-\end{table}
-
-Tab.~\ref{tab:reluplex4} shows the new configuration.
-At this point, we no longer have out-of-bound variables, but have inconsistent values for the pair of RELU variables $n00', n00''$. This is because $n00'' = \max(n00',0)$ but  we have $n00'=1$ thus $\max(1,0)=1$, which is not $n00''=0$.  Thus, Reluplex needs to fix either $n00''$ or $n00'$.
-
-Assume Reluplex picks $n00''$. Because $n00''$ is non-basic, we simply update it, i.e.,  $n00'' = \text{+} 1 = 1$.  As $a_3$ depends on $n01''$, i.e., $ a_3 = 0.5n00'' -0.2 n01'' - n_{10}$, Reluplex also makes the change $a_3+= 0.5\times 1.0=0.5$.
-
-
-
-\begin{table}[h]
-    \centering
-\begin{tabular}{ccccccccccc}
-     & $i_0$ & $i_1$ & $n00'$ & $n00''$ & $n01'$ & $n01''$ & $n_{10}$ &$a_1$&$a_2$&$a_3$ \\
-    \midrule
-    LB & 0 & -2 & $-\infty$&0&$-\infty$& 0 & 0 & 0 & 0 &0\\
-    Val& 0 & -1 & 1 & \textbf{1} & -1 & 0 & 0 & 0 & 0 & \textbf{0.5}\\
-    UP & 0.5 & -1 &$\infty$&$\infty$&$\infty$&$\infty$&0.5& 0 & 0 & 0\\\
-\end{tabular}
-\caption{Configuration \#5}\label{tab:reluplex5}
-\end{table}
-
-Tab.~\ref{tab:reluplex5} shows the new configuration.
-In the new configuration, $a_3$ is out-of-bound. To fix this basic variable, we pivot $a_3$ with one of the variables $n00'', n01'', n_{10}$ because of the constraint $a_3 = 0.5n00'' -0.2 n01'' - n_{10}$ in Eq.~\ref{eq:reluplex2c}. Assume we pivot $a_3$ with $n_{10}$, we get
-\begin{equation}\label{eq:reluplex7}
-  n_{10} = 0.5n00'' -0.2 n01'' - a_3
-\end{equation}
-
-Now, $a_3$ becomes non-basic and we update it to 0 through $a_3+=-0.5=0$.  As $n_{10}$ depends on $a_3$ as shown in Eq~\ref{eq:reluplex7}, we make the change $n_{10} += 0.5=0.5$.
-
-\begin{table}[h]
-    \centering
-\begin{tabular}{ccccccccccc}
-     & $i_0$ & $i_1$ & $n00'$ & $n00''$ & $n01'$ & $n01''$ & $n_{10}$ &$a_1$&$a_2$&$a_3$ \\
-    \midrule
-    LB & 0 & -2 & $-\infty$&0&$-\infty$& 0 & 0 & 0 & 0 &0\\
-    Val& 0 & -1 & 1 & \textbf{1} & -1 & 0 & \textbf{0.5} & 0 & 0 & \textbf{0}\\
-    UP & 0.5 & -1 &$\infty$&$\infty$&$\infty$&$\infty$&0.5& 0 & 0 & 0\\\
-\end{tabular}
-\caption{Configuration \#6}\label{tab:reluplex6}
-\end{table}
-
-Tab~\ref{tab:reluplex6} shows the new configuration.
-At this point, Reluplex no longer has any out-of-bound or inconsinstent values, and thus stops and returns \texttt{SAT} with the values in the \textbf{Val} row in Tab.~\ref{tab:reluplex6} as the satisfying assignment for the formula in Eq~\ref{eq:negprop1}.
-Thus, we conclude that property in Eq.~\ref{eq:prop1} is \emph{not valid} for the DNN in Fig.~\ref{fig:reluplex} because for the inputs $i_0=0,v_{-12}=-1$, the DNN gives the output $n_{10}=0.5$, which violates the property in Eq.~\ref{eq:prop1}.
-
 \chapter{The \neuralsat{} Algorithm}\label{chap:neuralsat}
 
+\neuralsat{}~\cite{duong2025neuralsat,duong2024harnessing} is a relatively late competitor in the DNN verification space, but it has quickly become a strong contender, consistently placed among the top tools at DNN verification competitions~\autoref{chap:vnncomps}.
 
-\neuralsat{}~\cite{duong2025neuralsat,duong2024harnessing} is a relatively late competitor in the DNN verification space, but it has quickly become a strong contender. It also uses the BaB search strategy, but it is based on the DPLL(T) framework~\cite{davis1962machine} combined with several unique optimizations and heuristics to improve the search performance.
-The \neuralsat{} is essentially an SMT solver with respect to a theory, in this case, the theory of DNNs
+At its core, \neuralsat{} is BaB, but follows a DPLL(T) framework~\cite{davis1962machine} and includes unique optimizations and heuristics to improve the search performance.
+Thus, \neuralsat{} is essentially an SMT solver with respect to a theory, in this case, the theory of DNNs.
 
 \section{Overview}\label{sec:neuralsat:overview}
 \begin{figure}[h]
@@ -3180,7 +3005,7 @@ activation status of the hidden neurons $x_3$ and $x_4$, respectively. For examp
 %Now, \neuralsat{} searches for truth assignments for activation variables to satisfy the clauses. %(and later check that they also satisfy the constraints of DNN implied by these variables and the properties to be proved).
 %We summarize the five iterations \neuralsat{} uses to determine that no such assignment exists (i.e., \texttt{unsat}).
 
-%We show how \neuralsat{} proves that network in Fig.~\ref{fig:dnn} has property in Eq.~\ref{eq:valid_prop}, i.e., for any inputs $x_1 \in [-1, 1], x_2 \in [-2,2]$, the network produces the output $x_5 \le 0$. 
+%We show how \neuralsat{} proves that network in Fig.~\ref{fig:dnn} has property in ~\autoref{eq:valid_prop}, i.e., for any inputs $x_1 \in [-1, 1], x_2 \in [-2,2]$, the network produces the output $x_5 \le 0$. 
 
 % \textbf{SAT formulation} \neuralsat{} first encodes the verification task into an SMT checking problem as described in \S\ref{sec:nnverif} by representing the network in Fig.~\ref{fig:dnn}b as the formula:
 
@@ -3210,10 +3035,10 @@ activation status of the hidden neurons $x_3$ and $x_4$, respectively. For examp
 %The weights on the edges represent the learned coefficients of the weight matrix used by the affine transformations done at each layer. The learned bias for each neuron is shown above or below it. 
 
 
-% \neuralsat{} aims to find an assignment satisfying the conjunction of the formulae in Eq.~\ref{eq:ex} and~\ref{eq:negprop}. Such an assignment represents a counterexample violating the property, i.e., within the given ranges but does not satisfy the output requirement.
+% \neuralsat{} aims to find an assignment satisfying the conjunction of the formulae in ~\autoref{eq:ex} and~\ref{eq:negprop}. Such an assignment represents a counterexample violating the property, i.e., within the given ranges but does not satisfy the output requirement.
 % %If such an input does not exist, \neuralsat{} returns \texttt{unsat}, indicating the property is valid. Otherwise it returns \texttt{sat} and the input, which represents a counterexample violating the property.
 
-% Next, from the formula in Eq.~\ref{eq:ex}, \neuralsat{} creates two Boolean variables $v_3$ and $v_4$ to represent the status of the hidden pre-ReLU neurons $x_3'$ and $x_4'$. For example, $v_3=T$ means the status of $x_3$ is \texttt{on}, i.e., $-x_1-0.5x_2-1>0$ and $v_3=F$ means $x_4=\texttt{off}$, i.e.,  $-x_1-0.5x_2-1>0$. \neuralsat{} also forms two initial clauses indicating the status variables must be either \texttt{on} or \texttt{off}: $v_3 \lor \overline{v_3} \;;\; v_4 \lor \overline{v_4}$.
+% Next, from the formula in ~\autoref{eq:ex}, \neuralsat{} creates two Boolean variables $v_3$ and $v_4$ to represent the status of the hidden pre-ReLU neurons $x_3'$ and $x_4'$. For example, $v_3=T$ means the status of $x_3$ is \texttt{on}, i.e., $-x_1-0.5x_2-1>0$ and $v_3=F$ means $x_4=\texttt{off}$, i.e.,  $-x_1-0.5x_2-1>0$. \neuralsat{} also forms two initial clauses indicating the status variables must be either \texttt{on} or \texttt{off}: $v_3 \lor \overline{v_3} \;;\; v_4 \lor \overline{v_4}$.
 
 
 
@@ -3284,7 +3109,7 @@ For this example, \neuralsat{} uses four iterations, summarized in~\autoref{tab:
   \end{table*}
 
   
-%\emph{Initially}, the set of constraints  consists of the given bounds over the inputs, and the set of the clauses contains the two clauses in Eq.~\ref{eq:newvars}.
+%\emph{Initially}, the set of constraints  consists of the given bounds over the inputs, and the set of the clauses contains the two clauses in ~\autoref{eq:newvars}.
 
 In \emph{iteration 1}, as shown in~\autoref{fig:overview}, \neuralsat{} starts with \texttt{BCP}, which has no effects because the current clauses and (empty) assignment produce no unit clauses.
 In \texttt{Deduction}, \neuralsat{} uses an LP solver to determine that the current set of constraints, which contains just the initial input bounds, is feasible\footnote{We use the terms feasible, from the LP community, and satisfiable, from the SAT community, interchangeably.}. \neuralsat{} then uses abstraction to approximate an output upper bound $x_5 \le 1$ and thus deduces that satisfying the output $x_5 >0$ might be feasible. \neuralsat{} continues with \texttt{Decide}, which uses a heuristic to select the unassigned variable $v_4$ and sets $v_4=F$---essentially a \emph{guess} that neuron $x_4$ is inactive. \neuralsat{} increments the decision level ($dl$) to 1 and associates $dl=1$ to the assignment, i.e., $\overline{v_4}@1$.
@@ -3375,21 +3200,21 @@ A neuron is \emph{stable} if its activation status does not change regardless of
 
 The key idea in using neuron stability is that if we can determine that a neuron is stable,  we can assign the exact truth value for the corresponding Boolean variable instead of having to guess. This has a similar effect as \functiontextformat{BCP}---reducing mistaken assignments by \functiontextformat{Decide}---but it operates at the theory level instead of the propositional Boolean level.
 
-%First, the T-solver creates a linear constraint system from the input assignment $\sigma$ and $\alpha \land \phi_{in} \land \overline{\phi_{out}}$, i.e., the formula in Eq.~\ref{eq:prob} representing the original problem  (line~\ref{line:lpsolver}).
+%First, the T-solver creates a linear constraint system from the input assignment $\sigma$ and $\alpha \land \phi_{in} \land \overline{\phi_{out}}$, i.e., the formula in ~\autoref{eq:prob} representing the original problem  (line~\ref{line:lpsolver}).
 %First, the T-solver creates a set of linear constraints representing ReLU activation for hidden neurons whose activation status have been decided.
 %Next, those constraints are used in \textsc{Stabilize} for inferring status of neurons that are unassigned, \textsc{Deduce} then applies the polytope abstraction to check satisfiability.
 %If the abstraction confirms the infeasibility, \textsc{Deduce} returns \texttt{False} so that \textsc{AnalyzeConflict} can analyze the assignment and and learn the conflict clause.
 %Otherwise, the current assignment might be feasible and \textsc{Decide} continues to split more hidden neurons.
 
 
-%\texttt{Stabilize} (Fig.~\ref{fig:alg} line~\ref{line:stabilize}) first creates linear constraints consisting of the DNN $\alpha$, the input \tvn{fillin} and output \tvn{fillin} conditions, and the current assignment $\sigma$. Next, it uses these constraints to generate a Mixed Integer Linear Programming (MILP) problem (Eq.~\ref{eq:mip}), whose objective is compute a tighter lower and upper bounds for unstable neurons based on the current search state (i.e., the current assignment $\sigma$).
+%\texttt{Stabilize} (Fig.~\ref{fig:alg} line~\ref{line:stabilize}) first creates linear constraints consisting of the DNN $\alpha$, the input \tvn{fillin} and output \tvn{fillin} conditions, and the current assignment $\sigma$. Next, it uses these constraints to generate a Mixed Integer Linear Programming (MILP) problem (~\autoref{eq:mip}), whose objective is compute a tighter lower and upper bounds for unstable neurons based on the current search state (i.e., the current assignment $\sigma$).
 
 %the considered property into a set of constraints for
 %The main goal of this process is to
 
 
 %the boolean values activation status instead of
-%that we can remove ReLU activation for hidden neurons whose activation status have been decided, each propositional variable in current assignment concretizes (removes) its corresponding constraints in MILP problem (Eq.~\ref{eq:mip}) that helps solver reduce numbers of constraints and be able to tighten bounds further.
+%that we can remove ReLU activation for hidden neurons whose activation status have been decided, each propositional variable in current assignment concretizes (removes) its corresponding constraints in MILP problem (~\autoref{eq:mip}) that helps solver reduce numbers of constraints and be able to tighten bounds further.
 
 
 
@@ -3438,8 +3263,8 @@ Deactivating a neuron, $a_j^{(i)} = 0$, simplifies the first of the (e) constrai
     \Output{Tighten bounds for variables \textbf{not} in $\sigma$ (unassigned variables)}
     \BlankLine
 
-    % \tcp{create an MILP solver based on Eq.~\ref{eq:mip}}
-    $\model \leftarrow \MIP(\alpha, \phi_{in}, \phi_{out}, \sigma)$ \tcp{create model (Eq.~\ref{eq:mip}) with  current assignment}
+    % \tcp{create an MILP solver based on ~\autoref{eq:mip}}
+    $\model \leftarrow \MIP(\alpha, \phi_{in}, \phi_{out}, \sigma)$ \tcp{create model (~\autoref{eq:mip}) with  current assignment}
 
     $[v_1, ..., v_m] \leftarrow \GetUnassignedVariable(\sigma)$ \tcp{get all $m$ current unassigned variables} \label{line:find}
 
@@ -3472,7 +3297,7 @@ Deactivating a neuron, $a_j^{(i)} = 0$, simplifies the first of the (e) constrai
 
 
 \autoref{fig:stabilize} describes Stabilize solves this equation system.
-First,  a MILP problem is created from the current assignment, the DNN, and the property of interest using formulation in Eq.~\ref{eq:mip}.
+First,  a MILP problem is created from the current assignment, the DNN, and the property of interest using formulation in ~\autoref{eq:mip}.
 Note that the neuron lower (${l}_j^{(i)}$) and upper bounds (${u}_j^{(i)}$) can be quickly computed by polytope abstraction.
 
 Next, it collects a list of all unassigned variables which are candidates being stabilized (line~\ref{line:find}).
@@ -3486,7 +3311,7 @@ We then select the top-$k$ (line~\ref{line:topk}) candidates and seek to further
 The order of optimizing bounds of select neurons is decided by its boundaries, e.g., if the lower bound is closer to zero than the upper bound then the lower bound would be optimized first.
 These optimization processes, i.e., \functiontextformat{Maximize} (line~\ref{line:maximize1} or line~\ref{line:maximize2}) and \functiontextformat{Minimize} (line~\ref{line:minimize1} or line~\ref{line:minimize2}), are performed by an external LP solver (e.g., Gurobi~\cite{gurobi}).
 
-%Note that the work in~\cite{tjeng2019evaluating} uses the MILP system in Eq.~\ref{eq:mip} to encode the entire verification problem and thus is limited to the encodings of small networks that can be handled by an LP solver.
+%Note that the work in~\cite{tjeng2019evaluating} uses the MILP system in ~\autoref{eq:mip} to encode the entire verification problem and thus is limited to the encodings of small networks that can be handled by an LP solver.
 %This MILP system is used by~\cite{tjeng2019evaluating} to encode the entire verification problem. It is passed to an LP solver to optimize the output of the network with respect to the the property of interest.
 %This approach only works small networks whose constraints can be handled by LP solving.
 %In contrast, \tool{} creates this system based on the current assignment, which has significantly fewer constraints.
@@ -3495,7 +3320,7 @@ These optimization processes, i.e., \functiontextformat{Maximize} (line~\ref{lin
 
 
 \begin{example}
-  \tvn{Need a concrete example here.  Use the DNN in Fig.~\ref{fig:dnn} and create the MILP system in Eq.~\ref{eq:mip}.}
+  \tvn{Need a concrete example here.  Use the DNN in Fig.~\ref{fig:dnn} and create the MILP system in ~\autoref{eq:mip}.}
 \end{example}
 
 \subsubsection{Parallel Search}\label{sec:parallel-search}
@@ -3556,8 +3381,8 @@ As we show in \S\ref{sec:eval}, the engineering of this form of parallelism in D
 %     $\maxvisited \leftarrow 200000$ \tcp{predefined maximum number of visited nodes}
 %     $\maxremaining \leftarrow 30000$ \tcp{predefined maximum number of remaining nodes}
 
-    % \tcp{create an MILP solver based on Eq.~\ref{eq:mip}}
-    % $\model \leftarrow \MIP(\alpha, \phi_{in}, \phi_{out}, \sigma)$ \tcp{create model (Eq.~\ref{eq:mip}) with  current assignment}
+    % \tcp{create an MILP solver based on ~\autoref{eq:mip}}
+    % $\model \leftarrow \MIP(\alpha, \phi_{in}, \phi_{out}, \sigma)$ \tcp{create model (~\autoref{eq:mip}) with  current assignment}
 
     % $[v_1, ..., v_m] \leftarrow \GetUnassignedVariable(\sigma)$ \tcp{get all $m$ current unassigned variables} \label{line:find}
 
@@ -3673,6 +3498,203 @@ Thus, \tool{} was able to generate non-chronological backtracks and use BCP to p
 
 
 
+
+\chapter{The \reluplex{} Algorithm}\label{chap:reluplex}
+
+\reluplex{}~\cite{katz2017reluplex} is a classical BnB approach for verifying neural networks. The technique extends the simplex method~\cite{nelder1965simplex} to support the ReLU activation function (\textbf{Reluplex} = \textbf{Relu} + Sim\textbf{plex}). \reluplex{} has been succeeded by the Marabou~\cite{katz2019marabou} tool, which are more efficient and scalable. However, the core ideas of \reluplex{} are still relevant and therefore we present it here.
+
+\section{Illustration}
+
+\begin{figure}[h]
+    \centering
+    \begin{minipage}{0.49\linewidth}
+        \centering
+        \includegraphics[width=0.6\linewidth]{reluplexA.pdf}
+        \caption{A DNN example}\label{fig:reluplex}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.50\linewidth}
+        \centering
+        \includegraphics[width=0.9\linewidth]{reluplexB.pdf}
+        \caption{Separating nodes to represent RELU}\label{fig:reluplexB}
+    \end{minipage}
+  \end{figure}
+
+  %TODO: should use our current example, per haps for disproving property.
+
+
+  \begin{example}\label{ex:reluplex}
+
+  We use the DNN in Fig.~\ref{fig:reluplex} to demonstrate \reluplex{}. Assume we want to check that the DNN has the property
+\begin{equation}\label{eq:prop1}
+  (0 \le i_0 \le 0.5 \land -2 \le i_1 \le -1) \implies ( n_{10}< 0 \lor n_{10} > 0.5).
+\end{equation}
+That is, when the inputs $i_0, i_1$ fall within certain ranges, then the result $n_{10}$ has certain values.
+As mentioned in~\ref{sec:satisfiability-and-activation-pattern-search}, we turn this into a satisfiability problem by negating the property and checking if the negation is unsatisfiable.
+In this case, we want to check if the negation of ~\autoref{eq:prop1} is \unsat{}:
+\begin{equation}\label{eq:negprop1}
+    ( 0 \le i_0 \le 0.5 \land -2 \le i_1 \le -1) \land 0 \le n_{10} \le 0.5.
+  \end{equation}
+
+If~\autoref{eq:negprop1} is \unsat{}, then the DNN satisfies the property in~\autoref{eq:prop1}---there exists no assignment of the inputs $i_0, i_1$ such that the output $n_{10}$ is within the range $[0, 0.5]$. Otherwise, the DNN does not have the property and we can return a counterexample.
+
+
+\paragraph{Problem Encoding}  A DNN can be encoded as a conjunctions of constraints.  The ReLU node $v$ can be encoded as a pair of variables $v'$ and $v''$, where $v'$ is used to connect the nodes of previous layers to $v$, and $v''$ is used to connect $v$ to the next layer.
+
+For example, in~\autoref{fig:reluplex}, the ReLU node $n00=\max(i0 -1i1,0)$ is encoded using two variables $n00'=i0 -1i1$ and $n00''=\max(n00',0)$.  The DNN in\autoref{fig:reluplexB} shows the network in~\autoref{fig:reluplex} with additional nodes representing ReLU encoding.
+
+
+
+The first step to use Repluplex is to encode the constraints representing the DNN and the problem into a format that Reluplex accepts.
+The DNN in~\autoref{fig:reluplex} can be encoded as a conjunction of equalities:
+
+\begin{gather*}%\label{eq:reluplex1}
+    n00' = i_0 - i_1,\quad n00'' = \max(n00',0),\\
+    n01' = i_0 + i_1, \quad n01'' = \max(n01',0),\\
+    n_{10} = 0.5n00'' - 0.2n01''
+\end{gather*}
+
+\paragraph{Basic Variables} We also introduce three new \emph{basic} (auxilliary or slack) variables to store the relationships of the DNN's constraints:
+\begin{gather}
+  a_1 = i_0 - v^b_{12} - n00'\label{eq:reluplex2a},\\
+  a_2 = i_0 + v^b_{12} - n01'\label{eq:reluplex2b},\\
+  a_3 = 0.5n00'' -0.2 n01'' - n_{10}\label{eq:reluplex2c}
+\end{gather}
+
+In simplex terminology, a basic variable is a variable that is used to represent the relationship between other variables in the constraints. For example, $a_1$ represents the difference between $i_0$, $v^b_{12}$, and $n00'$. The basic variables are used to maintain the relationships between the variables in the constraints and are updated during the search process.
+
+In contrast, a \emph{non-basic} variable is a variable that is not used to represent the relationship between other variables in the constraints. For example, $i_0$ and $i_1$ are non-basic because they are not used to represent the relationship between other variables in the constraints. Non-basic variables are typically the input variables of the DNN.
+
+\paragraph{Iteration} \reluplex{} first assigns 0 to all \tvn{basic?} variables in the constraints in~\autoref{eq:reluplex2a}--~\autoref{eq:reluplex2c}.  This assignment---essentially an initial guess---would likely cause issues such as variables violating their bounds.  \reluplex{} works by iteratively fixing these invalid values until it finds a feasible assignment (and returns \texttt{sat}) or cannot do so (and returns \texttt{unsat}).
+
+This iterative updating process can be demonstrated through a sequence of configuration updates over the variables.
+~\autoref{tab:reluplex1} shows the initial configuration with all values assigned to 0.
+Observe that the lower and upper bounds of the inputs $i_0, i_1$ and output $n_{10}$ are specified in the property in ~\autoref{eq:negprop1}, the lower bounds of $v_f$'s representing ReLU are 0, and the other hidden variables are unbounded.
+
+\begin{table}[h]
+    \centering
+\begin{tabular}{ccccccccccc}
+     & $i_0$ & $i_1$ & $n00'$ & $n00''$ & $n01'$ & $n01''$ & $n_{10}$ &$a_1$&$a_2$&$a_3$ \\
+    \midrule
+    LB & 0 & -2 & $-\infty$&0&$-\infty$& 0 & 0 & 0 & 0 &0\\
+    Val& 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
+    UP & 0.5 & -1 &$\infty$&$\infty$&$\infty$&$\infty$&0.5& 0 & 0 & 0
+\end{tabular}
+\caption{Configuration \#1}\label{tab:reluplex1}
+\end{table}
+
+\autoref{tab:reluplex1} shows that $i_1$ is out-of-bounds because $0 \notin [-2,-1]$. To fix $i_1$, which is non-basic, Reluplex simply updates it to a valid value, e.g., $i_1 \texttt{+=} -1.0 = -1.0$, which means adding -1.0 to the current value of $i_1$ and thus having $i_1= -1.0$.
+Now, because $a_1, a_2$ depend on $i_1$ as shown in~\autoref{eq:reluplex2a} and~\autoref{eq:reluplex2b}, respectively, this update to $i_1$ also changes $a_1,a_2$:
+    \begin{align*}
+        a_1 ~+=~ 1.0 = 1.0   &~\text{because}~ a_1=i_0 - i_1 - n00', \\
+        a_2 ~+=~ -1.0 = -1.0  & ~\text{because}~ a_2=i_0 + i_1 - n01'.\\
+    \end{align*}
+
+
+
+\autoref{tab:reluplex2} shows the new configuration.
+\autoref{tab:reluplex2} also shows $a_1, a_2$ violate their bounds and need to be fixed. Assume Reluplex picks $a_1$. To fix $a_1$, which is a basic variable, Reluplex pivots (swaps) it with one of the variables it depends on as shown in the constraint $ a_1 = i_0 - v^b_{12} - n00'$ in~\autoref{eq:reluplex2a}. Assume Reluplex pivots $a_1$ with $n00'$, we get
+\begin{equation}\label{eq:reluplex5}
+n00' = i_0 - v^b_{12} - a_1.
+\end{equation}
+
+
+\begin{table}[h]
+    \centering
+\begin{tabular}{ccccccccccc}
+     & $i_0$ & $i_1$ & $n00'$ & $n00''$ & $n01'$ & $n01''$ & $n_{10}$ &$a_1$&$a_2$&$a_3$ \\
+    \midrule
+    LB & 0 & -2 & $-\infty$&0&$-\infty$& 0 & 0 & 0 & 0 &0\\
+    Val& 0 & \textbf{-1} & 0 & 0 & 0 & 0 & 0 & \textbf{1} & \textbf{-1} & 0\\
+    UP & 0.5 & -1 &$\infty$&$\infty$&$\infty$&$\infty$&0.5& 0 & 0 & 0\\\
+\end{tabular}
+\caption{Configuration \#2}\label{tab:reluplex2}
+\end{table}
+
+
+Reluplex now updates the non-basic $a_1$ to 0 ($a_1 \text{+=} -1.0 = 0$). This also changes $n00'$  to 1.0 ($n00'+=1.0 = 1.0)$ because $n00'$ depends on $a_1$ as shown in~\autoref{eq:reluplex5}.
+
+\begin{table}[h]
+    \centering
+\begin{tabular}{ccccccccccc}
+     & $i_0$ & $i_1$ & $n00'$ & $n00''$ & $n01'$ & $n01''$ & $n_{10}$ &$a_1$&$a_2$&$a_3$ \\
+    \midrule
+    LB & 0 & -2 & $-\infty$&0&$-\infty$& 0 & 0 & 0 & 0 &0\\
+    Val& 0 & -1 & \textbf{1} & 0 & 0 & 0 & 0 & \textbf{0} & -1 & 0\\
+    UP & 0.5 & -1 &$\infty$&$\infty$&$\infty$&$\infty$&0.5& 0 & 0 & 0\\\
+\end{tabular}
+\caption{Configuration \#3}\label{tab:reluplex3}
+\end{table}
+
+~\autoref{tab:reluplex3} shows the new configuration. ~\autoref{tab:reluplex3} also shows the basic variable $a_2$ is out-of-bound.  To fix it, Reluplex pivots $a_2$ with a variable it depends on as shown in the constraint $a_2 = i_0 + v^b_{12} - n01'$ in Eq~\ref{eq:reluplex2b}.  Assume Reluplex pivots $a_2$ with $n01'$, we get
+\begin{equation}\label{eq:reluplex6}
+  n01' = i_0 + v^b_{12} - a_2
+\end{equation}
+Now $a_2$ becomes non-basic and is updated to 0 through $a_2+= 1.0 = 0$. As $n01'$ depends on $a_1$ as shown in ~\autoref{eq:reluplex6}, we make the change $n01' ~\texttt{-=}~1.0 = -1.0$.
+
+
+\begin{table}[h]
+    \centering
+\begin{tabular}{ccccccccccc}
+     & $i_0$ & $i_1$ & $n00'$ & $n00''$ & $n01'$ & $n01''$ & $n_{10}$ &$a_1$&$a_2$&$a_3$ \\
+    \midrule
+    LB & 0 & -2 & $-\infty$&0&$-\infty$& 0 & 0 & 0 & 0 &0\\
+    Val& 0 & -1 & 1 & 0 & \textbf{-1} & 0 & 0 & 0 & \textbf{0} & 0\\
+    UP & 0.5 & -1 &$\infty$&$\infty$&$\infty$&$\infty$&0.5& 0 & 0 & 0\\\
+\end{tabular}
+\caption{Configuration \#4}\label{tab:reluplex4}
+\end{table}
+
+~\autoref{tab:reluplex4} shows the new configuration.
+At this point, we no longer have out-of-bound variables, but have inconsistent values for the pair of RELU variables $n00', n00''$. This is because $n00'' = \max(n00',0)$ but  we have $n00'=1$ thus $\max(1,0)=1$, which is not $n00''=0$.  Thus, Reluplex needs to fix either $n00''$ or $n00'$.
+
+Assume Reluplex picks $n00''$. Because $n00''$ is non-basic, we simply update it, i.e.,  $n00'' = \text{+} 1 = 1$.  As $a_3$ depends on $n01''$, i.e., $ a_3 = 0.5n00'' -0.2 n01'' - n_{10}$, Reluplex also makes the change $a_3+= 0.5\times 1.0=0.5$.
+
+
+
+\begin{table}[h]
+    \centering
+\begin{tabular}{ccccccccccc}
+     & $i_0$ & $i_1$ & $n00'$ & $n00''$ & $n01'$ & $n01''$ & $n_{10}$ &$a_1$&$a_2$&$a_3$ \\
+    \midrule
+    LB & 0 & -2 & $-\infty$&0&$-\infty$& 0 & 0 & 0 & 0 &0\\
+    Val& 0 & -1 & 1 & \textbf{1} & -1 & 0 & 0 & 0 & 0 & \textbf{0.5}\\
+    UP & 0.5 & -1 &$\infty$&$\infty$&$\infty$&$\infty$&0.5& 0 & 0 & 0\\\
+\end{tabular}
+\caption{Configuration \#5}\label{tab:reluplex5}
+\end{table}
+
+~\autoref{tab:reluplex5} shows the new configuration.
+In the new configuration, $a_3$ is out-of-bound. To fix this basic variable, we pivot $a_3$ with one of the variables $n00'', n01'', n_{10}$ because of the constraint $a_3 = 0.5n00'' -0.2 n01'' - n_{10}$ in ~\autoref{eq:reluplex2c}. Assume we pivot $a_3$ with $n_{10}$, we get
+\begin{equation}\label{eq:reluplex7}
+  n_{10} = 0.5n00'' -0.2 n01'' - a_3
+\end{equation}
+
+Now, $a_3$ becomes non-basic and we update it to 0 through $a_3+=-0.5=0$.  As $n_{10}$ depends on $a_3$ as shown in Eq~\ref{eq:reluplex7}, we make the change $n_{10} += 0.5=0.5$.
+
+\begin{table}[h]
+    \centering
+\begin{tabular}{ccccccccccc}
+     & $i_0$ & $i_1$ & $n00'$ & $n00''$ & $n01'$ & $n01''$ & $n_{10}$ &$a_1$&$a_2$&$a_3$ \\
+    \midrule
+    LB & 0 & -2 & $-\infty$&0&$-\infty$& 0 & 0 & 0 & 0 &0\\
+    Val& 0 & -1 & 1 & \textbf{1} & -1 & 0 & \textbf{0.5} & 0 & 0 & \textbf{0}\\
+    UP & 0.5 & -1 &$\infty$&$\infty$&$\infty$&$\infty$&0.5& 0 & 0 & 0\\\
+\end{tabular}
+\caption{Configuration \#6}\label{tab:reluplex6}
+\end{table}
+
+~\autoref{tab:reluplex6} shows the new configuration.
+At this point, Reluplex no longer has any out-of-bound or inconsinstent values, and thus stops and returns \sat{} with the values in the \textbf{Val} row in ~\autoref{tab:reluplex6} as the satisfying assignment for the formula in Eq~\ref{eq:negprop1}.
+
+Thus, in this example, we conclude that property in~\autoref{eq:prop1} is \emph{not valid} for the DNN in~\autoref{fig:reluplex} because for the inputs $i_0=0,v_{-12}=-1$, the DNN gives the output $n_{10}=0.5$, which violates the property in~\autoref{eq:prop1}.
+\end{example}
+
+\section{Excercises}
+\begin{exercise}
+Consider the DNN in~\autoref{fig:reluplex} and the property in~\autoref{eq:prop1}.  Use \reluplex{} to verify the property.  If you find a counterexample, provide it.  You will need to provide all the steps in the \reluplex{} algorithm, e.g., DNN encoding, basic variable encoding, and the \reluplex{} search through a series of configurations as shown in~\autoref{ex:reluplex}.
+
+\end{exercise}
 
 
 \chapter{GPU and Multicore Parallelism}
@@ -5230,6 +5252,7 @@ In each specification, the inputs (condition distance and latent variables) are 
 % \end{table}
 
 
+\chapter{VNN-COMPs}\label{chap:vnncomps}
 
 \chapter{Benchmarks Generation}\label{chap:benchmarks-generation}
 
@@ -5720,7 +5743,7 @@ Once obtaining the asserting clause, \texttt{AnalyzeConflict} stops the search, 
 
 %is a main benefit of CDCL and
 The process of learning clauses allows \tool{} to learn from its past mistakes.
-While such clauses are logically implied by the formula in Eq.~\ref{eq:prob} and therefore do not change the result, they help prune the search space and allow DPLL and therefore \tool{} to scale. For example, after learning the clause $c_5$, together with assignment $v_5@3$, we immediately infer $v_1 \mapsto F$ through BCP instead of having to guess through \texttt{Decide}.
+While such clauses are logically implied by the formula in ~\autoref{eq:prob} and therefore do not change the result, they help prune the search space and allow DPLL and therefore \tool{} to scale. For example, after learning the clause $c_5$, together with assignment $v_5@3$, we immediately infer $v_1 \mapsto F$ through BCP instead of having to guess through \texttt{Decide}.
 
 %The literal lit is the literal in cl assigned last, and var denotes its associated variable. The antecedent clause of var, denoted by ante, contains ¬lit as the only satisfied literal, and other literals, all of which are currently unsatisfied. The clauses cl and ante thus contain lit and ¬lit, respectively, and can therefore be resolved with the resolution variable var. The resolvent clause is again a conflicting clause, which is the basis for the next resolution step.
 
@@ -5833,7 +5856,7 @@ We found the combination of clause learning and restarts effective for DNN verif
 
     $\lpmodel \leftarrow \LPSolver(\assignment, \network \land \phi_{in} \land \overline{\phi_{out}})$\;\label{line:lpsolver}
     \lIf{$\Solve(\lpmodel) \equiv \infeasible$}{\Return {\false}}\label{line:solve}
-    \lIf(\tcp*[h]{orig prob (Eq.~\ref{eq:prob}) is satisfiable}){$\isTotal(\assignment)$}{\Return {\true} }\label{line:full}
+    \lIf(\tcp*[h]{orig prob (~\autoref{eq:prob}) is satisfiable}){$\isTotal(\assignment)$}{\Return {\true} }\label{line:full}
     %$\inputs = \GetInputs(\phi_{in})$
     % $\ninputs \leftarrow \GetNumInputs(\network)$
     % $\layernodes = \FindLayerNodes(\assignment)$\;
@@ -5869,7 +5892,7 @@ We found the combination of clause learning and restarts effective for DNN verif
 
 Fig.~\ref{alg:deduction} describes \texttt{Deduction}, which returns \texttt{False} if infeasibility occurs and  \texttt{True} otherwise.
 %\textsc{Deduce} is a theory solver that takes the arguments including: the current assignment $\sigma$, neural network $\alpha$, precondition $\phi_{in}$ over inputs and postcondition $\phi_{out}$ over outputs.
-First, it creates a linear constraint system from the input assignment $\sigma$ and $\alpha \land \phi_{in} \land \overline{\phi_{out}}$, i.e., the formula in Eq.~\ref{eq:prob} representing the original problem  (line~\ref{line:lpsolver}).
+First, it creates a linear constraint system from the input assignment $\sigma$ and $\alpha \land \phi_{in} \land \overline{\phi_{out}}$, i.e., the formula in ~\autoref{eq:prob} representing the original problem  (line~\ref{line:lpsolver}).
 The key idea is that we can remove ReLU activation for hidden neurons whose activation status have been decided.
 For constraints in $\alpha$ associated with variables that are not in the $\sigma$,  we ignore them and just consider the cutting planes introduced by the partial assignment.
 %Fixup preceding sentence based on answer.}
