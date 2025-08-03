@@ -2084,6 +2084,7 @@ We want to compute the lower $l_y(x)$ and upper $u_y(x)$ bounds to be as tight a
     \label{fig:relu-all-abstractions}
 \end{figure}
 
+\subsection{Common Abstractions for ReLU}
 \autoref{fig:relu-all-abstractions} illustrates common abstractions (or \emph{over-approximations}) for the ReLU function $y = \max(0, x)$, where $x \in [l_x, u_x]$ and $y \in [l_y(x), u_y(x)]$. The values of ReLU are shown as points on the \colorbox{red}{red line}, which is non-convex and consists of two linear segments: one for $x < 0$ (where $y = 0$) and another for $x \geq 0$ (where $y = x$).
 To compute the bounds $l_y(x)$ and $u_y(x)$, we can use different abstractions: 
 
@@ -2305,29 +2306,53 @@ To compute the bounds $l_y(x)$ and $u_y(x)$, we can use different abstractions:
 \tvn{Hai, create concrete examples with numbers to show how the abstractions work, e.g., for interval, zonotope, polytope, etc. We want to use one example to show the differences in the approximation,  not multiple examples which would be less effective.}
 
 
-\paragraph{Transformer Functions}
+\subsection{Transformer Functions}
 
-In program analysis, \emph{abstraction} is the process of mapping concrete values or computations into a simpler domain that preserves certain properties of interest. This allows us to reason about the behavior of programs in a scalable way.
+In program analysis, in particular abstract interpretation, we reason about the behavior of a program without evaluating it on all concrete inputs---which may be infinite. Instead, we use an \emph{abstract domain} to summarize sets of concrete values, enabling sound and scalable approximation.
 
-To abstract or compute an overapproximation of a function $f$, we define a corresponding \emph{transformer function} $f^a$ that operates over an abstract domain. Specifically, $f^a$ maps abstract inputs to abstract outputs such that the concrete behavior of $f$ is soundly overapproximated. That is, if $x^a$ abstracts a set of concrete inputs $x$, then $f^a(x^a)$ abstracts the set $\{ f(x) \mid x \in \gamma(x^a) \}$, where $\gamma$ is the concretization function.
+\medskip
 
-A simple and popular example is the interval abstraction. Consider a concrete function $f(x) = x + 1$. Its transformer $f^a$ over intervals maps $[a, b]$ to $[a+1, b+1]$.
-
-Another example is sign abstraction. For the same function $f(x) = x + 1$, the transformer over the sign domain would be:
+The first key component is the \emph{abstraction function}:
 \[
-f^a(\text{pos}) = \text{pos}, \quad f^a(\text{zero}) = \text{pos}, \quad f^a(\text{neg}) = \{\text{neg}, \text{zero}, \text{pos}\}
+\alpha : D \to D^a
 \]
-where each element denotes an abstract sign (positive, zero, negative), and the transformer may be nondeterministic to preserve soundness.
+which maps a concrete value from the domain $D$ to an element in a finite or simpler abstract domain $D^a$. For example, the \texttt{odd/even} abstraction is defined as:
+\[
+\alpha_{\texttt{parity}}(x) =
+\begin{cases}
+\texttt{even} & \text{if } x \bmod 2 = 0 \\
+\texttt{odd}  & \text{if } x \bmod 2 = 1
+\end{cases}
+\]
+Even though $\mathbb{Z}$ is infinite, this abstraction maps all integers to a finite set $\{\texttt{odd}, \texttt{even}\}$. Abstraction functions like $\alpha$ allow us to represent infinite sets compactly.
 
-Transformers are key components in abstract interpretation, enabling static analyses such as range analysis, null-pointer checking, and symbolic execution.
+\medskip
 
+However, once the abstract domain is defined, we do not evaluate the concrete function $f : D \to D$ directly. Instead, we define an \emph{abstract transformer function}:
+\[
+f^a : D^a \to D^a
+\]
+which operates entirely within the abstract domain and overapproximates the behavior of $f$ on all values represented by an abstract input. Specifically, given a concretization function $\gamma : D^a \to \mathcal{P}(D)$ that maps an abstract value to the set of concrete values it represents, we require:
+\[
+f(\gamma(x^a)) \subseteq \gamma(f^a(x^a))
+\]
+This is the standard \emph{soundness condition} in abstract interpretation: applying the concrete function to all values in the concretization of $x^a$ yields results that are safely covered by the concretization of $f^a(x^a)$.
 
-In the context of DNN verification, the transformer function $f^a$ takes as input the lower and upper bounds of the input neurons and returns the lower and upper bounds of the output neuron after applying the function $f$. Formally, for a function $f$ that takes $n$ inputs, the transformer function $f^a$ can be defined as:
-\[f^a([l_1, u_1], [l_2, u_2], \ldots, [l_n, u_n]) = [l_f, u_f]\]
-where $[l_f, u_f]$ are the lower and upper bounds of the output neuron after applying the function $f$ to the inputs. 
-For example, for the ReLU function, the transformer function can be defined as:
-\[f^a([l_x, u_x]) = [l_y(x), u_y(x)]\]
-where $l_y(x) = 0$ and $u_y(x) = u_x$.
+\medskip
+
+\textbf{Example 1 (Intervals).}  
+Let $f(x) = x + 1$ and consider the interval abstraction $D^a = \{ [a, b] \mid a \leq b \in \mathbb{Z} \cup \{-\infty, +\infty\} \}$. Then:
+\[
+f^a([a, b]) = [a+1, b+1]
+\]
+
+\textbf{Example 2 (Sign abstraction).}  
+Let the abstract domain be $\{\texttt{neg}, \texttt{zero}, \texttt{pos}\}$. For $f(x) = x + 1$, the abstract transformer is:
+\[
+f^a(\texttt{neg}) = \{\texttt{neg}, \texttt{zero}\}, \quad
+f^a(\texttt{zero}) = \texttt{pos}, \quad
+f^a(\texttt{pos}) = \texttt{pos}
+\]
 
 \section{Interval}\label{sec:interval-abstraction}
 
