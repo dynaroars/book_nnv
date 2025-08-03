@@ -1310,9 +1310,9 @@ graph torch_jit (
 
 \chapter{Properties}\label{chap:properties}
 
-Similar to software programs, neural networks have desirable properties to ensure the network behaves as expected. These could be specific to the applications modeled by the network, e.g., safety properties for a network modelling a collision avoidance system or general properties that are desired by all networks, e.g., robustness to adversarial attacks. 
+Similar to software programs, neural networks (NNs) have desirable properties to ensure the network behaves as expected. These could be specific to the applications modeled by the network, e.g., safety properties for a network modelling a collision avoidance system, or general properties that are desired by all networks, e.g., robustness to small perturbations in the input data.
 
-Below we will discuss properties that are relevant to the verification of neural networks. Specifically, these properties can be 
+Below we will discuss properties that are relevant to the verification of NNs. Specifically, these properties can be 
 expressed in a formal language supported by a DNN verifier. Additional properties can be found in the literature~\cite{seshia2018formal}.
 
 \section{Properties, Informally}
@@ -1333,7 +1333,7 @@ This says that if the input $x$ satisfies the precondition $P$, then the output 
 
 \section{Common Properties in Neural Networks}
 
-We now define some commonly studied correctness properties in neural network verification.
+We now define some commonly studied correctness properties in NNs verification.
 
 \subsection{Robustness}
 
@@ -1431,7 +1431,7 @@ For the brightness robustness property:
 \section{The VNN-LIB  Specification Language}
 
 
-The VNN-LIB standard~\cite{demarchi2023supporting,vnnlib} defines a format for specifying benchmarks --- descriptions of neural networks and properties --- in neural network verification. Such a standard format enables the sharing of benchmarks across different tools and platforms, facilitating evaluations and comparisons of their performance. The international VNN-COMP competition~\cite{brix2024fifth} also VNN-LIB to evaluate the performance of different neural network verification tools.
+The VNN-LIB standard~\cite{demarchi2023supporting,vnnlib} defines a format to describe neural networks and properties. Such a standard format enables the sharing of benchmarks across different tools and platforms, facilitating evaluations and comparisons of their performance. The international VNN-COMP competition~\cite{brix2024fifth} also uses VNN-LIB to evaluate the performance of different neural network verification tools.
 
 
 Specifically, VNN-LIB defines a common format for the following components:
@@ -2307,7 +2307,22 @@ To compute the bounds $l_y(x)$ and $u_y(x)$, we can use different abstractions:
 
 \paragraph{Transformer Functions}
 
-To compute the abstraction of some function $f$ (e.g., activation or affine function), we need to define a \emph{transformer function} $f^a$ that takes some inputs (e.g., lower and upper bounds of the input neurons) and returns the lower and upper bounds of the output neuron after applying the function $f$. Formally, for a function $f$ that takes $n$ inputs, the transformer function $f^a$ can be defined as:
+In program analysis, \emph{abstraction} is the process of mapping concrete values or computations into a simpler domain that preserves certain properties of interest. This allows us to reason about the behavior of programs in a scalable way.
+
+To abstract or compute an overapproximation of a function $f$, we define a corresponding \emph{transformer function} $f^a$ that operates over an abstract domain. Specifically, $f^a$ maps abstract inputs to abstract outputs such that the concrete behavior of $f$ is soundly overapproximated. That is, if $x^a$ abstracts a set of concrete inputs $x$, then $f^a(x^a)$ abstracts the set $\{ f(x) \mid x \in \gamma(x^a) \}$, where $\gamma$ is the concretization function.
+
+A simple and popular example is the interval abstraction. Consider a concrete function $f(x) = x + 1$. Its transformer $f^a$ over intervals maps $[a, b]$ to $[a+1, b+1]$.
+
+Another example is sign abstraction. For the same function $f(x) = x + 1$, the transformer over the sign domain would be:
+\[
+f^a(\text{pos}) = \text{pos}, \quad f^a(\text{zero}) = \text{pos}, \quad f^a(\text{neg}) = \{\text{neg}, \text{zero}, \text{pos}\}
+\]
+where each element denotes an abstract sign (positive, zero, negative), and the transformer may be nondeterministic to preserve soundness.
+
+Transformers are key components in abstract interpretation, enabling static analyses such as range analysis, null-pointer checking, and symbolic execution.
+
+
+In the context of DNN verification, the transformer function $f^a$ takes as input the lower and upper bounds of the input neurons and returns the lower and upper bounds of the output neuron after applying the function $f$. Formally, for a function $f$ that takes $n$ inputs, the transformer function $f^a$ can be defined as:
 \[f^a([l_1, u_1], [l_2, u_2], \ldots, [l_n, u_n]) = [l_f, u_f]\]
 where $[l_f, u_f]$ are the lower and upper bounds of the output neuron after applying the function $f$ to the inputs. 
 For example, for the ReLU function, the transformer function can be defined as:
