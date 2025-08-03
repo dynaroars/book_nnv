@@ -525,7 +525,19 @@ Popular activation functions used in NNs include ReLU, Sigmoid, Tanh, and Softma
 
 \subsection{ReLU (Rectified Linear Unit)}\label{sec:relu}
 
-ReLU is the most widely used activation function in NNs.  As shown in~\autoref{fig:relu}, it is a  \emph{piecewise linear} function with two linear pieces: one for the case when the input value is greater than or equal to zero (output is the input itself) and one for the case when the input value is less than zero (output is 0). A ReLU activated neuron is said to be \emph{active} if its input is greater than zero and \emph{inactive} otherwise.
+ReLU is a widely used activation function in NNs. It is defined as:
+
+\[
+\text{ReLU}(x) = \max(0, x) = 
+\begin{cases}
+0 & \text{if } x \leq 0 \\
+x & \text{if } x > 0
+\end{cases}
+\]
+
+ReLU is \textbf{piecewise linear} because it consists of two linear segments as shown as in \autoref{fig:relu}: (i) a constant function ($0$) when $x \leq 0$, (ii) and (ii) a linear function ($x$) when $x > 0$.
+A ReLU activated neuron is said to be \emph{active} if its input is greater than zero and \emph{inactive} otherwise.
+
 
 \begin{figure}[h]
     \centering
@@ -549,27 +561,29 @@ ReLU is the most widely used activation function in NNs.  As shown in~\autoref{f
             minor tick num=0,
         ]
         % ReLU curve: flat at zero, then linear
-        \addplot[line width=1.5pt, blue!80!black, samples=2, domain=-4.5:0] {0};
-        \addplot[line width=1.5pt, blue!80!black, domain=0:4.5] {x};
+        \addplot[line width=1.5pt, red!80!black, samples=2, domain=-4.5:0] {0};
+        \addplot[line width=1.5pt, red!80!black, domain=0:4.5] {x};
       \end{axis}
     \end{tikzpicture}
     \caption{ReLU (Rectified Linear Unit) function.}\label{fig:relu}
 \end{figure}
 
-
-ReLU is defined as follows:
-
-\begin{align}
-\relu{x} = &\max(x,0)
-\end{align}
-
-
-The piecewise linearity makes ReLU easy to reason about, but it also introduces non-linearity that makes DNN verification difficult---in fact, $\mathsf{NP}$-complete as shown in~\autoref{sec:complexity}. We will use ReLU throughout this book as the default activation function for hidden neurons in an NN. 
-    
 \begin{example}
 $\relu{-1.2} = 0$ (inactive), $\relu{0} = 0$ (inactive), and $\relu{2.8} = 2.8$ (active).
 \end{example}
 
+
+However, despite being piecewise linear, ReLU is \textbf{nonlinear} because it does not satisfy the two core properties of a linear function
+
+    \begin{itemize}
+        \item \textit{Additivity:} $\text{ReLU}(x + y) \ne \text{ReLU}(x) + \text{ReLU}(y)$ in general,
+        \item \textit{Homogeneity:} $\text{ReLU}(\alpha x) \ne \alpha \cdot \text{ReLU}(x)$ when $\alpha < 0$.
+    \end{itemize}
+
+In simpler terms, ReLU is nonlinear because it does not form a straight line.  It has a \textbf{kink} (a sharp bend) at $x = 0$, where the slope changes abruptly from $0$ to $1$. This discontinuity in the derivative prevents the function from being globally linear.
+
+
+This non-linearity makes DNN verification difficult. In fact, verification NNS with ReLU is $\mathsf{NP}$-complete as shown in~\autoref{sec:complexity}. We will use ReLU throughout this book as the default activation function for hidden neurons in an NN.
 
 \subsection{Sigmoid}\label{sec:sigmoid}
 
@@ -595,7 +609,7 @@ $\relu{-1.2} = 0$ (inactive), $\relu{0} = 0$ (inactive), and $\relu{2.8} = 2.8$ 
             tick align=outside,
             minor tick num=0,
         ]
-        \addplot[line width=1.5pt, blue!80!black, samples=300, domain=-4.5:4.5] {1/(1 + exp(-x))};
+        \addplot[line width=1.5pt, red!80!black, samples=300, domain=-4.5:4.5] {1/(1 + exp(-x))};
       \end{axis}
     \end{tikzpicture}
     \caption{Sigmoid function.}\label{fig:sigmoid}
@@ -635,7 +649,7 @@ Tanh, shown in~\autoref{fig:tanh}, is similar to sigmoid (\autoref{sec:sigmoid})
             minor tick num=0,
         ]
         % tanh curve
-        \addplot[line width=1.5pt, blue!80!black, samples=300, domain=-4.5:4.5] {tanh(x)};
+        \addplot[line width=1.5pt, red!80!black, samples=300, domain=-4.5:4.5] {tanh(x)};
         % 0.0 label at origin, slightly offset
       \end{axis}
     \end{tikzpicture}
@@ -674,9 +688,9 @@ $\tanh(-1.2) \approx -0.83$, $\tanh(0) = 0$, and $\tanh(2.8) \approx 0.99$. This
             legend style={at={(0.5,1.03)},anchor=south,legend columns=2,draw=none, font=\footnotesize},
         ]
         % softmax_1 curve
-        \addplot[line width=1.5pt, blue!80!black, domain=-4.5:4.5] {exp(x)/(exp(x)+1)};
+        \addplot[line width=1.5pt, red!80!black, domain=-4.5:4.5] {exp(x)/(exp(x)+1)};
         % softmax_2 curve
-        \addplot[line width=1.5pt, red!80!black, domain=-4.5:4.5, dashed] {1/(exp(x)+1)};
+        \addplot[line width=1.5pt, blue!80!black, domain=-4.5:4.5, dashed] {1/(exp(x)+1)};
         % Add legends
         \addlegendentry{$\mathrm{softmax}_1(x)$}
         \addlegendentry{$\mathrm{softmax}_2(x)$}
@@ -708,7 +722,7 @@ This means that softmax maps the input vector $x$ to a probability distribution 
 
 \section{Neural Network Architectures and Layers}
 
-Neural networks vary in architecture depending on how information flows through them and how computations are structured. Most common models are variations of the \emph{feedforward network}, with additional structures or constraints layered on top.  \autoref{tab:nn-types} summarizes several common NN architectures and their typical application domains.
+NNs vary in architecture depending on how information flows through them and how computations are structured. Most common models are variations of the \emph{feedforward network}, with additional structures or constraints layered on top.  \autoref{tab:nn-types} summarizes several common NN architectures and their typical application domains.
 
 \begin{table}[ht]
 \caption{Popular NN Architectures and Applications}\label{tab:nn-types}
@@ -1975,13 +1989,157 @@ Since $x_5 = -3.5 \le 0$, this assignment satisfies our search for $x_5 \le 0$, 
 \chapter{Abstractions}\label{chap:abstractions}
 
 
-As mentioned in~\autoref{sec:milp}, we need to compute the bounds of the neurons in a DNN. However, computing these bounds directly is often infeasible due to the complexity of the DNN structure and the non-linear activation functions. To address this, we use \emph{abstraction} techniques that allow us to over-approximate the set of possible values that a neuron can take, while still being able to reason about the DNN's behavior.
+As mentioned in~\autoref{sec:milp}, and DNN verification in general, we need to compute the bounds of the neurons. However, computing these bounds precisely is often infeasible due to the complexity of the DNN structure and non-linear activation functions such as ReLU. To address this, modern DNN verifiers use \emph{abstraction} techniques to approximate the set of possible values that a post-ReLU neuron can have. 
+
+\section{Overview of Abstractions for ReLU} 
+
+We will focus on ReLU (\autoref{sec:relu}) activation functions, which are the most common in DNNs. The goal is to compute the bounds of a post-ReLU neuron $\hat{z}$ given the bounds of its pre-ReLU value $z$ over the input region. For example, for a ReLU neuron $y = \max(0, x)$, we want to compute the bounds $[l_y(x), u_y(x)]$ of $y$ given the bounds $[l_x, u_x]$ on $x$.
+
+We want to compute the lower $l_y(x)$ and upper $u_y(x)$ bounds to be as tight as possible, i.e., they should be the smallest and largest values that $\hat{z}$ can take given the bounds on $z$. This computation is called \emph{abstraction} and is crucial for DNN verification, as it allows us to reason about the behavior of the network without having to enumerate all possible values of the neurons. There are several abstraction techniques that can be used to compute these bounds, each with its own trade-offs in terms of precision and computational complexity.
 
 
-\tvn{Hai, put in the Tikz picture showing different abstractions: ReLU, Interval, Zonotope, Polytope, etc.}
+
 \begin{figure}[h]
     \centering
+    % First row
+    \begin{subfigure}{0.3\linewidth}
+        \centering
+        \begin{tikzpicture}[scale=1.5]
+            % Colors
+            \definecolor{myred}{RGB}{255,100,100}
+            \definecolor{myfill}{RGB}{255,245,200}
+            \def\lx{-1.0} \def\ux{1.0} \def\ly{0} \def\uy{1.0}
+            \fill[myfill] (\lx,\ly) rectangle (\ux,\uy);
+            \draw[thick,->] ({\lx-0.2},0) -- ({\ux+0.3},0) node[right] {$x$};
+            \draw[thick,->] (0,{\ly-0.3}) -- (0,{\uy+0.3}) node[above] {$y$};
+            \draw[dashed] (\lx,{\ly-0.1}) -- (\lx,{\uy+0.2});
+            \draw[dashed] (\ux,{\ly-0.1}) -- (\ux,{\uy+0.2});
+            \draw[dashed] (\lx,\uy) -- (\ux,\uy);
+            \draw[ultra thick,myred] (\lx,\ly) -- (0,\ly) -- (\ux,\uy);
+            \node[below] at (\lx,0) {$l_x$};
+            \node[below] at (\ux,-0.05) {$u_x$};
+            \node[left] at (-0.1,\ly-0.2) {$l_y(x)$};
+            \node[above] at (\ux-0.5,\uy) {$u_y(x)$};
+            \node[below right] at (0,0) {$0$};
+        \end{tikzpicture}
+        \caption{Interval}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.3\linewidth}
+        \centering
+        \begin{tikzpicture}[scale=1.5]
+            \definecolor{myred}{RGB}{255,100,100}
+            \definecolor{myfill}{RGB}{255,245,200}
+            \def\lx{-1.0} \def\ux{1.0} \def\d{0.5}
+            \coordinate (A) at (\lx, \d*\lx+0.1);
+            \coordinate (B) at (\lx, 0.2);
+            \coordinate (E) at (\ux, \ux+0.01);
+            \coordinate (F) at (\ux, \ux-\d*\ux-0.1);
+            \fill[myfill] (A) -- (B) -- (E) -- (F) -- cycle;
+            \draw[thick,->] ({\lx-0.2},0) -- ({\ux+0.3},0) node[right] {$x$};
+            \draw[thick,->] (0,-0.6) -- (0,{\ux+0.2}) node[above] {$y$};
+            \draw[dashed] (\lx,-0.6) -- (\lx,{\ux+0.1});
+            \draw[dashed] (\ux,-0.6) -- (\ux,{\ux+0.1});
+            \draw[dashed] (\lx, 0.2) -- (\ux, \ux+0.01);
+            \draw[dashed] (\lx, \d*\lx+0.1) -- (\ux, \ux-\d*\ux-0.1);
+            \draw[ultra thick,myred] (\lx,0) -- (0,0) -- (\ux,\ux);
+            \node[below] at (\lx-0.1,0) {$l_x$};
+            \node[below] at (\ux+0.12,-0.05) {$u_x$};
+            \node[below] at ({\lx/2},-0.3) {$l_{y}(x)$};
+            \node[above] at (\ux/2,\ux/2+0.3) {$u_{y}(x)$};
+            \node[below right] at (0,0) {$0$};
+        \end{tikzpicture}
+        \caption{Zonotope}
+    \end{subfigure}
+    \hfill
+    % Second row
+    \begin{subfigure}{0.3\linewidth}
+        \centering
+        \begin{tikzpicture}[scale=1.5]
+            \definecolor{myred}{RGB}{255,100,100}
+            \definecolor{myfill}{RGB}{255,245,200}
+            \def\lx{-1.0} \def\ux{1.0} \def\d{0.5}
+            \coordinate (A) at (\lx, 0);
+            \coordinate (B) at (\lx, 0.01);
+            \coordinate (E) at (\ux, \ux+0.01);
+            \coordinate (F) at (\ux, 0);
+            \fill[myfill] (A) -- (B) -- (E) -- (F) -- cycle;
+            \draw[thick,->] ({\lx-0.2},0) -- ({\ux+0.3},0) node[right] {$x$};
+            \draw[thick,->] (0,-0.4) -- (0,{\ux+0.2}) node[above] {$y$};
+            \draw[dashed] (\lx,-0.3) -- (\lx,{\ux+0.1});
+            \draw[dashed] (\ux,-0.3) -- (\ux,{\ux+0.1});
+            \draw[dashed] (\lx, 0) -- (\ux, \ux+0.01);
+            \draw[dashed] (\lx, 0) -- (\ux, 0);
+            \draw[ultra thick,myred] (\lx,0) -- (0,0) -- (\ux,\ux);
+            \node[below] at (\lx-0.1,0) {$l_x$};
+            \node[below] at (\ux+0.12,-0.05) {$u_x$};
+            \node[below] at ({\lx/2},-0.01) {$l_{y}(x)$};
+            \node[above] at (\ux/2,\ux/2+0.3) {$u_{y}(x)$};
+            \node[below right] at (0,0) {$0$};
+        \end{tikzpicture}
+        \caption{Polytope (lower flat)}
+    \end{subfigure}
+
+    \caption{Abstractions of $\text{ReLU}(x) = \max(0,x)$ over $x \in [l_x, u_x]$: (a) interval, (b) zonotope, (c–d) polytope abstractions with different lower bounds.}
+    \label{fig:relu-all-abstractions}
+\end{figure}
+
+\autoref{fig:relu-all-abstractions} illustrates common abstractions (or \emph{over-approximations}) for the ReLU function $y = \max(0, x)$, where $x \in [l_x, u_x]$ and $y \in [l_y(x), u_y(x)]$. The values of ReLU are shown as points on the \colorbox{red}{red line}, which is non-convex and consists of two linear segments: one for $x < 0$ (where $y = 0$) and another for $x \geq 0$ (where $y = x$).
+To compute the bounds $l_y(x)$ and $u_y(x)$, we can use different abstractions: 
+
+\begin{itemize}
+    \item \textbf{Interval Abstraction:} Interval represents the output of the post-ReLU neuron as intervals $[l_y(x), u_y(x)]$ where $l_y(x) = 0$ and $u_y(x) = u_x$. It does not capture the relationship between the input and output of ReLU, and simply assumes that the output can take any value between 0 and the upper bound of the input. Interval is a simple and efficient abstraction, but it can be \emph{too imprecise} for many cases.
+
+    In~\autoref{fig:relu-all-abstractions}(a), the \colorbox{yellow}{yellow rectangle} represents the interval $[0, u_x]$.  As can be seen, this interval region is too large of an over-approximation (too coarse or loose), as it includes many points that are not achievable by ReLU, e.g., the point $(0.5, 0.0)$ is not on the red line.
+
+    \item \textbf{Zonotope Abstraction:} Zonotopes can capture linear relationships between variables more effectively. We can represent ReLU as a zonotope that includes the linear segments. In \autoref{fig:relu-all-abstractions}(b), the zonotope is shown as a parallelogram that captures the linear relationship between $x$ and $y$. The lower bound is \tvn{Hai?} and the upper bound is \tvn{Hai?}.
+
+    The \colorbox{yellow}{zonotope} shown in \autoref{fig:relu-all-abstractions}(b) is arguably tighter than the interval abstraction in~\autoref{fig:relu-all-abstractions}(a).  It captures the linear relationship between $x$ and $y$ and excludes points that are not achievable by ReLU, e.g., the point $(0.5, 0.0)$ that was included in the interval abstraction is not included in the zonotope. However, it still includes non-ReLU points and is also not strictly better than interval, e.g., the point $(0.5, -0.5)$ is included in the zonotope but not in the interval abstraction (or ReLU).
+
+    \item \textbf{Polytope Abstraction:} Polytopes can represent arbitrary linear constraints and provide very precise bounds. We can construct a polytope that tightly encloses the non-convex shape of the ReLU function.
+
+    In \autoref{fig:relu-all-abstractions}(c), the polytope is shown as a trapezoid that captures the linear segments of ReLU. The lower bound is $l_y(x) = 0$ and the upper bound is $u_y(x) = u_x$. \tvn{this is similar to the interval abstraction, as both have the same bounds, right?}
+
+\end{itemize}
+
+% \begin{figure}[h]
+%     \centering
     
+%     \begin{tikzpicture}[scale=2]
+%         % Colors
+%         \definecolor{myred}{RGB}{255,100,100}
+%         \definecolor{myfill}{RGB}{255,245,200}
+%         % Parameters
+%         \def\lx{-1.0}
+%         \def\ux{1.0}
+%         \def\ly{0}
+%         \def\uy{1.0}
+%         % Fill region
+%         \fill[myfill] (\lx,\ly) rectangle (\ux,\uy);
+%         % Axes
+%         \draw[thick,->] ({\lx-0.2},0) -- ({\ux+0.3},0) node[right] {$x$};
+%         \draw[thick,->] (0,{\ly-0.3}) -- (0,{\uy+0.3}) node[above] {$y$};
+%         % Dashed bounds
+%         \draw[dashed] (\lx,{\ly-0.1}) -- (\lx,{\uy+0.2});
+%         \draw[dashed] (\ux,{\ly-0.1}) -- (\ux,{\uy+0.2});
+%         \draw[dashed] (\lx,\uy) -- (\ux,\uy);
+%         % ReLU line
+%         \draw[ultra thick,myred] (\lx,\ly) -- (0,\ly) -- (\ux,\uy);
+%         % Labels
+%         \node[below] at (\lx,0) {$l_x$};
+%         \node[below] at (\ux,-0.05) {$u_x$};
+%         \node[left] at (-0.1,\ly-0.2) {$l_y(x)$};
+%         \node[above] at (\ux-0.5,\uy) {$u_y(x)$};
+%         % Origin
+%         \node[below right] at (0,0) {$0$};
+%     \end{tikzpicture}
+%     \caption{Interval abstraction for ReLU: $y = \max(0, x)$, with $x \in [l_x, u_x]$ and $y \in [l_y(x), u_y(x)]$.}
+%     \label{fig:relu-interval-abstraction}
+% \end{figure}
+
+\begin{figure}[h]
+    \centering
+    \begin{subfigure}{0.49\linewidth}
     \begin{tikzpicture}[scale=2]
         % Colors
         \definecolor{myred}{RGB}{255,100,100}
@@ -2010,50 +2168,6 @@ As mentioned in~\autoref{sec:milp}, we need to compute the bounds of the neurons
         % Origin
         \node[below right] at (0,0) {$0$};
     \end{tikzpicture}
-    \caption{Interval abstraction for ReLU: $y = \max(0, x)$, with $x \in [l_x, u_x]$ and $y \in [l_y(x), u_y(x)]$.}
-    \label{fig:relu-interval-abstraction}
-\end{figure}
-
-\begin{figure}[h]
-    \centering
-    \begin{subfigure}{0.49\linewidth}
-        \begin{tikzpicture}[scale=2]
-            % Colors
-            \definecolor{myred}{RGB}{255,100,100}
-            \definecolor{myfill}{RGB}{255,245,200}
-            % Parameters
-            \def\lx{-1.0}
-            \def\ux{1.0}
-            % Zonotope (band width)
-            \def\d{0.5}
-            % Zonotope corners
-            \coordinate (A) at (\lx, 0+\d*\lx);    % bottom left
-            \coordinate (B) at (\lx, 0.01);    % top left
-            \coordinate (C) at (0, \d*0);          % top middle
-            \coordinate (D) at (0, -\d*0);         % bottom middle
-            \coordinate (E) at (\ux, \ux+0.01);  % top right
-            \coordinate (F) at (\ux, \ux-\d*\ux);  % bottom right
-            % Fill zonotope
-            \fill[myfill] (A) -- (B) -- (E) -- (F) -- cycle;
-            % Axes
-            \draw[thick,->] ({\lx-0.2},0) -- ({\ux+0.3},0) node[right] {$x$};
-            \draw[thick,->] (0,{-0.6}) -- (0,{\ux+0.2}) node[above] {$y$};
-            % Bounded region
-            \draw[dashed] (\lx,{-0.6}) -- (\lx,{\ux+0.1});
-            \draw[dashed] (\ux,{-0.6}) -- (\ux,{\ux+0.1});
-            % Zonotope boundaries
-            \draw[dashed] (\lx, 0) -- (\ux, \ux+0.01);
-            \draw[dashed] (\lx, \d*\lx) -- (\ux, \ux-\d*\ux);
-            % ReLU line
-            \draw[ultra thick,myred] (\lx,0) -- (0,0) -- (\ux,\ux);
-            % Labels
-            \node[below] at (\lx-0.1,0) {$l_x$};
-            \node[below] at (\ux+0.12,-0.05) {$u_x$};
-            \node[below] at ({\lx/2},-0.3) {$l_{y}(x)$};
-            \node[above] at (\ux/2,\ux/2+0.3) {$u_{y}(x)$};
-            % Origin
-            \node[below right] at (0,0) {$0$};
-        \end{tikzpicture}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.49\linewidth}
@@ -2189,19 +2303,29 @@ As mentioned in~\autoref{sec:milp}, we need to compute the bounds of the neurons
 
 
 \tvn{Hai, create concrete examples with numbers to show how the abstractions work, e.g., for interval, zonotope, polytope, etc. We want to use one example to show the differences in the approximation,  not multiple examples which would be less effective.}
-\section{Interval}
 
-An interval abstraction is a simple and widely-used abstraction technique in DNN verification. It estimates the over-approximated range of values that a neuron can take using a lower and upper bound $[l, u]$. An interval $[l, u]$ denotes the potential set.
+
+\paragraph{Transformer Functions}
+
+To compute the abstraction of some function $f$ (e.g., activation or affine function), we need to define a \emph{transformer function} $f^a$ that takes some inputs (e.g., lower and upper bounds of the input neurons) and returns the lower and upper bounds of the output neuron after applying the function $f$. Formally, for a function $f$ that takes $n$ inputs, the transformer function $f^a$ can be defined as:
+\[f^a([l_1, u_1], [l_2, u_2], \ldots, [l_n, u_n]) = [l_f, u_f]\]
+where $[l_f, u_f]$ are the lower and upper bounds of the output neuron after applying the function $f$ to the inputs. 
+For example, for the ReLU function, the transformer function can be defined as:
+\[f^a([l_x, u_x]) = [l_y(x), u_y(x)]\]
+where $l_y(x) = 0$ and $u_y(x) = u_x$.
+
+\section{Interval}\label{sec:interval-abstraction}
+
+Interval is a simple and widely-used abstraction technique in DNN verification. It estimates the over-approximated range of values that a neuron can take using a lower and upper bound $[l, u]$. An interval $[l, u]$ denotes the potential set.
 $$\{x \ | \ l \leq x \leq u\}$$
 
-From here, we can define a set of functions commonly appearing in the neural network that can operate on an interval.
 
 \subsection{Affine functions}
 
-For affine function \(f\) in \ref{sec:affine}
+For affine function \(f\) in~\autoref{sec:affine}
 \[f(v_1, v_2, ...,v_n) = \sum_{i}^{n}w_iv_i\]
-where $n$ is number of output nodes from the previous layer. We can define the abstract transformer \(f^a\) as follows:
-\[f^{a}([l_1, u_1],...,[l_n, u_n]) = [\sum_{i}^{n}min(w_iu_i, w_il_i), \sum_{i}^{n}max(w_iu_i, w_il_i)]\]
+where $n$ is number of output nodes from the previous layer. We can define the abstract transformer \(f^a\) for interval as follows:
+\[f^{a}([l_1, u_1],...,[l_n, u_n]) = [~\sum_{i}^{n}\min(w_iu_i, w_il_i), \sum_{i}^{n}\max(w_iu_i, w_il_i)]~\]
 
 % where \(l \in \mathbb{R}^n\) and \(u \in \mathbb{R}^n\) represent the lower \([l_1, l_2, ... l_n]\) and upper bounds \([u_1, u_2, ..., u_n]\) of the nodes of the previous layer respectively, \(w^+\) included positive weight values while \(w^-\) included negative ones, following these equations:
 
@@ -2273,9 +2397,7 @@ Here we can see that by using Interval abstraction, the property \(x_{11}\ \geq\
 
 \section{Zonotope}
 
-\section{Zonotope Abstraction for DNN Verification}
-
-Zonotope abstraction is a more precise technique than interval abstraction for verifying the behavior of deep neural networks (DNNs). Unlike interval abstraction, which considers each variable independently, zonotopes capture correlations between variables (e.g., neuron activations), thereby reducing over-approximation errors in the verification process.
+Zonotope abstraction is a more precise technique than interval abstraction. Unlike interval abstraction, which considers each variable independently, zonotopes capture correlations between variables (e.g., neuron activations), thereby reducing over-approximation errors.
 
 \subsection{Definition of a Zonotope}
 
@@ -2645,7 +2767,7 @@ DeepPoly addresses these challenges by:
 Therefore, DeepPoly achieves a balance, combining the expressiveness of polyhedral domains with the efficiency required for deep network verification.
 
 
-
+\section{Abstractions for Other Activation Functions}
 
 \part{DNN Verification Algorithms}
 \chapter{The Branch and Bound Search Algorithm}\label{chap:bab}
