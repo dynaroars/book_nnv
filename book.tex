@@ -2095,7 +2095,7 @@ To compute the bounds $l_y(x)$ and $u_y(x)$, we can use different abstractions:
 
     \item \textbf{Polytope Abstraction:} Polytopes can represent arbitrary linear constraints and provide very precise bounds. We can construct a polytope that tightly encloses the non-convex shape of the ReLU function.
 
-    In \autoref{fig:relu-polytope-abstraction}, the polytope is shown as a trapezoid that captures the linear segments of ReLU. The lower bound is $l_y(x) = 0$ and the upper bound is $u_y(x) = u_x$. \tvn{this is similar to the interval abstraction, as both have the same bounds, right?}
+    In \autoref{fig:relu-polytope-abstraction}, the polytope is shown as a trapezoid that captures the linear segments of ReLU. The lower bound is $l_y(x) = 0$ and the upper bound is $u_y(x) = u_x$. \tvn{this is similar to the interval abstraction, as both have the same bounds, right?}\hd{you mean the same lower bound equation? Yes. Upper bound equation is different. However given a single neuron abstraction like in those figures, the concrete bounds (not the equations) are the same.}
 
 \end{itemize}
 
@@ -2361,19 +2361,29 @@ Interval is a widely-used abstraction technique in DNN verification due to its s
 We now define abstract transformers for the interval domains for the affine function and ReLU activation.
 
 \paragraph{Affine Function} For the affine function \(f\) in~\autoref{sec:affine}
-\[
-f(v_1, v_2, ...,v_n) = \sum_{i}^{n} w_iv_i + b
-\]
+\[f(v_1, v_2, ...,v_n) = \sum_{i=1}^{n} w_i v_i + b\]
 where $n$ is number of output nodes from the previous layer and \(b\) is the bias term. We define the abstract transformer \(f^a\) for interval as:
-
 \[
-f^{a}([l_1, u_1],...,[l_n, u_n]) = [~\sum_{i}^{n}\min(w_iu_i, w_il_i) + b, \sum_{i}^{n}\max(w_iu_i, w_il_i) + b],
+f^{a}([l_1, u_1],..., [l_n, u_n])
+= \Bigg[\sum_{i=1}^{n}\big(w_i^{+} l_i + w_i^{-} u_i\big) + b,\; \sum_{i=1}^{n}\big(w_i^{+} u_i + w_i^{-} l_i\big) + b\Bigg].
 \]
+where \(w_i^{+} = \max(w_i, 0),\quad w_i^{-} = \min(w_i, 0)\).
+% Equivalently, for a vector form \(f(x)=Wx+b\) with entrywise decompositions \(W^{+}=\max(W,0)\) and \(W^{-}=\min(W,0)\), we have
+% \[f^a([l,u]) = [\,W^{+}l + W^{-}u + b,\; W^{+}u + W^{-}l + b\,].\]
 
-where \(l \in \mathbb{R}^n\) and \(u \in \mathbb{R}^n\) represent the lower \([l_1, l_2, ... l_n]\) and upper bounds \([u_1, u_2, ..., u_n]\) of the nodes of the previous layer respectively.
+% Here, \(l \in \mathbb{R}^n\) and \(u \in \mathbb{R}^n\) represent the lower \([l_1,\dots,l_n]\) and upper \([u_1,\dots,u_n]\) bounds of the inputs, respectively.
 
 \begin{example}
-\tvn{Hai, provide some concrete example with numbers ,e.g.,  $f^a([1, 2], [-1, 3])$}
+Consider \(f^a(x_1,x_2) = -0.5\,x_1 + 0.5\,x_2 + 1.0\) in~\autoref{sec:affine} with
+\[x_1 \in [1,2],\quad x_2 \in [-1,3].\]
+Here, \(w_1=-0.5\Rightarrow w_1^{+}=0,\; w_1^{-}=-0.5\) and \(w_2=0.5\Rightarrow w_2^{+}=0.5,\; w_2^{-}=0\). Applying the rule,
+\[\begin{aligned}
+f^a_L &= w_1^{+} l_1 + w_1^{-} u_1 + w_2^{+} l_2 + w_2^{-} u_2 + b \\
+    &= 0\cdot 1 + (-0.5)\cdot 2 + 0.5\cdot(-1) + 0\cdot 3 + 1.0 = -0.5,\\
+f^a_U &= w_1^{+} u_1 + w_1^{-} l_1 + w_2^{+} u_2 + w_2^{-} l_2 + b \\
+    &= 0\cdot 2 + (-0.5)\cdot 1 + 0.5\cdot 3 + 0\cdot(-1) + 1.0 = 2.0.
+\end{aligned}\]
+Thus, \(f^a([1,2],[-1,3]) = [-0.5,\, 2.0].\)
 \end{example}
 
 \subsection{Activation Functions}
@@ -2407,6 +2417,7 @@ x_3 = 1 x_1 + 1 x_2 + 2
 \]
 
 Then we apply the affine abstract transformer:
+<<<<<<< HEAD
 \begin{equation}
 \begin{aligned}
   x_3 \in & ~[\min(1\times-1, 1\times1) + \min(1\times-1, 1\times3) + 2, \\
@@ -2414,6 +2425,14 @@ Then we apply the affine abstract transformer:
           & [0,6]
 \end{aligned}         
 \end{equation}
+=======
+\[
+\begin{aligned}
+x_3 &\in [\,1\cdot l_{x_1} + 1\cdot l_{x_2} + 2,\; 1\cdot u_{x_1} + 1\cdot u_{x_2} + 2\,] \\
+    &= [\,(-1)+(-1)+2,\; 1+2+2\,] = [0,\,5].
+\end{aligned}
+\]
+>>>>>>> 391dcbf (updates)
 
 So we over-approximate \(x_3\) as:
 \[
