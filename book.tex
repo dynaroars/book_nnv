@@ -2333,20 +2333,30 @@ f^a : D^a \to D^a,
 for each operation \(f\) to reason about the effects of \(f\) on abstract values.
 
 
-\begin{example}[Intervals]
-Let $f(x) = x + 1$ and consider the interval abstraction $D^a = \{ [a, b] \mid a \leq b \in \mathbb{Z} \cup \{-\infty, +\infty\} \}$. Then:
-\[
-f^a([a, b]) = [a+1, b+1]
-\]
-\end{example}
+\begin{example}
+ Consider the function $f(x) = x + 1$. We define the abstract transformers $f^a$ for different abstract domains $D^a$:
 
-\begin{example}[Sign abstraction]
-Let the abstract domain be $\{\texttt{neg}, \texttt{zero}, \texttt{pos}\}$. For $f(x) = x + 1$, the abstract transformer is:
+\textbf{Odd/Even abstraction}:  $D^a = \{\texttt{odd}, \texttt{even}\}$. Then:
+\[
+f^a(\texttt{odd}) = \texttt{even}, \quad
+f^a(\texttt{even}) = \texttt{odd}
+\]
+
+\textbf{Sign abstraction}: $D^a = \{\texttt{neg}, \texttt{zero}, \texttt{pos}\}$. Then: 
 \[
 f^a(\texttt{neg}) = \{\texttt{neg}, \texttt{zero}\}, \quad
 f^a(\texttt{zero}) = \texttt{pos}, \quad
 f^a(\texttt{pos}) = \texttt{pos}
 \]
+
+
+\textbf{Interval abstraction}: $D^a = \{ [a, b] \mid a \leq b \in \mathbb{Z} \cup \{-\infty, +\infty\} \}$. Then:
+\[
+f^a([a, b]) = [a+1, b+1]
+\]
+
+
+
 \end{example}
 
 
