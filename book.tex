@@ -2020,6 +2020,7 @@ We want to compute the bounds to be as tight as possible, i.e., they should be t
             \node[below right] at (0,0) {$0$};
         \end{tikzpicture}
         \caption{Interval}
+        \label{fig:relu-interval-abstraction}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.3\linewidth}
@@ -2045,6 +2046,7 @@ We want to compute the bounds to be as tight as possible, i.e., they should be t
             \node[below right] at (0,0) {$0$};
         \end{tikzpicture}
         \caption{Zonotope}
+        \label{fig:relu-zonotope-abstraction}
     \end{subfigure}
     \hfill
     % Second row
@@ -2071,6 +2073,7 @@ We want to compute the bounds to be as tight as possible, i.e., they should be t
             \node[below right] at (0,0) {$0$};
         \end{tikzpicture}
         \caption{Polytope (lower flat)}
+        \label{fig:relu-polytope-abstraction}
     \end{subfigure}
 
     \caption{Abstractions of $\text{ReLU}(x) = \max(0,x)$ over $x \in [l_x, u_x]$: (a) interval, (b) zonotope, (c–d) polytope abstractions with different lower bounds.}
@@ -2084,15 +2087,15 @@ To compute the bounds $l_y(x)$ and $u_y(x)$, we can use different abstractions:
 \begin{itemize}
     \item \textbf{Interval Abstraction:} Interval represents the output of the post-ReLU neuron as intervals $[l_y(x), u_y(x)]$ where $l_y(x) = 0$ and $u_y(x) = u_x$. It does not capture the relationship between the input and output of ReLU, and simply assumes that the output can take any value between 0 and the upper bound of the input. Interval is a simple and efficient abstraction, but it can be \emph{too imprecise} for many cases.
 
-    In~\autoref{fig:relu-all-abstractions}(a), the \colorbox{yellowfill}{yellow rectangle} represents the interval $[0, u_x]$.  As can be seen, this interval region is too large of an over-approximation (too coarse or loose), as it includes many points that are not achievable by ReLU, e.g., the point $(0.5, 0.0)$ is not on the red line.
+    In~\autoref{fig:relu-interval-abstraction}, the \colorbox{yellowfill}{yellow rectangle} represents the interval $[0, u_x]$.  As can be seen, this interval region is too large of an over-approximation (too coarse or loose), as it includes many points that are not achievable by ReLU, e.g., the point $(0.5, 0.0)$ is not on the red line.
 
-    \item \textbf{Zonotope Abstraction:} Zonotopes can capture linear relationships between variables more effectively. We can represent ReLU as a zonotope that includes the linear segments. In \autoref{fig:relu-all-abstractions}(b), the zonotope is shown as a parallelogram that captures the linear relationship between $x$ and $y$. The lower bound is \tvn{Hai?} and the upper bound is \tvn{Hai?}.
+    \item \textbf{Zonotope Abstraction:} Zonotopes can capture linear relationships between variables more effectively. We can represent ReLU as a zonotope that includes the linear segments. In \autoref{fig:relu-zonotope-abstraction}, the zonotope is shown as a parallelogram that captures the linear relationship between $x$ and $y$. The lower bound $l_y(x)$ is $y = \lambda x$ and the upper bound $u_y(x)$ is $y = \lambda x + u_x(1 - \lambda)$ for some slope $\lambda \in [0, \frac{u_x}{u_x - l_x}]$. If we set $\lambda = 0$, the zonotope is a rectangle, which is the same as the interval abstraction. If we set $\lambda = \frac{u_x}{u_x - l_x}$, the zonotope's is upper bound is the same as polytope's upper bound in \autoref{fig:relu-polytope-abstraction}.
 
-    The \colorbox{yellowfill}{zonotope} shown in \autoref{fig:relu-all-abstractions}(b) is arguably tighter than the interval abstraction in~\autoref{fig:relu-all-abstractions}(a).  It captures the linear relationship between $x$ and $y$ and excludes points that are not achievable by ReLU, e.g., the point $(0.5, 0.0)$ that was included in the interval abstraction is not included in the zonotope. However, it still includes non-ReLU points and is also not strictly better than interval, e.g., the point $(0.5, -0.5)$ is included in the zonotope but not in the interval abstraction (or ReLU).
+    The \colorbox{yellowfill}{zonotope} shown in \autoref{fig:relu-zonotope-abstraction} is arguably tighter than the interval abstraction in~\autoref{fig:relu-interval-abstraction}.  It captures the linear relationship between $x$ and $y$ and excludes points that are not achievable by ReLU, e.g., the point $(0.5, 0.0)$ that was included in the interval abstraction is not included in the zonotope. However, it still includes non-ReLU points and is also not strictly better than interval, e.g., the point $(0.5, -0.5)$ is included in the zonotope but not in the interval abstraction (or ReLU).
 
     \item \textbf{Polytope Abstraction:} Polytopes can represent arbitrary linear constraints and provide very precise bounds. We can construct a polytope that tightly encloses the non-convex shape of the ReLU function.
 
-    In \autoref{fig:relu-all-abstractions}(c), the polytope is shown as a trapezoid that captures the linear segments of ReLU. The lower bound is $l_y(x) = 0$ and the upper bound is $u_y(x) = u_x$. \tvn{this is similar to the interval abstraction, as both have the same bounds, right?}
+    In \autoref{fig:relu-polytope-abstraction}, the polytope is shown as a trapezoid that captures the linear segments of ReLU. The lower bound is $l_y(x) = 0$ and the upper bound is $u_y(x) = u_x$. \tvn{this is similar to the interval abstraction, as both have the same bounds, right?}
 
 \end{itemize}
 
@@ -2205,7 +2208,7 @@ To compute the bounds $l_y(x)$ and $u_y(x)$, we can use different abstractions:
     \end{subfigure}
 
     \caption{Zonotope abstraction for ReLU: $y = \max(0,x)$, with $x \in [l_x, u_x]$ and $y \in [l_y(x), u_y(x)]$.}
-    \label{fig:relu-zonotope-abstraction}
+    \label{fig:relu-zonotope-abstraction2}
 \end{figure}
 
 
@@ -2292,7 +2295,7 @@ To compute the bounds $l_y(x)$ and $u_y(x)$, we can use different abstractions:
     \end{subfigure}
 
     \caption{Polytop abstraction for ReLU: $y = \max(0,x)$, with $x \in [l_x, u_x]$ and $y \in [l_y(x), u_y(x)]$.}
-    \label{fig:relu-polytope-abstraction}
+    \label{fig:relu-polytope-abstraction2}
 \end{figure}
 
 
