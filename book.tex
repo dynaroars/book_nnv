@@ -2349,38 +2349,30 @@ f^a(\texttt{pos}) = \texttt{pos}
 \]
 \end{example}
 
-\section{Interval}\label{sec:interval-abstraction}
 
-Interval is a simple and widely-used abstraction technique in DNN verification. It estimates the over-approximated range of values that a neuron can take using a lower and upper bound $[l, u]$. An interval $[l, u]$ denotes the potential set.
-$$\{x \ | \ l \leq x \leq u\}$$
+\section{Abstract Domains and Transformer Functions DNNs}
 
+\subsection{Interval}\label{sec:interval-abstraction}
 
-\subsection{Affine functions}
+Interval is a widely-used abstraction technique in DNN verification due to its simplicity and efficiency. It estimates the over-approximated range of values that a neuron can take using a lower and upper bound $[l, u]$, e.g., an interval over the set of values $\{-2.5, -8.2, -10.7, 2, 4.7, 5.1\}$ can be represented as $[-10.7, 5.1]$.
 
-For affine function \(f\) in~\autoref{sec:affine}
+\subsubsection{Transformers}
+
+We now define transformer functions for the interval domains for the affine function and ReLU activation.
+
+\paragraph{Affine Function} For the affine function \(f\) in~\autoref{sec:affine}
 \[f(v_1, v_2, ...,v_n) = \sum_{i}^{n}w_iv_i\]
-where $n$ is number of output nodes from the previous layer. We can define the abstract transformer \(f^a\) for interval as follows:
-\[f^{a}([l_1, u_1],...,[l_n, u_n]) = [~\sum_{i}^{n}\min(w_iu_i, w_il_i), \sum_{i}^{n}\max(w_iu_i, w_il_i)]~\]
+where $n$ is number of output nodes from the previous layer. We define the transformer \(f^a\) for interval as:
 
-% where \(l \in \mathbb{R}^n\) and \(u \in \mathbb{R}^n\) represent the lower \([l_1, l_2, ... l_n]\) and upper bounds \([u_1, u_2, ..., u_n]\) of the nodes of the previous layer respectively, \(w^+\) included positive weight values while \(w^-\) included negative ones, following these equations:
+\[
+f^{a}([l_1, u_1],...,[l_n, u_n]) = [~\sum_{i}^{n}\min(w_iu_i, w_il_i), \sum_{i}^{n}\max(w_iu_i, w_il_i)],
+\]
 
-% \[
-% w^+_i =
-% \begin{cases}
-% w_i, & \text{if } w_i > 0 \\
-% 0, & \text{otherwise}
-% \end{cases}
-% \quad \text{for } i = 1, 2, \dots, n
-% \]
+where \(l \in \mathbb{R}^n\) and \(u \in \mathbb{R}^n\) represent the lower \([l_1, l_2, ... l_n]\) and upper bounds \([u_1, u_2, ..., u_n]\) of the nodes of the previous layer respectively.
 
-% \[
-% w^-_i =
-% \begin{cases}
-% w_i, & \text{if } w_i \leq 0 \\
-% 0, & \text{otherwise}
-% \end{cases}
-% \quad \text{for } i = 1, 2, \dots, n
-% \]
+\begin{example}
+\tvn{Hai, provide some concrete example with numbers ,e.g.,  $f^a([1, 2], [-1, 3])$ but apply it to our example DNN with weights}
+\end{example}
 
 \subsection{Activation Functions}
 
