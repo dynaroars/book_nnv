@@ -483,17 +483,14 @@ f(x_1, x_2) = -\relu{-0.5 x_1 + 0.5 x_2 + 1.0} + \relu{1.0 x_1 + 1.0 x_2 - 1.0} 
 \end{example}
 
 
-
 \section{Affine Transformation}\label{sec:affine}
 
-The affine transformation (AF) of a neuron consists of a \emph{linear combination}---i.e., a weighted sum---of its inputs, followed by the addition of a bias term. More specifically, for a neuron $z$ with weights \(w_1, \dots, w_n\), bias \(b\), and inputs \(v_1, \dots, v_n\) from the previous layer, the affine transformation computes:
+The affine transformation (AF) of a neuron consists of a \emph{linear combination}---i.e., a weighted sum---of its inputs, followed by the addition of a bias term. More specifically, for a neuron with weights \(w_1, \dots, w_n\), bias \(b\), and inputs \(v_1, \dots, v_n\) from the previous layer, the affine transformation computes:
 
 \begin{equation}\label{eq:affine}   
-    z = \sum_{i=1}^{n} w_i v_i + b.
+    f(v_1, v_2, \dots,v_n) = \sum_{i=1}^{n} w_i v_i + b.
 \end{equation}
 
-%AF is often applied to hidden layers of a DNN to compute the value of a neuron in the hidden layer.
-%The values of a neuron in the output layer is evaluated similarly but it may skip the activation function.
 
 \begin{example}
 In \autoref{fig:dnn}, neuron \(x_3\) receives inputs \(x_1\) and \(x_2\) with weights \(-0.5\), \(0.5\), and bias \(1.0\), so its affine transformation is $x_3 = -0.5 x_1 + 0.5 x_2 + 1.0$.
@@ -530,7 +527,7 @@ Popular activation functions used in NNs include ReLU, Sigmoid, Tanh, and Softma
 ReLU is a widely used activation function in NNs. It is defined as:
 
 \[
-\text{ReLU}(x) = \max(0, x) = 
+\relu{x} = \max(0, x) = 
 \begin{cases}
 0 & \text{if } x \leq 0 \\
 x & \text{if } x > 0
@@ -2356,16 +2353,18 @@ f^a(\texttt{pos}) = \texttt{pos}
 
 Interval is a widely-used abstraction technique in DNN verification due to its simplicity and efficiency. It estimates the over-approximated range of values that a neuron can take using a lower and upper bound $[l, u]$, e.g., an interval over the set of values $\{-2.5, -8.2, -10.7, 2, 4.7, 5.1\}$ can be represented as $[-10.7, 5.1]$.
 
-\subsubsection{Transformers}
+\subsubsection{Abstract Transformers}
 
-We now define transformer functions for the interval domains for the affine function and ReLU activation.
+We now define abstract transformers for the interval domains for the affine function and ReLU activation.
 
 \paragraph{Affine Function} For the affine function \(f\) in~\autoref{sec:affine}
-\[f(v_1, v_2, ...,v_n) = \sum_{i}^{n}w_iv_i\]
-where $n$ is number of output nodes from the previous layer. We define the transformer \(f^a\) for interval as:
+\[
+f(v_1, v_2, ...,v_n) = \sum_{i}^{n} w_iv_i + b
+\]
+where $n$ is number of output nodes from the previous layer and \(b\) is the bias term. We define the abstract transformer \(f^a\) for interval as:
 
 \[
-f^{a}([l_1, u_1],...,[l_n, u_n]) = [~\sum_{i}^{n}\min(w_iu_i, w_il_i), \sum_{i}^{n}\max(w_iu_i, w_il_i)],
+f^{a}([l_1, u_1],...,[l_n, u_n]) = [~\sum_{i}^{n}\min(w_iu_i, w_il_i) + b, \sum_{i}^{n}\max(w_iu_i, w_il_i) + b],
 \]
 
 where \(l \in \mathbb{R}^n\) and \(u \in \mathbb{R}^n\) represent the lower \([l_1, l_2, ... l_n]\) and upper bounds \([u_1, u_2, ..., u_n]\) of the nodes of the previous layer respectively.
@@ -2392,7 +2391,7 @@ Most activation functions (\autoref{sec:activation}) used in neural networks are
     \caption{Feed-forward neural network with 6 layers and 2 neurons per layer.}
     \label{fig:interval-network}
 \end{figure}
-In Figure~\ref{fig:interval-network}, we aim to verify whether \(x_{11}\ \geq\ x_{12}\) given a bounded input range on \(x_1\) and \(x_2\). To do this using interval abstraction, we propagate intervals layer by layer.
+In~\autoref{fig:interval-network}, we aim to verify whether \(x_{11}\ \geq\ x_{12}\) given a bounded input range on \(x_1\) and \(x_2\). To do this using interval abstraction, we propagate intervals layer by layer.
 
 Suppose the inputs \(x_1\) and \(x_2\) satisfy:
 \[
@@ -2405,9 +2404,13 @@ x_3 = 1 x_1 + 1 x_2 + 2
 \]
 
 Then we apply the affine abstract transformer:
-\[
-x_3 \in [min(1\times-1,\ 1\times1) + min(1\times-1,\ 1\times3), max(1\times-1,\ 1\times-1) + max(-1\times-1,\ -1\times3)]\ + 2  = [0,\ 6]
-\]
+\begin{equation}
+\begin{aligned}
+  x_3 \in & ~[\min(1\times-1, 1\times1) + \min(1\times-1, 1\times3) + 2, \\
+          & ~\max(1\times-1, 1\times-1) + \max(-1\times-1, -1\times3) + 2] = \\
+          & [0,6]
+\end{aligned}         
+\end{equation}
 
 So we over-approximate \(x_3\) as:
 \[
