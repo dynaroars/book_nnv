@@ -2,6 +2,8 @@
 \setcounter{secnumdepth}{3}
 
 \usepackage{xcolor}
+\definecolor{myred}{RGB}{255,100,100}
+\definecolor{yellowfill}{RGB}{255,245,200}
 \definecolor{codegreen}{rgb}{0,0.6,0}
 \definecolor{codegray}{rgb}{0.5,0.5,0.5}
 \definecolor{codepurple}{rgb}{0.58,0,0.82}
@@ -1995,7 +1997,7 @@ As mentioned in~\autoref{sec:milp}, and DNN verification in general, we need to 
 
 We will focus on ReLU (\autoref{sec:relu}) activation functions, which are the most common in DNNs. The goal is to compute the bounds of a post-ReLU neuron $\hat{z}$ given the bounds of its pre-ReLU value $z$ over the input region. For example, for a ReLU neuron $y = \max(0, x)$, we want to compute the bounds $[l_y(x), u_y(x)]$ of $y$ given the bounds $[l_x, u_x]$ on $x$.
 
-We want to compute the lower $l_y(x)$ and upper $u_y(x)$ bounds to be as tight as possible, i.e., they should be the smallest and largest values that $\hat{z}$ can take given the bounds on $z$. This computation is called \emph{abstraction} and is crucial for DNN verification, as it allows us to reason about the behavior of the network without having to enumerate all possible values of the neurons. There are several abstraction techniques that can be used to compute these bounds, each with its own trade-offs in terms of precision and computational complexity.
+We want to compute the bounds to be as tight as possible, i.e., they should be the largest lower and lowest upper values that $\hat{z}$ can take given the bounds on $z$. This computation is called \emph{abstraction} and is crucial for DNN verification, as it allows us to reason about the behavior of the network without having to enumerate all possible values of the neurons. There are several abstraction techniques that can be used to compute these bounds, each with its own trade-offs in terms of precision and computational complexity.
 
 
 
@@ -2006,10 +2008,8 @@ We want to compute the lower $l_y(x)$ and upper $u_y(x)$ bounds to be as tight a
         \centering
         \begin{tikzpicture}[scale=1.5]
             % Colors
-            \definecolor{myred}{RGB}{255,100,100}
-            \definecolor{myfill}{RGB}{255,245,200}
             \def\lx{-1.0} \def\ux{1.0} \def\ly{0} \def\uy{1.0}
-            \fill[myfill] (\lx,\ly) rectangle (\ux,\uy);
+            \fill[yellowfill] (\lx,\ly) rectangle (\ux,\uy);
             \draw[thick,->] ({\lx-0.2},0) -- ({\ux+0.3},0) node[right] {$x$};
             \draw[thick,->] (0,{\ly-0.3}) -- (0,{\uy+0.3}) node[above] {$y$};
             \draw[dashed] (\lx,{\ly-0.1}) -- (\lx,{\uy+0.2});
@@ -2028,14 +2028,12 @@ We want to compute the lower $l_y(x)$ and upper $u_y(x)$ bounds to be as tight a
     \begin{subfigure}{0.3\linewidth}
         \centering
         \begin{tikzpicture}[scale=1.5]
-            \definecolor{myred}{RGB}{255,100,100}
-            \definecolor{myfill}{RGB}{255,245,200}
             \def\lx{-1.0} \def\ux{1.0} \def\d{0.5}
             \coordinate (A) at (\lx, \d*\lx+0.1);
             \coordinate (B) at (\lx, 0.2);
             \coordinate (E) at (\ux, \ux+0.01);
             \coordinate (F) at (\ux, \ux-\d*\ux-0.1);
-            \fill[myfill] (A) -- (B) -- (E) -- (F) -- cycle;
+            \fill[yellowfill] (A) -- (B) -- (E) -- (F) -- cycle;
             \draw[thick,->] ({\lx-0.2},0) -- ({\ux+0.3},0) node[right] {$x$};
             \draw[thick,->] (0,-0.6) -- (0,{\ux+0.2}) node[above] {$y$};
             \draw[dashed] (\lx,-0.6) -- (\lx,{\ux+0.1});
@@ -2056,14 +2054,12 @@ We want to compute the lower $l_y(x)$ and upper $u_y(x)$ bounds to be as tight a
     \begin{subfigure}{0.3\linewidth}
         \centering
         \begin{tikzpicture}[scale=1.5]
-            \definecolor{myred}{RGB}{255,100,100}
-            \definecolor{myfill}{RGB}{255,245,200}
             \def\lx{-1.0} \def\ux{1.0} \def\d{0.5}
             \coordinate (A) at (\lx, 0);
             \coordinate (B) at (\lx, 0.01);
             \coordinate (E) at (\ux, \ux+0.01);
             \coordinate (F) at (\ux, 0);
-            \fill[myfill] (A) -- (B) -- (E) -- (F) -- cycle;
+            \fill[yellowfill] (A) -- (B) -- (E) -- (F) -- cycle;
             \draw[thick,->] ({\lx-0.2},0) -- ({\ux+0.3},0) node[right] {$x$};
             \draw[thick,->] (0,-0.4) -- (0,{\ux+0.2}) node[above] {$y$};
             \draw[dashed] (\lx,-0.3) -- (\lx,{\ux+0.1});
@@ -2085,17 +2081,17 @@ We want to compute the lower $l_y(x)$ and upper $u_y(x)$ bounds to be as tight a
 \end{figure}
 
 \subsection{Common Abstractions for ReLU}
-\autoref{fig:relu-all-abstractions} illustrates common abstractions (or \emph{over-approximations}) for the ReLU function $y = \max(0, x)$, where $x \in [l_x, u_x]$ and $y \in [l_y(x), u_y(x)]$. The values of ReLU are shown as points on the \colorbox{red}{red line}, which is non-convex and consists of two linear segments: one for $x < 0$ (where $y = 0$) and another for $x \geq 0$ (where $y = x$).
+\autoref{fig:relu-all-abstractions} illustrates common abstractions (or \emph{over-approximations}) for the ReLU function $y = \max(0, x)$, where $x \in [l_x, u_x]$ and $y \in [l_y(x), u_y(x)]$. The values of ReLU are shown as points on the \colorbox{myred}{red line}, which is non-convex and consists of two linear segments: one for $x < 0$ (where $y = 0$) and another for $x \geq 0$ (where $y = x$).
 To compute the bounds $l_y(x)$ and $u_y(x)$, we can use different abstractions: 
 
 \begin{itemize}
     \item \textbf{Interval Abstraction:} Interval represents the output of the post-ReLU neuron as intervals $[l_y(x), u_y(x)]$ where $l_y(x) = 0$ and $u_y(x) = u_x$. It does not capture the relationship between the input and output of ReLU, and simply assumes that the output can take any value between 0 and the upper bound of the input. Interval is a simple and efficient abstraction, but it can be \emph{too imprecise} for many cases.
 
-    In~\autoref{fig:relu-all-abstractions}(a), the \colorbox{yellow}{yellow rectangle} represents the interval $[0, u_x]$.  As can be seen, this interval region is too large of an over-approximation (too coarse or loose), as it includes many points that are not achievable by ReLU, e.g., the point $(0.5, 0.0)$ is not on the red line.
+    In~\autoref{fig:relu-all-abstractions}(a), the \colorbox{yellowfill}{yellow rectangle} represents the interval $[0, u_x]$.  As can be seen, this interval region is too large of an over-approximation (too coarse or loose), as it includes many points that are not achievable by ReLU, e.g., the point $(0.5, 0.0)$ is not on the red line.
 
     \item \textbf{Zonotope Abstraction:} Zonotopes can capture linear relationships between variables more effectively. We can represent ReLU as a zonotope that includes the linear segments. In \autoref{fig:relu-all-abstractions}(b), the zonotope is shown as a parallelogram that captures the linear relationship between $x$ and $y$. The lower bound is \tvn{Hai?} and the upper bound is \tvn{Hai?}.
 
-    The \colorbox{yellow}{zonotope} shown in \autoref{fig:relu-all-abstractions}(b) is arguably tighter than the interval abstraction in~\autoref{fig:relu-all-abstractions}(a).  It captures the linear relationship between $x$ and $y$ and excludes points that are not achievable by ReLU, e.g., the point $(0.5, 0.0)$ that was included in the interval abstraction is not included in the zonotope. However, it still includes non-ReLU points and is also not strictly better than interval, e.g., the point $(0.5, -0.5)$ is included in the zonotope but not in the interval abstraction (or ReLU).
+    The \colorbox{yellowfill}{zonotope} shown in \autoref{fig:relu-all-abstractions}(b) is arguably tighter than the interval abstraction in~\autoref{fig:relu-all-abstractions}(a).  It captures the linear relationship between $x$ and $y$ and excludes points that are not achievable by ReLU, e.g., the point $(0.5, 0.0)$ that was included in the interval abstraction is not included in the zonotope. However, it still includes non-ReLU points and is also not strictly better than interval, e.g., the point $(0.5, -0.5)$ is included in the zonotope but not in the interval abstraction (or ReLU).
 
     \item \textbf{Polytope Abstraction:} Polytopes can represent arbitrary linear constraints and provide very precise bounds. We can construct a polytope that tightly encloses the non-convex shape of the ReLU function.
 
@@ -2109,14 +2105,14 @@ To compute the bounds $l_y(x)$ and $u_y(x)$, we can use different abstractions:
 %     \begin{tikzpicture}[scale=2]
 %         % Colors
 %         \definecolor{myred}{RGB}{255,100,100}
-%         \definecolor{myfill}{RGB}{255,245,200}
+%         \definecolor{yellowfill}{RGB}{255,245,200}
 %         % Parameters
 %         \def\lx{-1.0}
 %         \def\ux{1.0}
 %         \def\ly{0}
 %         \def\uy{1.0}
 %         % Fill region
-%         \fill[myfill] (\lx,\ly) rectangle (\ux,\uy);
+%         \fill[yellowfill] (\lx,\ly) rectangle (\ux,\uy);
 %         % Axes
 %         \draw[thick,->] ({\lx-0.2},0) -- ({\ux+0.3},0) node[right] {$x$};
 %         \draw[thick,->] (0,{\ly-0.3}) -- (0,{\uy+0.3}) node[above] {$y$};
@@ -2144,14 +2140,14 @@ To compute the bounds $l_y(x)$ and $u_y(x)$, we can use different abstractions:
     \begin{tikzpicture}[scale=2]
         % Colors
         \definecolor{myred}{RGB}{255,100,100}
-        \definecolor{myfill}{RGB}{255,245,200}
+        \definecolor{yellowfill}{RGB}{255,245,200}
         % Parameters
         \def\lx{-1.0}
         \def\ux{1.0}
         \def\ly{0}
         \def\uy{1.0}
         % Fill region
-        \fill[myfill] (\lx,\ly) rectangle (\ux,\uy);
+        \fill[yellowfill] (\lx,\ly) rectangle (\ux,\uy);
         % Axes
         \draw[thick,->] ({\lx-0.2},0) -- ({\ux+0.3},0) node[right] {$x$};
         \draw[thick,->] (0,{\ly-0.3}) -- (0,{\uy+0.3}) node[above] {$y$};
@@ -2175,7 +2171,7 @@ To compute the bounds $l_y(x)$ and $u_y(x)$, we can use different abstractions:
         \begin{tikzpicture}[scale=2]
             % Colors
             \definecolor{myred}{RGB}{255,100,100}
-            \definecolor{myfill}{RGB}{255,245,200}
+            \definecolor{yellowfill}{RGB}{255,245,200}
             % Parameters
             \def\lx{-1.0}
             \def\ux{1.0}
@@ -2189,7 +2185,7 @@ To compute the bounds $l_y(x)$ and $u_y(x)$, we can use different abstractions:
             \coordinate (E) at (\ux, \ux+0.01);  % top right
             \coordinate (F) at (\ux, \ux-\d*\ux-0.1);  % bottom right
             % Fill zonotope
-            \fill[myfill] (A) -- (B) -- (E) -- (F) -- cycle;
+            \fill[yellowfill] (A) -- (B) -- (E) -- (F) -- cycle;
             % Axes
             \draw[thick,->] ({\lx-0.2},0) -- ({\ux+0.3},0) node[right] {$x$};
             \draw[thick,->] (0,{-0.6}) -- (0,{\ux+0.2}) node[above] {$y$};
@@ -2222,7 +2218,7 @@ To compute the bounds $l_y(x)$ and $u_y(x)$, we can use different abstractions:
         \begin{tikzpicture}[scale=2]
             % Colors
             \definecolor{myred}{RGB}{255,100,100}
-            \definecolor{myfill}{RGB}{255,245,200}
+            \definecolor{yellowfill}{RGB}{255,245,200}
             % Parameters
             \def\lx{-1.0}
             \def\ux{1.0}
@@ -2236,7 +2232,7 @@ To compute the bounds $l_y(x)$ and $u_y(x)$, we can use different abstractions:
             \coordinate (E) at (\ux, \ux+0.01);  % top right
             \coordinate (F) at (\ux, 0);  % bottom right
             % Fill zonotope
-            \fill[myfill] (A) -- (B) -- (E) -- (F) -- cycle;
+            \fill[yellowfill] (A) -- (B) -- (E) -- (F) -- cycle;
             % Axes
             \draw[thick,->] ({\lx-0.2},0) -- ({\ux+0.3},0) node[right] {$x$};
             \draw[thick,->] (0,{-0.4}) -- (0,{\ux+0.2}) node[above] {$y$};
@@ -2262,7 +2258,7 @@ To compute the bounds $l_y(x)$ and $u_y(x)$, we can use different abstractions:
         \begin{tikzpicture}[scale=2]
             % Colors
             \definecolor{myred}{RGB}{255,100,100}
-            \definecolor{myfill}{RGB}{255,245,200}
+            \definecolor{yellowfill}{RGB}{255,245,200}
             % Parameters
             \def\lx{-1.0}
             \def\ux{1.0}
@@ -2276,7 +2272,7 @@ To compute the bounds $l_y(x)$ and $u_y(x)$, we can use different abstractions:
             \coordinate (E) at (\ux, \ux+0.01);  % top right
             \coordinate (F) at (\ux, 0.2);  % bottom right
             % Fill zonotope
-            \fill[myfill] (A) -- (B) -- (E) -- (F) -- cycle;
+            \fill[yellowfill] (A) -- (B) -- (E) -- (F) -- cycle;
             % Axes
             \draw[thick,->] ({\lx-0.2},0) -- ({\ux+0.3},0) node[right] {$x$};
             \draw[thick,->] (0,{-0.4}) -- (0,{\ux+0.2}) node[above] {$y$};
@@ -2308,51 +2304,50 @@ To compute the bounds $l_y(x)$ and $u_y(x)$, we can use different abstractions:
 
 \subsection{Transformer Functions}
 
-In program analysis, in particular abstract interpretation, we reason about the behavior of a program without evaluating it on all concrete inputs---which may be infinite. Instead, we use an \emph{abstract domain} to summarize sets of concrete values, enabling sound and scalable approximation.
+The concept of computing abstractions, often referred to as \emph{abstract interpretation}, is central to program analysis. 
+It allows us reason about the behavior of a program without evaluating it on all concrete inputs---which may be infinite. Instead, we use an \emph{abstract domain}, such as interval, to summarize sets of concrete values, enabling sound and scalable approximation.
 
-\medskip
 
-The first key component is the \emph{abstraction function}:
+\paragraph{Abstraction Functions} In abstraction interpretation, we have the \emph{abstraction function}
 \[
-\alpha : D \to D^a
+\alpha : D \to D^a,
 \]
-which maps a concrete value from the domain $D$ to an element in a finite or simpler abstract domain $D^a$. For example, the \texttt{odd/even} abstraction is defined as:
+which maps a concrete value from the domain $D$ to an element in a finite or simpler abstract domain $D^a$. 
+
+\begin{example}[Odd/Even]
+    The \texttt{odd/even} or parity abstraction is defined as:
 \[
-\alpha_{\texttt{parity}}(x) =
+\alpha_{\texttt{parity}}(x \in \mathbb{Z}) =
 \begin{cases}
 \texttt{even} & \text{if } x \bmod 2 = 0 \\
 \texttt{odd}  & \text{if } x \bmod 2 = 1
 \end{cases}
 \]
-Even though $\mathbb{Z}$ is infinite, this abstraction maps all integers to a finite set $\{\texttt{odd}, \texttt{even}\}$. Abstraction functions like $\alpha$ allow us to represent infinite sets compactly.
+Even though $\mathbb{Z}$ is infinite, this abstraction maps all integers to a finite set $\{\texttt{odd}, \texttt{even}\}$. The abstraction functions $\alpha$ allow us to represent infinite sets compactly.
+\end{example}
 
-\medskip
-
-However, once the abstract domain is defined, we do not evaluate the concrete function $f : D \to D$ directly. Instead, we define an \emph{abstract transformer function}:
+\paragraph{Transformer Functions} Once we have values in the abstract domains, we often define an \emph{abstract transformer function} 
 \[
-f^a : D^a \to D^a
+f^a : D^a \to D^a,
 \]
-which operates entirely within the abstract domain and overapproximates the behavior of $f$ on all values represented by an abstract input. Specifically, given a concretization function $\gamma : D^a \to \mathcal{P}(D)$ that maps an abstract value to the set of concrete values it represents, we require:
-\[
-f(\gamma(x^a)) \subseteq \gamma(f^a(x^a))
-\]
-This is the standard \emph{soundness condition} in abstract interpretation: applying the concrete function to all values in the concretization of $x^a$ yields results that are safely covered by the concretization of $f^a(x^a)$.
+for each operation \(f\) to reason about the effects of \(f\) on abstract values.
 
-\medskip
 
-\textbf{Example 1 (Intervals).}  
+\begin{example}[Intervals]
 Let $f(x) = x + 1$ and consider the interval abstraction $D^a = \{ [a, b] \mid a \leq b \in \mathbb{Z} \cup \{-\infty, +\infty\} \}$. Then:
 \[
 f^a([a, b]) = [a+1, b+1]
 \]
+\end{example}
 
-\textbf{Example 2 (Sign abstraction).}  
+\begin{example}[Sign abstraction]
 Let the abstract domain be $\{\texttt{neg}, \texttt{zero}, \texttt{pos}\}$. For $f(x) = x + 1$, the abstract transformer is:
 \[
 f^a(\texttt{neg}) = \{\texttt{neg}, \texttt{zero}\}, \quad
 f^a(\texttt{zero}) = \texttt{pos}, \quad
 f^a(\texttt{pos}) = \texttt{pos}
 \]
+\end{example}
 
 \section{Interval}\label{sec:interval-abstraction}
 
