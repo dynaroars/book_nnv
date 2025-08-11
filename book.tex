@@ -2377,7 +2377,7 @@ where $n$ is number of output nodes from the previous layer and \(b\) is the bia
 f^{a}([l_1, u_1],..., [l_n, u_n])
 = \Bigg[\sum_{i=1}^{n}\big(w_i^{+} l_i + w_i^{-} u_i\big) + b,\; \sum_{i=1}^{n}\big(w_i^{+} u_i + w_i^{-} l_i\big) + b\Bigg].
 \]
-where \(w_i^{+} = \max(w_i, 0),\quad w_i^{-} = \min(w_i, 0)\).
+where \(w_i^{+} = \max(w_i, 0)\) and \(w_i^{-} = \min(w_i, 0)\).
 % Equivalently, for a vector form \(f(x)=Wx+b\) with entrywise decompositions \(W^{+}=\max(W,0)\) and \(W^{-}=\min(W,0)\), we have
 % \[f^a([l,u]) = [\,W^{+}l + W^{-}u + b,\; W^{+}u + W^{-}l + b\,].\]
 
@@ -2976,7 +2976,7 @@ the satisfiability of the partial activation pattern (\autoref{sec:activation-pa
 
 \autoref{alg:bab} shows \bab{}, a reference BaB architecture~\cite{nakagawa2014consolidating} for modern DNN verifiers. \bab{} takes as input a ReLU-based DNN $\mathcal{N}$ and a formulae $\phi_{in}\Rightarrow \phi_{out}$ representing the property of interest.
 \bab{} maintains a set of activation patterns (\texttt{ActPatterns}) that represent the current activation pattern of the DNN. Initially, \texttt{ActPatterns} is initialized with an empty activation pattern (\autoref{line:activation}).
-In each iteration, \bab{} selects an activation pattern $\sigma_i$ from \texttt{ActPatterns} (\tvn{also remove $\sigma_i$ from \texttt{ActPatterns}}?).  It then calls \functiontextformat{Deduce} to check the feasibility of the problem based on the current activation pattern. (Note that we do this even on the empty activation pattern, which is the initial state of the search, because the problem might be trivially infeasible.)
+In each iteration, \bab{} selects an activation pattern $\sigma_i$ from \texttt{ActPatterns} (\tvn{also remove $\sigma_i$ from \texttt{ActPatterns}}?)\hd{yes}.  It then calls \functiontextformat{Deduce} to check the feasibility of the problem based on the current activation pattern. (Note that we do this even on the empty activation pattern, which is the initial state of the search, because the problem might be trivially infeasible.)
 
 If \functiontextformat{Deduce} determines that the problem is feasible (using the current activation pattern $\sigma_i$), it calls \functiontextformat{Decide} to select a neuron $v_i$ to split, which essentially means the problem is split into two independent subproblems: one with $v_i$ (active) and the other with $\overline{v_i}$ (inactive). \bab{} then adds the two new activation patterns $\sigma_i \land v_i$ and $\sigma_i \land \overline{v_i}$ to \texttt{ActPatterns}. \bab{} then loops back to \autoref{line:dpllstart} to process the next activation pattern.
 \tvn{briefly describe what Decide do? in particular what does it do to determine/create an cex when the activation pattern is partially assigned?}
@@ -3038,6 +3038,17 @@ A full BaB search (\autoref{chap:bab}) is typically expensive and slow. Thus, DN
 \section{Input Splitting} Modern DNN verifiers~\cite{katz2019marabou,katz2022reluplex,bak2021nnenum,duong2025neuralsat} implement a technique called \emph{input splitting} to quickly deal with small verification problems, such as those in the ACAS Xu benchmark~\autoref{sec:acasxu} where the networks have a small number of inputs. Currently many work set the threshold to 50 inputs, i.e., if the network has more than 50 inputs, it is considered large and input splitting is not applied.
 
 The idea is to split the original verification problem into subproblems, each checking whether the DNN produces the desired output from a smaller input region and returns \unsat{} if all subproblems are verified and \sat{} if a counterexample is found in any subproblem.\tvn{Hai, check and give a small example of input splitting. Perhaps use some existing example.}
+
+\hd{
+    Given $k$ available threads, \tool{} splits the original input region to obtain subproblems as described and and runs DPLL(T) on $k$ subproblems in parallel. % and iteratively splits any subproblem which cannot be solved within pre-defined amount of time, e.g., 2 seconds.
+\tool{} returns \texttt{unsat} if it verifies all subproblems and \texttt{sat} if it found a counterexample in any subproblem. %In the current implementation, \tool{} uses the number of available threads to determine the number of created subproblems.
+For example, we split the input region $\{x_1 \in [-1,1] , x_2 \in [-2,2]\}$ into four subregions 
+$\{x_1 \in [-1,0] , x_2 \in [-2,0]\}$, 
+$\{x_1 \in [-1,0] , x_2 \in [0,2]\}$ , 
+$\{x_1 \in [0,1] , x_2 \in [-2,0]\}$, and 
+$\{x_1 \in [0,1], x_2 \in [0,2]\}$.  
+Note that the formula $-1 \le x_1 \le 1 \land -2 \le x_2 \le 2$ representing the original input region is equivalent to the formula $(-1 \le x_1 \le 0 \lor 0 \le x \le 1) \land (-2 \le x_2 \le 0 \lor 0 \le x_2 \le 2)$ representing the combination of the created subregions.
+}
 
 
 \section{Input Bounds Tightening}\label{sec:inputboundstigthten}
