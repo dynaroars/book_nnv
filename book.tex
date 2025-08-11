@@ -2371,20 +2371,18 @@ f^{a}([l_1, u_1],...,[l_n, u_n]) = [~\sum_{i}^{n}\min(w_iu_i, w_il_i), \sum_{i}^
 where \(l \in \mathbb{R}^n\) and \(u \in \mathbb{R}^n\) represent the lower \([l_1, l_2, ... l_n]\) and upper bounds \([u_1, u_2, ..., u_n]\) of the nodes of the previous layer respectively.
 
 \begin{example}
-\tvn{Hai, provide some concrete example with numbers ,e.g.,  $f^a([1, 2], [-1, 3])$ but apply it to our example DNN with weights}
+\tvn{Hai, provide some concrete example with numbers ,e.g.,  $f^a([1, 2], [-1, 3])$}
 \end{example}
 
 \subsection{Activation Functions}
 
-Most activation functions used in neural networks are monotonically increasing, e.g., ReLU and Sigmoid. It is straightforward to define
-an abstract transformer for any monotonically increasing function \(f : \mathbb{R} \to \mathbb{R}\), as we simply apply \(f\) for lower and upper bounds as follows:
+Most activation functions (\autoref{sec:activation}) used in neural networks are monotonically increasing, e.g., ReLU and Sigmoid. For interval domain, it is straightforward to define an abstract transformer for any monotonically increasing function \(f : \mathbb{R} \to \mathbb{R}\), as we simply apply \(f\) for lower and upper bounds as follows:
 \[f^a
 ([l, u]) = [ f(l), f(u)]
 \]
 
-The interval abstraction is efficient and easy to implement, but it can be imprecise, especially for non-linear activation functions like ReLU. 
 
-\paragraph{Example}: 
+\begin{example} 
 % For the DNN in \autoref{fig:dnn}, the interval abstraction for the input layer is $x_1 \in [-1, 1]$ and $x_2 \in [-2, 2]$. The interval abstraction for the hidden layer is $x_3 \in [0, 2]$ because $x_3 = [ReLU(-0.5x_1 + 0.5x_2 + 1.0), ReLU(-0.5x_1 + 0.5x_2 + 1.0)] = [ReLU(-0.5 \times -1 + 0.5 \times -2 + 1.0), ReLU(-0.5 \times 1 + 0.5 \times 2 + 1.0)] = [0, 2]$. Similarly, $x_4 \in [0, 2]$. The interval abstraction for the output layer is $x_5 \in [-3, 3]$.
 
 
@@ -2421,8 +2419,8 @@ Here we can see that by using Interval abstraction, the property \(x_{11}\ \geq\
 \[
 -2.5 - 0  \leq x_{11}\ -\ x_{12} \leq 12 - 5
 \]
-
-\section{Zonotope}
+\end{example}
+\subsection{Zonotope}
 
 Zonotope abstraction is a more precise technique than interval abstraction. Unlike interval abstraction, which considers each variable independently, zonotopes capture correlations between variables (e.g., neuron activations), thereby reducing over-approximation errors.
 
