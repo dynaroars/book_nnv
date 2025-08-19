@@ -931,12 +931,12 @@ Assume the input $x$ and each node applies the ReLU activation. With the weights
 
 Not all NNs are feedforward. Some architectures introduce cycles, dynamic connections, or non-Euclidean data structures.
 
-\paragraph{Recurrent Neural Networks (RNNs)} RNNs, often used in natural language process and speech recognition, are designed to recognize patterns in sequences of data. RNNs have \emph{loops} in them, allowing information to be sent forward and backward.
+\paragraph{Recurrent Neural Networks (RNNs)} RNNs, often used in natural language processing (NLP) and speech recognition, are designed to recognize patterns in sequences of data. RNNs have \emph{loops} in them, allowing information to be sent forward and backward.
 
 
 \begin{figure}[h]
     \begin{center}
-\begin{tikzpicture}[scale=0.8, transform shape]
+\begin{tikzpicture}[scale=0.5, transform shape]
 % --- Rolled RNN (left diagram) ---
 \begin{scope}
 % Layer labels
@@ -1020,9 +1020,9 @@ For the second time step, the hidden state is $h_2 = \relu{2x_2 - h_1 + 0.5}$, a
 
 \end{example}
 
-\paragraph{Transformers} are designed for long-range dependencies using \emph{self-attention} rather than recurrence. They dominate applications in natural language processing and are increasingly used in vision and reinforcement learning.
+\paragraph{Transformers} Transformers are designed for long-range dependencies using \emph{self-attention} rather than recurrence. They dominate applications in natural language processing and are increasingly used in vision and reinforcement learning.
 
-\paragraph{Graph Neural Networks (GNNs)} operate on graphs, allowing each node to aggregate information from its neighbors. They are used in applications involving structured data like molecules or social networks.
+\paragraph{Graph Neural Networks (GNNs)} operate on graphs, allowing each node to aggregate information from its neighbors. GNNs are used in applications involving structured data like molecules or social networks.
 
 
 
@@ -1459,7 +1459,7 @@ This includes:
 Properties are encoded in \textbf{SMT-LIB2}, referencing input/output variable names consistent with ONNX.
 
 
-\begin{example}[ACAS XU Network]
+\begin{example}
 
 A typical ACAS XU network (\autoref{sec:acasxu}) maps 5D input to 5D output via 6 layers of 50 ReLU neurons. A local robustness property is:
 \[
@@ -1468,11 +1468,12 @@ A typical ACAS XU network (\autoref{sec:acasxu}) maps 5D input to 5D output via 
 \[
 y_0 \leq y_1, \quad y_0 \leq y_2, \quad y_0 \leq y_3, \quad y_0 \leq y_4
 \]
+\tvn{what are these variables and what does this property say at high level?}
+
 
 The VNN-LIB code for this property is as follows:
 
-\begin{lstlisting}[style=SMTLIB-style, language=SMTLIB,basicstyle=\ttfamily\scriptsize]
-
+\begin{lstlisting}[style=SMTLIB-style, language=SMTLIB,basicstyle=\ttfamily\scriptsize, multicols=2]
 ; declaring the input variables
 (declare-const X_0 Real)
 (declare-const X_1 Real)
@@ -2368,11 +2369,11 @@ Interval is a widely-used abstraction technique in DNN verification due to its s
 
 \subsubsection{Abstract Transformers}
 
-We now define abstract transformers for the interval domains for the affine function and ReLU activation.
+We now define abstract transformers for the interval domains for affine and ReLU activation functions.
 
 \paragraph{Affine Function} For the affine function \(f\) in~\autoref{sec:affine}
 \[f(v_1, v_2, ...,v_n) = \sum_{i=1}^{n} w_i v_i + b\]
-where $n$ is number of output nodes from the previous layer and \(b\) is the bias term. We define the abstract transformer \(f^a\) for interval as:
+where $n$ is the number of output nodes from the previous layer and \(b\) is the bias term. We define the abstract transformer \(f^a\) for interval as:
 \[
 f^{a}([l_1, u_1],..., [l_n, u_n])
 = \Bigg[\sum_{i=1}^{n}\big(w_i^{+} l_i + w_i^{-} u_i\big) + b,\; \sum_{i=1}^{n}\big(w_i^{+} u_i + w_i^{-} l_i\big) + b\Bigg].
@@ -2384,8 +2385,17 @@ where \(w_i^{+} = \max(w_i, 0)\) and \(w_i^{-} = \min(w_i, 0)\).
 % Here, \(l \in \mathbb{R}^n\) and \(u \in \mathbb{R}^n\) represent the lower \([l_1,\dots,l_n]\) and upper \([u_1,\dots,u_n]\) bounds of the inputs, respectively.
 
 \begin{example}
-Consider \(f^a(x_1,x_2) = -0.5\,x_1 + 0.5\,x_2 + 1.0\) in~\autoref{sec:affine} with
-\[x_1 \in [1,2],\quad x_2 \in [-1,3].\]
+
+\begin{figure}
+\centering
+\mydnn
+\caption{\label{fig:dnn-abs}A simple DNN (similar to~\autoref{fig:dnn}).}
+\end{figure}    
+
+Consider the DNN in~\autoref{fig:dnn-abs} with inputs \(x_1 \in [1, 2]\) and \(x_2 \in [-1, 3]\). We can compute the lower and upper bounds of the output of neuron \(x_3\) using the abstract transformer:
+
+\(f^a(x_1,x_2) = -0.5\,x_1 + 0.5\,x_2 + 1.0\)
+
 Here, \(w_1=-0.5\Rightarrow w_1^{+}=0,\; w_1^{-}=-0.5\) and \(w_2=0.5\Rightarrow w_2^{+}=0.5,\; w_2^{-}=0\). Applying the rule,
 \[\begin{aligned}
 f^a_L &= w_1^{+} l_1 + w_1^{-} u_1 + w_2^{+} l_2 + w_2^{-} u_2 + b \\
@@ -2403,11 +2413,11 @@ Most activation functions (\autoref{sec:activation}) used in neural networks are
 ([l, u]) = [ f(l), f(u)]
 \]
 
-
 \begin{example} 
-% For the DNN in \autoref{fig:dnn}, the interval abstraction for the input layer is $x_1 \in [-1, 1]$ and $x_2 \in [-2, 2]$. The interval abstraction for the hidden layer is $x_3 \in [0, 2]$ because $x_3 = [ReLU(-0.5x_1 + 0.5x_2 + 1.0), ReLU(-0.5x_1 + 0.5x_2 + 1.0)] = [ReLU(-0.5 \times -1 + 0.5 \times -2 + 1.0), ReLU(-0.5 \times 1 + 0.5 \times 2 + 1.0)] = [0, 2]$. Similarly, $x_4 \in [0, 2]$. The interval abstraction for the output layer is $x_5 \in [-3, 3]$.
+For the DNN in \autoref{fig:dnn}, the interval abstraction for the input layer is $x_1 \in [-1, 1]$ and $x_2 \in [-2, 2]$. The interval abstraction for the hidden layer is $x_3 \in [0, 2]$ because $x_3 = [ReLU(-0.5x_1 + 0.5x_2 + 1.0), ReLU(-0.5x_1 + 0.5x_2 + 1.0)] = [ReLU(-0.5 \times -1 + 0.5 \times -2 + 1.0), ReLU(-0.5 \times 1 + 0.5 \times 2 + 1.0)] = [0, 2]$. Similarly, $x_4 \in [0, 2]$. The interval abstraction for the output layer is $x_5 \in [-3, 3]$.
+\end{example}
 
-
+\begin{example}
 \begin{figure}[h]
     \centering
     \includegraphics[width=1.2\linewidth]{figure/2_layers_example.png}
@@ -3024,7 +3034,9 @@ Finally, \bab{} has an empty \texttt{ActPatterns}, stops the search, and returns
 
 \end{example}
 
-\section{Beyond the Basic BaB} What described above is the basic and minimal BaB algorithm. However, modern DNN verifiers implement many optimizations and strategies to improve the performance of the search. For example, they apply quick various engineering tricks to eliminate easy cases or find easy counterexamples (\autoref{chap:common-engineering}) before running the full BaB search. Even the BaB search itself is optimized to avoid exploring the entire search space. For example, if \functiontextformat{Deduce} step determines infesiability, a smarter \bab{} variant can analyze the conflict and add a new clause to the set of clauses (\texttt{clauses}) to prevent the same activation pattern from being selected again. This is similar to conflict-driven clause learning (CDCL) in modern SAT solvers and is implemented in the \neuralsat{} DNN verification tool~\cite{duong2025neuralsat}. In addition, heuristics are also used to select, e.g., which neuron to split next (\functiontextformat{Decide}). We explore these optimizations and strategies in \autoref{part:optimizations}.
+\section{Beyond the Basic BaB} What described above is the basic and minimal BaB algorithm. However, modern DNN verifiers implement many optimizations and strategies to improve the performance of the search. For example, they apply various engineering tricks to eliminate easy cases or find easy counterexamples (\autoref{chap:common-engineering}) before running the full BaB search. 
+
+Even the BaB search itself is optimized to avoid exploring the entire search space. For example, if \functiontextformat{Deduce} step determines infeasibility, a smarter \bab{} variant (e.g., the \neuralsat{} tool described in~\autoref{chap:neuralsat}) can analyze the conflict and add a new clause to the set of clauses (\texttt{clauses}) to prevent the same activation pattern from being selected again. This is similar to conflict-driven clause learning (CDCL) in modern SAT solvers and is implemented in the \neuralsat{} DNN verification tool~\cite{duong2025neuralsat}. In addition, heuristics are also used to select, e.g., which neuron to split next (\functiontextformat{Decide}). We explore these optimizations and strategies in \autoref{part:optimizations}.
 
 % \tvn{TODO: this basic BnB is also used to create a proof tree, which is used to generate a proof in the \prooflang{} format. We will discuss this in \autoref{chapter:proof-gen-check}.}
 
@@ -3033,13 +3045,16 @@ Finally, \bab{} has an empty \texttt{ActPatterns}, stops the search, and returns
 
 \chapter{Common Engineerings and Optimizations}\label{chap:common-engineering}
 
-A full BaB search (\autoref{chap:bab}) is typically expensive and slow. Thus, DNN verifiers often begin by applying a range of optimizations and engineering techniques that aim to quickly eliminate easy cases, such as when the network has a small number of inputs.
+A full branch and bound (BaB search (\autoref{chap:bab}) is typically expensive and slow. Thus, DNN verifiers often begin by applying a range of optimizations and engineering techniques that aim to quickly eliminate easy cases, such as when the network has a small number of inputs.
 
-\section{Input Splitting} Modern DNN verifiers~\cite{katz2019marabou,katz2022reluplex,bak2021nnenum,duong2025neuralsat} implement a technique called \emph{input splitting} to quickly deal with small verification problems, such as those in the ACAS Xu benchmark~\autoref{sec:acasxu} where the networks have a small number of inputs. Currently many work set the threshold to 50 inputs, i.e., if the network has more than 50 inputs, it is considered large and input splitting is not applied.
+\section{Input Splitting} Modern DNN verifiers~\cite{katz2019marabou,katz2022reluplex,bak2021nnenum,duong2025neuralsat} often use a technique called \emph{input splitting} to quickly deal with networks with verification problems involving low-dimensional networks, such as those in the ACAS Xu benchmark~\autoref{sec:acasxu} where the networks have a small number of inputs. Currently many work set the threshold to 50 inputs, i.e., if the network has more than 50 inputs, it is considered large and input splitting is not applied.
 
-The idea is to split the original verification problem into subproblems, each checking whether the DNN produces the desired output from a smaller input region and returns \unsat{} if all subproblems are verified and \sat{} if a counterexample is found in any subproblem.\tvn{Hai, check and give a small example of input splitting. Perhaps use some existing example.}
+The idea is to split the original verification problem into subproblems, each checking whether the DNN produces the desired output from a smaller input region and returns \unsat{} if all subproblems are verified and \sat{} if a counterexample is found in any subproblem. Input splitting avoids BaB search---also called \emph{neuron splitting} and focuses on individual neurons---and is often used as a fast-path optimization to quickly eliminate easy cases.
 
-\hd{
+
+\begin{example}
+    
+
     Given $k$ available threads, \tool{} splits the original input region to obtain subproblems as described and and runs DPLL(T) on $k$ subproblems in parallel. % and iteratively splits any subproblem which cannot be solved within pre-defined amount of time, e.g., 2 seconds.
 \tool{} returns \texttt{unsat} if it verifies all subproblems and \texttt{sat} if it found a counterexample in any subproblem. %In the current implementation, \tool{} uses the number of available threads to determine the number of created subproblems.
 For example, we split the input region $\{x_1 \in [-1,1] , x_2 \in [-2,2]\}$ into four subregions 
@@ -3048,7 +3063,7 @@ $\{x_1 \in [-1,0] , x_2 \in [0,2]\}$ ,
 $\{x_1 \in [0,1] , x_2 \in [-2,0]\}$, and 
 $\{x_1 \in [0,1], x_2 \in [0,2]\}$.  
 Note that the formula $-1 \le x_1 \le 1 \land -2 \le x_2 \le 2$ representing the original input region is equivalent to the formula $(-1 \le x_1 \le 0 \lor 0 \le x \le 1) \land (-2 \le x_2 \le 0 \lor 0 \le x_2 \le 2)$ representing the combination of the created subregions.
-}
+\end{example}
 
 
 \section{Input Bounds Tightening}\label{sec:inputboundstigthten}
@@ -5696,7 +5711,7 @@ From the given network, \tool{} first creates Boolean variables representing the
 
 
 \begin{example}
-For the DNN in Fig.~\ref{fig:dnn}, \tool{} creates two status variables $v_3,v_4$ for neurons $x_3,x_4$, respectively, and two initial clauses $v_3\lor \overline{v_3}$ and $v_4 \lor \overline{v_4}$. The assignment $\{x_3=T, x_4=F \}$ creates the constraint $0.5x_1-0.5x_2-1>0 \land x_1 + x_2 -2 \le 0$.
+For the DNN in~\autoref{fig:dnn}, \tool{} creates two status variables $v_3,v_4$ for neurons $x_3,x_4$, respectively, and two initial clauses $v_3\lor \overline{v_3}$ and $v_4 \lor \overline{v_4}$. The assignment $\{x_3=T, x_4=F \}$ creates the constraint $0.5x_1-0.5x_2-1>0 \land x_1 + x_2 -2 \le 0$.
 \end{example}
 
 
