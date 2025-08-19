@@ -195,6 +195,7 @@
 \newcommand{\mipverify}{\texttt{MIPVerify}}
 \newcommand{\crowndefault}{\texttt{$\alpha\beta$-CROWN} (default)}
 
+\newcommand{\myrelu}{\mathrm{ReLU}}
 \newcommand{\relu}[1]{\mathrm{ReLU}\left(#1\right)}
 \newcommand{\sigmoid}[1]{\mathrm{sigmoid}\left(#1\right)}
 \newcommand{\mytanh}[1]{\mathrm{tanh}\left(#1\right)}
@@ -2372,16 +2373,12 @@ We now define abstract transformers for the interval domains for affine and ReLU
 \[f(v_1, v_2, ...,v_n) = \sum_{i=1}^{n} w_i v_i + b\]
 where $n$ is the number of output nodes from the previous layer and \(b\) is the bias term. We define the abstract transformer \(f^a\) for interval as:
 \[
-f^{a}([l_1, u_1],..., [l_n, u_n])
-= \Bigg[\sum_{i=1}^{n}\big(w_i^{+} l_i + w_i^{-} u_i\big) + b,\; \sum_{i=1}^{n}\big(w_i^{+} u_i + w_i^{-} l_i\big) + b\Bigg].
+f^{a}([l_1, u_1],..., [l_n, u_n]) = [f^a_L, f^a_U] = 
+\Bigg[\sum_{i=1}^{n}\big(w_i^{+} l_i + w_i^{-} u_i\big) + b,\; \sum_{i=1}^{n}\big(w_i^{+} u_i + w_i^{-} l_i\big) + b\Bigg].
 \]
 where \(w_i^{+} = \max(w_i, 0)\) and \(w_i^{-} = \min(w_i, 0)\).
-% Equivalently, for a vector form \(f(x)=Wx+b\) with entrywise decompositions \(W^{+}=\max(W,0)\) and \(W^{-}=\min(W,0)\), we have
-% \[f^a([l,u]) = [\,W^{+}l + W^{-}u + b,\; W^{+}u + W^{-}l + b\,].\]
 
-% Here, \(l \in \mathbb{R}^n\) and \(u \in \mathbb{R}^n\) represent the lower \([l_1,\dots,l_n]\) and upper \([u_1,\dots,u_n]\) bounds of the inputs, respectively.
-
-\begin{example}
+\begin{example}\label{ex:transformer-affine1}
 
 \begin{figure}
 \centering
@@ -2389,32 +2386,42 @@ where \(w_i^{+} = \max(w_i, 0)\) and \(w_i^{-} = \min(w_i, 0)\).
 \caption{\label{fig:dnn-abs}A simple DNN (similar to~\autoref{fig:dnn}).}
 \end{figure}    
 
-Consider the DNN in~\autoref{fig:dnn-abs} with inputs \(x_1 \in [1, 2]\) and \(x_2 \in [-1, 3]\). We can compute the lower and upper bounds of the output of neuron \(x_3\) using the abstract transformer:
-
-\(f^a(x_1,x_2) = -0.5\,x_1 + 0.5\,x_2 + 1.0\)
-
-Here, \(w_1=-0.5\Rightarrow w_1^{+}=0,\; w_1^{-}=-0.5\) and \(w_2=0.5\Rightarrow w_2^{+}=0.5,\; w_2^{-}=0\). Applying the rule,
+Consider the DNN in~\autoref{fig:dnn-abs} with inputs \(x_1 \in [1, 2]\) and \(x_2 \in [-1, 3]\). The affine function for the neuron \(x_3\) is given by:
+\[
+f^a(x_1,x_2) = -0.5\,x_1 + 0.5\,x_2 + 1.0
+\]
+We compute the lower and upper bounds of the output of neuron $x_3$ using the abstract transformer:
 \[\begin{aligned}
 f^a_L &= w_1^{+} l_1 + w_1^{-} u_1 + w_2^{+} l_2 + w_2^{-} u_2 + b \\
     &= 0\cdot 1 + (-0.5)\cdot 2 + 0.5\cdot(-1) + 0\cdot 3 + 1.0 = -0.5,\\
 f^a_U &= w_1^{+} u_1 + w_1^{-} l_1 + w_2^{+} u_2 + w_2^{-} l_2 + b \\
     &= 0\cdot 2 + (-0.5)\cdot 1 + 0.5\cdot 3 + 0\cdot(-1) + 1.0 = 2.0.
 \end{aligned}\]
+
+Here, \(w_1=-0.5\Rightarrow w_1^{+}=0,\; w_1^{-}=-0.5\), and \(w_2=0.5\Rightarrow w_2^{+}=0.5,\; w_2^{-}=0\).
+
 Thus, \(f^a([1,2],[-1,3]) = [-0.5,\, 2.0].\)
 \end{example}
 
 \subsection{Activation Functions}
 
-Most activation functions (\autoref{sec:activation}) used in neural networks are monotonically increasing, e.g., ReLU and Sigmoid. For interval domain, it is straightforward to define an abstract transformer for any monotonically increasing function \(f : \mathbb{R} \to \mathbb{R}\), as we simply apply \(f\) for lower and upper bounds as follows:
-\[f^a
-([l, u]) = [ f(l), f(u)]
+Most activation functions (\autoref{sec:activation}) used in NNs are monotonically increasing, e.g., ReLU and Sigmoid. For interval domain, it is straightforward to define an abstract transformer for such monotonically increasing function \(\alpha : \mathbb{R} \to \mathbb{R}\) by simply applying $\alpha$ for lower and upper bounds as follows:
+
+\[
+\alpha^a([l, u]) = [ \alpha(l), \alpha(u)]
 \]
 
-\begin{example} 
-For the DNN in \autoref{fig:dnn}, the interval abstraction for the input layer is $x_1 \in [-1, 1]$ and $x_2 \in [-2, 2]$. The interval abstraction for the hidden layer is $x_3 \in [0, 2]$ because $x_3 = [ReLU(-0.5x_1 + 0.5x_2 + 1.0), ReLU(-0.5x_1 + 0.5x_2 + 1.0)] = [ReLU(-0.5 \times -1 + 0.5 \times -2 + 1.0), ReLU(-0.5 \times 1 + 0.5 \times 2 + 1.0)] = [0, 2]$. Similarly, $x_4 \in [0, 2]$. The interval abstraction for the output layer is $x_5 \in [-3, 3]$.
+\begin{example}
+For the example in~\autoref{ex:transformer-affine1}, applying ReLU to the output bounds of neuron $x^3$ gives:
+
+\[
+\myrelu^a([-0.5, 2.0]) = [\myrelu(-0.5), \myrelu(2.0)] 
+= [0, 2.0].
+\]
 \end{example}
 
-\begin{example}
+
+\begin{example}[Full Example of Interval Abstraction]\label{ex:interval-abstraction}
 \begin{figure}[h]
     \centering
     \includegraphics[width=1.2\linewidth]{figure/2_layers_example.png}
