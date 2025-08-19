@@ -2460,199 +2460,88 @@ Here we can see that by using Interval abstraction, the property \(x_{11}\ \geq\
 -2.5 - 0  \leq x_{11}\ -\ x_{12} \leq 12 - 5
 \]
 \end{example}
-\subsection{Zonotope}
 
-Zonotope abstraction is a more precise technique than interval abstraction. Unlike interval abstraction, which considers each variable independently, zonotopes capture correlations between variables (e.g., neuron activations), thereby reducing over-approximation errors.
 
-\subsubsection{Transformer Functions for Zonotope}
-A \textbf{zonotope} is a geometric object that can be viewed as the result of applying an affine transformation to a high-dimensional cube. Formally, a zonotope \(\mathcal{Z}\) in \(\mathbb{R}^n\) is defined as:
 
+\subsection{Zonotope}\label{sec:zonotope-abstraction}
+
+Zonotope abstraction is a more precise technique than interval abstraction. Unlike interval abstraction, which considers each variable independently, zonotopes capture correlations between variables (e.g., neuron activations), thereby reducing over-approximation errors. A zonotope represents a set as the Minkowski sum of line segments, allowing it to model linear dependencies between variables while maintaining computational efficiency.
+
+A \textbf{zonotope} \(\mathcal{Z}\) in \(\mathbb{R}^n\) is formally defined as:
 \[
 \mathcal{Z} = \left\{c + \sum_{i=1}^{m} \epsilon_i g_i \mid \epsilon_i \in [-1, 1]\right\}
 \]
+where \(c \in \mathbb{R}^n\) is the \textit{center}, \(g_i \in \mathbb{R}^n\) are \textit{generator vectors}, and \(\epsilon_i\) are independent coefficients. The zonotope contains all points formed by adding scaled versions of generators to the center.
 
-where:
-\begin{itemize}
-    \item \(c \in \mathbb{R}^n\) is the \textit{center} of the zonotope,
-    \item \(g_i \in \mathbb{R}^n\) are called \textit{generator vectors},
-    \item \(m\) is the number of generators,
-    \item \(\epsilon_i\) are independent scalar coefficients bounded between \(-1\) and \(1\).
-\end{itemize}
+\subsubsection{Abstract Transformers for Zonotope}
 
-This representation means that the zonotope contains all points that can be formed by adding scaled versions of the generator vectors to the center. The coefficients \(\epsilon_i\) determine the range of influence each generator has.
+We now define abstract transformers for affine and ReLU activation functions.
 
-\paragraph{Example (1D)} Consider a one-dimensional case with \(n = 1\), one generator (\(m = 1\)), and scalar center and generator:
-
-\[
-\mathcal{Z} = \left\{c + \epsilon_1 g_1 \mid \epsilon_1 \in [-1, 1]\right\}
-\]
-
-This is simply the interval \([c - g_1, c + g_1]\).
-
-\paragraph{Example (2D)} To illustrate zonotopes in higher dimensions, suppose:
-
-\[
-c = \begin{bmatrix}2 \\ 3\end{bmatrix}, \quad
-g_1 = \begin{bmatrix}1 \\ 1\end{bmatrix}
-\]
-
-Then, the set:
-
-\[
-\left\{c + \epsilon_1 g_1 \mid \epsilon_1 \in [-1, 1]\right\}
-= \left\{
-\begin{bmatrix}2 + \epsilon_1 \\ 3 + \epsilon_1\end{bmatrix}
-\right\}
-\]
-
-describes a line segment \ref{fig:2d1gzonotope-example} between \((1, 2)\) and \((3, 4)\).
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.5\linewidth]{figure/2d-zonotope.png}
-    \caption{Illustration of a 2D zonotope with 1 generator per dimension.}
-    \label{fig:2d1gzonotope-example}
-\end{figure}
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.5\linewidth]{figure/2-generator-zonotope.png}
-    \caption{Illustration of a 2D zonotope with 2 generators per dimension.}
-    \label{fig:2d2g-zonotope}
-\end{figure}
-
-
-Now add a second generator:
-
-\[
-g_2 = \begin{bmatrix}0 \\ 1\end{bmatrix} 
-\]
-
-so it stretches all points along the (0, 1) vector.
-The zonotope becomes:
-
-\[
-\left\{
-\begin{bmatrix}2 \\ 3\end{bmatrix} + \epsilon_1 \begin{bmatrix}1 \\ 1\end{bmatrix} + \epsilon_2 \begin{bmatrix}0 \\ 1\end{bmatrix}
-\mid \epsilon_1, \epsilon_2 \in [-1, 1]
-\right\}
-= \left\{
-\begin{bmatrix}2 + \epsilon_1 \\ 3 + \epsilon_1 + \epsilon_2\end{bmatrix}
-\right\}
-\]
-
-
-This forms a parallelogram in 2D space \ref{fig:2d2g-zonotope}. As more generators are added, the shape becomes more complex, and the zonotope can approximate more intricate geometric regions.
-
-\subsection{Affine Transformations}
-
-Zonotopes are closed under affine transformations, which makes them especially useful for modeling the linear layers of neural networks.
-
-An affine function is of the form:
-
-\[
-f(x) = W x + b
-\]
-
-where \(W\) is a weight matrix and \(b\) is a bias vector. Given a zonotope \(\mathcal{Z} = (c, G)\), where \(G\) is a matrix whose columns are the generator vectors \(g_i\), we define the abstract transformer:
-
+\paragraph{Affine Functions} For the affine function \(f\) in~\autoref{sec:affine}
+\[f(x) = Wx + b\]
+where \(W\) is a weight matrix and \(b\) is a bias vector. Given an input zonotope \(\mathcal{Z} = (c, G)\) where \(G = [g_1, g_2, \ldots, g_m]\) is the generator matrix, the abstract transformer \(f^a\) for zonotope is:
 \[
 f^a(\mathcal{Z}) = (Wc + b, WG)
 \]
+The new center becomes \(Wc + b\) and the new generator matrix becomes \(WG\). Since affine transformations preserve zonotope structure, this transformation is exact with no over-approximation.
 
-This means:
-\begin{itemize}
-    \item The new center is \(Wc + b\) - the weighted sum of input nodes's centers
-    \item The new generator matrix is \(WG\) - the weighted sum of input nodes's corresponding generators, where \(W\) is applied to each generator 
-\end{itemize}
-
-Since affine functions preserve the zonotope structure, no over-approximation is introduced at this stage.
-
-\subsection{Non-Linear Activation Functions}
-
-Activation functions such as ReLU are not affine and therefore do not preserve the zonotope structure. To handle them, conservative approximations are used.
-
-\paragraph{ReLU Relaxation:} Suppose a neuron has input represented as a zonotope, and we apply the ReLU function \(\text{ReLU}(x) = \max(0, x)\). There are three cases:
-
-\begin{itemize}
-    \item \(\mathbf{l_x \geq 0:}\) If all possible values of the neuron (based on the zonotope) are non-negative, ReLU simply returns the values back.
-    \item  \(\mathbf{u_x \leq 0:}\): If all possible values of the neuron are negative, the values of the centers and generators are set to 0s.
-    \item \textbf{Mixed range:} If the range of values crosses zero, they must be over-approximated. A common method is to introduce new generator vectors like \ref{fig:zonotope_vs_interval} to fit the shape of ReLU more tightly.
-\end{itemize}
-
-\begin{figure}
-    \centering
-    \includegraphics[width=1\linewidth]{figure/zonotope_vs_interval.png}
-    \caption{\textbf{Left:} ReLU's Interval approximation. \textbf{Right:} Zonotope approximation counterpart.}
-    \label{fig:zonotope_vs_interval}
-\end{figure}
-
-
-The bottom face of the zonotope is the line
+\begin{example}
+Consider the DNN in~\autoref{fig:dnn-abs} with inputs \(x_1 \in [1, 2]\) and \(x_2 \in [-1, 3]\). The affine function for neuron \(x_3\) is given by:
 \[
-y = \lambda x
+f(x_1,x_2) = -0.5\,x_1 + 0.5\,x_2 + 1.0
 \]
-for some slope \(\lambda\). It follows that the top face must be
+The center \(c\) represents the midpoint of each input interval:
 \[
-y = \lambda x + u(1 - \lambda)
+c_1 = \frac{1+2}{2} = 1.5, \quad c_2 = \frac{(-1)+3}{2} = 1.0
 \]
-
-If we set \(\lambda = 0\), we get two horizontal faces, i.e., the interval approximation shown in the left above \ref{fig:zonotope_vs_interval}. The higher we crank up \(\lambda\), the tighter the parallelogram gets. But, we can’t increase \(\lambda\) past \( \frac{u}{u - l} \); this ensures that the parallelogram covers the ReLU along the input range \([l, u]\). So, we will set
+The generator matrix \(G\) captures the half-widths of each interval as diagonal entries:
 \[
-\lambda = \frac{u}{u - l}
+G_{11} = \frac{2-1}{2} = 0.5, \quad G_{22} = \frac{3-(-1)}{2} = 2.0
 \]
-
-This relaxation is necessary to ensure soundness (i.e., all real behaviors are contained), but it introduces some loss of precision.
-
-\paragraph{Example:} Let the input zonotope be:
-
+This construction ensures the zonotope exactly represents the input box: \(x_1 \in [1.5-0.5, 1.5+0.5] = [1,2]\) and \(x_2 \in [1.0-2.0, 1.0+2.0] = [-1,3]\).
+Thus, the input box can be encoded as a zonotope with center and generator matrix:
 \[
-\mathcal{Z}_{\text{input}} = (c, G), \quad
-c = \begin{bmatrix} 0 \\ 0 \end{bmatrix}, \quad
-G = \begin{bmatrix} 1 & 0 \\ 0 & 2 \end{bmatrix}
+c = \begin{bmatrix}1.5 \\ 1.0\end{bmatrix}, \quad G = \begin{bmatrix}0.5 & 0 \\ 0 & 2.0\end{bmatrix}
 \]
+For the weight \(w = [-0.5, 0.5]^\top\) and bias \(b = 1.0\), applying the zonotope transformer:
+\begin{equation}
+\begin{aligned}
+c' &= w^\top c + b = [-0.5, 0.5] \begin{bmatrix}1.5 \\ 1.0\end{bmatrix} + 1.0 = -0.75 + 0.5 + 1.0 = 0.75 \\
+g'_1 &= w^\top g_1 = [-0.5, 0.5] \begin{bmatrix}0.5 \\ 0\end{bmatrix} = -0.25 \\
+g'_2 &= w^\top g_2 = [-0.5, 0.5] \begin{bmatrix}0 \\ 2.0\end{bmatrix} = 1.0 \\
+\end{aligned}
+\end{equation}
+The output zonotope for \(x_3\) is \((0.75, [-0.25, 1.0])\), thus the concrete bounds are:
+% \[
+% x_3 \in [c' - |g'_1| - |g'_2|, c' + |g'_1| + |g'_2|] = [0.75 - 0.25 - 1.0, 0.75 + 0.25 + 1.0] = [-0.5, 2.0]
+% \]
+\begin{equation}
+\begin{aligned}
+    f^a_L &= c' - |g'_1| - |g'_2| = 0.75 - 0.25 - 1.0 = -0.5 \\
+    f^a_U &= c' + |g'_1| + |g'_2| = 0.75 + 0.25 + 1.0 = 2.0
+\end{aligned}
+\end{equation}
 
-This describes the domain:
-\[
-x_1 \in [-1, 1], \quad x_2 \in [-2, 2]
-\]
+Note that, for this single affine operation over a box input, both interval and zonotope abstractions yield identical bounds \([-0.5, 2.0]\). The advantage of zonotopes becomes apparent when propagating through multiple layers, where zonotopes preserve linear correlations that intervals lose.
+\end{example}
 
-Now consider the ReLU layer:
+\paragraph{Activation Functions}
 
-\[
-x_3 = \text{ReLU}(-0.5x_1 + 0.5x_2 + 1.0)
-\]
-\[
-x_4 = \text{ReLU}(0.5x_1 - 0.5x_2 + 1.0)
-\]
-
-First, apply the affine transformation:
-
-\[
-\mathcal{Z}_{\text{affine}} = (Wc + b, WG)
-\]
-
-Next, check whether each component's range crosses zero. If it does, use ReLU relaxation techniques such as:
+Activation functions like ReLU are non-affine and do not preserve zonotope structure. For the ReLU function \(\text{ReLU}(x) = \max(0, x)\), we must use conservative approximations. Given an input zonotope, we first compute its interval bounds \([l, u]\), then consider three cases:
 
 \begin{itemize}
-    \item \textbf{DeepZ} – introduces extra generators to improve precision,
-    \item \textbf{AI\(^2\)} – uses zonotope splitting for tighter bounds.
+    \item \textbf{Active case} (\(l \geq 0\)): All values are non-negative, so \(\text{ReLU}^a(\mathcal{Z}) = \mathcal{Z}\) (identity).
+    \item \textbf{Inactive case} (\(u \leq 0\)): All values are negative, so \(\text{ReLU}^a(\mathcal{Z}) = \{0\}\) (zero zonotope).
+    \item \textbf{Unstable case} (\(l < 0 < u\)): The range crosses zero, requiring over-approximation using a parallelogram that bounds the ReLU function over \([l, u]\).
 \end{itemize}
 
-After relaxation, apply the next affine transformation to complete the forward pass.
+For the unstable case, the zonotope approximation introduces a new generator to capture the ReLU's piecewise-linear behavior, typically using the slope \(\lambda = \frac{u}{u-l}\) for the lower bound and maintaining the upper bound \(y = u\).
 
-\subsection{Comparison with Interval Abstraction}
+\begin{example}[ReLU on zonotope]
+Continuing from the previous example, applying ReLU to the zonotope output \((0.75, [-0.25, 1.0])\) with bounds \([-0.5, 2.0]\):
 
-Interval abstraction represents each neuron as an independent interval \([a_i, b_i]\). While simple and fast, it loses inter-variable relationships, leading to large over-approximation errors, especially in deeper networks.
-
-In contrast, zonotopes retain dependencies between neurons via shared generators, providing tighter bounds and better scalability. However, they come at the cost of increased complexity, especially when dealing with non-linear operations.
-
-\paragraph{Summary:}
-\begin{itemize}
-    \item \textbf{Interval abstraction} is simple but imprecise.
-    \item \textbf{Zonotope abstraction} is more precise and scalable, particularly effective for networks with affine layers.
-    \item \textbf{Non-linear activations} introduce challenges, requiring trade-offs between precision and computational overhead.
-\end{itemize}
+Since \(l = -0.5 < 0 < 2.0 = u\), this is an unstable neuron. The ReLU approximation introduces over-approximation, typically resulting in bounds \([0, 2.0]\) with additional generators to model the ReLU constraint.
+\end{example}
 
 
 
