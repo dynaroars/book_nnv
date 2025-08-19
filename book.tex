@@ -24,13 +24,10 @@
 \newtheorem{definition}{Definition}[section]
 \newtheorem{example}{Example}[section]
 \newtheorem{exercise}{Exercise}[section]
-
 \theoremstyle{remark}
 \newtheorem{remark}{Remark}
 
-
 \usepackage{soul}
-% \usepackage[small,compact]{titlesec} %very powerful
 \usepackage[most]{tcolorbox}
 % \setsecnumdepth{subsection}
 % \setcounter{tocdepth}{3}
@@ -1754,10 +1751,10 @@ For these reasons, SMT solving is mostly used to demonstrate the correctness of 
 Due to scalability issues with SMT solvers (\autoref{sec:smt-limitations}), modern DNN verification techniques ~\cite{wang2018efficient,tjeng2019evaluating,duong2024harnessing} often rely on Mixed Integer Linear Programming (MILP) solving, which is specialized for linear constraints and more efficient for DNN reasoning. %Many state-of-the-art DNN verification tools use the industrial-strength MILP solver Gurobi~\cite{gurobi}.
 
 The fundamental distinction between SMT and MILP solving lies in their problem formulation and solution approach. 
-SMT solvers address satisfiability problems: given a logical formula, determine whether there exist variable assignments that make the formula true. 
+SMT solvers address satisfiability problems: determining whether there exist variable assignments that make a given logical formula true. 
 SMT solvers can handle diverse mathematical theories including non-linear arithmetic.
-MILP solvers address optimization problems: find the best solution (according to some objective function) among all feasible solutions that satisfy a set of linear constraints. 
-Note that MILP is restricted to linear constraints.
+MILP solvers address optimization problems: finding the best solution (according to some objective function) that satisfy a given set of \emph{linear} constraints. 
+
 
 MILP solvers cannot directly solve general SMT problems because they are restricted to linear constraints and cannot handle the non-linear theories and complex logical structures that SMT problems often contain. 
 While SMT solvers could theoretically encode MILP problems as satisfiability queries, they are not designed for optimization and would be highly inefficient. 
