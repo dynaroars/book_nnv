@@ -1335,18 +1335,30 @@ We now define some commonly studied correctness properties in NNs verification.
 
 \textbf{Robustness} ensures that small changes in the input do not drastically change the output. This is a desirable property for all neural networks, especially classifiers, where we want to ensure that similar inputs yield similar outputs. For example, a slightly blurred image of a red light should still be classified as a red light.
 
+There are two types of robustness properties: \emph{global} and \emph{local} robustness. \tvn{hai, define these two for DNN verification.  Also in DNN verification do you distinctly distinguish between global and local robustness? }
+
 \begin{example}[Image Classification]
-Consider a neural network $f$ that classifies images into different categories (e.g., dog, cat, etc.). Robustness requires that if an input image $c$ is classified as a dog, then any perturbed image $x$ that is visually similar to $c$ should also be classified as a dog. This can be expressed as:
+Consider a neural network $f$ that classifies images into different categories (e.g., dog, cat, etc.). A robustness property requires that if an input image $c$ is classified as a dog, then any perturbed image $x$ that is visually similar to $c$ should also be classified as a dog. This can be expressed as:
 
 \[
 \|x - c\| \leq \epsilon \implies f(x) = f(c), 
 \]
-where $\|x - c\| \leq \epsilon$ indicates that the difference between the two images is within a certain (small) threshold, which is typically defined in terms of pixel-wise differences.
+where $\|x - c\| \leq \epsilon$ indicates that the difference between the two images is within a certain (small) threshold, which is typically defined in terms of pixel-wise differences. \tvn{is this local or global robustness?}
 \end{example}
 
-%Here, $\epsilon$ defines the perturbation bound, and the norm $\|\cdot\|$ is typically the $L_\infty$ norm, which captures the maximum pixel-wise change in the image.\tvn{what's the norm? and $L_\infty$?}
 
 
+
+\begin{example}\label{ex:acas-robustness}
+A typical ACAS XU network (\autoref{sec:acasxu}) maps 5D input to 5D output via 6 layers of 50 ReLU neurons. A local robustness property is:
+\[
+-\varepsilon_i \leq x_i \leq \varepsilon_i \quad (0 \leq i < 5)
+\]
+\[
+y_0 \leq y_1, \quad y_0 \leq y_2, \quad y_0 \leq y_3, \quad y_0 \leq y_4,
+\]
+where $x_i$ are the input variables, $y_i$ are the output variables, and $\varepsilon_i$ are small perturbation bounds for each input dimension. This property states that if the inputs are perturbed within the bounds $\varepsilon_i$, then the first output neuron $y_0$ is less than or equal to all other output neurons $y_1, y_2, y_3, y_4$.\tvn{Hai, is this local?}
+\end{example}
 \subsection{Safety}
 
 
@@ -1458,17 +1470,10 @@ Properties are encoded in \textbf{SMT-LIB2}, referencing input/output variable n
 
 \begin{example}
 
-A typical ACAS XU network (\autoref{sec:acasxu}) maps 5D input to 5D output via 6 layers of 50 ReLU neurons. A local robustness property is:
-\[
--\varepsilon_i \leq x_i \leq \varepsilon_i \quad (0 \leq i < 5)
-\]
-\[
-y_0 \leq y_1, \quad y_0 \leq y_2, \quad y_0 \leq y_3, \quad y_0 \leq y_4
-\]
-\tvn{what are these variables and what does this property say at high level?}
 
 
-The VNN-LIB code for this property is as follows:
+
+The VNN-LIB code for the robustness property given in~\autoref{ex:acas-robustness} is as follows:
 
 \begin{lstlisting}[style=SMTLIB-style, language=SMTLIB,basicstyle=\ttfamily\scriptsize, multicols=2]
 ; declaring the input variables
@@ -1478,14 +1483,12 @@ The VNN-LIB code for this property is as follows:
 (declare-const X_3 Real)
 (declare-const X_4 Real)
 (declare-const X_5 Real)
-
 ; declaring neuron outputs
 (declare-const Y_0 Real)
 (declare-const Y_1 Real)
 (declare-const Y_2 Real)
 (declare-const Y_3 Real)
 (declare-const Y_4 Real)
-
 ; asserting the input relations
 (assert (<= X_0 eps0))
 (assert (>= X_0 -eps0))
@@ -1497,7 +1500,6 @@ The VNN-LIB code for this property is as follows:
 (assert (>= X_3 -eps3))
 (assert (<= X_4 eps4))
 (assert (>= X_4 -eps4))
-
 ; asserting the output relations
 (assert (<= Y_0 Y_1))
 (assert (<= Y_0 Y_2))
@@ -2358,7 +2360,9 @@ f^a([a, b]) = [a+1, b+1]
 \end{example}
 
 
-\section{Abstract Domains and Transformer Functions DNNs}
+\section{Abstract Domains}\label{sec:abstract-domains}
+
+We now introduce several abstract domains that are commonly used in DNN verification. Each domain has its own abstract transformer functions to compute the bounds of neurons.
 
 \subsection{Interval}\label{sec:interval-abstraction}
 
