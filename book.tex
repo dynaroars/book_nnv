@@ -58,7 +58,6 @@
 \pgfplotsset{compat=1.18}
 
 
-
 \usepackage{anyfontsize}
 \usepackage{sectsty}
 
@@ -5595,7 +5594,7 @@ If conflicts arise, \tool{} determines the assignment decisions causing the conf
 
 
 
-\subsection{Boolean Abstraction}
+\section{Boolean Abstraction}
 \texttt{BooleanAbstraction} (\autoref{fig:alg}~\autoref{line:Booleanabstraction}) encodes the DNN verification problem into a Boolean constraint to be solved by DPLL.  This step creates Boolean variables to represent the \emph{activation status} of hidden neurons in the DNN. Observe that when evaluating the DNN on any concrete input, the value of each hidden neuron \emph{before} applying ReLU is either $>0$ (the neuron is \emph{active} and the input is passed through to the output) or $\le 0$ (the neuron is \emph{inactive} because the output is 0).
 This allows partial assignments to these variables to represent neuron activation patterns within the DNN.
 
@@ -5633,7 +5632,7 @@ For the DNN in~\autoref{fig:dnn}, \tool{} creates two status variables $v_3,v_4$
 
 %Thus, during preprocessing, \tool{} also creates Boolean variables representing the status values of hidden pre-ReLU neurons and an initial set of clause enforcing that each variable needs to be either $T$ (\texttt{on}) or $F$ (\texttt{off}).
 
-\subsection{DPLL}\label{sec:dpll}
+\section{DPLL}\label{sec:dpll}
 
 After \texttt{BooleanAbstraction}, \tool{} iteratively searches for an assignment satisfying the status clauses (Fig.~\ref{fig:alg}, lines~\ref{line:dpllstart}--~\ref{line:dpllend}).
 % \tvn{something is wrong with the line ?? here} \hd{fixed}
@@ -5647,7 +5646,7 @@ After \texttt{BooleanAbstraction}, \tool{} iteratively searches for an assignmen
 
 %Fig.~\ref{fig:overview} gives an overview of \tool{}, which takes as input a DNN $N$ and a property $P$ and returns \texttt{unsat} if $P$ is a valid property of $N$ and \texttt{sat} otherwise. In the case of \texttt{sat}, \tool{} can also return a satisfying assignment representing a counterexample input violating $P$.
 
-\subsubsection{Decide}\label{sec:decide}
+\subsection{Decide}\label{sec:decide}
 
 From the current assignment, \texttt{Decide} (Fig.~\ref{fig:alg}, line~\ref{line:decide}) uses a heuristic to choose an unassigned variable and assigns it a random truth value at the current decision level.
 \tool{} applies the Filtered Smart Branching (FSB) heuristic~\cite{bunel2018unified,de2021improved}. For each unassigned variable, FSB assumes that it has been decided (i.e., the corresponding neuron has been split) and computes a fast approximation of the lower and upperbounds of the network output variables.  FSB then prioritizes unassigned variables with the best differences among the bounds that would help make the input formula unsatisfiable (which helps prove the property of interest).
@@ -5679,7 +5678,7 @@ Note that if the current assignment is full, i.e., all variables have assigned v
 
 %\tool{} follows the DPLL(T) architecture and consists of the several main components as follows.
 
-\subsubsection{Boolean Constraint Propagation (BCP)}\label{sec:bcp}
+\subsection{Boolean Constraint Propagation (BCP)}\label{sec:bcp}
 
 From the current assignment and clauses, \texttt{BCP} (Fig.~\ref{fig:alg}, line~\ref{line:bcp}) detects \emph{unit clauses}\footnote{A unit clause is a clause that has a single unassigned literal.} and infers values for variables in these clauses.
 For example, after the decision $a\mapsto F$, \texttt{BCP} determines that the clause $a\vee b$ becomes unit, and infers that $b \mapsto T$.
@@ -5763,7 +5762,7 @@ Note that in this example \texttt{BCP} has the implication order $v_2,v_4,v_3$ (
 
 
 
-\subsubsection{Conflict Analysis}\label{sec:analyze-conflicts}
+\subsection{Conflict Analysis}\label{sec:analyze-conflicts}
 
 Given an implication graph with a conflict (e.g.,~\autoref{fig:igraph}b), \texttt{AnalyzeConflict} learns a new \emph{clause} to avoid past decisions causing the conflict.
 The algorithm traverses the implication graph backward, starting from the conflicting node $\kappa$, while constructing a new clause through a series of resolution steps.
@@ -5865,7 +5864,7 @@ While such clauses are logically implied by the formula in ~\autoref{eq:prob} an
 %% \end{equation}
 
 
-\subsubsection{Backtrack} \label{sec:backtrack}
+\subsection{Backtrack} \label{sec:backtrack}
 From the clause returned by \texttt{AnalyzeConflict}, \texttt{Backtrack}  (Fig.~\ref{fig:alg}, line~\ref{line:backtrack}) computes a backtracking level and erases all decisions and implications made after that level.
 If the clause is \emph{unary} (containing just a single literal), then we backtrack to level 0. % (and if we obtain further conflict with this clause, then the formula is unsatisfiable).
 
@@ -5901,7 +5900,7 @@ Intuitively, by backtracking to the second most recent level, which means erasin
 %% Next, Backtrack erases decisions by Decide and implications by BCP and Deduce made after that level.
 %% Note that if we learn a \emph{unary} clause, which contain just a single literal, then we backtrack to level 0 (and if we obtain further conflict with this clause (a conflict at level $dl=0$, line~\ref{line:unsat}), i.e., the formula is unsatisfiable).
 
-\subsubsection{Restart}\label{sec:restart}
+\subsection{Restart}\label{sec:restart}
 
 
 As with any stochastic algorithm, \tool{} can perform poorly if it gets into a subspace of the search that does not quickly lead to a solution, e.g., due to choosing a bad sequence of neurons to split~\cite{bunel2018unified,de2021improved}.
@@ -5935,7 +5934,7 @@ We found the combination of clause learning and restarts effective for DNN verif
 % \tvn{these are standard arguments for restart.  For \tool{} and DNN verifcation problem,  restart is even more important because the inital clause is too simple to make clause learning effective.  You should say something here about that issue.  Just write all of them here and we can clean it up}
 
 
-\subsection{Deduction (Theory Solving)}\label{sec:deduction}
+\section{Deduction (Theory Solving)}\label{sec:deduction}
 
 \begin{algorithm}[t]
     \small
