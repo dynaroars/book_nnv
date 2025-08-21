@@ -1339,17 +1339,17 @@ There are two types of robustness properties: \emph{global} and \emph{local} rob
 
 \hd{
 \paragraph{Local Robustness}
-A neural network, $f$, is $\epsilon$-locally-robust at point, $x$, with respect to norm $\| \cdot \|$, if 
+A neural network $f$ is $\epsilon$-locally-robust at point $x$ with respect to norm $\| \cdot \|$ if 
 \begin{equation}
-    \forall x', \|x-x'\| \leq \epsilon \implies f(x) = f(x').
+    \forall x', \qquad \|x-x'\| \leq \epsilon \implies f(x) = f(x').
 \end{equation}
 
 
 \paragraph{Global Robustness}
 
-A neural network, $f$, is $\epsilon$-globally-robust, with respect to norm, $\| \cdot \|$, if 
+A neural network $f$ is $\epsilon$-globally-robust with respect to norm $\| \cdot \|$ if 
 \begin{equation}
-    \forall x_1, x_2, \|x_1 - x_2\| \leq \epsilon \implies f(x_1) = f(x_2).
+    \forall x_1, x_2, \qquad \|x_1 - x_2\| \leq \epsilon \implies f(x_1) = f(x_2).
 \end{equation}
 
 Note that the global robustness can clearly be trivially satisfied by labeling all points as the same class.
