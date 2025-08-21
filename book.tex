@@ -2530,21 +2530,24 @@ where \(c = \begin{bmatrix}c_1 \\ c_2 \\ \vdots \\ c_m\end{bmatrix}\) and \(G = 
 
 
 \begin{example}
-Take $v_1 \in [1,2], v_2 \in [-1,3]$.  The interval representation is \([1, 2] \times [-1, 3]\), geometrically a rectangle with corners at \((1, -1)\), \((1, 3)\), \((2, -1)\), and \((2, 3)\).
+Take $v_1 \in [1,2], v_2 \in [-1,3]$.  The interval representation is \([1, 2] \times [-1, 3]\), which is a rectangle with corners at \((1, -1)\), \((1, 3)\), \((2, -1)\), and \((2, 3)\).
 
-The zonotope representation is:
+
+For zonotope we have \(c = \begin{bmatrix}c_1 \\ c_2\end{bmatrix} = \begin{bmatrix}1.5 \\ 1.0\end{bmatrix}\) and \(G = \begin{bmatrix}g_1 & g_2\end{bmatrix} = \begin{bmatrix}0.5 & 0 \\ 0 & 2.0\end{bmatrix}\). Thus the zonotope representation is:
 \[
-\mathcal{Z} = \left\{c + \sum_{i=1}^{m} \epsilon_i g_i \mid \epsilon_i \in [-1, 1]\right\}
+\begin{aligned}
+\mathcal{Z} = &\left\{c + \sum_{i=1}^{m} \epsilon_i g_i \mid \epsilon_i \in [-1, 1]\right\}\\
+= &\left\{\begin{bmatrix}1.5 \\ 1.0\end{bmatrix} + \sum_{i=1}^{2} \epsilon_i \begin{bmatrix}0.5 \\ 0\end{bmatrix} \mid \epsilon_i \in [-1, 1]\right\}\\
+= &\left\{\begin{bmatrix}1.5 + 0.5\epsilon_1 \\ 1.0 + 2.0\epsilon_2\end{bmatrix} \mid \epsilon_1, \epsilon_2 \in [-1, 1]\right\}
+\end{aligned}
 \]
-where \(c = \begin{bmatrix}c_1 \\ c_2\end{bmatrix} = \begin{bmatrix}1.5 \\ 1.0\end{bmatrix}\) and \(G = \begin{bmatrix}g_1 & g_2\end{bmatrix} = \begin{bmatrix}0.5 & 0 \\ 0 & 2.0\end{bmatrix}\).
+
+This is the same as the rectangular representation above\tvn{why?}.
 
 \end{example}
 
-\subsubsection{Abstract Transformers for Zonotope}
 
-We now define abstract transformers for affine and ReLU activation functions.
-
-\paragraph{Affine Functions} For the affine function \(f\) in~\autoref{sec:affine}
+\subsubsection{Affine Transformer} For the affine function \(f\) in~\autoref{sec:affine}
 \[f(x) = Wx + b\]
 where \(W\) is a weight matrix and \(b\) is a bias vector. Given an input zonotope \(\mathcal{Z} = (c, G)\) where \(G = [g_1, g_2, \ldots, g_m]\) is the generator matrix, the abstract transformer \(f^a\) for zonotope is:
 \[
