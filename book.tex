@@ -1337,13 +1337,33 @@ We now define some commonly studied correctness properties in NNs verification.
 
 There are two types of robustness properties: \emph{global} and \emph{local} robustness. \tvn{hai, define these two for DNN verification.  Also in DNN verification do you distinctly distinguish between global and local robustness? }
 
+\hd{
+\paragraph{Local Robustness}
+A neural network, $f$, is $\epsilon$-locally-robust at point, $x$, with respect to norm $\| \cdot \|$, if 
+\begin{equation}
+    \forall x', \|x-x'\| \leq \epsilon \implies f(x) = f(x').
+\end{equation}
+
+
+\paragraph{Global Robustness}
+
+A neural network, $f$, is $\epsilon$-globally-robust, with respect to norm, $\| \cdot \|$, if 
+\begin{equation}
+    \forall x_1, x_2, \|x_1 - x_2\| \leq \epsilon \implies f(x_1) = f(x_2).
+\end{equation}
+
+Note that the global robustness can clearly be trivially satisfied by labeling all points as the same class.
+}
+
+
+
 \begin{example}[Image Classification]
 Consider a neural network $f$ that classifies images into different categories (e.g., dog, cat, etc.). A robustness property requires that if an input image $c$ is classified as a dog, then any perturbed image $x$ that is visually similar to $c$ should also be classified as a dog. This can be expressed as:
 
 \[
 \|x - c\| \leq \epsilon \implies f(x) = f(c), 
 \]
-where $\|x - c\| \leq \epsilon$ indicates that the difference between the two images is within a certain (small) threshold, which is typically defined in terms of pixel-wise differences. \tvn{is this local or global robustness?}\hd{it is local.}
+where $\|x - c\| \leq \epsilon$ indicates that the difference between the two images is within a certain (small) threshold, which is typically defined in terms of pixel-wise differences. \tvn{is this local or global robustness?}\hd{it is the definition of local robustness.}
 \end{example}
 
 
