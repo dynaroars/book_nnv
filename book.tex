@@ -2493,7 +2493,7 @@ Here we can see that by using Interval abstraction, the property \(x_{11}\ \geq\
 
 \subsection{Zonotope}\label{sec:zonotope-abstraction}
 
-Zonotope abstraction is a more precise technique than interval abstraction. Unlike interval abstraction, which considers each variable independently, zonotopes capture correlations between variables (e.g., neuron activations), thereby reducing over-approximation errors. A zonotope represents a set as the Minkowski sum of line segments, allowing it to model linear dependencies between variables while maintaining computational efficiency.
+Zonotope is a more precise domain than interval. Unlike interval abstraction, which considers each variable independently, zonotopes capture correlations between variables (e.g., neuron activations), thereby reducing over-approximation errors. A zonotope represents a set as the Minkowski sum of line segments, allowing it to model linear dependencies between variables while maintaining computational efficiency.
 
 A \textbf{zonotope} \(\mathcal{Z}\) in \(\mathbb{R}^n\) is formally defined as:
 \[
