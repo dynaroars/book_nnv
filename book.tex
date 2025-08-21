@@ -2519,32 +2519,32 @@ where :
 \item \(\epsilon_i\) are independent coefficients in \([-1, 1]\). 
 \end{itemize}
 
-\paragraph{Intervals as Special Cases} Intervals are a special case of zonotopes where all generator vectors are axis-aligned. This means that each generator vector \(g_i\) has non-zero entries only in one dimension, corresponding to the width of the interval in that dimension.
+% \paragraph{Intervals as Special Cases} Intervals are a special case of zonotopes where all generator vectors are axis-aligned. This means that each generator vector \(g_i\) has non-zero entries only in one dimension, corresponding to the width of the interval in that dimension.
 
 
-Suppose $v_i \in [l_i, u_i]$, the center is the midpoint \(c_i = \frac{l_i + u_i}{2}\) and the generator vector is \(g_i = e_i\frac{u_i - l_i}{2}\), where $e_i$ is the unit vector in the $i$-th dimension. Then the zonotope representation becomes:
-\[
-\mathcal{Z} = \left\{c + \sum_{i=1}^{m} \epsilon_i g_i \mid \epsilon_i \in [-1, 1]\right\}
-\]
-where \(c = \begin{bmatrix}c_1 \\ c_2 \\ \vdots \\ c_m\end{bmatrix}\) and \(G = \begin{bmatrix}g_1 & g_2 & \cdots & g_m\end{bmatrix}\).
+% Suppose $v_i \in [l_i, u_i]$, the center is the midpoint \(c_i = \frac{l_i + u_i}{2}\) and the generator vector is \(g_i = e_i\frac{u_i - l_i}{2}\), where $e_i$ is the unit vector in the $i$-th dimension. Then the zonotope representation becomes:
+% \[
+% \mathcal{Z} = \left\{c + \sum_{i=1}^{m} \epsilon_i g_i \mid \epsilon_i \in [-1, 1]\right\}
+% \]
+% where \(c = \begin{bmatrix}c_1 \\ c_2 \\ \vdots \\ c_m\end{bmatrix}\) and \(G = \begin{bmatrix}g_1 & g_2 & \cdots & g_m\end{bmatrix}\).
 
 
-\begin{example}
-Take $v_1 \in [1,2], v_2 \in [-1,3]$.  The interval representation is \([1, 2] \times [-1, 3]\), which is a rectangle with corners at \((1, -1)\), \((1, 3)\), \((2, -1)\), and \((2, 3)\).
+% \begin{example}
+% Take $v_1 \in [1,2], v_2 \in [-1,3]$.  The interval representation is \([1, 2] \times [-1, 3]\), which is a rectangle with corners at \((1, -1)\), \((1, 3)\), \((2, -1)\), and \((2, 3)\).
 
 
-For zonotope we have \(c = \begin{bmatrix}c_1 \\ c_2\end{bmatrix} = \begin{bmatrix}1.5 \\ 1.0\end{bmatrix}\) and \(G = \begin{bmatrix}g_1 & g_2\end{bmatrix} = \begin{bmatrix}0.5 & 0 \\ 0 & 2.0\end{bmatrix}\). Thus the zonotope representation is:
-\[
-\begin{aligned}
-\mathcal{Z} = &\left\{c + \sum_{i=1}^{m} \epsilon_i g_i \mid \epsilon_i \in [-1, 1]\right\}\\
-= &\left\{\begin{bmatrix}1.5 \\ 1.0\end{bmatrix} + \sum_{i=1}^{2} \epsilon_i \begin{bmatrix}0.5 \\ 0\end{bmatrix} \mid \epsilon_i \in [-1, 1]\right\}\\
-= &\left\{\begin{bmatrix}1.5 + 0.5\epsilon_1 \\ 1.0 + 2.0\epsilon_2\end{bmatrix} \mid \epsilon_1, \epsilon_2 \in [-1, 1]\right\}
-\end{aligned}
-\]
+% For zonotope we have \(c = \begin{bmatrix}c_1 \\ c_2\end{bmatrix} = \begin{bmatrix}1.5 \\ 1.0\end{bmatrix}\) and \(G = \begin{bmatrix}g_1 & g_2\end{bmatrix} = \begin{bmatrix}0.5 & 0 \\ 0 & 2.0\end{bmatrix}\). Thus the zonotope representation is:
+% \[
+% \begin{aligned}
+% \mathcal{Z} = &\left\{c + \sum_{i=1}^{m} \epsilon_i g_i \mid \epsilon_i \in [-1, 1]\right\}\\
+% = &\left\{\begin{bmatrix}1.5 \\ 1.0\end{bmatrix} + \sum_{i=1}^{2} \epsilon_i \begin{bmatrix}0.5 \\ 0\end{bmatrix} \mid \epsilon_i \in [-1, 1]\right\}\\
+% = &\left\{\begin{bmatrix}1.5 + 0.5\epsilon_1 \\ 1.0 + 2.0\epsilon_2\end{bmatrix} \mid \epsilon_1, \epsilon_2 \in [-1, 1]\right\}
+% \end{aligned}
+% \]
 
-This is the same as the rectangular representation above\tvn{why?}.
+% This is the same as the rectangular representation above\tvn{why?}.
 
-\end{example}
+% \end{example}
 
 
 \subsubsection{Affine Transformer} For the affine function \(f\) in~\autoref{sec:affine}
@@ -2595,7 +2595,7 @@ The output zonotope for \(x_3\) is \((0.75, [-0.25, 1.0])\), thus the concrete b
 Note that, for this single affine operation over a box input, both interval and zonotope abstractions yield identical bounds \([-0.5, 2.0]\). The advantage of zonotopes becomes apparent when propagating through multiple layers, where zonotopes preserve linear correlations that intervals lose.
 \end{example}
 
-\paragraph{Activation Functions}
+\subsubsection{ReLU Transformer}
 
 Activation functions like ReLU are non-affine and do not preserve zonotope structure. For the ReLU function \(\text{ReLU}(x) = \max(0, x)\), we must use conservative approximations. Given an input zonotope, we first compute its interval bounds \([l, u]\), then consider three cases:
 
