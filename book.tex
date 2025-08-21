@@ -1343,7 +1343,7 @@ Consider a neural network $f$ that classifies images into different categories (
 \[
 \|x - c\| \leq \epsilon \implies f(x) = f(c), 
 \]
-where $\|x - c\| \leq \epsilon$ indicates that the difference between the two images is within a certain (small) threshold, which is typically defined in terms of pixel-wise differences. \tvn{is this local or global robustness?}\hd{it is local.}
+where $\|x - c\| \leq \epsilon$ indicates that the difference between the two images is within a certain (small) threshold, which is typically defined in terms of pixel-wise differences.
 \end{example}
 
 
@@ -1470,10 +1470,7 @@ Properties are encoded in \textbf{SMT-LIB2}, referencing input/output variable n
 
 \begin{example}
 
-
-
-
-The VNN-LIB code for the robustness property given in~\autoref{ex:acas-robustness} is as follows:
+    The VNN-LIB code for the property given in~\autoref{ex:acas-robustness} is as follows:
 
 \begin{lstlisting}[style=SMTLIB-style, language=SMTLIB,basicstyle=\ttfamily\scriptsize, multicols=2]
 ; declaring the input variables
@@ -2134,172 +2131,172 @@ To compute the bounds $l_y(x)$ and $u_y(x)$, we can use different abstractions:
 %     \label{fig:relu-interval-abstraction}
 % \end{figure}
 
-\begin{figure}[h]
-    \centering
-    \begin{subfigure}{0.49\linewidth}
-    \begin{tikzpicture}[scale=2]
-        % Colors
-        \definecolor{myred}{RGB}{255,100,100}
-        \definecolor{yellowfill}{RGB}{255,245,200}
-        % Parameters
-        \def\lx{-1.0}
-        \def\ux{1.0}
-        \def\ly{0}
-        \def\uy{1.0}
-        % Fill region
-        \fill[yellowfill] (\lx,\ly) rectangle (\ux,\uy);
-        % Axes
-        \draw[thick,->] ({\lx-0.2},0) -- ({\ux+0.3},0) node[right] {$x$};
-        \draw[thick,->] (0,{\ly-0.3}) -- (0,{\uy+0.3}) node[above] {$y$};
-        % Dashed bounds
-        \draw[dashed] (\lx,{\ly-0.1}) -- (\lx,{\uy+0.2});
-        \draw[dashed] (\ux,{\ly-0.1}) -- (\ux,{\uy+0.2});
-        \draw[dashed] (\lx,\uy) -- (\ux,\uy);
-        % ReLU line
-        \draw[ultra thick,myred] (\lx,\ly) -- (0,\ly) -- (\ux,\uy);
-        % Labels
-        \node[below] at (\lx,0) {$l_x$};
-        \node[below] at (\ux,-0.05) {$u_x$};
-        \node[left] at (-0.1,\ly-0.2) {$l_y(x)$};
-        \node[above] at (\ux-0.5,\uy) {$u_y(x)$};
-        % Origin
-        \node[below right] at (0,0) {$0$};
-    \end{tikzpicture}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}{0.49\linewidth}
-        \begin{tikzpicture}[scale=2]
-            % Colors
-            \definecolor{myred}{RGB}{255,100,100}
-            \definecolor{yellowfill}{RGB}{255,245,200}
-            % Parameters
-            \def\lx{-1.0}
-            \def\ux{1.0}
-            % Zonotope (band width)
-            \def\d{0.5}
-            % Zonotope corners
-            \coordinate (A) at (\lx, 0+\d*\lx+0.1);    % bottom left
-            \coordinate (B) at (\lx, 0.2);    % top left
-            \coordinate (C) at (0, \d*0);          % top middle
-            \coordinate (D) at (0, -\d*0);         % bottom middle
-            \coordinate (E) at (\ux, \ux+0.01);  % top right
-            \coordinate (F) at (\ux, \ux-\d*\ux-0.1);  % bottom right
-            % Fill zonotope
-            \fill[yellowfill] (A) -- (B) -- (E) -- (F) -- cycle;
-            % Axes
-            \draw[thick,->] ({\lx-0.2},0) -- ({\ux+0.3},0) node[right] {$x$};
-            \draw[thick,->] (0,{-0.6}) -- (0,{\ux+0.2}) node[above] {$y$};
-            % Bounded region
-            \draw[dashed] (\lx,{-0.6}) -- (\lx,{\ux+0.1});
-            \draw[dashed] (\ux,{-0.6}) -- (\ux,{\ux+0.1});
-            % Zonotope boundaries
-            \draw[dashed] (\lx, 0.2) -- (\ux, \ux+0.01);
-            \draw[dashed] (\lx, \d*\lx+0.1) -- (\ux, \ux-\d*\ux-0.1);
-            % ReLU line
-            \draw[ultra thick,myred] (\lx,0) -- (0,0) -- (\ux,\ux);
-            % Labels
-            \node[below] at (\lx-0.1,0) {$l_x$};
-            \node[below] at (\ux+0.12,-0.05) {$u_x$};
-            \node[below] at ({\lx/2},-0.3) {$l_{y}(x)$};
-            \node[above] at (\ux/2,\ux/2+0.3) {$u_{y}(x)$};
-            % Origin
-            \node[below right] at (0,0) {$0$};
-        \end{tikzpicture}
-    \end{subfigure}
+% \begin{figure}[h]
+%     \centering
+%     \begin{subfigure}{0.49\linewidth}
+%     \begin{tikzpicture}[scale=2]
+%         % Colors
+%         \definecolor{myred}{RGB}{255,100,100}
+%         \definecolor{yellowfill}{RGB}{255,245,200}
+%         % Parameters
+%         \def\lx{-1.0}
+%         \def\ux{1.0}
+%         \def\ly{0}
+%         \def\uy{1.0}
+%         % Fill region
+%         \fill[yellowfill] (\lx,\ly) rectangle (\ux,\uy);
+%         % Axes
+%         \draw[thick,->] ({\lx-0.2},0) -- ({\ux+0.3},0) node[right] {$x$};
+%         \draw[thick,->] (0,{\ly-0.3}) -- (0,{\uy+0.3}) node[above] {$y$};
+%         % Dashed bounds
+%         \draw[dashed] (\lx,{\ly-0.1}) -- (\lx,{\uy+0.2});
+%         \draw[dashed] (\ux,{\ly-0.1}) -- (\ux,{\uy+0.2});
+%         \draw[dashed] (\lx,\uy) -- (\ux,\uy);
+%         % ReLU line
+%         \draw[ultra thick,myred] (\lx,\ly) -- (0,\ly) -- (\ux,\uy);
+%         % Labels
+%         \node[below] at (\lx,0) {$l_x$};
+%         \node[below] at (\ux,-0.05) {$u_x$};
+%         \node[left] at (-0.1,\ly-0.2) {$l_y(x)$};
+%         \node[above] at (\ux-0.5,\uy) {$u_y(x)$};
+%         % Origin
+%         \node[below right] at (0,0) {$0$};
+%     \end{tikzpicture}
+%     \end{subfigure}
+%     \hfill
+%     \begin{subfigure}{0.49\linewidth}
+%         \begin{tikzpicture}[scale=2]
+%             % Colors
+%             \definecolor{myred}{RGB}{255,100,100}
+%             \definecolor{yellowfill}{RGB}{255,245,200}
+%             % Parameters
+%             \def\lx{-1.0}
+%             \def\ux{1.0}
+%             % Zonotope (band width)
+%             \def\d{0.5}
+%             % Zonotope corners
+%             \coordinate (A) at (\lx, 0+\d*\lx+0.1);    % bottom left
+%             \coordinate (B) at (\lx, 0.2);    % top left
+%             \coordinate (C) at (0, \d*0);          % top middle
+%             \coordinate (D) at (0, -\d*0);         % bottom middle
+%             \coordinate (E) at (\ux, \ux+0.01);  % top right
+%             \coordinate (F) at (\ux, \ux-\d*\ux-0.1);  % bottom right
+%             % Fill zonotope
+%             \fill[yellowfill] (A) -- (B) -- (E) -- (F) -- cycle;
+%             % Axes
+%             \draw[thick,->] ({\lx-0.2},0) -- ({\ux+0.3},0) node[right] {$x$};
+%             \draw[thick,->] (0,{-0.6}) -- (0,{\ux+0.2}) node[above] {$y$};
+%             % Bounded region
+%             \draw[dashed] (\lx,{-0.6}) -- (\lx,{\ux+0.1});
+%             \draw[dashed] (\ux,{-0.6}) -- (\ux,{\ux+0.1});
+%             % Zonotope boundaries
+%             \draw[dashed] (\lx, 0.2) -- (\ux, \ux+0.01);
+%             \draw[dashed] (\lx, \d*\lx+0.1) -- (\ux, \ux-\d*\ux-0.1);
+%             % ReLU line
+%             \draw[ultra thick,myred] (\lx,0) -- (0,0) -- (\ux,\ux);
+%             % Labels
+%             \node[below] at (\lx-0.1,0) {$l_x$};
+%             \node[below] at (\ux+0.12,-0.05) {$u_x$};
+%             \node[below] at ({\lx/2},-0.3) {$l_{y}(x)$};
+%             \node[above] at (\ux/2,\ux/2+0.3) {$u_{y}(x)$};
+%             % Origin
+%             \node[below right] at (0,0) {$0$};
+%         \end{tikzpicture}
+%     \end{subfigure}
 
-    \caption{Zonotope abstraction for ReLU: $y = \max(0,x)$, with $x \in [l_x, u_x]$ and $y \in [l_y(x), u_y(x)]$.}
-    \label{fig:relu-zonotope-abstraction2}
-\end{figure}
-
-
-\begin{figure}[h]
-    \centering
-    \begin{subfigure}{0.49\linewidth}
-        \begin{tikzpicture}[scale=2]
-            % Colors
-            \definecolor{myred}{RGB}{255,100,100}
-            \definecolor{yellowfill}{RGB}{255,245,200}
-            % Parameters
-            \def\lx{-1.0}
-            \def\ux{1.0}
-            % Zonotope (band width)
-            \def\d{0.5}
-            % Zonotope corners
-            \coordinate (A) at (\lx, 0);    % bottom left
-            \coordinate (B) at (\lx, 0.01);    % top left
-            \coordinate (C) at (0, \d*0);          % top middle
-            \coordinate (D) at (0, -\d*0);         % bottom middle
-            \coordinate (E) at (\ux, \ux+0.01);  % top right
-            \coordinate (F) at (\ux, 0);  % bottom right
-            % Fill zonotope
-            \fill[yellowfill] (A) -- (B) -- (E) -- (F) -- cycle;
-            % Axes
-            \draw[thick,->] ({\lx-0.2},0) -- ({\ux+0.3},0) node[right] {$x$};
-            \draw[thick,->] (0,{-0.4}) -- (0,{\ux+0.2}) node[above] {$y$};
-            % Bounded region
-            \draw[dashed] (\lx,{-0.3}) -- (\lx,{\ux+0.1});
-            \draw[dashed] (\ux,{-0.3}) -- (\ux,{\ux+0.1});
-            % Zonotope boundaries
-            \draw[dashed] (\lx, 0) -- (\ux, \ux+0.01);
-            \draw[dashed] (\lx, 0) -- (\ux, 0);
-            % ReLU line
-            \draw[ultra thick,myred] (\lx,0) -- (0,0) -- (\ux,\ux);
-            % Labels
-            \node[below] at (\lx-0.1,0) {$l_x$};
-            \node[below] at (\ux+0.12,-0.05) {$u_x$};
-            \node[below] at ({\lx/2},-0.01) {$l_{y}(x)$};
-            \node[above] at (\ux/2,\ux/2+0.3) {$u_{y}(x)$};
-            % Origin
-            \node[below right] at (0,0) {$0$};
-        \end{tikzpicture}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}{0.49\linewidth}
-        \begin{tikzpicture}[scale=2]
-            % Colors
-            \definecolor{myred}{RGB}{255,100,100}
-            \definecolor{yellowfill}{RGB}{255,245,200}
-            % Parameters
-            \def\lx{-1.0}
-            \def\ux{1.0}
-            % Zonotope (band width)
-            \def\d{0.5}
-            % Zonotope corners
-            \coordinate (A) at (\lx, -0.2);    % bottom left
-            \coordinate (B) at (\lx, 0.01);    % top left
-            \coordinate (C) at (0, \d*0);          % top middle
-            \coordinate (D) at (0, -\d*0);         % bottom middle
-            \coordinate (E) at (\ux, \ux+0.01);  % top right
-            \coordinate (F) at (\ux, 0.2);  % bottom right
-            % Fill zonotope
-            \fill[yellowfill] (A) -- (B) -- (E) -- (F) -- cycle;
-            % Axes
-            \draw[thick,->] ({\lx-0.2},0) -- ({\ux+0.3},0) node[right] {$x$};
-            \draw[thick,->] (0,{-0.4}) -- (0,{\ux+0.2}) node[above] {$y$};
-            % Bounded region
-            \draw[dashed] (\lx,{-0.3}) -- (\lx,{\ux+0.1});
-            \draw[dashed] (\ux,{-0.3}) -- (\ux,{\ux+0.1});
-            % Zonotope boundaries
-            \draw[dashed] (\lx, 0) -- (\ux, \ux+0.01);
-            \draw[dashed] (\lx, -0.2) -- (\ux, 0.2);
-            % ReLU line
-            \draw[ultra thick,myred] (\lx,0) -- (0,0) -- (\ux,\ux);
-            % Labels
-            \node[below] at (\lx-0.1,0) {$l_x$};
-            \node[below] at (\ux+0.12,-0.05) {$u_x$};
-            \node[below] at ({\lx/2},-0.1) {$l_{y}(x)$};
-            \node[above] at (\ux/2,\ux/2+0.3) {$u_{y}(x)$};
-            % Origin
-            \node[below right] at (0,0) {$0$};
-        \end{tikzpicture}
-    \end{subfigure}
-
-    \caption{Polytop abstraction for ReLU: $y = \max(0,x)$, with $x \in [l_x, u_x]$ and $y \in [l_y(x), u_y(x)]$.}
-    \label{fig:relu-polytope-abstraction2}
-\end{figure}
+%     \caption{Zonotope abstraction for ReLU: $y = \max(0,x)$, with $x \in [l_x, u_x]$ and $y \in [l_y(x), u_y(x)]$.}
+%     \label{fig:relu-zonotope-abstraction2}
+% \end{figure}
 
 
-\tvn{Hai, create concrete examples with numbers to show how the abstractions work, e.g., for interval, zonotope, polytope, etc. We want to use one example to show the differences in the approximation,  not multiple examples which would be less effective.}
+% \begin{figure}[h]
+%     \centering
+%     \begin{subfigure}{0.49\linewidth}
+%         \begin{tikzpicture}[scale=2]
+%             % Colors
+%             \definecolor{myred}{RGB}{255,100,100}
+%             \definecolor{yellowfill}{RGB}{255,245,200}
+%             % Parameters
+%             \def\lx{-1.0}
+%             \def\ux{1.0}
+%             % Zonotope (band width)
+%             \def\d{0.5}
+%             % Zonotope corners
+%             \coordinate (A) at (\lx, 0);    % bottom left
+%             \coordinate (B) at (\lx, 0.01);    % top left
+%             \coordinate (C) at (0, \d*0);          % top middle
+%             \coordinate (D) at (0, -\d*0);         % bottom middle
+%             \coordinate (E) at (\ux, \ux+0.01);  % top right
+%             \coordinate (F) at (\ux, 0);  % bottom right
+%             % Fill zonotope
+%             \fill[yellowfill] (A) -- (B) -- (E) -- (F) -- cycle;
+%             % Axes
+%             \draw[thick,->] ({\lx-0.2},0) -- ({\ux+0.3},0) node[right] {$x$};
+%             \draw[thick,->] (0,{-0.4}) -- (0,{\ux+0.2}) node[above] {$y$};
+%             % Bounded region
+%             \draw[dashed] (\lx,{-0.3}) -- (\lx,{\ux+0.1});
+%             \draw[dashed] (\ux,{-0.3}) -- (\ux,{\ux+0.1});
+%             % Zonotope boundaries
+%             \draw[dashed] (\lx, 0) -- (\ux, \ux+0.01);
+%             \draw[dashed] (\lx, 0) -- (\ux, 0);
+%             % ReLU line
+%             \draw[ultra thick,myred] (\lx,0) -- (0,0) -- (\ux,\ux);
+%             % Labels
+%             \node[below] at (\lx-0.1,0) {$l_x$};
+%             \node[below] at (\ux+0.12,-0.05) {$u_x$};
+%             \node[below] at ({\lx/2},-0.01) {$l_{y}(x)$};
+%             \node[above] at (\ux/2,\ux/2+0.3) {$u_{y}(x)$};
+%             % Origin
+%             \node[below right] at (0,0) {$0$};
+%         \end{tikzpicture}
+%     \end{subfigure}
+%     \hfill
+%     \begin{subfigure}{0.49\linewidth}
+%         \begin{tikzpicture}[scale=2]
+%             % Colors
+%             \definecolor{myred}{RGB}{255,100,100}
+%             \definecolor{yellowfill}{RGB}{255,245,200}
+%             % Parameters
+%             \def\lx{-1.0}
+%             \def\ux{1.0}
+%             % Zonotope (band width)
+%             \def\d{0.5}
+%             % Zonotope corners
+%             \coordinate (A) at (\lx, -0.2);    % bottom left
+%             \coordinate (B) at (\lx, 0.01);    % top left
+%             \coordinate (C) at (0, \d*0);          % top middle
+%             \coordinate (D) at (0, -\d*0);         % bottom middle
+%             \coordinate (E) at (\ux, \ux+0.01);  % top right
+%             \coordinate (F) at (\ux, 0.2);  % bottom right
+%             % Fill zonotope
+%             \fill[yellowfill] (A) -- (B) -- (E) -- (F) -- cycle;
+%             % Axes
+%             \draw[thick,->] ({\lx-0.2},0) -- ({\ux+0.3},0) node[right] {$x$};
+%             \draw[thick,->] (0,{-0.4}) -- (0,{\ux+0.2}) node[above] {$y$};
+%             % Bounded region
+%             \draw[dashed] (\lx,{-0.3}) -- (\lx,{\ux+0.1});
+%             \draw[dashed] (\ux,{-0.3}) -- (\ux,{\ux+0.1});
+%             % Zonotope boundaries
+%             \draw[dashed] (\lx, 0) -- (\ux, \ux+0.01);
+%             \draw[dashed] (\lx, -0.2) -- (\ux, 0.2);
+%             % ReLU line
+%             \draw[ultra thick,myred] (\lx,0) -- (0,0) -- (\ux,\ux);
+%             % Labels
+%             \node[below] at (\lx-0.1,0) {$l_x$};
+%             \node[below] at (\ux+0.12,-0.05) {$u_x$};
+%             \node[below] at ({\lx/2},-0.1) {$l_{y}(x)$};
+%             \node[above] at (\ux/2,\ux/2+0.3) {$u_{y}(x)$};
+%             % Origin
+%             \node[below right] at (0,0) {$0$};
+%         \end{tikzpicture}
+%     \end{subfigure}
+
+%     \caption{Polytop abstraction for ReLU: $y = \max(0,x)$, with $x \in [l_x, u_x]$ and $y \in [l_y(x), u_y(x)]$.}
+%     \label{fig:relu-polytope-abstraction2}
+% \end{figure}
+
+
+% \tvn{Hai, create concrete examples with numbers to show how the abstractions work, e.g., for interval, zonotope, polytope, etc. We want to use one example to show the differences in the approximation,  not multiple examples which would be less effective.}
 
 
 \subsection{Transformer Functions}
@@ -2330,19 +2327,20 @@ Even though $\mathbb{Z}$ is infinite, this abstraction maps all integers to a fi
 \[
 f^a : D^a \to D^a,
 \]
-for each operation \(f\) to reason about the effects of \(f\) on abstract values.
+for each operation \(f\) to reason about its behavior on abstract values.
 
 
 \begin{example}
  Consider the function $f(x) = x + 1$. We define the abstract transformers $f^a$ for different abstract domains $D^a$:
 
-\textbf{Odd/Even abstraction}:  $D^a = \{\texttt{odd}, \texttt{even}\}$. Then:
+ \begin{itemize}
+\item \textbf{Odd/Even abstraction}:  $D^a = \{\texttt{odd}, \texttt{even}\}$. Then:
 \[
 f^a(\texttt{odd}) = \texttt{even}, \quad
 f^a(\texttt{even}) = \texttt{odd}
 \]
 
-\textbf{Sign abstraction}: $D^a = \{\texttt{neg}, \texttt{zero}, \texttt{pos}\}$. Then: 
+\item \textbf{Sign abstraction}: $D^a = \{\texttt{neg}, \texttt{zero}, \texttt{pos}\}$. Then: 
 \[
 f^a(\texttt{neg}) = \{\texttt{neg}, \texttt{zero}\}, \quad
 f^a(\texttt{zero}) = \texttt{pos}, \quad
@@ -2350,12 +2348,12 @@ f^a(\texttt{pos}) = \texttt{pos}
 \]
 
 
-\textbf{Interval abstraction}: $D^a = \{ [a, b] \mid a \leq b \in \mathbb{Z} \cup \{-\infty, +\infty\} \}$. Then:
+\item \textbf{Interval abstraction}: $D^a = \{ [a, b] \mid a \leq b \in \mathbb{Z} \cup \{-\infty, +\infty\} \}$. Then:
 \[
 f^a([a, b]) = [a+1, b+1]
 \]
 
-
+ \end{itemize}
 
 \end{example}
 
