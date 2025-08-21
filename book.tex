@@ -2463,7 +2463,7 @@ f^a([1,2],[-1,3]) = \Bigg[ &1 + \min(-0.5 \cdot 1, 0.5 \cdot 2) + \min(-0.5 \cdo
 \end{example}
 
 \subsubsection{ReLu Transformer}
-For the ReLU activation function \(\myrelu(x) = \max(0, x)\), the abstract transformer is defined as:
+For \(\myrelu(x) = \max(0, x)\), the abstract transformer is defined as:
 
 \[
 \myrelu^a([l, u]) = [ \myrelu(l), \myrelu(u)] = [\max(0, l), \max(0, u)]
@@ -2505,17 +2505,40 @@ Nonetheless, interval-based methods remain popular due to their simplicity and e
 
 \subsection{Zonotope}\label{sec:zonotope-abstraction}
 
-The zonotope abstraction is more precise than interval. Unlike interval abstraction, which considers each variable independently, zonotopes capture correlations between variables (e.g., neuron activations), thereby reducing over-approximation errors. 
+Zonotopes extend intervals (\autoref{sec:interval-abstraction}) by introducing \emph{generators} that represent linear dependencies between variables. This allows zonotopes to capture correlations between variables, leading to more precise approximations compared to intervals.
 
-A zonotope represents a set as the Minkowski sum of line segments, allowing it to model linear dependencies between variables while maintaining computational efficiency.
 
 A \textbf{zonotope} \(\mathcal{Z}\) in \(\mathbb{R}^n\) is formally defined as:
 \[
 \mathcal{Z} = \left\{c + \sum_{i=1}^{m} \epsilon_i g_i \mid \epsilon_i \in [-1, 1]\right\}
 \]
-where \(c \in \mathbb{R}^n\) is the \textit{center}, \(g_i \in \mathbb{R}^n\) are \textit{generator vectors}, and \(\epsilon_i\) are independent coefficients. The zonotope contains all points formed by adding scaled versions of generators to the center.
+where :
+\begin{itemize}
+\item \(c \in \mathbb{R}^n\) is the \textit{center} (like the midpoint of intervals), 
+\item \(g_i \in \mathbb{R}^n\) are \textit{generator vectors} (directions of variability), and 
+\item \(\epsilon_i\) are independent coefficients in \([-1, 1]\). 
+\end{itemize}
 
-Note that an interval is a special case of a zonotope where all generator vectors are axis-aligned and have the same length, i.e., \(g_i = [\pm \frac{u_i - l_i}{2}, 0, \ldots, 0]\).
+\paragraph{Intervals as Special Cases} Intervals are a special case of zonotopes where all generator vectors are axis-aligned. This means that each generator vector \(g_i\) has non-zero entries only in one dimension, corresponding to the width of the interval in that dimension.
+
+
+Suppose $v_i \in [l_i, u_i]$, the center is the midpoint \(c_i = \frac{l_i + u_i}{2}\) and the generator vector is \(g_i = e_i\frac{u_i - l_i}{2}\), where $e_i$ is the unit vector in the $i$-th dimension. Then the zonotope representation becomes:
+\[
+\mathcal{Z} = \left\{c + \sum_{i=1}^{m} \epsilon_i g_i \mid \epsilon_i \in [-1, 1]\right\}
+\]
+where \(c = \begin{bmatrix}c_1 \\ c_2 \\ \vdots \\ c_m\end{bmatrix}\) and \(G = \begin{bmatrix}g_1 & g_2 & \cdots & g_m\end{bmatrix}\).
+
+
+\begin{example}
+Take $v_1 \in [1,2], v_2 \in [-1,3]$.  The interval representation is \([1, 2] \times [-1, 3]\), geometrically a rectangle with corners at \((1, -1)\), \((1, 3)\), \((2, -1)\), and \((2, 3)\).
+
+The zonotope representation is:
+\[
+\mathcal{Z} = \left\{c + \sum_{i=1}^{m} \epsilon_i g_i \mid \epsilon_i \in [-1, 1]\right\}
+\]
+where \(c = \begin{bmatrix}c_1 \\ c_2\end{bmatrix} = \begin{bmatrix}1.5 \\ 1.0\end{bmatrix}\) and \(G = \begin{bmatrix}g_1 & g_2\end{bmatrix} = \begin{bmatrix}0.5 & 0 \\ 0 & 2.0\end{bmatrix}\).
+
+\end{example}
 
 \subsubsection{Abstract Transformers for Zonotope}
 
