@@ -2448,8 +2448,7 @@ Thus, \(f^a([1,2],[-1,3]) = [-0.5,\, 2.0].\)
 \end{example}
 
 \paragraph{Activation Functions}
-\tvn{Hai, this seems to be indepdent of abstract domains?  because one you have the lower and upper bounds then you just apply relu to each. So could we take this section outside of interval domain?}
-Most activation functions (\autoref{sec:activation}) used in NNs are monotonically increasing, e.g., ReLU and Sigmoid. For interval domain\tvn{not just interval?}, it is straightforward to define an abstract transformer for such monotonically increasing function \(\alpha : \mathbb{R} \to \mathbb{R}\) by simply applying $\alpha$ for lower and upper bounds as follows:
+Most activation functions (\autoref{sec:activation}) used in NNs are monotonically increasing, e.g., ReLU and Sigmoid. For interval domain, it is straightforward to define an abstract transformer for such monotonically increasing function \(\alpha : \mathbb{R} \to \mathbb{R}\) by simply applying $\alpha$ for lower and upper bounds as follows:
 
 \[
 \alpha^a([l, u]) = [ \alpha(l), \alpha(u)]
@@ -2468,7 +2467,9 @@ For the example in~\autoref{ex:transformer-affine1}, applying ReLU to the output
 
 \subsection{Zonotope}\label{sec:zonotope-abstraction}
 
-Zonotope is a more precise domain than interval. Unlike interval abstraction, which considers each variable independently, zonotopes capture correlations between variables (e.g., neuron activations), thereby reducing over-approximation errors. A zonotope represents a set as the Minkowski sum of line segments, allowing it to model linear dependencies between variables while maintaining computational efficiency.
+Zonotope is a more precise domain than interval. Unlike interval abstraction, which considers each variable independently, zonotopes capture correlations between variables (e.g., neuron activations), thereby reducing over-approximation errors. 
+
+A zonotope represents a set as the Minkowski sum of line segments, allowing it to model linear dependencies between variables while maintaining computational efficiency.
 
 A \textbf{zonotope} \(\mathcal{Z}\) in \(\mathbb{R}^n\) is formally defined as:
 \[
