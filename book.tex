@@ -2414,30 +2414,29 @@ Thus, we can use it to estimate the range of values that a neuron can take using
 Interval is very efficient, but treats each variable independently, so it cannot capture correlations between variables such as $x_2 = -x_1$.
 
 \paragraph{Definition}
-The interval for one variable \(x\) is defined as:
+The interval for one variable \(v\) is defined as:
 \[
-x \in [l, u] = \{x \in \mathbb{R} \mid l \le x \le u\}
+v \in [l, u] = \{v \in \mathbb{R} \mid l \le v \le u\}
 \]
 
 
 For $n$ variables, the interval becomes a box (like a rectangle in 2D, a cuboid in 3D, or a hyperrectangle in $n$D):
 \[
-[x_1, x_2, \ldots, x_n] \in [l_1, u_1] \times [l_2, u_2] \times \cdots \times [l_n, u_n]
+[v_1, v_2, \ldots, v_n] \in [l_1, u_1] \times [l_2, u_2] \times \cdots \times [l_n, u_n]
 \]
 
 
 \subsubsection{Affine Transformer}
 
-We now define abstract transformers for affine and ReLU activation functions.
-
-\paragraph{Affine Functions} For the affine function \(f\) in~\autoref{sec:affine}
+For the linear or affine function \(f\) in~\autoref{sec:affine}
 \[f(v_1, v_2, ...,v_n) = \sum_{i=1}^{n} w_i v_i + b\]
-where $n$ is the number of output nodes from the previous layer and \(b\) is the bias term. We define the abstract transformer \(f^a\) for interval as:
+where $w_i$ is the weight for the input \(v_i\), $n$ is the number of output nodes from the previous layer and \(b\) is the bias term, the abstract transformer \(f^a\) is:
 \[
 f^{a}([l_1, u_1],..., [l_n, u_n]) = [f^a_L, f^a_U] = 
-\Bigg[\sum_{i=1}^{n}\big(w_i^{+} l_i + w_i^{-} u_i\big) + b,\; \sum_{i=1}^{n}\big(w_i^{+} u_i + w_i^{-} l_i\big) + b\Bigg].
+\Bigg[b + \sum_{i=1}^{n}\big(\min(w_il_i, w_iu_i\big),\; b+ \sum_{i=1}^{n}\big(\max(w_il_i + w_iu_i\big)\Bigg].
 \]
-where \(w_i^{+} = \max(w_i, 0)\) and \(w_i^{-} = \min(w_i, 0)\).
+
+
 
 \begin{example}\label{ex:transformer-affine1}
 
@@ -2449,27 +2448,34 @@ where \(w_i^{+} = \max(w_i, 0)\) and \(w_i^{-} = \min(w_i, 0)\).
 
 Consider the DNN in~\autoref{fig:dnn-abs} with inputs \(x_1 \in [1, 2]\) and \(x_2 \in [-1, 3]\). The affine function for the neuron \(x_3\) is given by:
 \[
-f^a(x_1,x_2) = -0.5\,x_1 + 0.5\,x_2 + 1.0
+f(x_1,x_2) = -0.5\,x_1 + 0.5\,x_2 + 1.0
 \]
-We compute the lower and upper bounds of the output of neuron $x_3$ using the abstract transformer:
-\[\begin{aligned}
-f^a_L &= w_1^{+} l_1 + w_1^{-} u_1 + w_2^{+} l_2 + w_2^{-} u_2 + b \\
-    &= 0\cdot 1 + (-0.5)\cdot 2 + 0.5\cdot(-1) + 0\cdot 3 + 1.0 = -0.5,\\
-f^a_U &= w_1^{+} u_1 + w_1^{-} l_1 + w_2^{+} u_2 + w_2^{-} l_2 + b \\
-    &= 0\cdot 2 + (-0.5)\cdot 1 + 0.5\cdot 3 + 0\cdot(-1) + 1.0 = 2.0.
-\end{aligned}\]
 
-Here, \(w_1=-0.5\Rightarrow w_1^{+}=0,\; w_1^{-}=-0.5\), and \(w_2=0.5\Rightarrow w_2^{+}=0.5,\; w_2^{-}=0\).
+Then 
+\[
+\begin{aligned}
+f^a([1,2],[-1,3]) = \Bigg[ &1 + \min(-0.5 \cdot 1, 0.5 \cdot 2) + \min(-0.5 \cdot -1, 0.5 \cdot 3)\\
+& 1 + \max(-0.5 \cdot 1, 0.5 \cdot 2) + \max(-0.5 \cdot -1, 0.5 \cdot 3)\Bigg]\\
+= & [-0.5, 2.0]
+\end{aligned}
+\]
 
-Thus, \(f^a([1,2],[-1,3]) = [-0.5,\, 2.0].\)
 \end{example}
 
-\paragraph{Activation Functions}
-Most activation functions (\autoref{sec:activation}) used in NNs are monotonically increasing, e.g., ReLU and Sigmoid. For interval domain, it is straightforward to define an abstract transformer for such monotonically increasing function \(\alpha : \mathbb{R} \to \mathbb{R}\) by simply applying $\alpha$ for lower and upper bounds as follows:
+\subsubsection{ReLu Transformer}
+For the ReLU activation function \(\myrelu(x) = \max(0, x)\), the abstract transformer is defined as:
 
 \[
-\alpha^a([l, u]) = [ \alpha(l), \alpha(u)]
+\myrelu^a([l, u]) = [ \myrelu(l), \myrelu(u)] = [\max(0, l), \max(0, u)]
 \]
+
+This is equivalent to three cases: 
+\begin{enumerate}
+\item If $u < 0$, then $\myrelu^a([l, u]) = [0, 0]$.  If inputs are negative, the output is also negative.
+\item If $l \ge 0$, then $\myrelu^a([l, u]) = [l, u]$. If inputs are positive, the output is exactly the same.
+\item If $l < 0 < u$, then $\myrelu^a([l, u]) = [0, u]$. If inputs are mixed, the output is approximated to $[0, u]$
+
+\end{enumerate}
 
 \begin{example}
 For the example in~\autoref{ex:transformer-affine1}, applying ReLU to the output bounds of neuron $x^3$ gives:
@@ -2481,6 +2487,21 @@ For the example in~\autoref{ex:transformer-affine1}, applying ReLU to the output
 \end{example}
 
 
+\subsubsection{Efficiency and Precision}
+
+Intervals is very \emph{efficient} and scales very well to large networks. The affine transformer only requires a linear number of multiplications and min/max operations, and ReLU reduces to only three matching cases.
+However, the cost of efficiency is precision. Intervals approximate each variable independently, which can lead to over-approximation errors when variables are correlated. 
+
+\begin{example}
+
+Suppose we have $v_1 \in [0, 1]$, $v_2 = -v_1$, and $z = v_1 + v_2$\tvn{Hai, do we have these kinds of correlation in DNN verification?}. The concrete value of $z$ is always 0, but the interval abstraction gives $z \in [-1, 1]$, which is a very loose over-approximation. 
+
+Moreover, if we apply ReLU, then the true output is $\myrelu(z) = \myrelu(0) = 0$, but the interval abstraction gives $\myrelu^a([-1, 1]) = [0, 1]$, which is again a loose over-approximation.
+\end{example}
+
+This overapproximation error grows quickly as we propagate through many layers of a large network, i.e., it keeps ``inflating'' the bounds, leading to a very loose approximation of the output and becomes useless for verification tasks. For example, if we want to verify that $z \leq 0$, the interval, which gives $z \in [0,1]$, cannot provide a tight enough bound to prove this property.
+
+Nonetheless, interval-based methods remain popular due to their simplicity and efficiency. In some cases, despite being too coarse, they can still successfully verify properties of neural networks, e.g., if we want to verify that $z \le 2$, then the interval result $[-1, 1]$ would suffice.
 
 \subsection{Zonotope}\label{sec:zonotope-abstraction}
 
