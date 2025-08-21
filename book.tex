@@ -2407,9 +2407,26 @@ We now introduce several abstract domains that are commonly used in DNN verifica
 
 \subsection{Interval}\label{sec:interval-abstraction}
 
-Interval is a widely-used abstraction technique in DNN verification due to its simplicity and efficiency. It estimates the over-approximated range of values that a neuron can take using a lower and upper bound $[l, u]$, e.g., an interval over the set of values $\{-2.5, -8.2, -10.7, 2, 4.7, 5.1\}$ can be represented as $[-10.7, 5.1]$.
+Interval is a very simple abstraction for DNN verification. 
+Instead of keeping a single value for each variable, it maintains a lower and upper bound for it. 
+Thus, we can use it to estimate the range of values that a neuron can take using a lower and upper bound $[l, u]$, e.g., an interval over the set of values $\{-2.5, -8.2, -10.7, 2, 4.7, 5.1\}$ can be represented as $[-10.7, 5.1]$.
 
-\subsubsection{Abstract Transformers for Interval}
+Interval is very efficient, but treats each variable independently, so it cannot capture correlations between variables such as $x_2 = -x_1$.
+
+\paragraph{Definition}
+The interval for one variable \(x\) is defined as:
+\[
+x \in [l, u] = \{x \in \mathbb{R} \mid l \le x \le u\}
+\]
+
+
+For $n$ variables, the interval becomes a box (like a rectangle in 2D, a cuboid in 3D, or a hyperrectangle in $n$D):
+\[
+[x_1, x_2, \ldots, x_n] \in [l_1, u_1] \times [l_2, u_2] \times \cdots \times [l_n, u_n]
+\]
+
+
+\subsubsection{Affine Transformer}
 
 We now define abstract transformers for affine and ReLU activation functions.
 
@@ -2467,7 +2484,7 @@ For the example in~\autoref{ex:transformer-affine1}, applying ReLU to the output
 
 \subsection{Zonotope}\label{sec:zonotope-abstraction}
 
-Zonotope is a more precise domain than interval. Unlike interval abstraction, which considers each variable independently, zonotopes capture correlations between variables (e.g., neuron activations), thereby reducing over-approximation errors. 
+The zonotope abstraction is more precise than interval. Unlike interval abstraction, which considers each variable independently, zonotopes capture correlations between variables (e.g., neuron activations), thereby reducing over-approximation errors. 
 
 A zonotope represents a set as the Minkowski sum of line segments, allowing it to model linear dependencies between variables while maintaining computational efficiency.
 
@@ -2476,6 +2493,8 @@ A \textbf{zonotope} \(\mathcal{Z}\) in \(\mathbb{R}^n\) is formally defined as:
 \mathcal{Z} = \left\{c + \sum_{i=1}^{m} \epsilon_i g_i \mid \epsilon_i \in [-1, 1]\right\}
 \]
 where \(c \in \mathbb{R}^n\) is the \textit{center}, \(g_i \in \mathbb{R}^n\) are \textit{generator vectors}, and \(\epsilon_i\) are independent coefficients. The zonotope contains all points formed by adding scaled versions of generators to the center.
+
+Note that an interval is a special case of a zonotope where all generator vectors are axis-aligned and have the same length, i.e., \(g_i = [\pm \frac{u_i - l_i}{2}, 0, \ldots, 0]\).
 
 \subsubsection{Abstract Transformers for Zonotope}
 
