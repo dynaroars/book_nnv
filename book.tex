@@ -1343,7 +1343,7 @@ Consider a neural network $f$ that classifies images into different categories (
 \[
 \|x - c\| \leq \epsilon \implies f(x) = f(c), 
 \]
-where $\|x - c\| \leq \epsilon$ indicates that the difference between the two images is within a certain (small) threshold, which is typically defined in terms of pixel-wise differences. \tvn{is this local or global robustness?}
+where $\|x - c\| \leq \epsilon$ indicates that the difference between the two images is within a certain (small) threshold, which is typically defined in terms of pixel-wise differences. \tvn{is this local or global robustness?}\hd{it is local.}
 \end{example}
 
 
@@ -1357,7 +1357,7 @@ A typical ACAS XU network (\autoref{sec:acasxu}) maps 5D input to 5D output via 
 \[
 y_0 \leq y_1, \quad y_0 \leq y_2, \quad y_0 \leq y_3, \quad y_0 \leq y_4,
 \]
-where $x_i$ are the input variables, $y_i$ are the output variables, and $\varepsilon_i$ are small perturbation bounds for each input dimension. This property states that if the inputs are perturbed within the bounds $\varepsilon_i$, then the first output neuron $y_0$ is less than or equal to all other output neurons $y_1, y_2, y_3, y_4$.\tvn{Hai, is this local?}\hd{yes, it is local.}
+where $x_i$ are the input variables, $y_i$ are the output variables, and $\varepsilon_i$ are small perturbation bounds for each input dimension. This property states that if the inputs are perturbed within the bounds $\varepsilon_i$, then the first output neuron $y_0$ is less than or equal to all other output neurons $y_1, y_2, y_3, y_4$.\tvn{Hai, is this local?}\hd{yes, it is local. But it doesn't tailor to a specific input (center point), so people might call it a safety property.}
 \end{example}
 \subsection{Safety}
 
