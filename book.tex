@@ -1397,29 +1397,26 @@ Consider a neural network $f$ that classifies images into different categories (
 \forall x, \qquad \|c - x\| \leq \epsilon \implies f(x) = f(c)
 \]
 
-
-
-
-
 \end{example}
 
 
 
 
-\begin{example}\label{ex:acas-robustness}
-A typical ACAS XU network (\autoref{sec:acasxu}) maps 5D input to 5D output via 6 layers of 50 ReLU neurons. A local robustness property is:
-\[
--\varepsilon_i \leq x_i \leq \varepsilon_i \quad (0 \leq i < 5)
-\]
-\[
-y_0 \leq y_1, \quad y_0 \leq y_2, \quad y_0 \leq y_3, \quad y_0 \leq y_4,
-\]
-where $x_i$ are the input variables, $y_i$ are the output variables, and $\varepsilon_i$ are small perturbation bounds for each input dimension. This property states that if the inputs are perturbed within the bounds $\varepsilon_i$, then the first output neuron $y_0$ is less than or equal to all other output neurons $y_1, y_2, y_3, y_4$.\tvn{Hai, is this local?}\hd{yes, it is local. But it doesn't tailor to a specific input (center point), so people might call it a safety property.}
-\end{example}
+% \begin{example}\label{ex:acas-robustness}
+% A typical ACAS XU network (\autoref{sec:acasxu}) maps 5D input to 5D output via 6 layers of 50 ReLU neurons. A local robustness property is:
+% \[
+% -\varepsilon_i \leq x_i \leq \varepsilon_i \quad (0 \leq i < 5)
+% \]
+% \[
+% y_0 \leq y_1, \quad y_0 \leq y_2, \quad y_0 \leq y_3, \quad y_0 \leq y_4,
+% \]
+% where $x_i$ are the input variables, $y_i$ are the output variables, and $\varepsilon_i$ are small perturbation bounds for each input dimension. This property states that if the inputs are perturbed within the bounds $\varepsilon_i$, then the first output neuron $y_0$ is less than or equal to all other output neurons $y_1, y_2, y_3, y_4$.\tvn{Hai, is this local?}\hd{yes, it is local. But it doesn't tailor to a specific input (center point), so people might call it a safety property.}
+% \end{example}
+
 \subsection{Safety}
 
 
-\textbf{Safety} ensures that the network conforms to certain safety constraints, often specific to the application domain. This is particularly important in safety-critical applications, such as autonomous vehicles or medical diagnosis systems, where incorrect outputs can lead to catastrophic consequences. For example, in a self-driving car, we want to ensure that the car maintains a safe distance from other vehicles and pedestrians under all scenarios.
+\textbf{Safety} ensures that the network conforms to certain safety constraints. This is particularly important in safety-critical applications, such as autonomous vehicles or medical diagnosis systems, where incorrect outputs can lead to catastrophic consequences. %For example, in a self-driving car, we want to ensure that the car maintains a safe distance from other vehicles and pedestrians under all scenarios.
 
 \begin{example}[Collision Avoidance System]
     A safety property in a collision avoidance system such as an autonomous vehicle might be that if the intruder is distant and significantly slower than us, then we stay below a certain velocity threshold. Formally, this can be expressed as:
@@ -1428,6 +1425,9 @@ d_{intruder} > d_{threshold} \land v_{intruder} < v_{threshold} \implies v_{us} 
 \]
 where $d_{intruder}$ is the distance to the intruder, $d_{threshold}$ is a predefined safe distance, $v_{intruder}$ is the speed of the intruder, and $v_{us}$ is our speed.
 \end{example}
+
+
+Unlike robustness properties, which are often desirable in all networks, safety properties are often \emph{specific} to the application domain. For example, a safety property for an autonomous vehicle may not be relevant for a surgical robot.
 
 \section{Other properties}\label{sec:other-properties}
 
