@@ -1337,7 +1337,7 @@ Similar to software programs, neural networks (NNs) have desirable properties to
 Below we will discuss properties that are relevant to the verification of NNs. Specifically, these properties can be 
 expressed in a formal language supported by a DNN verifier. Additional properties can be found in the literature~\cite{seshia2018formal}.
 
-\section{Properties, Informally}
+\section{Definition}\label{sec:properties-def}
 
 As described in~\autoref{sec:basic} NNs define functions of the form $f: \mathbb{R}^{n} \to \mathbb{R}^{m}$, 
 where $n$ is the dimension of the input and $m$ is the dimension of the output. Thus, the properties or specifications of an NN---similarly to properties of software program---are defined in terms of its input and output:
@@ -1354,7 +1354,7 @@ This says that if the input $x$ satisfies the precondition $P$, then the output 
 
 We now define some commonly studied properties in NNs verification.
 
-\subsection{Robustness}
+\subsection{Robustness}\label{sec:properties-robustness}
 
 \textbf{Robustness} ensures that small changes in the input do not drastically change the output. This is a desirable property for all neural networks, especially classifiers, where we want to ensure that similar inputs yield similar outputs. For example, a slightly blurred image of a red light should still be classified as a red light.
 
@@ -1394,7 +1394,7 @@ This is very strong definition, and in practice, almost impossible unless the ne
 Consider a neural network $f$ that classifies images into different categories (e.g., dog, cat, etc.). A robustness property requires that if an input image $c$ is classified as a dog, then any perturbed image $x$ that is visually similar to $c$ should also be classified as a dog. This can be expressed as:
 
 \[
-\forall x, \|c - x\| \leq \epsilon \implies f(x) = f(c)
+\forall x, \qquad \|c - x\| \leq \epsilon \implies f(x) = f(c)
 \]
 
 
@@ -1433,20 +1433,20 @@ where $d_{intruder}$ is the distance to the intruder, $d_{threshold}$ is a prede
 
 \subsection{Consistency}
 
-\textbf{Consistency} ensures that a neural network behaves in a logically coherent manner, maintaining stable and predictable outputs under semantically equivalent or related inputs. This property requires that the network's predictions follow logical relationships and respect domain-specific invariants, preventing contradictory outputs that would violate fundamental assumptions of the problem domain. 
+\textbf{Consistency} ensures that a NN behaves consistently when given semantically equivalent or related inputs.
 
-\begin{example}[Logical Consistency in Large Language Models]
-    A consistency property in an LLM-based question answering system requires that the model provides logically coherent answers to related questions. For instance, given a set of related queries about the same factual information, the model should maintain consistency. Formally, consider queries $q_1$, $q_2$, and $q_3$ about a person's age:
+\begin{example}[Logical Consistency in LLMs]
+    A consistency property in an LLM requires that when given a set of related queries about the same factual information, the LLM would provide logically coherent answers. Formally, consider queries $q_1$, $q_2$, and $q_3$ about a person's age:
 \[
-q_1: \text{"How old is person X?"}
+q_1: \texttt{``How old is person X?''}
 \]
 \[
-q_2: \text{"What year was person X born if they are currently Y years old?"}
+q_2: \texttt{``What year was person X born if they are currently Y years old?''}
 \]
 \[
-q_3: \text{"Will person X be Z years old in 2025?"}
+q_3: \texttt{``Will person X be Z years old in 2025?''}
 \]
-The consistency property requires that if the LLM outputs age $Y$ for $q_1$, then the birth year in $q_2$ should be $\text{current\_year} - Y$, and the answer to $q_3$ should be logically consistent with the stated age. This prevents scenarios where an LLM claims someone is 30 years old but was born in 1985 when the current year is 2024, ensuring logical coherence across related factual queries.
+The consistency property requires that if the LLM outputs age $Y$ for $q_1$, then the birth year in $q_2$ should be $\texttt{current\_year} - Y$, and the answer to $q_3$ should be logically consistent with the stated age. This prevents scenarios where an LLM claims someone is 30 years old but was born in 1985 when the current year is 2024.
 \end{example}
 
 
@@ -1481,17 +1481,19 @@ ensuring that applicants with identical academic qualifications receive the same
 
 
 
-\section{Counterexamples}\label{sec:counterexamples}
+\section{Counterexamples}\label{sec:properties-counterexamples}
 
-A \emph{counterexample} (\textbf{cex}) is a witness that falsifies the correctness property. A counterexample is an assignment to the input variables that satisfies the precondition but violates the postcondition.
+A \emph{counterexample} (\textbf{cex}) is a witness that falsifies the correctness property. Given the property defined in~\autoref{sec:properties-def}, a counterexample is an input $x$ that satisfies the precondition $P$ but produces an output $f(x)$ that violates the postcondition $Q$.
+
 
 \begin{example}[Counterexample to Robustness Property]
-For the brightness robustness property:
+For local robustness property (\autoref{sec:properties-robustness}):
 \[
-\text{If } f(x) \neq f(c) \text{ and } \|x - c\| \leq \epsilon, \text{ then } x \text{ is a counterexample.}
+\text{if } f(x) \neq f(x') \text{ and } \|x - x'\| \leq \epsilon, \text{ then } x' \text{ is a counterexample.}
 \]
 \end{example}
 
+The goal of DNN verification (\autoref{sec:nnv-problem}) is to either prove that a property holds---no cex exist---or find a cex that violates the property.
 
 \section{The VNN-LIB  Specification Language}
 
@@ -1682,7 +1684,7 @@ We represent the DNN in~\autoref{fig:dnn} as a formula $\alpha$ as follows:
 \phi_{out} = (x_5 > 0)
 \end{equation*}
 
-We then check the satisfiability of $\alpha \land \phi_{in} \land \neg \phi_{out}$ using a constraint solver (e.g., an SMT solver).  In this case, the formula is satisfiable and the solver returns \sat{}, and we query the solver for a satisfying assignment to the input variables, e.g., $x_1=-1$ and $x_2=2$. This assignment is a counterexample (\autoref{sec:counterexamples}) to the property, as it satisfies the input constraint $\phi_{in}$ but violates the output constraint $\phi_{out}$, i.e., $x_5 = -3.5$, which is  $< 0$.
+We then check the satisfiability of $\alpha \land \phi_{in} \land \neg \phi_{out}$ using a constraint solver (e.g., an SMT solver).  In this case, the formula is satisfiable and the solver returns \sat{}, and we query the solver for a satisfying assignment to the input variables, e.g., $x_1=-1$ and $x_2=2$. This assignment is a counterexample (\autoref{sec:properties-counterexamples}) to the property, as it satisfies the input constraint $\phi_{in}$ but violates the output constraint $\phi_{out}$, i.e., $x_5 = -3.5$, which is  $< 0$.
 
 \end{example}
 
