@@ -1435,8 +1435,7 @@ Unlike robustness properties, which are often desirable in all networks, safety 
 
 \textbf{Consistency} ensures that a NN behaves consistently when given semantically equivalent or related inputs.
 
-\begin{example}[Logical Consistency in LLMs]
-    A consistency property in an LLM requires that when given a set of related queries about the same factual information, the LLM would provide logically coherent answers. Formally, consider queries $q_1$, $q_2$, and $q_3$ about a person's age:
+\begin{example}[Logical Consistency in LLMs] Consider queries $q_1$, $q_2$, and $q_3$ about a person's age:
 \[
 q_1: \texttt{``How old is person X?''}
 \]
@@ -1446,7 +1445,7 @@ q_2: \texttt{``What year was person X born if they are currently Y years old?''}
 \[
 q_3: \texttt{``Will person X be Z years old in 2025?''}
 \]
-The consistency property requires that if the LLM outputs age $Y$ for $q_1$, then the birth year in $q_2$ should be $\texttt{current\_year} - Y$, and the answer to $q_3$ should be logically consistent with the stated age. This prevents scenarios where an LLM claims someone is 30 years old but was born in 1985 when the current year is 2024.
+Thus, if the LLM outputs age $Y$ for $q_1$, then $q_2$ should output $\texttt{current\_year} - Y$, and the answer to $q_3$ should be logically consistent with the stated age. This prevents scenarios where an LLM claims someone is 30 years old but was born in 1985 when the current year is 2024.
 \end{example}
 
 
@@ -1462,7 +1461,7 @@ The consistency property requires that if the LLM outputs age $Y$ for $q_1$, the
 
 \subsection{Monotonicity}
 
-\textbf{Monotonicity} ensures that the neural network maintains a consistent ordering relationship between inputs and outputs, where an increase in certain input features always leads to a non-decreasing output value. This property is particularly important in applications where domain knowledge dictates logical ordering constraints, such as fairness-aware systems, medical diagnosis, and scientific applications where physical laws impose natural ordering relationships.
+\textbf{Monotonicity} ensures that the NN maintains a consistent ordering relationship between inputs and outputs, where an increase in certain input features always leads to a non-decreasing output value. This property is important in applications where domain knowledge dictates logical ordering constraints, such as fairness-aware systems, medical diagnosis, and scientific applications where physical laws impose natural ordering relationships.
 
 \begin{example}[Fairness]
     A monotonicity property in an AI system should ensure that relevant merit-based features are monotonic while demographic features like gender have no effect on the outcome. For instance, in a university admissions system, the admission probability should be monotonically non-decreasing with respect to GPA and test scores, regardless of gender. Formally, for applicants with profiles $(p, s, g)$ and $(p', s', g')$ where $p, p'$ are GPAs, $s, s'$ are test scores, and $g, g'$ are gender indicators:
