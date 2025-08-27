@@ -1,0 +1,273 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage[colorlinks,pagebackref,pdfusetitle,urlcolor=blue,citecolor=blue,linkcolor=red,bookmarksnumbered,plainpages=false]{hyperref}
+\renewcommand{\figurename}{Fig.}
+\renewcommand{\tablename}{Tab.}
+\def\Section{\S}
+\renewcommand{\figureautorefname}{Fig.}
+\renewcommand{\tableautorefname}{Tab.}
+\makeatletter
+\renewcommand{\chapterautorefname}{\S\@gobble}
+\renewcommand{\sectionautorefname}{\S\@gobble}
+\renewcommand{\subsectionautorefname}{\S\@gobble}
+\renewcommand{\appendixautorefname}{\S\@gobble}
+
+\begin{document}
+\begin{center}
+{\Large \textsc{SWE-699/CS-690: AI Safety \& Assurance}}
+
+\vspace{0.1in}
+{\large Fall '25}
+\end{center}
+
+\begin{minipage}[t]{.75\textwidth}
+    \centering
+\begin{tabular}{llcccll}
+  \toprule
+  \textbf{Meetings:} & Wed 4:30PM -- 7:10PM  & & & & \textbf{Place:} & PLANET 122\\
+\textbf{Instructor:} & \href{https://roars.dev}{ThanhVu Nguyen} & & &  & \textbf{Email:} &  \href{mailto:tvn@gmu.edu}{tvn@gmu.edu} (Canvas is preferred)\\
+\textbf{Office Hr:} & (email to set appointment)& & & & \textbf{Place:} & Zoom or ENGR 4430\\
+  \hline
+\textbf{GTA:} & Linhan Li & & &  & \textbf{Email:} &  \href{mailto:lli34@gmu.edu}{lli34@gmu.edu}\\
+\textbf{Office Hr:} & TBD & & & & \textbf{Place:} & TBD \\
+%  \hline
+%\textbf{UTA:} & Josabeth Zelalem Hailu & & &  & \textbf{Email:} &  \href{mailto:jhailu2@gmu.edu}{jhailu2@gmu.edu}\\
+\bottomrule
+\end{tabular}
+\end{minipage}
+ 
+
+\section{Description}
+
+\paragraph{Course Overview}
+This special topic course is a \textbf{research seminar} on \emph{AI Verification and Assurance}.  AI, in particular Deep Neural Networks (DNNs), have emerged as an effective approach for solving challenging real-world problems. %Among many others, they have been used for image recognition, autonomous driving, airplane collision control,
+power grid control, fake news detection, drug synthesis and discovery, 
+and COVID-19 detection and diagnosis.
+However, just like traditional software, DNNs can have ``bugs'', e.g., producing unexpected results on inputs that are different from those in training data, and be attacked, e.g., small perturbations to the inputs by a malicious adversary or even sensorial imperfections result in misclassification.
+These issues, which have been observed in many DNNs and demonstrated in the real world,  naturally raise the question of how DNNs should be tested, validated, and ultimately \emph{verified} to meet the requirements of relevant robustness or safety standards.
+
+In this class, we will learn various techniques and tools to verify DNNs. We will cover topics including the applications
+of verification, testing, analysis, constraint solving, and abstraction
+techniques to DNNS such as Feedforward Neural Networks
+(FNNs), Residual Networks (ResNet), and Convolutional Neural Networks
+(CNNs). We will focus on scalable and precise techniques that can deal with large, real-world DNNS.
+
+The course will focus on active research areas in formal AI and DNN reasoning,
+but the specific topics will be largely determined by a
+combination of instructor fiat and the interests of the students.
+
+\paragraph{Learning Outcomes}
+
+
+By the end of the course, students will gain a solid understanding of the principles of AI verification and assurance, particularly techniques for verifying the safety and robustness of DNNs.
+
+\subsection{Learning Outcomes}
+
+\begin{itemize}
+\item \textbf{Understanding of AI Verification Techniques and Tools}: Students will gain a deep understanding of AI verification concepts, techniques, and tools. They will learn how to apply these techniques to various types of neural networks, including FNNs, REsNets, CNNs, and RNNs.  The student will also learn how to use existing tools to analyze and verify DNNs.
+
+\item \textbf{In-Depth Understanding}: For the final project, students will delve deeply into a specific DNN analysis technique. They will not only understand the theory but also be able to provide concrete examples and \emph{implement} the technique themselves, gaining a comprehensive understanding of the chosen topic.  
+
+\item \textbf{Strengthen knowledge in Linear Algebra, AI/ML, and Programming}: Students will develop or strengthen their foundational knowledge in linear algebra and AI/ML, making them well-prepared to tackle advanced topics and real-world problems in AI safety. 
+Programming assignments will require students to implement AI analysis techniques in Python. This will improve their programming skills and their ability to apply theoretical concepts to practical problems.
+
+
+\item \textbf{Critical Reading and Evaluation}: Through weekly reading assignments, students will learn to critically evaluate both book chapters and research papers related to AI verification and analysis. They will be able to identify the problem addressed, assess proposed solutions, analyze the strengths and weaknesses of different approaches, and evaluate and compare related techniques.
+
+\item \textbf{Presentation and Discussion Skills}: Students will have the opportunity to lead group discussions and presentations on assigned readings. This will enhance their presentation and communication skills, as well as their ability to facilitate meaningful discussions among peers.
+
+\end{itemize}
+
+
+
+\subsection{Prerequisite}
+\begin{itemize}
+\item No prerequisite courses. However, basic knowledge in linear algebra and AI/ML, e.g., CS 580, is strongly recommended
+\item Programming knowledge (Python): we will use Python for assignments and projects.
+\item Important: this class does not require or teach about AI or deep learning concepts. It also does not assume prior knowledge of these topics, and all background material will be provided.
+\end{itemize}
+
+
+\subsection{Course Materials}
+\begin{itemize}
+    \item T. Nguyen. \href{https://nguyenthanhvuh.github.io/class-oo/safe.pdf}{\emph{Software Analysis and Formal rEasoning}} (\textbf{Required}, free)
+
+
+    \item A. Albarghouthi. \href{https://arxiv.org/pdf/2109.10317}{\emph{Introduction to Neural Network Verification}}. 2021. (\textbf{Recommended}, free)
+
+    \item Other useful resources:
+\begin{itemize}
+  \item \href{https://neural-network-verification.com/}{Neural Network Verification Tutorial}
+  \item \href{https://publish.illinois.edu/ece598hz-fall2024/course-schedule/}{Advanced Topics in ML and Formal Methods (Grad level course at UIUC)}
+\end{itemize}
+
+\end{itemize}
+
+
+
+\subsection{Assignment Submission and Communication}
+
+We will use \textbf{Canvas} for communication, submitting assignments and quizzes, and to keep track of grades (\autoref{sec:grading}).  
+It's the student's responsibility to ensure that your grade records are correct.
+
+When submitting to Canvas, you can either submit a PDF, Word, or text (code) file.  If you manually write your answers, take a picture and submit it.  \textbf{DO NOT} submit link (e.g., to Google Docs or some other services); you will receive a 0 for the assignment if you submit a link.
+
+\section{Weekly Schedule}
+
+This class is a group-based, \emph{in-person} offering. You need to be
+present in class at class time. You will also need to schedule regular
+meetings with your group.
+
+Each week will cover a topic. Each
+topic will follow roughly the same sequence of preparation and reading materials before class, in-class
+learning activities and homework/project assignments. Many of these activities will be group based.
+
+
+\section{Grading}\label{sec:grading}
+
+\begin{center}
+\begin{tabular}{lr}
+\textbf{Assignments} & \textbf{Percentage} \\
+\hline
+Group Functioning (group-based) & 10\% \\
+Homework assignments (group-based) & 45\% \\
+Weekly Quizzes (individual) & 45\% \\
+  %Final exam (individual) & 10\% \\
+  \hline
+    \textbf{Total} & 100\% \\
+\end{tabular}
+\end{center}
+\subsection{Scale}\label{scale}
+
+\begin{center}
+    \begin{tabular}{ll|ll|ll}
+    A+ & $\ge$ 97\% & A & $\ge$  93\% & A- & $\ge$
+    90\% \\
+    B+ & $\ge$  87\% & B & $\ge$  83\% & B- & $\ge$
+    80\% \\
+    C & $\ge$  70\% & D & $\ge$  60\% & F & $<$
+    60\% \\
+    \end{tabular}
+    \end{center}
+
+\subsection{Group Functioning}\label{group-functioning}
+
+Every student needs to be part of a group. I would prefer that groups
+stay stable throughout the semester, but if there is a good rationale to
+reconfigure a group, we'll do that.
+
+
+
+\paragraph{Creating groups} You will have a chance to form your own group.
+If you can't find one, we can help. Each has  \textbf{2 to 4 students}. If your group dwindles to just yourself, you'll need to join another group.
+
+At the end of the semester, each individual will provide an assessment
+of the rest of their group. This assessment will determine the ``Group Functioning'' part of the grade (\autoref{sec:grading}).
+
+\subsection{Homework Assignments}\label{homework-assignments}
+
+There are weekly \emph{group homework assignments}, which are given through the class \href{https://nguyenthanhvuh.github.io/class-oo/assignments}{schedule web site}. Your group will submit assignments via \textbf{Canvas}.
+
+Because of the way in which this class is taught, it is important to
+stay on pace. Homework assignments are due \textbf{before class}. Late submissions
+are not accepted except in truly exceptional circumstances.
+
+Some important notes:
+
+\begin{itemize}
+\item
+Each group should be prepared to present their homework solution in
+class.
+
+\item
+  \textbf{Statement of who did what}. Homeworks are group exercises.
+  Each submission must contain a specific statement of who did what.
+\item
+  There are \textbf{no make-ups}.
+\item
+  Other than the first assignment (where we might not have formed all
+  groups), only one submission per \textbf{\textbf{group}}. Everyone in
+  the group gets the same credit.
+\end{itemize}
+
+\subsection{Weekly Quizzes}\label{weekly-quizzes}
+
+We will have a quiz every week. Each quiz is worth 10 pts. The quiz will be based on the material covered in the previous weeks. Each quiz happens during the last part of class. \emph{You must be present to take the quiz}.
+
+
+\paragraph{Quiz Make-up Policy} You will have the opportunity to make up a quiz if you miss it. The grading and make-up policy is as follows:
+
+\begin{itemize}
+\item Contact the GTA and schedule a make-up quiz (likely will be offered during TA office hours). The make-up can be different from the quiz given in class, but focuses on the same topics.
+\item
+  The make-up must be taken promptly and within \emph{a week of the quiz}.
+\item
+  All quizzes count towards the final grade. Each quiz is scored on a 10
+  point scale. Missed quizzes score 0/10.
+\item
+  The maximum possible score on the make-up is 8/10. 
+% \item
+%   If you attempt the make-up, that score counts, no matter what your
+%   score was on the quiz. (Example: your quiz grade is 7/10. You take the
+%   make-up and correctly answer 5 of 10 equally weighted questions. Your
+%   final score declines from 7/10 to 5/10.)
+
+\end{itemize}
+
+% \subsection{Final Exam}\label{final-exam}
+
+% There will be a final exam at the time specified by the
+% university's final exam schedule.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Class Attendance}\label{class-attendance}
+
+I place great emphasis on peer learning and interactive engagement. The class is structured to leverage group interactions to the largest extent possible for the purpose of maximizing learning gain throughout the
+semester. Moreover, the \emph{quizzes are given in class}.
+
+
+\subsection{In-Class Exercises}\label{in-class-exercises}
+
+I plan an in-class exercise for every class. Students will work in their
+designated group. Very often, the in-class exercises will be closely
+related to an upcoming homework assignment.
+
+
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+
+% \section{Links}
+% \label{sec:org63a886d}
+% \begin{itemize}
+% \item \href{assignments.org}{Schedule and Assignments}
+% \item \href{project.org}{Project Info}
+% \end{itemize}
+
+% \subsection{Related courses}
+% \begin{itemize}
+% \item \href{https://www.sri.inf.ethz.ch/teaching/reliableai21}{Eth Zurich Reliable and Trustworthy Artificial  Intelligence}
+% \end{itemize}
+
+\section{GMU Policies}
+\subsection{Honor Code}\label{sec:honor-code}
+
+As with all GMU courses, this class governed by the \href{https://academicstandards.gmu.edu}{GMU Honor Code}. In this course, all assignments carry with them an implicit statement that it is the sole work of the author.
+
+\subsection{Learning Disabilities}
+
+Disability Services at George Mason University is committed to providing equitable access to learning opportunities for all students by upholding the laws that ensure equal treatment of people with disabilities. If you are seeking accommodations for this class, please first visit \url{https://ds.gmu.edu/} for detailed information about the Disability Services registration process. Then please discuss your approved accommodations with me. Disability Services is located in Student Union Building I (SUB I), Suite 2500. Email: \href{mailto:ods@gmu.edu}{ods@gmu.edu} | Phone: (703) 993-2474
+
+
+\end{document} 
+
+
+
+For next year:  
+- do not allow missing example completely and just do make up 
+- dot not allow late submission 
+- do not do online quiz 
+- for make up,  a week after the grade is released
