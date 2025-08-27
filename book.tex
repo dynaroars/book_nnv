@@ -1416,7 +1416,7 @@ Consider a neural network $f$ that classifies images into different categories (
 \subsection{Safety}
 
 
-\textbf{Safety} ensures that the network conforms to certain safety constraints. This is particularly important in safety-critical applications, such as autonomous vehicles or medical diagnosis systems, where incorrect outputs can lead to catastrophic consequences. %For example, in a self-driving car, we want to ensure that the car maintains a safe distance from other vehicles and pedestrians under all scenarios.
+\textbf{Safety} properties ensure that the network conforms to certain safety constraints. This is particularly important in safety-critical applications, such as autonomous vehicles or medical diagnosis systems, where incorrect outputs can lead to catastrophic consequences. %For example, in a self-driving car, we want to ensure that the car maintains a safe distance from other vehicles and pedestrians under all scenarios.
 
 \begin{example}[Collision Avoidance System]
     A safety property in a collision avoidance system such as an autonomous vehicle might be that if the intruder is distant and significantly slower than us, then we stay below a certain velocity threshold. Formally, this can be expressed as:
@@ -1433,17 +1433,17 @@ Unlike robustness properties, which are often desirable in all networks, safety 
 
 \subsection{Consistency}
 
-\textbf{Consistency} ensures that a NN behaves consistently when given semantically equivalent or related inputs.
+\textbf{Consistency} requires that a NN behaves consistently when given semantically equivalent or related inputs.
 
 \begin{example}[Logical Consistency in LLMs] Consider queries $q_1$, $q_2$, and $q_3$ about a person's age:
 \[
 q_1: \texttt{``How old is person X?''}
 \]
 \[
-q_2: \texttt{``What year was person X born if they are currently Y years old?''}
+q_2: \texttt{``What year was X born if they are currently Y years old?''}
 \]
 \[
-q_3: \texttt{``Will person X be Z years old in 2025?''}
+q_3: \texttt{``Will X be Z years old in 2025?''}
 \]
 Thus, if the LLM outputs age $Y$ for $q_1$, then $q_2$ should output $\texttt{current\_year} - Y$, and the answer to $q_3$ should be logically consistent with the stated age. This prevents scenarios where an LLM claims someone is 30 years old but was born in 1985 when the current year is 2024.
 \end{example}
@@ -1461,10 +1461,10 @@ Thus, if the LLM outputs age $Y$ for $q_1$, then $q_2$ should output $\texttt{cu
 
 \subsection{Monotonicity}
 
-\textbf{Monotonicity} ensures that the NN maintains a consistent ordering relationship between inputs and outputs, where an increase in certain input features always leads to a non-decreasing output value. This property is important in applications where domain knowledge dictates logical ordering constraints, such as fairness-aware systems, medical diagnosis, and scientific applications where physical laws impose natural ordering relationships.
+\textbf{Monotonicity} ensures that the NN maintains a consistent ordering relationship between inputs and outputs: an increase in certain input features always leads to a non-decreasing output value. This property is important in applications where domain knowledge dictates logical ordering constraints, such as fairness-aware systems, medical diagnosis, and scientific applications where physical laws impose natural ordering relationships.
 
 \begin{example}[Fairness]
-    A monotonicity property in an AI system should ensure that relevant merit-based features are monotonic while demographic features like gender have no effect on the outcome. For instance, in a university admissions system, the admission probability should be monotonically non-decreasing with respect to GPA and test scores, regardless of gender. Formally, for applicants with profiles $(p, s, g)$ and $(p', s', g')$ where $p, p'$ are GPAs, $s, s'$ are test scores, and $g, g'$ are gender indicators:
+    A network modelling the probability of admission to a university should be monotonically non-decreasing with respect to GPA and test scores, regardless of gender. Formally, for applicants with profiles $(p, s, g)$ and $(p', s', g')$ where $p, p'$ are GPAs, $s, s'$ are test scores, and $g, g'$ are gender indicators:
 \[
 p \leq p' \land s = s' \land g \neq g' \implies f(p, s, g) \leq f(p', s', g'),
 \]
@@ -5730,13 +5730,13 @@ include solvers supporting a wide range of theories including linear arithmetic,
 
 \autoref{fig:alg} shows the \tool{} algorithm, which takes as input the formula $\alpha$ representing the ReLU-based DNN $N$ and the formulae $\phi_{in}\Rightarrow \phi_{out}$ representing the property $\phi$ to be proved.
 Internally, \tool{} checks the satisfiability of the formula
-\begin{equation}\label{eq:prob}
+\begin{equation}\label{eq:prob1}
   \alpha \land \phi_{in} \land \overline{\phi_{out}}.
 \end{equation}
 \tool{} returns \texttt{unsat} if the formula unsatisfiable, indicating  that $\phi$ is a valid property of $N$, and \texttt{sat} if it is satisfiable, indicating the $N$ is not a valid property.
 
 \tool{} uses a  DPLL(T)-based algorithm to check unsatisfiability.
-First, the input formula in~\autoref{eq:prob} is abstracted to a propositional formula
+First, the input formula in~\autoref{eq:prob1} is abstracted to a propositional formula
 with variables encoding neuron activation status (\texttt{BooleanAbstraction}).
 Next, \tool{} assign values to Boolean variables (\texttt{Decide}) and checks for conflicts the assignment has with the real-valued constraints of the DNN and the property of interest (\texttt{BCP} and \texttt{Deduction}).
 If conflicts arise, \tool{} determines the assignment decisions causing the conflicts (\texttt{AnalyzeConflict}), backtracks to erase such decisions (\texttt{Backtrack}), and learns clauses to avoid those decisions in the future.
