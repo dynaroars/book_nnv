@@ -1727,7 +1727,7 @@ This formula checks if the network $N$ satisfies (implies) the property $\phi$, 
 \begin{equation}\label{eq:prob}
   \alpha \land \phi_{in} \land \neg \phi_{out}
 \end{equation}
-If~\autoref{eq:prob} is unsatisfiable, then $\phi$ is a valid property of $\mathcal{N}$. Otherwise, $\phi$ is not valid.  Moreover, we can extract a counterexample for the original problem from the satisfying assignment of~\autoref{eq:prob}.
+If~\autoref{eq:prob} is unsatisfiable, then $\phi$ is a valid property of $N$. Otherwise, $\phi$ is not valid.  Moreover, we can extract a counterexample for the original problem from the satisfying assignment of~\autoref{eq:prob}.
 
 \begin{example}\label{ex:dnn-sat}
 We represent the DNN in~\autoref{fig:dnn} as a formula $\alpha$ as follows:
@@ -5564,6 +5564,22 @@ In each specification, the inputs (condition distance and latent variables) are 
 
 \appendix
 
+\chapter{Schedule}
+
+\begin{enumerate}
+    \item Week 1: Introduction (videos of neural networks, basic terminologies and concepts).
+    \item Week 2: HW: Introducing yourself on Canvas.  
+    \item Week 3: 
+    \item Week 3:    
+    \item Week 4:
+    \item Week 5:
+    \item Week 6:
+    \item Week 7:
+    \item Week 8:
+    \item Week 9:
+    \item Week 10:
+\end{enumerate}    
+
 \chapter{Comparing neural networks with software}\label{app:nn-vs-software}
 
 \begin{table}
@@ -5618,6 +5634,269 @@ In each specification, the inputs (condition distance and latent variables) are 
     \bottomrule
 \end{tabular}    
 \end{table}
+
+\chapter{Logic and Linear Programming Foundations for DNN Verification}
+
+The field of neural network verification (NNV) relies heavily on two fundamental areas: 
+\emph{logic} (to reason about properties as logical formulae) and \emph{optimization} (to reason about numerical constraints).
+This chapter provides the necessary background on both topics in detail, starting with propositional logic and satisfiability, 
+and then moving to linear and mixed-integer programming.
+
+
+\section{Propositional Logic and Satisfiability}
+
+\subsection{Syntax}
+
+A \emph{propositional variable} is a symbol (e.g., $x, y, z$). Logical formulae are built inductively from these variables using logical connectives as follows:
+
+\begin{itemize}
+  \item Constants: $\top$ and $\bot$ are formulae.
+  \item Variables: Any propositional variable $p$ is a formula.
+  \item Negation: If $\phi$ is a formula, then $\lnot \phi$ is a formula.
+  \item Binary connectives: If $\phi, \psi$ are formulas, then so are
+    $(\phi \land \psi)$, $(\phi \lor \psi)$, and $(\phi \to \psi)$.
+\end{itemize}
+
+\begin{example}
+
+\[
+(x \lor y) \land (\lnot x \lor z)
+\]
+is a formula involving three variables $x,y,z$.
+\end{example}
+
+Notice here that we purely define the syntax of propositional logic. We have not talked about semantics (meanings) such as truth values.
+
+\subsection{Semantics}
+
+A logical formula has a truth value, which can be either \texttt{True} or \texttt{False}. This is the \emph{semantics} of the formula.
+
+An \emph{assignment} $\alpha$ maps each formula to $\texttt{True}$ or $\texttt{False}$.
+The truth value of a formula is defined recursively
+\begin{align*}
+  \alpha(\top) &\quad = \texttt{True}, \\
+  \alpha(\bot) &\quad = \texttt{False}, \\
+  \alpha(p) &\quad \text{iff } \alpha(p) = \texttt{True}, \\
+  \alpha(\lnot \phi) = \texttt{True} &\quad \text{iff } \alpha(\lnot \phi) = \texttt{True}, \\
+  \alpha(\phi \land \psi) = \texttt{True} &\quad \text{iff } \alpha(\phi) = \texttt{True} \text{ and } \alpha(\psi) = \texttt{True}, \\
+  \alpha(\phi \lor \psi) = \texttt{True} &\quad \text{iff } \alpha(\phi) = \texttt{True} \text{ or } \alpha(\psi) = \texttt{True}, \\
+  \alpha(\phi \to \psi) = \texttt{True} &\quad \text{iff } \alpha(\phi) = \texttt{False} \text{ or } \alpha(\psi) = \texttt{True}.
+\end{align*}
+
+\begin{exercise}  
+For the formula 
+
+\[
+(x \lor y) \land (\lnot x \lor z), 
+\]
+evaluate its truth value under all $2^3=8$ possible assignments of $x,y,z$. Identify the satisfying assignments.
+\end{exercise}
+
+\subsection{Satisfiability and Validity}
+\begin{itemize}
+  \item A formula $\phi$ is \emph{satisfiable} if there exists some $\alpha$ with $\alpha \models \phi$.
+  \item A formula $\phi$ is \emph{unsatisfiable} if no assignment satisfies it.
+  \item A formula $\phi$ is \emph{valid} if all assignments satisfy it.
+\end{itemize}
+
+\paragraph{Example.}
+\[
+(x) \land (\lnot x)
+\]
+is unsatisfiable (no assignment works).
+In contrast,
+\[
+(x \lor \lnot x)
+\]
+is valid.
+
+\paragraph{Exercise 2 (Homework).}  
+Show that $(\phi \to \psi)$ is equivalent to $(\lnot \phi \lor \psi)$.  
+(Hint: construct a truth table.)
+
+\subsection{Conjunctive Normal Form (CNF)}
+
+A formula is in \emph{Conjunctive Normal Form (CNF)} if it is a conjunction of disjunctions of literals,
+where a literal is either a variable $p$ or its negation $\lnot p$.
+
+\paragraph{Example.} 
+\[
+(x \lor y) \land (\lnot x \lor z)
+\]
+is in CNF. Each clause $(x \lor y)$, $(\lnot x \lor z)$ is a disjunction of literals.
+
+CNF is important because most SAT solvers require CNF input.
+Any formula can be transformed into CNF using logical equivalences.
+
+\paragraph{Exercise 3 (In-class).}  
+Transform $(x \to y) \land (y \to z)$ into CNF.
+
+\subsection{SAT Solvers}
+
+A SAT solver takes a CNF formula as input and determines whether it is satisfiable.
+Modern solvers (e.g., MiniSAT, Glucose) use advanced algorithms such as 
+\emph{DPLL (Davis–Putnam–Logemann–Loveland)} and 
+\emph{CDCL (Conflict-Driven Clause Learning)}.
+
+\paragraph{Example (SAT vs UNSAT).}  
+\begin{align*}
+\phi_1 &= (x \lor y) \land (\lnot x \lor z) \quad \Rightarrow \text{SAT}, \\
+\phi_2 &= (x) \land (\lnot x) \quad \Rightarrow \text{UNSAT}.
+\end{align*}
+
+\paragraph{Exercise 4 (Homework).}  
+Use a SAT solver (such as \texttt{pysat} in Python) to check whether
+$(x \lor y) \land (\lnot x \lor y) \land (x \lor \lnot y)$ is satisfiable.  
+Provide a satisfying assignment if it exists.
+
+\subsection{Why Logic for DNN Verification?}
+
+In DNN verification, properties such as \emph{“the network does not misclassify under small perturbations”} 
+can be translated into logical formulas. 
+If the formula is UNSAT, the property holds universally.
+If it is SAT, the satisfying assignment corresponds to an adversarial input.
+
+---
+
+\section{Linear Programming (LP)}
+
+\subsection{Linear Constraints and Feasible Regions}
+
+A \emph{linear constraint} has the form:
+\[
+a_1x_1 + a_2x_2 + \cdots + a_nx_n \leq b.
+\]
+
+The set of points satisfying all constraints is called the \emph{feasible region}.
+
+\paragraph{Example.}  
+Constraints:
+\[
+x + y \leq 4, \quad x \geq 0, \quad y \geq 0.
+\]
+The feasible region is a triangle bounded by the axes and the line $x+y=4$.
+
+\paragraph{Exercise 5 (In-class).}  
+Sketch the feasible region defined by:
+\[
+2x + y \leq 6, \quad x \geq 0, \quad y \geq 0.
+\]
+
+\subsection{Linear Programming Problems}
+
+An LP is an optimization problem:
+\[
+\max c^T x \quad \text{subject to } Ax \leq b, \; x \geq 0.
+\]
+
+\paragraph{Example.}  
+Maximize $x+y$ subject to
+\[
+x+y \leq 4, \quad x \geq 0, \quad y \geq 0.
+\]
+Solution: maximum is 4 at $(4,0)$ or $(0,4)$.
+
+\paragraph{Exercise 6 (Homework).}  
+Solve the LP:
+\[
+\max 3x+2y \quad \text{subject to } 
+\quad 2x+y \leq 8, \; x+2y \leq 6, \; x,y \geq 0.
+\]
+
+\subsection{Duality (Optional Enrichment)}
+
+Every LP has a \emph{dual} problem, and strong duality holds under mild conditions.  
+Understanding duality is useful in verification because it enables certificates of infeasibility.
+
+---
+
+\section{Mixed-Integer Linear Programming (MILP)}
+
+\subsection{From Logic to MILP}
+
+SAT handles logic, LP handles linear inequalities.
+MILP combines both: some variables are required to be integers (often binary).
+
+\paragraph{Example.}
+Constraint:
+\[
+x \in \{0,1\}, \quad y \geq 2x.
+\]
+- If $x=0$, then $y \geq 0$.
+- If $x=1$, then $y \geq 2$.
+
+This encodes logical branching into optimization.
+
+\paragraph{Exercise 7 (In-class).}  
+Formulate “if $x=1$, then $y=0$” as linear constraints using a binary variable and a big-$M$ method.
+
+\subsection{Encoding ReLU Constraints}
+
+A ReLU is $y = \max(0,x)$.  
+We introduce a binary variable $z$ to encode activation:
+\begin{align*}
+y &\geq x, \\
+y &\geq 0, \\
+y &\leq x + M(1-z), \\
+y &\leq Mz.
+\end{align*}
+Here $M$ is a large constant.
+
+- If $z=0$, $y=0$.
+- If $z=1$, $y=x$.
+
+\paragraph{Exercise 8 (Homework).}  
+Write MILP constraints for $y = \max(0, 2x+1)$ with $-10 \leq x \leq 10$.
+
+\subsection{Example: Verifying a Tiny Network}
+
+Network: input $x \in [0,1]$, hidden neuron $h = \max(0, 2x-1)$, output $y=h$.
+
+\paragraph{Property.}
+Verify: for all $x \in [0,0.4]$, $y=0$.
+
+\paragraph{Encoding.}
+\begin{itemize}
+  \item Input constraint: $0 \leq x \leq 0.4$.
+  \item ReLU encoding for $h = \max(0, 2x-1)$.
+  \item Negation of property: $y > 0$.
+\end{itemize}
+
+\paragraph{Result.}
+MILP is infeasible $\Rightarrow$ property holds.
+
+\paragraph{Exercise 9 (Homework).}  
+Modify the property to “for all $x \in [0.6,1]$, $y > 0$.”  
+Check if the MILP is feasible.
+
+---
+
+\section{Connecting Logic and Optimization}
+
+SAT solvers excel at discrete logic.  
+LP solvers excel at continuous optimization.  
+MILP solvers combine both — exactly what is needed for DNNs with piecewise-linear activations.
+
+\paragraph{Takeaway.}
+- Logic lets us model \emph{what must hold}.
+- LP lets us model \emph{how quantities relate}.
+- MILP encodes both — the foundation for most exact DNN verifiers today.
+
+---
+
+\section{Summary and Further Exercises}
+
+\begin{itemize}
+  \item Logic: propositional formulas, CNF, satisfiability.
+  \item LP: optimization over linear constraints.
+  \item MILP: integrates logic and LP, used for ReLU encoding.
+  \item Application: encoding DNN verification as SAT/LP/MILP.
+\end{itemize}
+
+\paragraph{Homework Project.}
+Take the network $y = \max(0, w_1x_1 + w_2x_2 + b)$ with $w_1=1, w_2=-1, b=0$.  
+Verify the property: “For all $x_1,x_2 \in [0,1]$, we have $y \leq 1$.”  
+Formulate the MILP and solve it using an MILP solver (e.g., Gurobi, CPLEX, or open-source solvers).
 
 \chapter{Logics and Linear Programming}\label{chap:logics}
 
@@ -6394,21 +6673,6 @@ So, the PGD attack finds a counterexample at $(x_1 = -1,\ x_2 = 0.75)$.
 
 
 
-\chapter{Schedule}
-
-\begin{enumerate}
-    \item Week 1: 
-    \item Week 2:
-    \item Week 3: 
-    \item Week 3:    
-    \item Week 4:
-    \item Week 5:
-    \item Week 6:
-    \item Week 7:
-    \item Week 8:
-    \item Week 9:
-    \item Week 10:
-\end{enumerate}    
 
 
 \bibliographystyle{abbrv}
