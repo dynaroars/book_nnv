@@ -493,6 +493,65 @@ In~\autoref{fig:dnn}, neuron \(x_3\) receives inputs \(x_1\) and \(x_2\) with we
 \end{example}
 
 
+% \paragraph{Matrix Form} AF can also be represented in matrix form.
+% \begin{equation}
+% f(v_1, v_2, \dots,v_n) = \begin{pmatrix}
+% w_1 & w_2 & \cdots & w_n
+% \end{pmatrix}
+% \begin{pmatrix}
+% v_1 \\
+% v_2 \\
+% \vdots \\
+% v_n
+% \end{pmatrix}
+% +
+% b,
+% \end{equation}
+
+
+% or equivalently,
+% \begin{equation}
+% f(\vec{v}) = W \vec{v} + b,
+% \end{equation}
+% where $W$ is the weight matrix, $\vec{x}$ is the input vector, and $b$ is the bias vector.
+
+
+% The affine transformation can be expressed in matrix form as follows:
+
+% \[
+% \begin{pmatrix}
+% x_3 \\
+% x_4
+% \end{pmatrix}
+% =
+% \begin{pmatrix}
+% -0.5 & 0.5 \\
+% 1.0 & 1.0
+% \end{pmatrix}
+% \begin{pmatrix}
+% x_1 \\
+% x_2
+% \end{pmatrix}
+% +
+% \begin{pmatrix}
+% 1.0 \\
+% \end{pmatrix}
+% =
+% \begin{pmatrix}
+% -0.5 & 0.5 \\
+% 1.0 & 1.0
+% \end{pmatrix}
+% \begin{pmatrix}
+% x_1 \\
+% x_2
+% \end{pmatrix}
+% +
+% \begin{pmatrix}
+% 1.0 \\
+% -1.0
+% \end{pmatrix}
+% \]
+
 \section{Activation Functions}\label{sec:activation}
 Popular activation functions used in NNs include ReLU, Sigmoid, Tanh, and Softmax. All of these are non-linear\footnote{Non-linear means that the output of the function is not a linear combination of its inputs.} functions that introduce non-linearity to the network, allowing it to learn complex patterns in the data.
 
@@ -927,7 +986,7 @@ Assume the input $x$ and each node applies the ReLU activation. With the weights
 
 Not all NNs are feedforward. Some architectures introduce cycles, dynamic connections, or non-Euclidean data structures.
 
-\paragraph{Recurrent Neural Networks (RNNs)} RNNs, often used in natural language processing (NLP) and speech recognition, are designed to recognize patterns in sequences of data. RNNs have \emph{loops} in them, allowing information to be sent forward and backward.
+\subsubsection{Recurrent Neural Networks (RNNs)} RNNs, often used in natural language processing (NLP) and speech recognition, are designed to recognize patterns in sequences of data. RNNs have \emph{loops} in them, allowing information to be sent forward and backward.
 
 
 \begin{figure}[h]
@@ -1016,9 +1075,9 @@ For the second time step, the hidden state is $h_2 = \relu{2x_2 - h_1 + 0.5}$, a
 
 \end{example}
 
-\paragraph{Transformers} Transformers are designed for long-range dependencies using \emph{self-attention} rather than recurrence. They dominate applications in natural language processing and are increasingly used in vision and reinforcement learning.
+\subsubsection{Transformers} Transformers are designed for long-range dependencies using \emph{self-attention} rather than recurrence. They dominate applications in natural language processing and are increasingly used in vision and reinforcement learning.
 
-\paragraph{Graph Neural Networks (GNNs)} operate on graphs, allowing each node to aggregate information from its neighbors. GNNs are used in applications involving structured data like molecules or social networks.
+\subsubsection{Graph Neural Networks (GNNs)} operate on graphs, allowing each node to aggregate information from its neighbors. GNNs are used in applications involving structured data like molecules or social networks.
 
 
 
