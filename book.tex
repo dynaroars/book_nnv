@@ -5694,12 +5694,14 @@ evaluate its truth value under all $2^3=8$ possible assignments of $x,y,z$. Iden
 
 \subsection{Satisfiability and Validity}
 \begin{itemize}
-  \item A formula $\phi$ is \emph{satisfiable} if there exists some $\alpha$ with $\alpha \models \phi$.
-  \item A formula $\phi$ is \emph{unsatisfiable} if no assignment satisfies it.
-  \item A formula $\phi$ is \emph{valid} if all assignments satisfy it.
+  \item A formula $\phi$ is \emph{satisfiable} if there exists \textbf{some} $\alpha$ such that $\alpha(\phi) = \texttt{True}$.
+  \item A formula $\phi$ is \emph{unsatisfiable} if \textbf{no} assignment satisfies it.
+  \item A formula $\phi$ is \emph{valid} if \textbf{all} assignments satisfy it.
 \end{itemize}
 
-\paragraph{Example.}
+\begin{example}
+    \[x\]
+    is satisfiable (e.g., $\alpha(x) = \texttt{True}$).
 \[
 (x) \land (\lnot x)
 \]
@@ -5709,58 +5711,232 @@ In contrast,
 (x \lor \lnot x)
 \]
 is valid.
+\end{example}
 
-\paragraph{Exercise 2 (Homework).}  
+\begin{exercise}
 Show that $(\phi \to \psi)$ is equivalent to $(\lnot \phi \lor \psi)$.  
 (Hint: construct a truth table.)
+\end{exercise}
 
-\subsection{Conjunctive Normal Form (CNF)}
 
-A formula is in \emph{Conjunctive Normal Form (CNF)} if it is a conjunction of disjunctions of literals,
-where a literal is either a variable $p$ or its negation $\lnot p$.
+\subsection{SAT Solvers}\label{sec:sat-solvers}
 
-\paragraph{Example.} 
-\[
-(x \lor y) \land (\lnot x \lor z)
-\]
-is in CNF. Each clause $(x \lor y)$, $(\lnot x \lor z)$ is a disjunction of literals.
-
-CNF is important because most SAT solvers require CNF input.
-Any formula can be transformed into CNF using logical equivalences.
-
-\paragraph{Exercise 3 (In-class).}  
-Transform $(x \to y) \land (y \to z)$ into CNF.
-
-\subsection{SAT Solvers}
-
-A SAT solver takes a CNF formula as input and determines whether it is satisfiable.
-Modern solvers (e.g., MiniSAT, Glucose) use advanced algorithms such as 
-\emph{DPLL (Davis–Putnam–Logemann–Loveland)} and 
+A SAT solver takes a propositional formula as input and determines its satisfiability by searching for a satisfying assignment. If one exists, it returns the assignment; otherwise, it reports \unsat{}. Modern solvers use search algorithms such as
+\emph{DPLL (Davis–Putnam–Logemann–Loveland)} and
 \emph{CDCL (Conflict-Driven Clause Learning)}.
 
-\paragraph{Example (SAT vs UNSAT).}  
+\begin{example}
 \begin{align*}
 \phi_1 &= (x \lor y) \land (\lnot x \lor z) \quad \Rightarrow \text{SAT}, \\
 \phi_2 &= (x) \land (\lnot x) \quad \Rightarrow \text{UNSAT}.
 \end{align*}
+\end{example}
 
-\paragraph{Exercise 4 (Homework).}  
+
+
+
+\begin{exercise}
 Use a SAT solver (such as \texttt{pysat} in Python) to check whether
-$(x \lor y) \land (\lnot x \lor y) \land (x \lor \lnot y)$ is satisfiable.  
+\[
+(x \lor y) \land (\lnot x \lor y) \land (x \lor \lnot y)
+\] is satisfiable.  
 Provide a satisfying assignment if it exists.
+\end{exercise}
 
-\subsection{Why Logic for DNN Verification?}
 
-In DNN verification, properties such as \emph{“the network does not misclassify under small perturbations”} 
-can be translated into logical formulas. 
-If the formula is UNSAT, the property holds universally.
-If it is SAT, the satisfying assignment corresponds to an adversarial input.
+\paragraph{Conjunctive Normal Form (CNF)}
+In practice, SAT solvers do not take arbitrary formulae as input. Instead, they require the formula to be in \emph{Conjunctive Normal Form (CNF)}.
+A formula is in CNF if it is a conjunction of disjunctions of literals,
+where a literal is either a variable $p$ or its negation $\lnot p$. 
+
+
+
+\begin{example}
+\[
+(x \lor y) \land (\lnot x \lor z)
+\]
+is in CNF. Each clause $(x \lor y)$, $(\lnot x \lor z)$ is a disjunction of literals.
+\end{example}
+
+\paragraph{Convert to CNF} Any formula can be transformed into CNF. The process generally involves the following steps:
+\begin{enumerate}
+\item Eliminate biconditionals and implications.
+\item Move negations inward using De Morgan's laws.
+\item Distribute disjunctions over conjunctions.
+\end{enumerate}
+
+\begin{exercise}
+Transform the formula 
+\[
+(x \to y) \land (y \to z)
+\]
+into CNF.
+\end{exercise}
+
+
+\section{Satisfiability Modulo Theories (SMT)}
+
+SAT solvers only reason about propositional formulae, which only contain Boolean variables and operators.  However, in verification problems, we often need to reason about arithmetic constraints $2x + 3y \leq 7; x \geq 0; x,y \in \mathbb{Z}$.
+
+
+This leads to \emph{Satisfiability Modulo Theories (SMT)}:
+\begin{itemize}
+  \item SMT generalizes SAT by adding background theories (e.g., linear arithmetic, bit-vectors, arrays).
+  \item An SMT formula mixes Boolean structure with constraints from these theories.
+\end{itemize}
+
+\begin{example}
+Is the formula 
+\[
+2x = 1
+\] 
+satisfiable? 
+
+The answer depends on the chosen theory. Here, over real numbers ($\mathbb{R}$), it is SAT (e.g., $x=0.5$), but over integers ($\mathbb{Z}$) it is UNSAT.
+
+
+\end{example}
+\subsection{SMT Solvers}
+
+Popular SMT solvers include Z3 (Microsoft Research), CVC5, and dReal.
+They combine:
+\begin{itemize}
+  \item A SAT solver for the Boolean skeleton.
+  \item A \emph{theory solver} or T-solver (e.g., linear arithmetic) for the numeric parts.
+\end{itemize}
+
+The SAT solver guesses a truth assignment for the Boolean structure. The T-solver checks whether the corresponding arithmetic constraints are feasible. This loop continues until either a satisfying assignment is found or \unsat{} is proven.
+
+\begin{exercise}
+Decide the satisfiability of:
+\[
+(x > 3) \land (y < 2) \land (x+y < 1).
+\]
+First, reason informally. Then confirm with an SMT solver such as Z3.
+\end{exercise}
+
+
+\subsection{Z3 Demonstration: Logical Formulas}
+
+We now show how to use the Python API of Z3 to check satisfiability.
+
+\paragraph{Example 1: Simple Logic.}
+\begin{verbatim}
+from z3 import *
+
+x, y = Bools('x y')
+formula = And(Or(x, y), Or(Not(x), y))
+s = Solver()
+s.add(formula)
+print(s.check())
+print(s.model())
+\end{verbatim}
+
+- The solver prints \texttt{sat}.  
+- A possible model: $x = \texttt{True}, y = \texttt{True}$.
+
+\paragraph{Exercise 11 (Homework).}  
+Modify the code to check $(x \land \lnot x)$.  
+Confirm that the result is \texttt{unsat}.
 
 ---
 
-\section{Linear Programming (LP)}
+\subsection{Z3 with Linear Arithmetic}
 
-\subsection{Linear Constraints and Feasible Regions}
+\paragraph{Example 2: Linear Constraints.}
+\begin{verbatim}
+from z3 import *
+
+x, y = Reals('x y')
+s = Solver()
+s.add(x > 0, y > 0, 2*x + y <= 1)
+print(s.check())
+\end{verbatim}
+- Output: \texttt{unsat}.
+
+\paragraph{Example 3: Feasible Region.}
+\begin{verbatim}
+s = Solver()
+s.add(x + y <= 4, x >= 0, y >= 0)
+print(s.check())
+print(s.model())
+\end{verbatim}
+- Output: \texttt{sat}.
+- Model example: $x=0, y=0$ (Z3 returns some feasible point).
+
+\paragraph{Exercise 12 (In-class).}  
+Use Z3 to check whether the constraints
+\[
+x+y=5, \quad x \geq 0, \quad y \geq 0
+\]
+are satisfiable.  
+Ask Z3 for a model.
+
+---
+
+\subsection{Encoding Logical Implications in Z3}
+
+\paragraph{Example 4.}
+“If $x > 3$ then $y > 2$” can be encoded as:
+\begin{verbatim}
+x, y = Ints('x y')
+s = Solver()
+s.add(Implies(x > 3, y > 2))
+print(s.check())
+\end{verbatim}
+This formula is satisfiable: for instance, $x=0, y=0$ satisfies it.
+
+\paragraph{Exercise 13 (Homework).}  
+Formulate “If $x>3$ then $y>2$” AND “$x \leq 1$” in Z3.  
+Is the conjunction satisfiable? What model does Z3 return?
+
+---
+
+\subsection{Checking DNN-style Properties with Z3}
+
+\paragraph{Example 5.}  
+Consider a one-neuron ReLU: $y = \max(0, x-1)$.  
+We want to check if the property holds: “For all $x \leq 0$, we have $y=0$.”
+
+Encode negation: find an $x \leq 0$ with $y \neq 0$.
+
+\begin{verbatim}
+x, y = Reals('x y')
+s = Solver()
+
+# y = max(0, x-1)
+s.add(y >= x-1, y >= 0)
+s.add(Or(y == x-1, y == 0))
+
+# Negation of property
+s.add(x <= 0, y != 0)
+
+print(s.check())
+\end{verbatim}
+
+- Z3 returns \texttt{unsat}, so the property holds.
+
+\paragraph{Exercise 14 (Homework).}  
+Modify the above to check property:  
+“For all $x \geq 2$, we have $y \geq 1$.”  
+What does Z3 return?
+
+---
+
+
+
+% \subsection{Why Logic for DNN Verification?}
+
+% In DNN verification, properties such as \emph{“the network does not misclassify under small perturbations”} 
+% can be translated into logical formulas. 
+% If the formula is UNSAT, the property holds universally.
+% If it is SAT, the satisfying assignment corresponds to an adversarial input.
+
+---
+
+\chapter{Linear Programming (LP)}
+
+\section{Linear Constraints and Feasible Regions}
 
 A \emph{linear constraint} has the form:
 \[
@@ -5782,7 +5958,7 @@ Sketch the feasible region defined by:
 2x + y \leq 6, \quad x \geq 0, \quad y \geq 0.
 \]
 
-\subsection{Linear Programming Problems}
+\section{Linear Programming Problems}
 
 An LP is an optimization problem:
 \[
@@ -5871,17 +6047,6 @@ Check if the MILP is feasible.
 
 ---
 
-\section{Connecting Logic and Optimization}
-
-SAT solvers excel at discrete logic.  
-LP solvers excel at continuous optimization.  
-MILP solvers combine both — exactly what is needed for DNNs with piecewise-linear activations.
-
-\paragraph{Takeaway.}
-- Logic lets us model \emph{what must hold}.
-- LP lets us model \emph{how quantities relate}.
-- MILP encodes both — the foundation for most exact DNN verifiers today.
-
 ---
 
 \section{Summary and Further Exercises}
@@ -5933,9 +6098,7 @@ include solvers supporting a wide range of theories including linear arithmetic,
 
 
 
-\section{Linear Programming}\label{app:lp}
 
-\tvn{Hai, give some LP background here.}
 
 \chapter{Software vs DNN Verification}\label{app:software-vs-dnn}
 
