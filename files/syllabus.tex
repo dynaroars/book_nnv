@@ -86,13 +86,12 @@ Programming assignments will require students to implement AI analysis technique
 \begin{itemize}
 \item No prerequisite courses. However, basic knowledge in linear algebra and AI/ML, e.g., CS 580, is strongly recommended
 \item Programming knowledge (Python): we will use Python for assignments and projects.
-\item Important: this class does not teach about AI or deep learning concepts. It also does not assume prior knowledge of these topics as all background material will be provided.
+\item \emph{Important}: This class does \emph{not} assume prior knowledge of any AI or deep learning topics, e.g., how NNs are created and trained, as all background material will be provided. It also does not teach these topics and instead focuses on formal analysis of given NNs.
 \end{itemize}
-
 
 \subsection{Course Materials}
 \begin{itemize}
-    \item T. Nguyen. \href{https://nguyenthanhvuh.github.io/class-oo/safe.pdf}{\emph{Software Analysis and Formal rEasoning}} (\textbf{Required}, free)
+    \item T. Nguyen and H. Duong, \href{https://roars.dev/book_nnv/book.pdf}{\emph{Engineering a Verifier for Deep Neural Networks}} (\textbf{Required}, free)
 
 
     \item A. Albarghouthi. \href{https://arxiv.org/pdf/2109.10317}{\emph{Introduction to Neural Network Verification}}. 2021. (\textbf{Recommended}, free)
@@ -105,23 +104,38 @@ Programming assignments will require students to implement AI analysis technique
 
 \end{itemize}
 
-
-
 \subsection{Assignment Submission and Communication}
 
-We will use \textbf{Canvas} for communication and submitting assignments , and to keep track of grades (\autoref{sec:grading}).  
+We will use \textbf{Canvas} for communication and submitting assignments, and to keep track of grades (\autoref{sec:grading}).  
 It's the student's responsibility to ensure that your grade records are correct.
 
 When submitting to Canvas, you can either submit a PDF, Word, or text (code) file.  If you manually write your answers, take a picture and submit it.  \textbf{DO NOT} submit link (e.g., to Google Docs or some other services); you will receive a 0 for the assignment if you submit a link.
 
-\section{Weekly Schedule}
 
-This class is a group-based, \emph{in-person} offering. You need to be
-present in class at class time. You will also need to schedule regular
-meetings with your group.
 
-Each week will cover a topic. Each
-topic will follow roughly the same sequence of preparation and reading materials before class, in-class learning activities and homework/project assignments. Many of these activities will be group based.
+
+
+% \section{Grading}
+% You will be evaluated based on
+% \begin{enumerate}
+% \item Participation: reading assignments, discussion, participation (20\%),
+% \item Quizzes: short quizzes at the end of class (30\%)
+% \item Programming assignments: 3--4 PA's (30\%),
+% \item Project: 1 final project (20\%)
+% \end{enumerate}
+
+
+
+
+
+% \section{Weekly Schedule}
+
+% This class is a group-based, \emph{in-person} offering. You need to be
+% present in class at class time. You will also need to schedule regular
+% meetings with your group.
+
+% Each week will cover a topic. Each
+% topic will follow roughly the same sequence of preparation and reading materials before class, in-class learning activities and homework/project assignments. Many of these activities will be group based.
 
 
 \section{Grading}\label{sec:grading}
@@ -130,15 +144,18 @@ topic will follow roughly the same sequence of preparation and reading materials
 \begin{tabular}{lr}
 \textbf{Assignments} & \textbf{Percentage} \\
 \hline
-Group Functioning (group-based) & 10\% \\
-Homework assignments (group-based) & 45\% \\
-Weekly Quizzes (individual) & 45\% \\
-  %Final exam (individual) & 10\% \\
+Participation & 10\% \\
+Homework Assignments & 25\% \\
+Quizzes & 20\% \\
+Programming Assignments & 20\% \\
+Project & 25\% \\
   \hline
     \textbf{Total} & 100\% \\
 \end{tabular}
 \end{center}
-\subsection{Scale}\label{scale}
+
+
+\paragraph{Scales}
 
 \begin{center}
     \begin{tabular}{ll|ll|ll}
@@ -151,78 +168,71 @@ Weekly Quizzes (individual) & 45\% \\
     \end{tabular}
     \end{center}
 
-\subsection{Group Functioning}\label{group-functioning}
-
-Every student needs to be part of a group. I would prefer that groups
-stay stable throughout the semester, but if there is a good rationale to
-reconfigure a group, we'll do that.
+\paragraph{Groups} For homework, PAs, and the project, you can team up with another student (a group of 2). You will need to submit a \emph{single group} solution for each assignment. You also need to include a statement of contributions from each group member. Once you form a group, you cannot change it and will work with your group on all PAs and the project.
 
 
 
-\paragraph{Creating groups} You will have a chance to form your own group.
-If you can't find one, we can help. Each has  \textbf{2 to 4 students}. If your group dwindles to just yourself, you'll need to join another group.
 
-At the end of the semester, each individual will provide an assessment
-of the rest of their group. This assessment will determine the ``Group Functioning'' part of the grade (\autoref{sec:grading}).
+\subsection{Participation}
+
+I place great emphasis on peer learning and interactive engagement. The class is structured to leverage interactions to the largest extent possible. Often, there will be in-class exercises for every class. The in-class exercises will be closely related to an upcoming homework assignment.
+
 
 \subsection{Homework Assignments}\label{homework-assignments}
 
-There are weekly \emph{group homework assignments}, which are given through the class \href{https://nguyenthanhvuh.github.io/class-oo/assignments}{schedule web site}. Your group will submit assignments via \textbf{Canvas}.
-
-Because of the way in which this class is taught, it is important to
-stay on pace. Homework assignments are due \textbf{before class}. Late submissions
-are not accepted except in truly exceptional circumstances.
-
-Some important notes:
+There are weekly \emph{group homework assignments}, which are given in \textbf{Appendix A} of the DNN verification book. Homework assignments are due \textbf{before class}, i.e., before 4:30 PM on the day we meet. Late submissions are \emph{not} accepted except in truly exceptional circumstances.
 
 \begin{itemize}
 \item
 Each group should be prepared to present their homework solution in
 class.
 
-\item
-  \textbf{Statement of who did what}. Homeworks are group exercises.
-  Each submission must contain a specific statement of who did what.
-\item
-  There are \textbf{no make-ups}.
-\item
-  Other than the first assignment (where we might not have formed all
-  groups), only one submission per \textbf{\textbf{group}}. Everyone in
-  the group gets the same credit.
+\item There are \textbf{no make-ups}.
+\item Everyone in the group gets the same credit.
 \end{itemize}
 
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{Class Attendance}\label{class-attendance}
+\subsection{Quizzes}\label{weekly-quizzes}
 
-I place great emphasis on peer learning and interactive engagement. The class is structured to leverage group interactions to the largest extent possible for the purpose of maximizing learning gain throughout the
-semester. Moreover, the \emph{quizzes are given in class}.
+We will have a short quiz every week. Each quiz is worth 10 pts. The quiz will be based on the material covered in the previous weeks. Each quiz happens during the last part of class. \emph{You must be present to take the quiz}.
 
 
-\subsection{In-Class Exercises}\label{in-class-exercises}
+\paragraph{Quiz Make-up Policy} You will have the opportunity to make up a quiz if you miss it. The grading and make-up policy is as follows:
 
-I plan an in-class exercise for every class. Students will work in their
-designated group. Very often, the in-class exercises will be closely
-related to an upcoming homework assignment.
+\begin{itemize}
+\item Contact the GTA and schedule a make-up quiz (likely will be offered during TA office hours). The make-up can be different from the quiz given in class, but focuses on the same topics.
+\item
+  The make-up must be taken promptly and within \emph{a week of the quiz}.
+\item
+  All quizzes count towards the final grade. Each quiz is scored on a 10
+  point scale. Missed quizzes score 0/10.
+\item
+  The maximum possible score on the make-up is 8/10. 
+% \item
+%   If you attempt the make-up, that score counts, no matter what your
+%   score was on the quiz. (Example: your quiz grade is 7/10. You take the
+%   make-up and correctly answer 5 of 10 equally weighted questions. Your
+%   final score declines from 7/10 to 5/10.)
+
+\end{itemize}
 
 
+\subsection{Programming Assignments (PA's)}
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+This course consists of several Programming Assignments (PA's) in Python. These PAs are designed for you to gain fundamental knowledge of state of the art AI analysis. \emph{All assignments have similar grading weights}.
 
+Your submissions will be evaluated for correctness,
+organization, and documentation. We will not attempt to fix broken
+submissions that fail to execute properly; only limited partial credit will be given in such situations. Assignments are due at \textbf{11:59pm} on the due date.
 
-% \section{Links}
-% \label{sec:org63a886d}
-% \begin{itemize}
-% \item \href{assignments.org}{Schedule and Assignments}
-% \item \href{project.org}{Project Info}
-% \end{itemize}
+\subsection{Project}
 
-% \subsection{Related courses}
-% \begin{itemize}
-% \item \href{https://www.sri.inf.ethz.ch/teaching/reliableai21}{Eth Zurich Reliable and Trustworthy Artificial  Intelligence}
-% \end{itemize}
+You will work on a group project that involves implementing and evaluating a DNN analysis technique. Each group will choose specific technique to focus on, and you will be responsible for understanding it in depth, implementing a prototype, and evaluating it. The project will culminate in a report and a presentation where you will summarize your findings and demonstrate your understanding of the assigned technique.  
 
+Project topics, format of report, and presentation guidelines will be provided in a separate document.
+
+\newpage
 \section{GMU Policies}
 \subsection{Honor Code}\label{sec:honor-code}
 
