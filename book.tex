@@ -5785,7 +5785,7 @@ This leads to \emph{Satisfiability Modulo Theories (SMT)}:
   \item An SMT formula mixes Boolean structure with constraints from these theories.
 \end{itemize}
 
-\begin{example}
+\begin{example}\label{ex:smt2}
 Is the formula 
 \[
 2x = 1
@@ -5812,85 +5812,89 @@ Decide the satisfiability of:
 \[
 (x > 3) \land (y < 2) \land (x+y < 1).
 \]
-First, reason informally. Then confirm with an SMT solver such as Z3.
+
+First, do the reasoning informally by hand, and then confirm with an SMT solver such as Z3.
 \end{exercise}
 
 
-\subsection{Z3 Demonstration: Logical Formulas}
+\subsection{Z3 SMT Solver}
 
-We now show how to use the Python API of Z3 to check satisfiability.
+Z3~\cite{de2008z3} is a well-known SMT solver developed by Microsoft Research. Here we'll show how to use it for various logical and arithmetic problems.
 
-\paragraph{Example 1: Simple Logic.}
-\begin{verbatim}
+\begin{example}[Propositional Logic]\label{ex:z3-propositional}
+
+We use Z3 to check satisfiability of propositional formulae and generate counterexamples.
+
+    \begin{lstlisting}
 from z3 import *
 
 x, y = Bools('x y')
 formula = And(Or(x, y), Or(Not(x), y))
 s = Solver()
 s.add(formula)
-print(s.check())
-print(s.model())
-\end{verbatim}
+print(s.check())   #output: sat
+print(s.model())   #a possible model is {x=True, y=True}
+\end{lstlisting}
+\end{example}
 
-- The solver prints \texttt{sat}.  
-- A possible model: $x = \texttt{True}, y = \texttt{True}$.
+\begin{exercise}
+Modify the code in~\autoref{ex:z3-propositional} to check 
 
-\paragraph{Exercise 11 (Homework).}  
-Modify the code to check $(x \land \lnot x)$.  
+\[
+(x \land \lnot x).
+\]
 Confirm that the result is \texttt{unsat}.
+\end{exercise}
 
----
 
-\subsection{Z3 with Linear Arithmetic}
 
-\paragraph{Example 2: Linear Constraints.}
-\begin{verbatim}
+
+\begin{example}[Linear Constraints.]
+
+We now use Z3 as an SMT solver to check linear constraints.
+
+    \begin{lstlisting}
 from z3 import *
-
 x, y = Reals('x y')
+
+# an example
 s = Solver()
 s.add(x > 0, y > 0, 2*x + y <= 1)
-print(s.check())
-\end{verbatim}
-- Output: \texttt{unsat}.
+print(s.check())  # Output: unsat
 
-\paragraph{Example 3: Feasible Region.}
-\begin{verbatim}
+# another example
 s = Solver()
 s.add(x + y <= 4, x >= 0, y >= 0)
-print(s.check())
-print(s.model())
-\end{verbatim}
-- Output: \texttt{sat}.
-- Model example: $x=0, y=0$ (Z3 returns some feasible point).
+print(s.check()) # Output: sat
+print(s.model())  # Output: {x=0, y=0}
 
-\paragraph{Exercise 12 (In-class).}  
+
+# another example 
+x, y = Ints('x y')
+s = Solver()
+s.add(Implies(x > 3, y > 2))
+print(s.check()) # Output: sat
+print(s.model()) # Output: {x=0, y=0}
+\end{lstlisting}
+\end{example}
+
+\begin{exercise}
 Use Z3 to check whether the constraints
 \[
 x+y=5, \quad x \geq 0, \quad y \geq 0
 \]
-are satisfiable.  
-Ask Z3 for a model.
+are satisfiable, and if so, ask Z3 for a model.
+\end{exercise}
 
----
+\begin{exercise}
+Use Z3 to check the formula given in~\autoref{ex:smt2}. Do it for both the reals and integers.
+\end{exercise}
 
-\subsection{Encoding Logical Implications in Z3}
 
-\paragraph{Example 4.}
-“If $x > 3$ then $y > 2$” can be encoded as:
-\begin{verbatim}
-x, y = Ints('x y')
-s = Solver()
-s.add(Implies(x > 3, y > 2))
-print(s.check())
-\end{verbatim}
-This formula is satisfiable: for instance, $x=0, y=0$ satisfies it.
-
-\paragraph{Exercise 13 (Homework).}  
-Formulate “If $x>3$ then $y>2$” AND “$x \leq 1$” in Z3.  
-Is the conjunction satisfiable? What model does Z3 return?
-
----
+\begin{example}
+Use Z3 to check the formula \texttt{If $x>3$ then $y>2$” AND “$x \leq 1$}.
+Is it satisfiabile? What model does Z3 return?
+\end{example}
 
 \subsection{Checking DNN-style Properties with Z3}
 
