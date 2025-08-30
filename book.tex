@@ -1700,7 +1700,7 @@ A DNN verifier attempts to find a \emph{counterexample} input to $N$ that satisf
 A \emph{valid} property for the DNN in~\autoref{fig:dnn} is that the output is $x_5 \le 0$ for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$. 
 
 An \emph{invalid} property is that $x_5 > 0$ for those similar inputs.
-A counterexample showing this property violation is $\{x_1=-1, x_2=2\}$, from which the DNN evaluates to $x_5=-3.5$. 
+A counterexample showing this property violation is $\{x_1=-1, x_2=2\}$, from which the network evaluates to $x_5=-3.5$. 
 \end{example}
 
 %Such properties can capture \emph{safety requirements} (e.g., a rule in an  collision avoidance system in~\cite{kochenderfer2012next,katz2017reluplex} is ``if the intruder is distant and significantly slower than us, then we stay below a certain threshold'') or \emph{local robustness}~\cite{katz2017towards} conditions (a form of adversarial robustness stating that small perturbations of a given input all yield the same output).
@@ -1760,7 +1760,7 @@ Modern DNN verification techniques~\cite{bunel2020branch,wang2021beta,ferrari202
 
 \section{Complexity}\label{sec:complexity}
 
-ReLU-based NNV is \NP{}-complete as shown in~\cite{katz2017reluplex,salzer2023reachability}. This means that the problem of checking whether a given ReLu-based DNN satisfies a property is computationally hard, and no polynomial-time algorithm is known to solve it in the general case.
+ReLU-based NNV is \NP{}-complete as shown in~\cite{katz2017reluplex,salzer2023reachability} by reducing the 3-SAT problem to it. This means that the problem of checking whether a given ReLu-based DNN satisfies a property is computationally hard, and no polynomial-time algorithm is known to solve it in the general case.
 
 \section{Challenges} %TODO
 
@@ -5869,7 +5869,7 @@ print(s.check()) # Output: sat
 print(s.model())  # Output: {x=0, y=0}
 
 
-# another example 
+# another example 2
 x, y = Ints('x y')
 s = Solver()
 s.add(Implies(x > 3, y > 2))
@@ -6849,3 +6849,7 @@ So, the PGD attack finds a counterexample at $(x_1 = -1,\ x_2 = 0.75)$.
 
 \end{document}
 
+
+
+
+https://github.com/nguyenthanhvuh/class-verification/wiki/PA2
