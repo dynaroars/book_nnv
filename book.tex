@@ -24,6 +24,7 @@
 \newtheorem{definition}{Definition}[section]
 \newtheorem{example}{Example}[section]
 \newtheorem{exercise}{Exercise}[section]
+\newtheorem{solution}{Solution}[section]
 \theoremstyle{remark}
 \newtheorem{remark}{Remark}
 
@@ -5931,98 +5932,134 @@ form the optimization backbone of many neural network verification techniques.
 This chapter provides an overview of LP and MILP that are related to DNN verification.
 
 
-\chapter{Linear and Mixed-Integer Programming Foundations}
+\section{Linear Constraints and Objectives}
 
-Linear programming (LP) is one of the most successful mathematical modeling tools of the 20th century. 
-It provides a unified way to model resource allocation, scheduling, verification, and many other problems 
-using only linear constraints and a linear objective function.  
+At a high level, LP is a method for optimizing an objective with respect to certain constraints. For example, we want to maximize profit while keeping production costs within budget. In LP, both the objective and constraints are \emph{linear}.
 
-In DNN verification, LP and its generalization MILP (Mixed-Integer Linear Programming) 
-play a central role because neural networks with piecewise-linear activations (like ReLU) 
-can be exactly represented with such constraints.
 
-This chapter presents LP and MILP at an intuitive but rigorous level: 
-geometry of feasible regions, algorithms, duality, extensions, 
-and their application to neural network verification.
+\paragraph{Linear Constraints}
 
----
-
-\section{Linear Constraints and Feasible Sets}
-
-A linear inequality has the general form
+Linear constraints are inequalities that involve linear combinations of variables.  A linear inequality has the general form
 \[
-a_1x_1 + a_2x_2 + \cdots + a_nx_n \leq b,
+c_1x_1 + c_2x_2 + \cdots + c_nx_n \leq b,
 \]
-where $a_i, b \in \mathbb{R}$.
-The set of solutions is a half-space in $\mathbb{R}^n$.
 
-\paragraph{2D Example.}
-Constraint
+where $c_i, b \in \mathbb{R}$. These constraints limit the feasible values that the variables $x_i$ can take.
+
+\paragraph{Linear Objective Functions}
+A linear objective function $z$ has the general form
 \[
-2x+y \leq 6
+z(x_1, x_2, \ldots, x_n) = c_1x_1 + c_2x_2 + \cdots + c_nx_n,
 \]
-means “all points $(x,y)$ lying on or below the line $2x+y=6$.”
 
-\paragraph{Intersection of Constraints.}
-The feasible set of an LP is the intersection of several half-spaces.  
-Geometrically this is a \emph{polyhedron} (a polygon in 2D, polytope in higher dimensions).
+where $c_i \in \mathbb{R}$ are coefficients, and $x_i \in \mathbb{R}$ are decision variables. 
+
+
+\paragraph{Optimizing Goal}
+Our goal is to optimize (maximize or minimize) $z$ with respect to a set of linear constraints over the decision variables.
+\[
+\begin{aligned}
+& \text{maximize } z \\
+& \text{subject to } \\
+& \{c_1x_1 + c_2x_2 + \cdots + c_nx_n \leq b, \ldots    \}
+\end{aligned}
+\]
+
+
+\begin{example}  
+Maximize 
+\[
+1.5x+2y
+\] subject to:
+\[
+\{x+y \leq 4, x \geq 0, y \geq 0\}.
+\]
+
+First, we can solve for the intersection points of the constraints:
+
+\[
+\begin{aligned}
+& x+y = 4 \\
+& x = 0 \\
+& y = 0
+\end{aligned}
+\]
+Solving these equations gives us the corner points or vertices of the feasible region:
+\[
+\begin{aligned}
+& (0,0) \\
+& (4,0) \\
+& (0,4)
+\end{aligned}
+\]
+
+Now, we can evaluate the objective function $z = 1.5x+2y$ at each vertex:
+
+\[
+\begin{aligned}
+& (0,0) \rightarrow 0 \\
+& (4,0) \rightarrow 6 \\
+& (0,4) \rightarrow 8
+\end{aligned}
+\]
+
+The maximum value of $z$ is 8, achieved at the vertex $(0,4)$.
+
+
+\paragraph{Geometric interpretation} the feasible region is a triangle with vertices at $(0,0)$, $(4,0)$, and $(0,4)$:
 
 \begin{center}
-\begin{tikzpicture}[scale=0.7]
-\draw[->] (0,0) -- (7,0) node[right] {$x$};
-\draw[->] (0,0) -- (0,6) node[above] {$y$};
-\draw[domain=0:6, smooth, variable=\x, thick] plot ({\x}, {(6-2*\x)});
-\fill[blue!20, domain=0:3, variable=\x]
-  (0,0) -- plot ({\x},{(6-2*\x)}) -- (3,0) -- cycle;
-\node at (1.5,1) {feasible region};
+\begin{tikzpicture}
+    \begin{axis}[
+        axis lines = middle,
+        xlabel = $x$,
+        ylabel = $y$,
+        xmin=0, xmax=5,
+        ymin=0, ymax=5,
+        xtick={0,1,2,3,4},
+        ytick={0,1,2,3,4},
+        grid=both,
+        width=8cm,
+        height=8cm,
+    ]
+    % Feasible region
+    \addplot [
+        domain=0:4, 
+        samples=100, 
+        fill=blue!20, 
+        opacity=0.5
+    ] {4 - x} \closedcycle;
+    
+    % Constraints
+    \addplot [thick] {4 - x};
+    \addplot [thick] {0};
+    \addplot [thick] coordinates {(0,0) (0,4)};
+    
+    % Vertices
+    \filldraw[red] (axis cs:0,0) circle (2pt) node[anchor=north west] {$(0,0)$};
+    \filldraw[red] (axis cs:4,0) circle (2pt) node[anchor=north east] {$(4,0)$};
+    \filldraw[red] (axis cs:0,4) circle (2pt) node[anchor=south west] {$(0,4)$};
+    
+    % Objective function line
+    \addplot [dashed, thick] {8 - 1.5*x} node[pos=0.85, above] {$1.5x + 2y = 8$};
+    
+    \end{axis}
 \end{tikzpicture}
 \end{center}
 
----
+The objective function $z = 1.5x+2y$ is maximized at vertex $(0,4)$.
 
-\section{Linear Programming Problems}
+\end{example}
 
-A general LP is:
-\[
-\max \; c^T x \quad \text{subject to } A x \leq b, \; x \in \mathbb{R}^n.
-\]
+\begin{exercise}
+    Maximize $z=4x+5y$ subject to $\{x+y \le 20, \; 2x+4y \leq 72\}$.
 
-- $x$ = decision variables.  
-- $A x \leq b$ = linear constraints.  
-- $c^T x$ = linear objective.
+    \begin{enumerate}    
+        \item Identify the corner points.
+        \item Evaluate the objective function at each corner point.
+    \end{enumerate}
+\end{exercise}
 
-\paragraph{Corner-Point Principle.}  
-If the feasible region is bounded and non-empty, the optimum occurs at a \emph{vertex} (corner) of the polyhedron.  
-This explains why algorithms like the simplex method, which move between corners, are effective.
-
-\paragraph{Example.}  
-Maximize $x+y$ subject to:
-\[
-x+y \leq 4, \quad x \geq 0, \quad y \geq 0.
-\]
-
-- Vertices: $(0,0), (4,0), (0,4)$.  
-- Objective values: $0,4,4$.  
-- Optimum value = 4 at $(4,0)$ or $(0,4)$.
-
----
-
-\section{Algorithmic View}
-
-\subsection{The Simplex Method (idea)}
-
-- Start at a vertex of the feasible region.  
-- Move along an edge to a better vertex.  
-- Repeat until no adjacent vertex improves the objective.  
-
-Despite its exponential worst-case complexity, simplex is extremely efficient in practice.
-
-\subsection{Interior Point Methods (idea)}
-
-- Move through the interior of the feasible region following a central path.  
-- Polynomial time guarantee, important for very large LPs.  
-
----
 
 \section{Duality}
 
