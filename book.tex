@@ -5790,11 +5790,7 @@ This leads to \emph{Satisfiability Modulo Theories (SMT)}:
 \end{itemize}
 
 \begin{example}\label{ex:smt2}
-Is the formula 
-\[
-2x = 1
-\] 
-satisfiable? 
+Is the formula $2x = 1$ satisfiable? 
 
 The answer depends on the chosen theory. Here, over real numbers ($\mathbb{R}$), it is SAT (e.g., $x=0.5$), but over integers ($\mathbb{Z}$) it is UNSAT.
 
@@ -5930,6 +5926,298 @@ What does Z3 return?
 
 \chapter{Linear Programming (LP)}\label{chap:lp}
 
+Linear Programming (LP) and its generalization Mixed-Integer Linear Programming (MILP) 
+form the optimization backbone of many neural network verification techniques.
+This chapter provides an overview of LP and MILP that are related to DNN verification.
+
+
+\chapter{Linear and Mixed-Integer Programming Foundations}
+
+Linear programming (LP) is one of the most successful mathematical modeling tools of the 20th century. 
+It provides a unified way to model resource allocation, scheduling, verification, and many other problems 
+using only linear constraints and a linear objective function.  
+
+In DNN verification, LP and its generalization MILP (Mixed-Integer Linear Programming) 
+play a central role because neural networks with piecewise-linear activations (like ReLU) 
+can be exactly represented with such constraints.
+
+This chapter presents LP and MILP at an intuitive but rigorous level: 
+geometry of feasible regions, algorithms, duality, extensions, 
+and their application to neural network verification.
+
+---
+
+\section{Linear Constraints and Feasible Sets}
+
+A linear inequality has the general form
+\[
+a_1x_1 + a_2x_2 + \cdots + a_nx_n \leq b,
+\]
+where $a_i, b \in \mathbb{R}$.
+The set of solutions is a half-space in $\mathbb{R}^n$.
+
+\paragraph{2D Example.}
+Constraint
+\[
+2x+y \leq 6
+\]
+means “all points $(x,y)$ lying on or below the line $2x+y=6$.”
+
+\paragraph{Intersection of Constraints.}
+The feasible set of an LP is the intersection of several half-spaces.  
+Geometrically this is a \emph{polyhedron} (a polygon in 2D, polytope in higher dimensions).
+
+\begin{center}
+\begin{tikzpicture}[scale=0.7]
+\draw[->] (0,0) -- (7,0) node[right] {$x$};
+\draw[->] (0,0) -- (0,6) node[above] {$y$};
+\draw[domain=0:6, smooth, variable=\x, thick] plot ({\x}, {(6-2*\x)});
+\fill[blue!20, domain=0:3, variable=\x]
+  (0,0) -- plot ({\x},{(6-2*\x)}) -- (3,0) -- cycle;
+\node at (1.5,1) {feasible region};
+\end{tikzpicture}
+\end{center}
+
+---
+
+\section{Linear Programming Problems}
+
+A general LP is:
+\[
+\max \; c^T x \quad \text{subject to } A x \leq b, \; x \in \mathbb{R}^n.
+\]
+
+- $x$ = decision variables.  
+- $A x \leq b$ = linear constraints.  
+- $c^T x$ = linear objective.
+
+\paragraph{Corner-Point Principle.}  
+If the feasible region is bounded and non-empty, the optimum occurs at a \emph{vertex} (corner) of the polyhedron.  
+This explains why algorithms like the simplex method, which move between corners, are effective.
+
+\paragraph{Example.}  
+Maximize $x+y$ subject to:
+\[
+x+y \leq 4, \quad x \geq 0, \quad y \geq 0.
+\]
+
+- Vertices: $(0,0), (4,0), (0,4)$.  
+- Objective values: $0,4,4$.  
+- Optimum value = 4 at $(4,0)$ or $(0,4)$.
+
+---
+
+\section{Algorithmic View}
+
+\subsection{The Simplex Method (idea)}
+
+- Start at a vertex of the feasible region.  
+- Move along an edge to a better vertex.  
+- Repeat until no adjacent vertex improves the objective.  
+
+Despite its exponential worst-case complexity, simplex is extremely efficient in practice.
+
+\subsection{Interior Point Methods (idea)}
+
+- Move through the interior of the feasible region following a central path.  
+- Polynomial time guarantee, important for very large LPs.  
+
+---
+
+\section{Duality}
+
+Every LP has a corresponding \emph{dual} LP.  
+
+Primal (maximization, $\leq$ constraints):
+\[
+\max \; c^T x \quad \text{s.t. } A x \leq b, \; x \geq 0.
+\]
+
+Dual (minimization):
+\[
+\min \; b^T y \quad \text{s.t. } A^T y \geq c, \; y \geq 0.
+\]
+
+\paragraph{Strong Duality.}  
+If both primal and dual are feasible, their optimal values coincide.  
+This is a deep result and underpins many verification certificates.
+
+\paragraph{Example.}  
+Primal:
+\[
+\max 3x_1 + 2x_2 \quad \text{s.t. } x_1+x_2 \leq 4, \; x_1, x_2 \geq 0.
+\]
+Dual:
+\[
+\min 4y \quad \text{s.t. } y \geq 3, \; y \geq 2, \; y \geq 0.
+\]
+Optimal values both = 12.
+
+---
+
+\section{Unboundedness and Infeasibility}
+
+\paragraph{Unbounded.}
+\[
+\max x \quad \text{s.t. } x \geq 0.
+\]
+Feasible region extends infinitely, objective grows without bound.
+
+\paragraph{Infeasible.}
+\[
+x \geq 1, \quad x \leq 0.
+\]
+No feasible point.
+
+---
+
+\section{Mixed-Integer Linear Programming (MILP)}
+
+LP assumes continuous variables.  
+MILP extends LP by requiring some variables to be integers (often binary).
+
+\paragraph{Why integers?}  
+- Discrete choices (open/close a facility).  
+- Logical constraints (if/then conditions).  
+- Network verification: active/inactive ReLU.
+
+\subsection{Encoding Logic with Binary Variables}
+
+\paragraph{Big-M Trick.}
+To encode “if $z=1$ then $x \geq 5$,” use:
+\[
+x \geq 5 - M(1-z), \quad z \in \{0,1\}.
+\]
+
+- If $z=1$: $x \geq 5$.  
+- If $z=0$: $x \geq 5 - M$ (vacuous if $M$ is large).
+
+\subsection{Encoding ReLU in MILP}
+
+For $y = \max(0, x)$:
+\[
+\begin{aligned}
+& y \geq x, \\
+& y \geq 0, \\
+& y \leq x + M(1-z), \\
+& y \leq Mz, \quad z \in \{0,1\}.
+\end{aligned}
+\]
+
+$z=0$: $y=0$.  
+$z=1$: $y=x$.
+
+---
+
+\section{Applications to DNN Verification}
+
+Neural networks are compositions of affine transformations and nonlinearities.  
+- Affine layers $\Rightarrow$ linear constraints.  
+- ReLU $\Rightarrow$ MILP encoding.  
+- Safety property $\Rightarrow$ extra linear constraints.  
+
+Verification:  
+\begin{itemize}
+  \item Encode network + property as MILP.  
+  \item Add negation of property.  
+  \item Solve MILP.  
+  \item If UNSAT: property holds.  
+  \item If SAT: solver gives counterexample input.  
+\end{itemize}
+
+\paragraph{Example.}  
+One-neuron ReLU: $y = \max(0,2x-1)$.  
+Verify: “For all $x \in [0,0.4]$, $y=0$.”  
+- Encode input range, ReLU, and negation ($y>0$).  
+- MILP is infeasible.  
+- Property holds.
+
+---
+
+\section{Exercises}
+
+\paragraph{Exercise 1 (Warm-up).}  
+Maximize $2x+3y$ subject to $x+2y \leq 8, \; 2x+y \leq 8, \; x,y \geq 0$.  
+(a) Sketch feasible region.  
+(b) Identify corner points.  
+(c) Find optimal solution.
+
+\paragraph{Exercise 2.}  
+Formulate and solve a “diet problem” with three foods and two nutrients.  
+Find the cheapest diet satisfying requirements.
+
+\paragraph{Exercise 3.}  
+Duality practice:  
+Write the dual of
+\[
+\min 5x_1+2x_2 \quad \text{s.t. } x_1+x_2 \geq 3, \; x_1, x_2 \geq 0.
+\]
+
+\paragraph{Exercise 4 (MILP).}  
+Encode in MILP:  
+“If factory A is open ($z_A=1$) then production $\geq 50$,  
+if factory B is open ($z_B=1$) then production $\geq 30$.  
+At most one factory may be open.”
+
+\paragraph{Exercise 5 (Verification).}  
+Network: $h=\max(0,x_1-x_2), \; y=h+x_2$.  
+Verify: For all $x_1,x_2 \in [0,1]$, $y \geq 0$.  
+Model as MILP and solve.
+
+---
+
+\section{Summary}
+
+
+
+\section{What is Linear Programming?}
+
+A \emph{linear program} (LP) is an optimization problem of the form:
+\[
+\begin{aligned}
+\text{maximize/minimize } & c^T x \\
+\text{subject to } & A x \leq b, \\
+& x \in \mathbb{R}^n.
+\end{aligned}
+\]
+where
+\begin{itemize}
+  \item $x \in \mathbb{R}^n$ are the decision variables,
+  \item $c \in \mathbb{R}^n$ defines the linear objective function,
+  \item $A \in \mathbb{R}^{m \times n}, b \in \mathbb{R}^m$ define the linear constraints.
+\end{itemize}
+
+\subsection{Geometric Interpretation}
+
+Each linear inequality
+\[
+a_1 x_1 + \cdots + a_n x_n \leq b
+\]
+defines a half-space. The feasible region is the intersection of these half-spaces.
+Thus, the feasible region is always a convex polyhedron.
+
+\paragraph{Example.}  
+Constraints:
+\[
+x + y \leq 4, \qquad x \geq 0, \qquad y \geq 0.
+\]
+The feasible region is a triangle with vertices at $(0,0), (4,0), (0,4)$.
+
+\begin{center}
+\begin{tikzpicture}[scale=0.8]
+\draw[->] (0,0) -- (5,0) node[right] {$x$};
+\draw[->] (0,0) -- (0,5) node[above] {$y$};
+\draw[thick, fill=blue!10] (0,0) -- (4,0) -- (0,4) -- cycle;
+\node at (2,1) {Feasible region};
+\end{tikzpicture}
+\end{center}
+
+\subsection{Vertices and Optimal Solutions}
+
+A fundamental theorem: if the feasible region is non-empty and bounded, 
+then the optimal s
+
+
 \section{Linear Constraints and Feasible Regions}
 
 A \emph{linear constraint} has the form:
@@ -5946,12 +6234,12 @@ x + y \leq 4, \quad x \geq 0, \quad y \geq 0.
 \]
 The feasible region is a triangle bounded by the axes and the line $x+y=4$.
 
-\paragraph{Exercise 5 (In-class).}  
-Sketch the feasible region defined by:
+\begin{example}
+    Sketch the feasible region defined by:
 \[
 2x + y \leq 6, \quad x \geq 0, \quad y \geq 0.
 \]
-
+\end{example}
 \section{Linear Programming Problems}
 
 An LP is an optimization problem:
