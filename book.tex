@@ -5861,19 +5861,19 @@ We now use Z3 as an SMT solver to check linear constraints.
 from z3 import *
 x, y = Reals('x y')
 
-# an example
+# example 1
 s = Solver()
 s.add(x > 0, y > 0, 2*x + y <= 1)
 print(s.check())  # Output: unsat
 
-# another example
+# example 2
 s = Solver()
 s.add(x + y <= 4, x >= 0, y >= 0)
 print(s.check()) # Output: sat
 print(s.model())  # Output: {x=0, y=0}
 
 
-# another example 2
+# example 3
 x, y = Ints('x y')
 s = Solver()
 s.add(Implies(x > 3, y > 2))
@@ -5894,53 +5894,39 @@ are satisfiable, and if so, ask Z3 for a model.
 Use Z3 to check the formula given in~\autoref{ex:smt2}. Do it for both the reals and integers.
 \end{exercise}
 
-
-\begin{example}
-Use Z3 to formulate and check \texttt{If $x>3$ then $y>2$ AND $x \leq 1$}.
+\begin{exercise}
+Use Z3 to formulate and check the statement \texttt{``If $x>3$ then $y>2$ AND $x \leq 1$''}.
 Is it satisfiable? What model does Z3 return?
-\end{example}
+\end{exercise}
 
-\subsection{Checking DNN-style Properties with Z3}
 
-\paragraph{Example 5.}  
-Consider a one-neuron ReLU: $y = \max(0, x-1)$.  
-We want to check if the property holds: “For all $x \leq 0$, we have $y=0$.”
 
-Encode negation: find an $x \leq 0$ with $y \neq 0$.
+\begin{example}[DNN-style checking]
+Consider a one-neuron ReLU: $y = \max(0, x - 1)$.  
+We want to check if the property \texttt{``For all $x \leq 0$, we have $y=0$''} holds.
 
-\begin{verbatim}
+
+\begin{lstlisting}
 x, y = Reals('x y')
 s = Solver()
 
 # y = max(0, x-1)
 s.add(y >= x-1, y >= 0)
-s.add(Or(y == x-1, y == 0))
+s.add(Or(y == x-1, y == 0)) # ReLU
+s.add(x <= 0, y != 0) # Negation of property
 
-# Negation of property
-s.add(x <= 0, y != 0)
+print(s.check()) # Output: unsat, property holds
+\end{lstlisting}
+\end{example}
 
-print(s.check())
-\end{verbatim}
 
-- Z3 returns \texttt{unsat}, so the property holds.
-
-\paragraph{Exercise 14 (Homework).}  
+\begin{exercise}
 Modify the above to check property:  
-“For all $x \geq 2$, we have $y \geq 1$.”  
+\texttt{``For all $x \geq 2$, we have $y \geq 1$.''}  
 What does Z3 return?
-
----
-
+\end{exercise}
 
 
-% \subsection{Why Logic for DNN Verification?}
-
-% In DNN verification, properties such as \emph{“the network does not misclassify under small perturbations”} 
-% can be translated into logical formulas. 
-% If the formula is UNSAT, the property holds universally.
-% If it is SAT, the satisfying assignment corresponds to an adversarial input.
-
----
 
 \chapter{Linear Programming (LP)}\label{chap:lp}
 
