@@ -13,6 +13,13 @@
 \usepackage[margin=1.5in]{geometry}
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage{complexity}
+\usepackage{etoolbox}
+
+
+
+
+
+
 \numberwithin{equation}{section}
 
 \newtheorem{theorem}{Theorem}[section]
@@ -24,9 +31,30 @@
 \newtheorem{definition}{Definition}[section]
 \newtheorem{example}{Example}[section]
 \newtheorem{exercise}{Exercise}[section]
-\newtheorem{solution}{Solution}[section]
+\newtheorem{solutione}{Solution}[section]
 \theoremstyle{remark}
 \newtheorem{remark}{Remark}
+
+
+\newbool{showsol}
+\setbool{showsol}{false}
+
+\newenvironment{solution}{%
+  \ifbool{showsol}{%
+    \begin{solutione}%
+  }{%
+    \comment % start ignoring
+  }%
+}{%
+  \ifbool{showsol}{%
+    \end{solutione}%
+  }{%
+    \endcomment % stop ignoring
+  }%
+}
+
+
+
 
 \usepackage{soul}
 \usepackage[most]{tcolorbox}
@@ -1893,7 +1921,7 @@ We define
     \item $l, u$: lower and upper bounds on $z$ ($l \leq z \leq u$) over the input region 
 \end{itemize}
 
-The MILP encoding of $\hat{z} = \max(z, 0)$ is then:
+The MILP encoding of $\hat{z} = \max(z, 0)$ is then (\autoref{ex:relu_milp}):
 \begin{align*}
     &\hat{z} \geq z \\
     &\hat{z} \geq 0 \\
@@ -6168,19 +6196,19 @@ In MILP, the goal is to find the optimal values of the decision variables $x$ an
 
 
 \subsection{Encoding Binary Variables}
-To encode binary variables in MILP, we typically use 0-1 integer variables. For example, let $z \in \{0,1\}$ be a binary variable indicating whether a certain condition is met.
+To encode binary variables in MILP, we typically use 0-1 integer variables. For example, $z \in \{0,1\}$ is a binary variable indicating whether a certain condition is met.  Moreover, we often use a ``trick'' with a large constant $M$ to encode logical implications.
 
 \begin{example}
 To encode ``if $z = True$ then $x \geq 5$'', use:
 \[
-x \geq 5 - M(1-z), \quad z \in \{0,1\},
+x \geq 5 - M(1-z), \quad z \in \{0,1\}
 \]
-where $M$ is a large constant.
+
 
 This works because 
 \begin{itemize}
- \item If $z=1$: $x \geq 5$.  
- \item If $z=0$: $x \geq 5 - M$ (vacuous if $M$ is large).
+ \item $z=1 \implies x \geq 5$.
+ \item $z=0 \implies x \geq 5 - M$ (vacuous because $M$ is large).
 \end{itemize}
 
 \end{example}
@@ -6189,9 +6217,9 @@ This works because
 
 
 
-\begin{example}[Encoding ReLU in MILP]
+\begin{example}[Encoding ReLU in MILP]\label{ex:relu_milp}
 
-For $y = \max(0, x)$:
+To encode the ReLU (\autoref{sec:relu}) activation function $y = \max(0, x)$, use
 \[
 \begin{aligned}
 & y \geq x, \\
@@ -6201,10 +6229,28 @@ For $y = \max(0, x)$:
 \end{aligned}
 \]
 
-$z=0$: $y=0$.  
-$z=1$: $y=x$.
+This works because 
+
+\begin{itemize}
+\item $z=1 \implies y=x$.    
+\item $z=0 \implies y=0$.  
+\end{itemize}
 
 \end{example}
+
+\begin{exercise}
+Encode the disjunction $x \geq 5 \lor x \leq 3$ in MILP.
+
+\begin{solution}
+    We use two constraints:
+    \begin{itemize}
+    \item $x \geq 5 + M(1-z)$ (if $z=1$, this enforces $x \geq 5$)
+    \item $x \leq 3 + Mz$ (if $z=0$, this enforces $x \leq 3$)
+    \end{itemize}
+\end{solution}
+\end{exercise}
+
+
 
 \section{Applications to DNN Verification}
 
