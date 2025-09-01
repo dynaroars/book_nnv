@@ -54,7 +54,7 @@
 \usepackage{cleveref}
 \usepackage{booktabs}
 \usepackage{tikz}
-\usetikzlibrary{calc,positioning}
+\usetikzlibrary{calc,positioning,intersections}
 \usepackage{pgfplots}
 \pgfplotsset{compat=1.18}
 
@@ -5995,21 +5995,25 @@ Solving these equations gives us the corner points or vertices of the feasible r
 
 Now, we can evaluate the objective function $z = 1.5x+2y$ at each vertex:
 
-\[
-\begin{aligned}
-& (0,0) \rightarrow 0 \\
-& (4,0) \rightarrow 6 \\
-& (0,4) \rightarrow 8
-\end{aligned}
-\]
+\begin{center}
+\begin{tabular}{ccc}
+\hline
+x & y & z \\
+\hline
+0 & 0 & 0 \\
+4 & 0 & 6 \\
+0 & 4 & 8 \\
+\hline
+\end{tabular}
+\end{center}
 
-The maximum value of $z$ is 8, achieved at the vertex $(0,4)$.
+Thus, the maximum value of $z$ is 8, achieved at the vertex $(0,4)$.
 
 
-\paragraph{Geometric interpretation} the feasible region is a triangle with vertices at $(0,0)$, $(4,0)$, and $(0,4)$:
+\paragraph{Geometric interpretation} The constraints represent the feasible region as a triangle with vertices at $(0,0)$, $(4,0)$, and $(0,4)$:
 
 \begin{center}
-\begin{tikzpicture}
+\begin{tikzpicture}[scale=0.7, transform shape]
     \begin{axis}[
         axis lines = middle,
         xlabel = $x$,
@@ -6061,52 +6065,79 @@ The objective function $z = 1.5x+2y$ is maximized at vertex $(0,4)$.
 \end{exercise}
 
 
-\section{Duality}
+\begin{example}
+A company sells a chair for \$50 and a table for \$120. The production costs of the chair and the table are \$20 and \$70, respectively. It also takes 3 hours to produce a chair and 1 hour to produce a table. 
+Moreover, it takes 5 units of wood to produce a chair and 20 units of wood to produce a table.
 
-Every LP has a corresponding \emph{dual} LP.  
+How many chairs and tables should the company produce to \emph{maximize} profit within a week without exceeding its monthly budget of 200 units of woods, 80 hours of labor, and \$800 in production costs? 
 
-Primal (maximization, $\leq$ constraints):
+First, the decision variables are defined as follows:
+\begin{itemize}
+    \item $x$: the number of chairs produced.
+    \item $y$: the number of tables produced.
+\end{itemize}
+
+The objective function to maximize profit $P$ is given by:
 \[
-\max \; c^T x \quad \text{s.t. } A x \leq b, \; x \geq 0.
+P = 50x + 120y - 20x - 70y = 30x + 50y
 \]
 
-Dual (minimization):
+with subject to the constraints:
 \[
-\min \; b^T y \quad \text{s.t. } A^T y \geq c, \; y \geq 0.
+\begin{aligned}
+& 5x + 20y \le 200 (x + 4y \le 40)\\
+& 3x + y \le 80 \\
+& 20x + 70y \le 800 (2x + 7y \le 80)\\
+& x \ge 0 \\
+& y \ge 0.
+\end{aligned}
 \]
 
-\paragraph{Strong Duality.}  
-If both primal and dual are feasible, their optimal values coincide.  
-This is a deep result and underpins many verification certificates.
+\paragraph{Solving}
 
-\paragraph{Example.}  
-Primal:
+First, we can find the corner points from the constraints
 \[
-\max 3x_1 + 2x_2 \quad \text{s.t. } x_1+x_2 \leq 4, \; x_1, x_2 \geq 0.
+\begin{aligned}
+    & x + 4y = 40 \\
+    & 3x + y = 80 \\
+    & 2x + 7y = 80 \\
+    & x = 0 \\
+    & y = 0
+\end{aligned}
 \]
-Dual:
+
+Solving these equations gives us the corner points or vertices of the feasible region:
 \[
-\min 4y \quad \text{s.t. } y \geq 3, \; y \geq 2, \; y \geq 0.
+\begin{aligned}
+    & (0,0) \\
+& (0, 10) \\
+& (\frac{80}{3} ,0) \\
+& x + 4 y = 40 ~\&~ 3x + y = 80 \implies (x,y) = (\frac{280}{11},\frac{40}{11}) \text{ (also feasible with $2x + 7y \le 800$)}
+\end{aligned}
 \]
-Optimal values both = 12.
 
----
 
-\section{Unboundedness and Infeasibility}
 
-\paragraph{Unbounded.}
-\[
-\max x \quad \text{s.t. } x \geq 0.
-\]
-Feasible region extends infinitely, objective grows without bound.
+Now, we can evaluate the objective function $P = 30x + 50y$ at each vertex:
 
-\paragraph{Infeasible.}
-\[
-x \geq 1, \quad x \leq 0.
-\]
-No feasible point.
+\begin{center}
+\begin{tabular}{ccc}
+\hline
+x & y & P = 30x + 50y \\
+\hline
+0 & 0 & 0 \\
+0 & 10 & 500 \\
+$\frac{80}{3}$ & 0 & 800 \\
+$\frac{280}{11}$ & $\frac{40}{11}$ &945.45 \\
+\hline
+\end{tabular}
+\end{center}
 
----
+Thus, the maximum value of $P$ is 945.45, achieved at the vertex $(\frac{280}{11},\frac{40}{11})$. In other words, the company should produce 24 chairs and 4 tables per week.
+
+\end{example}
+
+
 
 \section{Mixed-Integer Linear Programming (MILP)}
 
