@@ -17,9 +17,6 @@
 
 
 
-
-
-
 \numberwithin{equation}{section}
 
 \newtheorem{theorem}{Theorem}[section]
@@ -6288,30 +6285,15 @@ To modify the MILP encoding for the ReLU function with bounds $L \leq x \leq U$,
 \end{solution}
 \end{exercise}
 
-\section{Applications to DNN Verification}
 
-Neural networks are compositions of affine transformations and nonlinearities.  
-- Affine layers $\Rightarrow$ linear constraints.  
-- ReLU $\Rightarrow$ MILP encoding.  
-- Safety property $\Rightarrow$ extra linear constraints.  
+% \paragraph{Example.}  
+% One-neuron ReLU: $y = \max(0,2x-1)$.  
+% Verify: “For all $x \in [0,0.4]$, $y=0$.”  
+% - Encode input range, ReLU, and negation ($y>0$).  
+% - MILP is infeasible.  
+% - Property holds.
 
-Verification:  
-\begin{itemize}
-  \item Encode network + property as MILP.  
-  \item Add negation of property.  
-  \item Solve MILP.  
-  \item If UNSAT: property holds.  
-  \item If SAT: solver gives counterexample input.  
-\end{itemize}
-
-\paragraph{Example.}  
-One-neuron ReLU: $y = \max(0,2x-1)$.  
-Verify: “For all $x \in [0,0.4]$, $y=0$.”  
-- Encode input range, ReLU, and negation ($y>0$).  
-- MILP is infeasible.  
-- Property holds.
-
----
+% ---
 
 % \section{Exercises}
 
@@ -6343,122 +6325,119 @@ Verify: “For all $x \in [0,0.4]$, $y=0$.”
 % Verify: For all $x_1,x_2 \in [0,1]$, $y \geq 0$.  
 % Model as MILP and solve.
 
----
 
 
+% \section{Linear Constraints and Feasible Regions}
+
+% A \emph{linear constraint} has the form:
+% \[
+% a_1x_1 + a_2x_2 + \cdots + a_nx_n \leq b.
+% \]
 
 
-\section{Linear Constraints and Feasible Regions}
+% \paragraph{Example.}  
+% Constraints:
+% \[
+% x + y \leq 4, \quad x \geq 0, \quad y \geq 0.
+% \]
+% The feasible region is a triangle bounded by the axes and the line $x+y=4$.
 
-A \emph{linear constraint} has the form:
-\[
-a_1x_1 + a_2x_2 + \cdots + a_nx_n \leq b.
-\]
+% \begin{example}
+%     Sketch the feasible region defined by:
+% \[
+% 2x + y \leq 6, \quad x \geq 0, \quad y \geq 0.
+% \]
+% \end{example}
+% \section{Linear Programming Problems}
 
+% An LP is an optimization problem:
+% \[
+% \max c^T x \quad \text{subject to } Ax \leq b, \; x \geq 0.
+% \]
 
-\paragraph{Example.}  
-Constraints:
-\[
-x + y \leq 4, \quad x \geq 0, \quad y \geq 0.
-\]
-The feasible region is a triangle bounded by the axes and the line $x+y=4$.
+% \paragraph{Example.}  
+% Maximize $x+y$ subject to
+% \[
+% x+y \leq 4, \quad x \geq 0, \quad y \geq 0.
+% \]
+% Solution: maximum is 4 at $(4,0)$ or $(0,4)$.
 
-\begin{example}
-    Sketch the feasible region defined by:
-\[
-2x + y \leq 6, \quad x \geq 0, \quad y \geq 0.
-\]
-\end{example}
-\section{Linear Programming Problems}
+% \paragraph{Exercise 6 (Homework).}  
+% Solve the LP:
+% \[
+% \max 3x+2y \quad \text{subject to } 
+% \quad 2x+y \leq 8, \; x+2y \leq 6, \; x,y \geq 0.
+% \]
 
-An LP is an optimization problem:
-\[
-\max c^T x \quad \text{subject to } Ax \leq b, \; x \geq 0.
-\]
+% \subsection{Duality (Optional Enrichment)}
 
-\paragraph{Example.}  
-Maximize $x+y$ subject to
-\[
-x+y \leq 4, \quad x \geq 0, \quad y \geq 0.
-\]
-Solution: maximum is 4 at $(4,0)$ or $(0,4)$.
+% Every LP has a \emph{dual} problem, and strong duality holds under mild conditions.  
+% Understanding duality is useful in verification because it enables certificates of infeasibility.
 
-\paragraph{Exercise 6 (Homework).}  
-Solve the LP:
-\[
-\max 3x+2y \quad \text{subject to } 
-\quad 2x+y \leq 8, \; x+2y \leq 6, \; x,y \geq 0.
-\]
+% ---
 
-\subsection{Duality (Optional Enrichment)}
+% \section{Mixed-Integer Linear Programming (MILP)}
 
-Every LP has a \emph{dual} problem, and strong duality holds under mild conditions.  
-Understanding duality is useful in verification because it enables certificates of infeasibility.
+% \subsection{From Logic to MILP}
 
----
+% SAT handles logic, LP handles linear inequalities.
+% MILP combines both: some variables are required to be integers (often binary).
 
-\section{Mixed-Integer Linear Programming (MILP)}
+% \paragraph{Example.}
+% Constraint:
+% \[
+% x \in \{0,1\}, \quad y \geq 2x.
+% \]
+% - If $x=0$, then $y \geq 0$.
+% - If $x=1$, then $y \geq 2$.
 
-\subsection{From Logic to MILP}
+% This encodes logical branching into optimization.
 
-SAT handles logic, LP handles linear inequalities.
-MILP combines both: some variables are required to be integers (often binary).
+% \paragraph{Exercise 7 (In-class).}  
+% Formulate “if $x=1$, then $y=0$” as linear constraints using a binary variable and a big-$M$ method.
 
-\paragraph{Example.}
-Constraint:
-\[
-x \in \{0,1\}, \quad y \geq 2x.
-\]
-- If $x=0$, then $y \geq 0$.
-- If $x=1$, then $y \geq 2$.
+% \subsection{Encoding ReLU Constraints}
 
-This encodes logical branching into optimization.
+% A ReLU is $y = \max(0,x)$.  
+% We introduce a binary variable $z$ to encode activation:
+% \begin{align*}
+% y &\geq x, \\
+% y &\geq 0, \\
+% y &\leq x + M(1-z), \\
+% y &\leq Mz.
+% \end{align*}
+% Here $M$ is a large constant.
 
-\paragraph{Exercise 7 (In-class).}  
-Formulate “if $x=1$, then $y=0$” as linear constraints using a binary variable and a big-$M$ method.
+% - If $z=0$, $y=0$.
+% - If $z=1$, $y=x$.
 
-\subsection{Encoding ReLU Constraints}
+% \paragraph{Exercise 8 (Homework).}  
+% Write MILP constraints for $y = \max(0, 2x+1)$ with $-10 \leq x \leq 10$.
 
-A ReLU is $y = \max(0,x)$.  
-We introduce a binary variable $z$ to encode activation:
-\begin{align*}
-y &\geq x, \\
-y &\geq 0, \\
-y &\leq x + M(1-z), \\
-y &\leq Mz.
-\end{align*}
-Here $M$ is a large constant.
+% \subsection{Example: Verifying a Tiny Network}
 
-- If $z=0$, $y=0$.
-- If $z=1$, $y=x$.
+% Network: input $x \in [0,1]$, hidden neuron $h = \max(0, 2x-1)$, output $y=h$.
 
-\paragraph{Exercise 8 (Homework).}  
-Write MILP constraints for $y = \max(0, 2x+1)$ with $-10 \leq x \leq 10$.
+% \paragraph{Property.}
+% Verify: for all $x \in [0,0.4]$, $y=0$.
 
-\subsection{Example: Verifying a Tiny Network}
+% \paragraph{Encoding.}
+% \begin{itemize}
+%   \item Input constraint: $0 \leq x \leq 0.4$.
+%   \item ReLU encoding for $h = \max(0, 2x-1)$.
+%   \item Negation of property: $y > 0$.
+% \end{itemize}
 
-Network: input $x \in [0,1]$, hidden neuron $h = \max(0, 2x-1)$, output $y=h$.
+% \paragraph{Result.}
+% MILP is infeasible $\Rightarrow$ property holds.
 
-\paragraph{Property.}
-Verify: for all $x \in [0,0.4]$, $y=0$.
+% \paragraph{Exercise 9 (Homework).}  
+% Modify the property to “for all $x \in [0.6,1]$, $y > 0$.”  
+% Check if the MILP is feasible.
 
-\paragraph{Encoding.}
-\begin{itemize}
-  \item Input constraint: $0 \leq x \leq 0.4$.
-  \item ReLU encoding for $h = \max(0, 2x-1)$.
-  \item Negation of property: $y > 0$.
-\end{itemize}
+% ---
 
-\paragraph{Result.}
-MILP is infeasible $\Rightarrow$ property holds.
-
-\paragraph{Exercise 9 (Homework).}  
-Modify the property to “for all $x \in [0.6,1]$, $y > 0$.”  
-Check if the MILP is feasible.
-
----
-
----
+% ---
 
 % \section{Summary and Further Exercises}
 
@@ -6513,6 +6492,66 @@ include solvers supporting a wide range of theories including linear arithmetic,
 
 \chapter{Software vs DNN Verification}\label{app:software-vs-dnn}
 
+
+\paragraph{General}
+Software verification and DNN verification share the common goal of ensuring the correctness and reliability of their respective systems. Both fields aim to identify and eliminate potential errors or vulnerabilities before deployment, ultimately enhancing user trust and system robustness.
+
+\begin{table}
+    \caption{Comparison of Software Verification and DNN Verification}
+\begin{tabular}{|c|c|c|}
+    \hline
+    \textbf{Aspect} & \textbf{Software Verification} & \textbf{DNN Verification} \\
+    \hline
+    \textbf{Input} & Source code, specifications & DNN model, input space \\
+    \hline
+    \textbf{Output} & Verification results, counterexamples & Verification results, adversarial examples \\
+    \hline
+    \textbf{Techniques} & Model checking, theorem proving & Formal methods, testing \\
+    \hline
+    \textbf{Challenges} & State explosion, incomplete specifications & High dimensionality, non-convexity \\
+    \hline
+\end{tabular}
+\end{table}
+
+\paragraph{Similarities} 
+
+\begin{table}
+\caption{Similarities of Software Verification and DNN Verification}
+\begin{tabular}{|c|c|c|}
+    \hline
+    \textbf{Aspect} & \textbf{Software Verification} & \textbf{DNN Verification} \\
+    \hline
+    \textbf{Input} & Source code, specifications & DNN model, input space \\
+    \hline
+    \textbf{Output} & Verification results, counterexamples & Verification results, adversarial examples \\
+    \hline
+    \textbf{Techniques} & Model checking, theorem proving & Formal methods, testing \\
+    \hline
+    \textbf{Challenges} & State explosion, incomplete specifications & High dimensionality, non-convexity \\
+    \hline
+\end{tabular}
+\end{table}
+
+
+\paragraph{Differences}
+Software verification typically deals with discrete systems and logical properties, while DNN verification focuses on continuous input spaces and the behavior of neural networks under various conditions. Additionally, the techniques used in each field differ significantly, with software verification relying on formal methods and testing, whereas DNN verification often employs specialized techniques such as adversarial training and robustness analysis.
+
+\begin{table}
+\caption{Differences of Software Verification and DNN Verification}
+\begin{tabular}{|c|c|c|}
+    \hline
+    \textbf{Aspect} & \textbf{Software Verification} & \textbf{DNN Verification} \\
+    \hline
+    \textbf{Input} & Source code, specifications & DNN model, input space \\
+    \hline
+    \textbf{Output} & Verification results, counterexamples & Verification results, adversarial examples \\
+    \hline
+    \textbf{Techniques} & Model checking, theorem proving & Formal methods, testing \\
+    \hline
+    \textbf{Challenges} & State explosion, incomplete specifications & High dimensionality, non-convexity \\
+    \hline
+\end{tabular}
+\end{table}
 
 \chapter{\neuralsat{} Algorithm}\label{sec:neuralsat-alg}
 
