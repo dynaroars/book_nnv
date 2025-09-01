@@ -5673,7 +5673,7 @@ This chapter and the next (\autoref{chap:lp}) provides the necessary background 
 and then moving to linear and mixed-integer programming.
 
 
-\section{Propositional Logic and Satisfiability}
+\section{Propositional Logic and Satisfiability}\label{sec:propositional-logic}
 
 \subsection{Syntax}
 
@@ -5949,6 +5949,52 @@ What does Z3 return?
 \end{exercise}
 
 
+\section{SAT and SMT Solving Algorithms}\label{sec:sat-smt-algorithms}
+
+Here we briefly discuss SAT and SMT solving algorithms, which are used to determine the satisfiability of propositional and SMT formulae.
+
+\subsection{Satisfiability (SAT) Problem}\label{sec:sat-problem}
+The classical satisfiability (SAT) problem asks if a given propositional formulae (\autoref{sec:propositional-logic}) can be satisfied~\cite{biere2009handbook}.  Given a formula CNF $f$, an SAT solver returns \sat{} if it can find a satisfying assignment that maps truth values to variables of $f$ that makes $f$ evaluate to true, and \unsat{} if it cannot find any satisfying assignments.
+
+The SAT problem is \NP-Complete and research into methods for efficiently solving  problem instances has been ongoing for multiple decades.
+
+
+\subsection{DPLL}
+
+
+
+\begin{figure}
+    \centering
+  \includegraphics[width=0.8\linewidth]{figure/dpll.pdf}
+  \caption{\label{fig:dpll} The classicial DPLL Algorithm.}
+\end{figure}
+
+
+\autoref{fig:dpll} gives an overview of \textbf{DPLL}, a SAT solving technique introduced in 1961 by Davis, Putnam, Logemann, and Loveland~\cite{davis1962machine}. DPLL is an iterative algorithm that takes as input a propositional formula and (i) decides an unassigned variable and assigns it a truth value, (ii) performs Boolean constraint propagation (BCP or also called Unit Propagation),  which detects single literal clauses that either force a literal to be true in a satisfying assignment or give rise to a conflict; (iii) analyzes the conflict to backtrack to a previous decision level \texttt{dl}; and (iv) erases assignments at levels greater than \texttt{dl} to try new  assignments. 
+
+These steps repeat until DPLL finds  a satisfying assignment and returns \texttt{sat}, or decides that it cannot backtrack (\texttt{dl}=-1) and returns \texttt{unsat}.
+
+
+%DPLL is both sound (its results are correct) and complete (it can find a solution for any input in finite time). %Since its introduction, many heuristics have been introduced to make DPLL more efficient,
+%However, because SAT solving is NP-Complete and DPLL has a worst-case exponential time complexity. %However, many heuristics have been developed to help DPLL efficient in practice,  e.g., choosing variables to assign values and decision levels to backtrack to~\cite{TODO}.
+
+
+\subsection{CDCL} 
+
+Modern DPLL solving improves the original version with Conflict-Driven Clause Learning (\emph{CDCL}~\cite{bayardo1997using,marques1999grasp,569607}).
+DPLL with CDCL can \emph{learn new clauses} to avoid past conflicts and backtrack more intelligently (e.g., using non-chronologically backjumping).
+%Similar to DPLL, CDCL is sound and complete, but also incurs an exponential complexity.  However, 
+Due to its ability to learn new clauses, CDCL can significantly  reduce the search space and allow SAT solvers to scale to large problems.
+In the following, whenever we refer to DPLL, we mean DPLL with CDCL.
+
+\subsection{DPLL(T)} 
+
+DPLL(T)~\cite{nieuwenhuis2006solving} extends DPLL for propositional formulae to check SMT formulae involving non-Boolean variables, e.g., real numbers and data structures such as strings, arrays, lists.
+DPLL(T) combines DPLL with dedicated \emph{theory solvers} to analyze formulae in those theories\footnote{SMT is Satisfiability Modulo Theories and the T in DPLL(T) stands for Theories.}.  
+For example, to check a formula involving linear arithmetic over the reals (LRA), DPLL(T) may use a theory solver that uses linear programming to check the  constraints in the formula.
+
+Modern DPLL(T)-based SMT solvers such as Z3~\cite{demoura2008z3} and CVC4~\cite{barrett2011cvc4} 
+include solvers supporting a wide range of theories including linear arithmetic, nonlinear arithmetic, string, and arrays~\cite{kroening2016decision}.
 
 \chapter{Linear Programming (LP)}\label{chap:lp}
 
@@ -6452,38 +6498,6 @@ To modify the MILP encoding for the ReLU function with bounds $L \leq x \leq U$,
 % Take the network $y = \max(0, w_1x_1 + w_2x_2 + b)$ with $w_1=1, w_2=-1, b=0$.  
 % Verify the property: “For all $x_1,x_2 \in [0,1]$, we have $y \leq 1$.”  
 % Formulate the MILP and solve it using an MILP solver (e.g., Gurobi, CPLEX, or open-source solvers).
-
-\chapter{Logics and Linear Programming}\label{chap:logics}
-
-\section{Logics and Satisfiability}\label{sec:logics-sat}
-
-
-\subsection{Satisfiability (SAT)}\label{sec:sat}
-The classical satisfiability (SAT) problem asks if a given propositional formula over Boolean variables can be satisfied~\cite{biere2009handbook}.  Given a formula $f$, a SAT solver returns \sat{} if it can find a satisfying assignment that maps truth values to variables of $f$ that makes $f$ evaluate to true, and \unsat{} if it cannot find any satisfying assignments. The problem is \NP-Complete and research into methods for efficiently solving  problem instances has been ongoing for multiple decades.
-
-\begin{figure}
-  \includegraphics[width=0.8\linewidth]{figure/dpll.pdf}
-  \caption{\label{fig:dpll} The classicial DPLL Algorithm.}
-\end{figure}
-
-\paragraph{DPLL}~\autoref{fig:dpll} gives an overview of \textbf{DPLL}, a SAT solving technique introduced in 1961 by Davis, Putnam, Logemann, and Loveland~\cite{davis1962machine}. DPLL is an iterative algorithm that takes as input a propositional formula and (i) decides an unassigned variable and assigns it a truth value, (ii) performs Boolean constraint propagation (BCP or also called Unit Propagation),  which detects single literal clauses that either force a literal to be true in a satisfying assignment or give rise to a conflict; (iii) analyzes the conflict to backtrack to a previous decision level \texttt{dl}; and (iv) erases assignments at levels greater than \texttt{dl} to try new  assignments. These steps repeat until DPLL finds  a satisfying assignment and returns \texttt{sat}, or decides that it cannot backtrack (\texttt{dl}=-1) and returns \texttt{unsat}.
-
-
-%DPLL is both sound (its results are correct) and complete (it can find a solution for any input in finite time). %Since its introduction, many heuristics have been introduced to make DPLL more efficient,
-%However, because SAT solving is NP-Complete and DPLL has a worst-case exponential time complexity. %However, many heuristics have been developed to help DPLL efficient in practice,  e.g., choosing variables to assign values and decision levels to backtrack to~\cite{TODO}.
-
-
-\paragraph{CDCL} Modern DPLL solving improves the original version with Conflict-Driven Clause Learning (\emph{CDCL}~\cite{bayardo1997using,marques1999grasp,569607}).
-DPLL with CDCL can \emph{learn new clauses} to avoid past conflicts and backtrack more intelligently (e.g., using non-chronologically backjumping).
-%Similar to DPLL, CDCL is sound and complete, but also incurs an exponential complexity.  However, 
-Due to its ability to learn new clauses, CDCL can significantly  reduce the search space and allow SAT solvers to scale to large problems.
-In the following, whenever we refer to DPLL, we mean DPLL with CDCL.
-
-\paragraph{DPLL(T)} DPLL(T)~\cite{nieuwenhuis2006solving} extends DPLL for propositional formulae to check SMT formulae involving non-Boolean variables, e.g., real numbers and data structures such as strings, arrays, lists.
-DPLL(T) combines DPLL with dedicated \emph{theory solvers} to analyze formulae in those theories\footnote{SMT is Satisfiability Modulo Theories and the T in DPLL(T) stands for Theories.}.  %Examples of SMT formulae include those involving numerical variables with linear or nonlinear arithmetics (formale involving nonlinear operations such as multiplication and division among variables),
-For example, to check a formula involving linear arithmetic over the reals (LRA), DPLL(T) may use a theory solver that uses linear programming to check the  constraints in the formula.
-Modern DPLL(T)-based SMT solvers such as Z3~\cite{moura2008z3} and CVC4~\cite{barrett2011cvc4} 
-include solvers supporting a wide range of theories including linear arithmetic, nonlinear arithmetic, string, and arrays~\cite{kroening2016decision}.
 
 
 
