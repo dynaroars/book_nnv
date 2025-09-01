@@ -5973,6 +5973,25 @@ c_1x_1 + c_2x_2 + \cdots + c_nx_n \leq b,
 \]
 
 where $c_i, b \in \mathbb{R}$. These constraints limit the feasible values that the variables $x_i$ can take.
+The set of points satisfying all constraints is called the \emph{feasible region}.
+
+
+\begin{example}
+Consider the following linear constraints:
+\[
+x + y \leq 4, \qquad x \geq 0, \qquad y \geq 0.
+\]
+The feasible region is a triangle with vertices at $(0,0), (4,0), (0,4)$.
+
+\begin{center}
+\begin{tikzpicture}[scale=0.8]
+\draw[->] (0,0) -- (5,0) node[right] {$x$};
+\draw[->] (0,0) -- (0,5) node[above] {$y$};
+\draw[thick, fill=blue!10] (0,0) -- (4,0) -- (0,4) -- cycle;
+\node at (2,1) {Feasible region};
+\end{tikzpicture}
+\end{center}
+\end{example}
 
 \paragraph{Linear Objective Functions}
 A linear objective function $z$ has the general form
@@ -6294,88 +6313,39 @@ Verify: “For all $x \in [0,0.4]$, $y=0$.”
 
 ---
 
-\section{Exercises}
+% \section{Exercises}
 
-\paragraph{Exercise 1 (Warm-up).}  
-Maximize $2x+3y$ subject to $x+2y \leq 8, \; 2x+y \leq 8, \; x,y \geq 0$.  
-(a) Sketch feasible region.  
-(b) Identify corner points.  
-(c) Find optimal solution.
+% \paragraph{Exercise 1 (Warm-up).}  
+% Maximize $2x+3y$ subject to $x+2y \leq 8, \; 2x+y \leq 8, \; x,y \geq 0$.  
+% (a) Sketch feasible region.  
+% (b) Identify corner points.  
+% (c) Find optimal solution.
 
-\paragraph{Exercise 2.}  
-Formulate and solve a “diet problem” with three foods and two nutrients.  
-Find the cheapest diet satisfying requirements.
+% \paragraph{Exercise 2.}  
+% Formulate and solve a “diet problem” with three foods and two nutrients.  
+% Find the cheapest diet satisfying requirements.
 
-\paragraph{Exercise 3.}  
-Duality practice:  
-Write the dual of
-\[
-\min 5x_1+2x_2 \quad \text{s.t. } x_1+x_2 \geq 3, \; x_1, x_2 \geq 0.
-\]
+% \paragraph{Exercise 3.}  
+% Duality practice:  
+% Write the dual of
+% \[
+% \min 5x_1+2x_2 \quad \text{s.t. } x_1+x_2 \geq 3, \; x_1, x_2 \geq 0.
+% \]
 
-\paragraph{Exercise 4 (MILP).}  
-Encode in MILP:  
-“If factory A is open ($z_A=1$) then production $\geq 50$,  
-if factory B is open ($z_B=1$) then production $\geq 30$.  
-At most one factory may be open.”
+% \paragraph{Exercise 4 (MILP).}  
+% Encode in MILP:  
+% “If factory A is open ($z_A=1$) then production $\geq 50$,  
+% if factory B is open ($z_B=1$) then production $\geq 30$.  
+% At most one factory may be open.”
 
-\paragraph{Exercise 5 (Verification).}  
-Network: $h=\max(0,x_1-x_2), \; y=h+x_2$.  
-Verify: For all $x_1,x_2 \in [0,1]$, $y \geq 0$.  
-Model as MILP and solve.
+% \paragraph{Exercise 5 (Verification).}  
+% Network: $h=\max(0,x_1-x_2), \; y=h+x_2$.  
+% Verify: For all $x_1,x_2 \in [0,1]$, $y \geq 0$.  
+% Model as MILP and solve.
 
 ---
 
-\section{Summary}
 
-
-
-\section{What is Linear Programming?}
-
-A \emph{linear program} (LP) is an optimization problem of the form:
-\[
-\begin{aligned}
-\text{maximize/minimize } & c^T x \\
-\text{subject to } & A x \leq b, \\
-& x \in \mathbb{R}^n.
-\end{aligned}
-\]
-where
-\begin{itemize}
-  \item $x \in \mathbb{R}^n$ are the decision variables,
-  \item $c \in \mathbb{R}^n$ defines the linear objective function,
-  \item $A \in \mathbb{R}^{m \times n}, b \in \mathbb{R}^m$ define the linear constraints.
-\end{itemize}
-
-\subsection{Geometric Interpretation}
-
-Each linear inequality
-\[
-a_1 x_1 + \cdots + a_n x_n \leq b
-\]
-defines a half-space. The feasible region is the intersection of these half-spaces.
-Thus, the feasible region is always a convex polyhedron.
-
-\paragraph{Example.}  
-Constraints:
-\[
-x + y \leq 4, \qquad x \geq 0, \qquad y \geq 0.
-\]
-The feasible region is a triangle with vertices at $(0,0), (4,0), (0,4)$.
-
-\begin{center}
-\begin{tikzpicture}[scale=0.8]
-\draw[->] (0,0) -- (5,0) node[right] {$x$};
-\draw[->] (0,0) -- (0,5) node[above] {$y$};
-\draw[thick, fill=blue!10] (0,0) -- (4,0) -- (0,4) -- cycle;
-\node at (2,1) {Feasible region};
-\end{tikzpicture}
-\end{center}
-
-\subsection{Vertices and Optimal Solutions}
-
-A fundamental theorem: if the feasible region is non-empty and bounded, 
-then the optimal s
 
 
 \section{Linear Constraints and Feasible Regions}
@@ -6385,7 +6355,6 @@ A \emph{linear constraint} has the form:
 a_1x_1 + a_2x_2 + \cdots + a_nx_n \leq b.
 \]
 
-The set of points satisfying all constraints is called the \emph{feasible region}.
 
 \paragraph{Example.}  
 Constraints:
@@ -6491,19 +6460,19 @@ Check if the MILP is feasible.
 
 ---
 
-\section{Summary and Further Exercises}
+% \section{Summary and Further Exercises}
 
-\begin{itemize}
-  \item Logic: propositional formulas, CNF, satisfiability.
-  \item LP: optimization over linear constraints.
-  \item MILP: integrates logic and LP, used for ReLU encoding.
-  \item Application: encoding DNN verification as SAT/LP/MILP.
-\end{itemize}
+% \begin{itemize}
+%   \item Logic: propositional formulas, CNF, satisfiability.
+%   \item LP: optimization over linear constraints.
+%   \item MILP: integrates logic and LP, used for ReLU encoding.
+%   \item Application: encoding DNN verification as SAT/LP/MILP.
+% \end{itemize}
 
-\paragraph{Homework Project.}
-Take the network $y = \max(0, w_1x_1 + w_2x_2 + b)$ with $w_1=1, w_2=-1, b=0$.  
-Verify the property: “For all $x_1,x_2 \in [0,1]$, we have $y \leq 1$.”  
-Formulate the MILP and solve it using an MILP solver (e.g., Gurobi, CPLEX, or open-source solvers).
+% \paragraph{Homework Project.}
+% Take the network $y = \max(0, w_1x_1 + w_2x_2 + b)$ with $w_1=1, w_2=-1, b=0$.  
+% Verify the property: “For all $x_1,x_2 \in [0,1]$, we have $y \leq 1$.”  
+% Formulate the MILP and solve it using an MILP solver (e.g., Gurobi, CPLEX, or open-source solvers).
 
 \chapter{Logics and Linear Programming}\label{chap:logics}
 
