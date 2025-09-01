@@ -37,7 +37,7 @@
 
 
 \newbool{showsol}
-\setbool{showsol}{false}
+\setbool{showsol}{true}
 
 \newenvironment{solution}{%
   \ifbool{showsol}{%
@@ -6217,6 +6217,21 @@ This works because
 
 
 
+
+
+\begin{exercise}
+Encode the disjunction $x \geq 5 \lor x \leq 3$ in MILP.
+
+\begin{solution}
+    We use two constraints:
+    \begin{itemize}
+    \item $x \geq 5 + M(1-z)$ (if $z=1$, this enforces $x \geq 5$)
+    \item $x \leq 3 + Mz$ (if $z=0$, this enforces $x \leq 3$)
+    \end{itemize}
+\end{solution}
+\end{exercise}
+
+
 \begin{example}[Encoding ReLU in MILP]\label{ex:relu_milp}
 
 To encode the ReLU (\autoref{sec:relu}) activation function $y = \max(0, x)$, use
@@ -6237,20 +6252,22 @@ This works because
 \end{itemize}
 
 \end{example}
-
 \begin{exercise}
-Encode the disjunction $x \geq 5 \lor x \leq 3$ in MILP.
+We extend the ReLU example in \autoref{ex:relu_milp} so that $x$ has the bounds $L \leq x \leq U$. Modify the MILP encoding so that $L$ and $U$ are used \emph{directly} instead of a large constant $M$.
 
 \begin{solution}
-    We use two constraints:
-    \begin{itemize}
-    \item $x \geq 5 + M(1-z)$ (if $z=1$, this enforces $x \geq 5$)
-    \item $x \leq 3 + Mz$ (if $z=0$, this enforces $x \leq 3$)
-    \end{itemize}
+To modify the MILP encoding for the ReLU function with bounds $L \leq x \leq U$, we add the following constraints:
+\[
+\begin{aligned}
+& y \geq x, \\
+& y \geq 0, \\
+& y \leq x + (U-x)(1-z), \\
+& y \leq Uz, \quad z \in \{0,1\}, \\
+& L \leq x \leq U.
+\end{aligned}
+\]
 \end{solution}
 \end{exercise}
-
-
 
 \section{Applications to DNN Verification}
 
