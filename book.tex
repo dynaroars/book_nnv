@@ -5932,7 +5932,7 @@ form the optimization backbone of many neural network verification techniques.
 This chapter provides an overview of LP and MILP that are related to DNN verification.
 
 
-\section{Linear Constraints and Objectives}
+\section{Linear Constraints and Objectives}\label{sec:lp}
 
 At a high level, LP is a method for optimizing an objective with respect to certain constraints. For example, we want to maximize profit while keeping production costs within budget. In LP, both the objective and constraints are \emph{linear}.
 
@@ -5955,7 +5955,7 @@ z(x_1, x_2, \ldots, x_n) = c_1x_1 + c_2x_2 + \cdots + c_nx_n,
 where $c_i \in \mathbb{R}$ are coefficients, and $x_i \in \mathbb{R}$ are decision variables. 
 
 
-\paragraph{Optimizing Goal}
+\paragraph{Optimizing Goals}
 Our goal is to optimize (maximize or minimize) $z$ with respect to a set of linear constraints over the decision variables.
 \[
 \begin{aligned}
@@ -6136,28 +6136,60 @@ Thus, the maximum value of $P$ is 945.45, achieved at the vertex $(\frac{280}{11
 
 
 
-\section{Mixed-Integer Linear Programming (MILP)}
+\section{Mixed-Integer Linear Programming (MILP)}\label{sec:milp}
 
-LP assumes continuous variables.  
-MILP extends LP by requiring some variables to be integers (often binary).
+LP (\autoref{sec:lp}) assumes continuous variables over real numbers.  
+A mixed-integer linear program (MILP) extends LP by requiring some variables to be integers (often binary 0 or 1).  This is useful because it allows for modeling discrete decisions and logical constraints, e.g., on/off decisions, yes/no choices, and active/inactive ReLU.
 
-\paragraph{Why integers?}  
-- Discrete choices (open/close a facility).  
-- Logical constraints (if/then conditions).  
-- Network verification: active/inactive ReLU.
-
-\subsection{Encoding Logic with Binary Variables}
-
-\paragraph{Big-M Trick.}
-To encode “if $z=1$ then $x \geq 5$,” use:
+\paragraph{Linear Constraints}
+In MILP, a linear constraint can involve both integer and continuous decision variables, and have the general form
 \[
-x \geq 5 - M(1-z), \quad z \in \{0,1\}.
+c_1x_1 + c_2x_2 + \cdots + c_nx_n + d_1y_1 + d_2y_2 + \cdots + d_my_m \leq b,
+\]
+where $x_i \in \mathbb{R}$ are continuous variables, $y_j \in \mathbb{Z}$ are integer variables, and $c_i, d_j, b \in \mathbb{R}$.
+
+\paragraph{Objective Function}
+A linear objective function $z$ in MILP can be expressed as:
+\[
+z(x_1, \ldots, x_n, y_1, \ldots, y_m) = c_1x_1 + c_2x_2 + \cdots + c_nx_n + d_1y_1 + d_2y_2 + \cdots + d_my_m,
+\]
+where $x_i \in \mathbb{R}$ are continuous variables, $y_j \in \mathbb{Z}$ are integer variables, and $c_i, d_j \in \mathbb{R}$.
+
+\paragraph{Optimizing Goals}
+In MILP, the goal is to find the optimal values of the decision variables $x$ and $y$ that maximize or minimize the objective function $z$, while satisfying all linear constraints.
+
+\[
+\begin{aligned}
+& \text{maximize } z(x_1, \ldots, x_n, y_1, \ldots, y_m) \\
+& \text{subject to } \\
+& \{c_1x_1 + c_2x_2 + \cdots + c_nx_n + d_1y_1 + d_2y_2 + \cdots + d_my_m \leq b\}
+\end{aligned}
 \]
 
-- If $z=1$: $x \geq 5$.  
-- If $z=0$: $x \geq 5 - M$ (vacuous if $M$ is large).
 
-\subsection{Encoding ReLU in MILP}
+\subsection{Encoding Binary Variables}
+To encode binary variables in MILP, we typically use 0-1 integer variables. For example, let $z \in \{0,1\}$ be a binary variable indicating whether a certain condition is met.
+
+\begin{example}
+To encode ``if $z = True$ then $x \geq 5$'', use:
+\[
+x \geq 5 - M(1-z), \quad z \in \{0,1\},
+\]
+where $M$ is a large constant.
+
+This works because 
+\begin{itemize}
+ \item If $z=1$: $x \geq 5$.  
+ \item If $z=0$: $x \geq 5 - M$ (vacuous if $M$ is large).
+\end{itemize}
+
+\end{example}
+
+
+
+
+
+\begin{example}[Encoding ReLU in MILP]
 
 For $y = \max(0, x)$:
 \[
@@ -6172,7 +6204,7 @@ For $y = \max(0, x)$:
 $z=0$: $y=0$.  
 $z=1$: $y=x$.
 
----
+\end{example}
 
 \section{Applications to DNN Verification}
 
