@@ -6085,9 +6085,9 @@ P = 50x + 120y - 20x - 70y = 30x + 50y
 with subject to the constraints:
 \[
 \begin{aligned}
-& 5x + 20y \le 200 (x + 4y \le 40)\\
+& 5x + 20y \le 200 \implies x + 4y \le 40\\
 & 3x + y \le 80 \\
-& 20x + 70y \le 800 (2x + 7y \le 80)\\
+& 20x + 70y \le 800 \implies 2x + 7y \le 80\\
 & x \ge 0 \\
 & y \ge 0.
 \end{aligned}
@@ -6107,18 +6107,15 @@ First, we can find the corner points from the constraints
 \]
 
 Solving these equations gives us the corner points or vertices of the feasible region:
-\[
-\begin{aligned}
-    & (0,0) \\
-& (0, 10) \\
-& (\frac{80}{3} ,0) \\
-& x + 4 y = 40 ~\&~ 3x + y = 80 \implies (x,y) = (\frac{280}{11},\frac{40}{11}) \text{ (also feasible with $2x + 7y \le 800$)}
-\end{aligned}
-\]
+(0,0);
+(0, 10);
+$(\frac{80}{3} ,0)$; and 
+$(\frac{280}{11},\frac{40}{11})$ (from x + 4 y = 40 ~\&~ 3x + y = 80). Note that all of these are feasible with $2x + 7y \le 800$.
 
 
 
-Now, we can evaluate the objective function $P = 30x + 50y$ at each vertex:
+
+Now, we can evaluate the objective function $P$ at each vertex:
 
 \begin{center}
 \begin{tabular}{ccc}
