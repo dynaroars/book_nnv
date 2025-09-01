@@ -1487,16 +1487,7 @@ Consider a neural network $f$ that classifies images into different categories (
 
 
 
-% \begin{example}\label{ex:acas-robustness}
-% A typical ACAS XU network (\autoref{sec:acasxu}) maps 5D input to 5D output via 6 layers of 50 ReLU neurons. A local robustness property is:
-% \[
-% -\varepsilon_i \leq x_i \leq \varepsilon_i \quad (0 \leq i < 5)
-% \]
-% \[
-% y_0 \leq y_1, \quad y_0 \leq y_2, \quad y_0 \leq y_3, \quad y_0 \leq y_4,
-% \]
-% where $x_i$ are the input variables, $y_i$ are the output variables, and $\varepsilon_i$ are small perturbation bounds for each input dimension. This property states that if the inputs are perturbed within the bounds $\varepsilon_i$, then the first output neuron $y_0$ is less than or equal to all other output neurons $y_1, y_2, y_3, y_4$.\tvn{Hai, is this local?}\hd{yes, it is local. But it doesn't tailor to a specific input (center point), so people might call it a safety property.}
-% \end{example}
+
 
 \subsection{Safety}
 
@@ -1612,8 +1603,18 @@ Properties are encoded in \textbf{SMT-LIB2}, referencing input/output variable n
 
 
 \begin{example}
+A typical ACAS XU network (\autoref{sec:acasxu}) maps 5D input to 5D output via 6 layers of 50 ReLU neurons. A property is of the network is
+\[
+-\varepsilon_i \leq x_i \leq \varepsilon_i \quad (0 \leq i < 5)
+\]
+\[
+y_0 \leq y_1, \quad y_0 \leq y_2, \quad y_0 \leq y_3, \quad y_0 \leq y_4,
+\]
+where $x_i$ are the input variables, $y_i$ are the output variables, and $\varepsilon_i$ are small perturbation bounds for each input dimension. This property states that if the inputs are perturbed within the bounds $\varepsilon_i$, then the first output neuron $y_0$ is less than or equal to all other output neurons $y_1, y_2, y_3, y_4$.
 
-    The VNN-LIB code for the property given in~\autoref{ex:acas-robustness} is as follows:
+%\tvn{Hai, is this local?}\hd{yes, it is local. But it doesn't tailor to a specific input (center point), so people might call it a safety property.}
+
+The VNN-LIB code for this property is as follows:
 
 \begin{lstlisting}[style=SMTLIB-style, language=SMTLIB,basicstyle=\ttfamily\scriptsize, multicols=2]
 ; declaring the input variables
@@ -6315,7 +6316,7 @@ This works because
 
 \end{example}
 \begin{exercise}
-We extend the ReLU example in \autoref{ex:relu_milp} so that $x$ has the bounds $L \leq x \leq U$. Modify the MILP encoding so that $L$ and $U$ are used \emph{directly} instead of a large constant $M$.
+Consider again the ReLU example in \autoref{ex:relu_milp} but now $x$ has the bounds $L \leq x \leq U$. Modify the MILP encoding so that $L$ and $U$ are used \emph{directly} instead of a large constant $M$.
 
 \begin{solution}
 To modify the MILP encoding for the ReLU function with bounds $L \leq x \leq U$, we add the following constraints:
