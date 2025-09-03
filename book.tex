@@ -83,14 +83,33 @@
 \usepackage{pgfplots}
 \pgfplotsset{compat=1.18}
 
-
 \usepackage{anyfontsize}
 \usepackage{sectsty}
 
 \usepackage[makeroom]{cancel}
 
-\usepackage[linesnumbered,ruled,vlined]{algorithm2e}
+\usepackage{listings}
+\lstset{basicstyle=\ttfamily\scriptsize,
+  language=Python,
+  morekeywords={assert},
+  keywordstyle=\color{blue},
+  commentstyle=\color{magenta},
+  numbers=none,
+  mathescape,
+  stepnumber=1,
+  numbersep=8pt,
+  tabsize=4,
+  showspaces=false,
+  showstringspaces=false,
+  emph={},
+  emphstyle=\color{red}\bfseries
+}
+\definecolor{keywords}{RGB}{0,35,197}
+\definecolor{comments}{RGB}{19,121,0}
+\definecolor{highlight}{RGB}{255,255,102}
 
+
+\usepackage[linesnumbered,ruled,vlined]{algorithm2e}
 \SetKwFor{Parfor}{parfor}{do}{endparfor}
 
 \SetKwInOut{Input}{input}
@@ -257,10 +276,10 @@
     tabsize=2,
 }
 
-\lstset{
-    language=SMTLIB,
-    style=SMTLIB-style
-}
+% \lstset{
+%     language=SMTLIB,
+%     style=SMTLIB-style
+% }
 
 
 \begin{document}
@@ -5669,22 +5688,24 @@ In each specification, the inputs (condition distance and latent variables) are 
 \chapter{Logics}\label{chap:logics}
 
 The field of neural network verification (NNV) relies heavily on two fundamental areas: 
-\emph{logic} (to reason about properties as logical formulae) and \emph{optimization} (to reason about numerical constraints).
+\emph{logic} (to formalize and reason about properties as logical formulae) and \emph{optimization} (to formulate and reason about numerical constraints).
 This chapter and the next (\autoref{chap:lp}) provides the necessary background on both topics in detail, starting with propositional logic and satisfiability, 
 and then moving to linear and mixed-integer programming.
 
 
 \section{Propositional Logic and Satisfiability}\label{sec:propositional-logic}
 
+Propositional, or Boolean, logic is the branch of logic that studies formulae built from Boolean variables, where each variable can take only the values \texttt{True} or \texttt{False}. These formulae are combined using logical connectives such as \texttt{and}, \texttt{or}, and \texttt{not}, and their evaluation always reduces to a single truth value.
+
 \subsection{Syntax}
 
-A \emph{propositional variable} is a symbol (e.g., $x, y, z$). Logical formulae are built inductively from these variables using logical connectives as follows:
+A \emph{propositional variable} is a symbol (e.g., $x, y, z$). Logical formulae are built \emph{inductively} from these variables using logical connectives as follows:
 
 \begin{itemize}
-  \item Constants: $\top$ and $\bot$ are formulae.
   \item Variables: Any propositional variable $p$ is a formula.
-  \item Negation: If $\phi$ is a formula, then $\lnot \phi$ is a formula.
-  \item Binary connectives: If $\phi, \psi$ are formulas, then so are
+  \item Constants: $\top$ and $\bot$ are formulae.
+  \item Negation: If $\phi$ is a formula, then so is $\lnot \phi$.
+  \item Binary connectives: If $\phi, \psi$ are formulae, then so are
     $(\phi \land \psi)$, $(\phi \lor \psi)$, and $(\phi \to \psi)$.
 \end{itemize}
 
@@ -5696,11 +5717,38 @@ A \emph{propositional variable} is a symbol (e.g., $x, y, z$). Logical formulae 
 is a formula involving three variables $x,y,z$.
 \end{example}
 
-Notice here that we purely define the syntax of propositional logic. We have not talked about semantics (meanings) such as truth values.
+\paragraph{Special connectives} In addition to the standard connectives, we define some special connectives that are often useful:
 
-\subsection{Semantics}
+\begin{itemize}
+    \item \emph{Implication}: $\phi \to \psi \equiv \lnot \phi \lor \psi$
+    \item \emph{Biconditional} (or \emph{equivalence}): $\phi \leftrightarrow \psi \equiv (\phi \to \psi) \land (\psi \to \phi)$
+\end{itemize}
 
-A logical formula has a truth value, which can be either \texttt{True} or \texttt{False}. This is the \emph{semantics} of the formula.
+
+\paragraph{Convert to CNF} Any formula can be transformed into CNF. The process generally involves the following steps:
+\begin{enumerate}
+\item Eliminate biconditionals and implications.
+\item Move negations inward using De Morgan's laws.
+\item Distribute disjunctions over conjunctions.
+\end{enumerate}
+
+\begin{exercise}
+Transform the formula 
+\[
+(x \to y) \land (y \to z)
+\]
+into CNF.
+\end{exercise}
+
+
+\begin{commentbox}
+Notice here that we purely define the syntax of propositional logic, which allows us to construct valid formulae. We will discuss the semantics or meanings of formulae next (\autoref{sec:propositional-semantics}).
+\end{commentbox}
+\subsection{Semantics}\label{sec:propositional-semantics}
+
+A logical formula in propositional logic has a truth value, which can be either \texttt{True} or \texttt{False}. 
+For example, the formula $x \lor \neg{x}$ is always \texttt{True}, while the formula $x \land y$ is \texttt{True} if both $x$ and $y$ are \texttt{True}, and \texttt{False} otherwise.
+This is the \emph{semantics} of the formula.
 
 An \emph{assignment} $\alpha$ maps each formula to $\texttt{True}$ or $\texttt{False}$.
 The truth value of a formula is defined recursively
@@ -5789,21 +5837,6 @@ where a literal is either a variable $p$ or its negation $\lnot p$.
 is in CNF. Each clause $(x \lor y)$, $(\lnot x \lor z)$ is a disjunction of literals.
 \end{example}
 
-\paragraph{Convert to CNF} Any formula can be transformed into CNF. The process generally involves the following steps:
-\begin{enumerate}
-\item Eliminate biconditionals and implications.
-\item Move negations inward using De Morgan's laws.
-\item Distribute disjunctions over conjunctions.
-\end{enumerate}
-
-\begin{exercise}
-Transform the formula 
-\[
-(x \to y) \land (y \to z)
-\]
-into CNF.
-\end{exercise}
-
 
 \section{Satisfiability Modulo Theories (SMT)}
 
@@ -5848,11 +5881,33 @@ First, do the reasoning informally by hand, and then confirm with an SMT solver 
 
 Z3~\cite{de2008z3} is a well-known SMT solver developed by Microsoft Research. Here we'll show how to use it for various logical and arithmetic problems.
 
+
+\paragraph{Installing} You can install Z3 using your package manager, for example
+
+\begin{lstlisting}
+    brew install z3        # using homebrew
+    pip install z3solver   # using pip
+    apt install z3 python3-z3 # using apt (on Debian-based Linux systems)
+    conda install z3solver # using conda
+\end{lstlisting}    
+
+
+Then try its Python interface:
+
+\begin{lstlisting}
+    from z3 import *
+    x = Int('x')
+    y = Int('y')
+    solve(x > 2, y < 10, x + 2*y == 7)
+\end{lstlisting} 
+
+
+
 \begin{example}[Propositional Logic]\label{ex:z3-propositional}
 
 We use Z3 to check satisfiability of propositional formulae and generate counterexamples.
 
-    \begin{lstlisting}
+\begin{lstlisting}
 from z3 import *
 
 x, y = Bools('x y')
@@ -6056,8 +6111,7 @@ Our goal is to optimize (maximize or minimize) $z$ with respect to a set of line
 \end{aligned}
 \]
 
-
-\begin{example}  
+\begin{example}\label{ex:lp-example1}
 Maximize 
 \[
 1.5x+2y
@@ -6146,7 +6200,7 @@ The objective function $z = 1.5x+2y$ is maximized at vertex $(0,4)$.
 
 \end{example}
 
-\begin{exercise}
+\begin{exercise}\label{ex:lp-exercise2}
     Maximize $z=4x+5y$ subject to $\{x+y \le 20, \; 2x+4y \leq 72\}$.
 
     \begin{enumerate}    
@@ -6156,7 +6210,7 @@ The objective function $z = 1.5x+2y$ is maximized at vertex $(0,4)$.
 \end{exercise}
 
 
-\begin{example}
+\begin{example}\label{ex:lp-example3}
 A company sells a chair for \$50 and a table for \$120. The production costs of the chair and the table are \$20 and \$70, respectively. It also takes 3 hours to produce a chair and 1 hour to produce a table. 
 Moreover, it takes 5 units of wood to produce a chair and 20 units of wood to produce a table.
 
@@ -6221,7 +6275,10 @@ $\frac{280}{11}$ & $\frac{40}{11}$ &945.45 \\
 \end{tabular}
 \end{center}
 
-Thus, the maximum value of $P$ is 945.45, achieved at the vertex $(\frac{280}{11},\frac{40}{11})$. In other words, the company should produce 24 chairs and 4 tables per week.
+Thus, the maximum value of $P$ is 945.45, achieved at the vertex $(\frac{280}{11},\frac{40}{11})$. 
+
+Of course, since we cannot produce fractional chairs or tables, we need to round these numbers to the nearest integers.
+This means the company should produce 24 chairs and 4 tables per week, and get a profit of \$920.00
 
 \end{example}
 
@@ -6333,6 +6390,41 @@ To modify the MILP encoding for the ReLU function with bounds $L \leq x \leq U$,
 \end{exercise}
 
 
+\section{Using Z3 to solve LP and MILP}
+
+We can use Z3's optimization capabilities to solve both LP and MILP problems. Note that in practice, we often use dedicated solvers such as Gurobi or CPLEX for large problems, but Z3 is effective for demonstration purposes.
+
+\begin{example}
+    Let's reconsider the example in~\autoref{ex:lp-example1}. We can model and solve it using Z3:
+
+    \begin{lstlisting}
+from z3 import *
+
+x, y = Reals("x y")
+opt = Optimize() # setup the optimization problem
+opt.add(x + y <= 4, x >= 0, y >= 0)
+
+# Objective
+z = 1.5*x + 2*y
+h = opt.maximize(z)
+
+# Solve
+if (opt.check() == sat): 
+    print("Optimal sol:", opt.model())  # output [x = 0, y = 4]
+    print("Max value:", opt.upper(h))   # output 8
+    \end{lstlisting}
+\end{example}
+
+
+\begin{exercise}
+Do~\autoref{ex:lp-exercise2} using Z3.
+\end{exercise}
+
+\begin{exercise}
+Do~\autoref{ex:lp-example3} using Z3.
+\end{exercise}
+
+
 % \paragraph{Example.}  
 % One-neuron ReLU: $y = \max(0,2x-1)$.  
 % Verify: “For all $x \in [0,0.4]$, $y=0$.”  
@@ -6351,7 +6443,7 @@ To modify the MILP encoding for the ReLU function with bounds $L \leq x \leq U$,
 % (c) Find optimal solution.
 
 % \paragraph{Exercise 2.}  
-% Formulate and solve a “diet problem” with three foods and two nutrients.  
+% Formulate and solve a diet problem with three foods and two nutrients.  
 % Find the cheapest diet satisfying requirements.
 
 % \paragraph{Exercise 3.}  
