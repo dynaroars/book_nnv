@@ -6211,6 +6211,39 @@ The objective function $z = 1.5x+2y$ is maximized at vertex $(0,4)$.
 \end{exercise}
 
 
+
+
+\section{Mixed-Integer Linear Programming (MILP)}\label{sec:milp}
+
+LP (\autoref{sec:lp}) assumes continuous variables over real numbers.  
+A mixed-integer linear program (MILP) extends LP by requiring some variables to be integers (often binary 0 or 1).  This is useful because it allows for modeling discrete decisions and logical constraints, e.g., on/off decisions, yes/no choices, and active/inactive ReLU.
+
+\paragraph{Linear Constraints}
+In MILP, a linear constraint can involve both integer and continuous decision variables, and have the general form
+\[
+c_1x_1 + c_2x_2 + \cdots + c_nx_n + d_1y_1 + d_2y_2 + \cdots + d_my_m \leq b,
+\]
+where $x_i \in \mathbb{R}$ are continuous variables, $y_j \in \mathbb{Z}$ are integer variables, and $c_i, d_j, b \in \mathbb{R}$.
+
+\paragraph{Objective Function}
+A linear objective function $z$ in MILP can be expressed as:
+\[
+z(x_1, \ldots, x_n, y_1, \ldots, y_m) = c_1x_1 + c_2x_2 + \cdots + c_nx_n + d_1y_1 + d_2y_2 + \cdots + d_my_m,
+\]
+where $x_i \in \mathbb{R}$ are continuous variables, $y_j \in \mathbb{Z}$ are integer variables, and $c_i, d_j \in \mathbb{R}$.
+
+\paragraph{Optimizing Goals}
+In MILP, the goal is to find the optimal values of the decision variables $x$ and $y$ that maximize or minimize the objective function $z$, while satisfying all linear constraints.
+
+\[
+\begin{aligned}
+& \text{maximize } z(x_1, \ldots, x_n, y_1, \ldots, y_m) \\
+& \text{subject to } \\
+& \{c_1x_1 + c_2x_2 + \cdots + c_nx_n + d_1y_1 + d_2y_2 + \cdots + d_my_m \leq b\}
+\end{aligned}
+\]
+
+
 \begin{example}\label{ex:lp-example3}
 A company sells a chair for \$50 and a table for \$120. The production costs of the chair and the table are \$20 and \$70, respectively. It also takes 3 hours to produce a chair and 1 hour to produce a table. 
 Moreover, it takes 5 units of wood to produce a chair and 20 units of wood to produce a table.
@@ -6285,42 +6318,11 @@ This means the company should produce 24 chairs and 4 tables per week, and get a
 
 
 
-\section{Mixed-Integer Linear Programming (MILP)}\label{sec:milp}
-
-LP (\autoref{sec:lp}) assumes continuous variables over real numbers.  
-A mixed-integer linear program (MILP) extends LP by requiring some variables to be integers (often binary 0 or 1).  This is useful because it allows for modeling discrete decisions and logical constraints, e.g., on/off decisions, yes/no choices, and active/inactive ReLU.
-
-\paragraph{Linear Constraints}
-In MILP, a linear constraint can involve both integer and continuous decision variables, and have the general form
-\[
-c_1x_1 + c_2x_2 + \cdots + c_nx_n + d_1y_1 + d_2y_2 + \cdots + d_my_m \leq b,
-\]
-where $x_i \in \mathbb{R}$ are continuous variables, $y_j \in \mathbb{Z}$ are integer variables, and $c_i, d_j, b \in \mathbb{R}$.
-
-\paragraph{Objective Function}
-A linear objective function $z$ in MILP can be expressed as:
-\[
-z(x_1, \ldots, x_n, y_1, \ldots, y_m) = c_1x_1 + c_2x_2 + \cdots + c_nx_n + d_1y_1 + d_2y_2 + \cdots + d_my_m,
-\]
-where $x_i \in \mathbb{R}$ are continuous variables, $y_j \in \mathbb{Z}$ are integer variables, and $c_i, d_j \in \mathbb{R}$.
-
-\paragraph{Optimizing Goals}
-In MILP, the goal is to find the optimal values of the decision variables $x$ and $y$ that maximize or minimize the objective function $z$, while satisfying all linear constraints.
-
-\[
-\begin{aligned}
-& \text{maximize } z(x_1, \ldots, x_n, y_1, \ldots, y_m) \\
-& \text{subject to } \\
-& \{c_1x_1 + c_2x_2 + \cdots + c_nx_n + d_1y_1 + d_2y_2 + \cdots + d_my_m \leq b\}
-\end{aligned}
-\]
-
-
 \subsection{Encoding Binary Variables}
-To encode binary variables in MILP, we typically use 0-1 integer variables. For example, $z \in \{0,1\}$ is a binary variable indicating whether a certain condition is met.  Moreover, we often use a ``trick'' with a large constant $M$ to encode logical implications.
+MILP problems often involve disjunction or condition where the answer depends on some condition.  We can encode such condition using binary variables (0-1 integers), e.g., using  $z \in \{0,1\}$ to indicate whether a certain condition is met.  Moreover, we also use a ``trick'' with a large constant $M$, e.g., $\infty$, to encode logical implications.
 
 \begin{example}
-To encode ``if $z = True$ then $x \geq 5$'', use:
+To encode ``if $z = \texttt{True}$ then $x \geq 5$'', use:
 \[
 x \geq 5 - M(1-z), \quad z \in \{0,1\}
 \]
@@ -6328,21 +6330,11 @@ x \geq 5 - M(1-z), \quad z \in \{0,1\}
 
 This works because 
 \begin{itemize}
- \item $z=1 \implies x \geq 5$.
- \item $z=0 \implies x \geq 5 - M$ (vacuously true because $M$ is large).
+ \item $z=1 \implies x \ge 5 - M(0) \implies x \geq 5$.
+ \item $z=0 \implies x \geq 5 - M \implies x \ge -\infty$ (because $M$ is large this is vacuously true and can be discarded).
 \end{itemize}
 
 \end{example}
-
-x   >=  5- M(1 - z)
-x - 3 <= Mz
-z = {0,1}
-
-z=1 => x >= 5
-
-
-z=0 => x <= 3
- 
 
 
 \begin{exercise}
