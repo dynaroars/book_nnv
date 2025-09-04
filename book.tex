@@ -5616,11 +5616,14 @@ In each specification, the inputs (condition distance and latent variables) are 
     \item Week 1: Introduction (videos of neural networks, basic terminologies and concepts).
     \item Week 2
     \begin{itemize}
-    \item HW: Post a short introduction about yourself on Canvas
+    \item HW due: Post a short introduction about yourself on Canvas
     \item Reading: Logic~\autoref{chap:logics} and Liner Programming~\autoref{chap:lp}
+    \item Quiz: no quiz this week
     \end{itemize}
-    \item Week 3: 
-    \item Week 3:    
+    \item Week 3:
+    \begin{itemize}
+        \item HW due: MILP exercise~\autoref{ex:milp-online}
+    \end{itemize}
     \item Week 4:
     \item Week 5:
     \item Week 6:
@@ -6389,7 +6392,7 @@ To modify the MILP encoding for the ReLU function with bounds $L \leq x \leq U$,
 \end{exercise}
 
 
-\section{Using Z3 to solve LP and MILP}
+\section{Using Z3 to Solve LP and MILP}
 
 We can use Z3's optimization capabilities to solve both LP and MILP problems. Note that in practice, we often use dedicated solvers such as Gurobi or CPLEX for large problems, but Z3 is effective for demonstration purposes.
 
@@ -6423,6 +6426,24 @@ Do~\autoref{ex:lp-exercise2} using Z3.
 Do~\autoref{ex:lp-example3} using Z3.
 \end{exercise}
 
+
+
+\begin{exercise}\label{ex:milp-online}
+For this exercise, you will find some interesting MILP problem online, formulate it, and solve it using Z3. Specifically, do the following:
+\begin{itemize}
+\item Find \emph{two} interesting MILP problems online. These can be from textbooks, research papers, or online resources (Youtube, Google, online tutorials).
+
+Note: Interesting here means the problem has a non-trivial structure, resembles real-world applications (like the table and chair example in~\autoref{ex:lp-example3}), or involves complex constraints.
+\item For each problem:
+\begin{itemize}
+    \item Write down the problem and cite the sources (e.g., exact URL or author(s)/Title/Year if from a paper).
+    \item Formulate the problem as a MILP (clearly indicate the objective, constraints).
+    \item Solve them by hand (you can type this out, but show all the steps, if possible, draw the graph showing the feasible region).
+    \item Implement the formulation in Z3 and solve it.
+\end{itemize}
+\end{itemize}
+
+\end{exercise}
 
 % \paragraph{Example.}  
 % One-neuron ReLU: $y = \max(0,2x-1)$.  
@@ -7397,7 +7418,6 @@ So, the PGD attack finds a counterexample at $(x_1 = -1,\ x_2 = 0.75)$.
 \bibliographystyle{abbrv}
 \bibliography{book.bib}
 
-\appendix
 
 \end{document}
 
