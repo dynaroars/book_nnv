@@ -5725,7 +5725,10 @@ is a formula involving three variables $x,y,z$.
 \end{itemize}
 
 
-\paragraph{Convert to CNF} Any formula can be transformed into CNF. The process generally involves the following steps:
+\paragraph{Convert to Conjunctive Normal Form (CNF)} A formula is in CNF if it is a conjunction of disjunctions of literals,
+where a literal is either a variable $p$ or its negation $\lnot p$. 
+
+Any formula can be transformed into CNF. The process generally involves the following steps:
 \begin{enumerate}
 \item Eliminate biconditionals and implications.
 \item Move negations inward using De Morgan's laws.
@@ -5768,7 +5771,7 @@ For the formula
 \[
 (x \lor y) \land (\lnot x \lor z), 
 \]
-evaluate its truth value under all $2^3=8$ possible assignments of $x,y,z$. Identify the satisfying assignments.
+evaluate its truth value under all $2^3=8$ possible assignments of $x,y,z$. Identify the satisfying assignments (eval to True).
 \end{exercise}
 
 \subsection{Satisfiability and Validity}
@@ -5825,8 +5828,6 @@ Provide a satisfying assignment if it exists.
 
 \paragraph{Conjunctive Normal Form (CNF)}
 In practice, SAT solvers do not take arbitrary formulae as input. Instead, they require the formula to be in \emph{Conjunctive Normal Form (CNF)}.
-A formula is in CNF if it is a conjunction of disjunctions of literals,
-where a literal is either a variable $p$ or its negation $\lnot p$. 
 
 
 
@@ -6328,15 +6329,20 @@ x \geq 5 - M(1-z), \quad z \in \{0,1\}
 This works because 
 \begin{itemize}
  \item $z=1 \implies x \geq 5$.
- \item $z=0 \implies x \geq 5 - M$ (vacuous because $M$ is large).
+ \item $z=0 \implies x \geq 5 - M$ (vacuously true because $M$ is large).
 \end{itemize}
 
 \end{example}
 
+x   >=  5- M(1 - z)
+x - 3 <= Mz
+z = {0,1}
+
+z=1 => x >= 5
 
 
-
-
+z=0 => x <= 3
+ 
 
 
 \begin{exercise}
@@ -6345,7 +6351,7 @@ Encode the disjunction $x \geq 5 \lor x \leq 3$ in MILP.
 \begin{solution}
     We use two constraints:
     \begin{itemize}
-    \item $x \geq 5 + M(1-z)$ (if $z=1$, this enforces $x \geq 5$)
+    \item $x \geq 5 - M(1-z)$ (if $z=1$, this enforces $x \geq 5$)
     \item $x \leq 3 + Mz$ (if $z=0$, this enforces $x \leq 3$)
     \end{itemize}
 \end{solution}
@@ -6370,6 +6376,7 @@ This works because
 \item $z=1 \implies y=x$.    
 \item $z=0 \implies y=0$.  
 \end{itemize}
+
 
 \end{example}
 \begin{exercise}
@@ -7405,4 +7412,19 @@ So, the PGD attack finds a counterexample at $(x_1 = -1,\ x_2 = 0.75)$.
 
 
 
-https://github.com/nguyenthanhvuh/class-verification/wiki/PA2
+| a | b  |  a ->  b
+--------------------
+| T | T  |   T   
+| T | F  |   F    
+| F | T  |   T
+| F | F  |   T 
+
+
+| a | b  |  !a  |  !a  v  b  |
+| T | T  |  F   |     T
+| T | F  |  F   |     F
+| F | T  |  T   |     T
+| F | F  |  T   |     T  
+
+
+
