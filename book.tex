@@ -1527,58 +1527,63 @@ Safety:
 \end{solution}
 \end{example}
 
-\begin{example}[Global Consistency: Celsius and Fahrenheit]
+\begin{exercise}[Global Consistency: Celsius and Fahrenheit]
 A neural network answers two related questions:  
 Q1: ``What is the temperature in Celsius?'' (input $t_C$)  
 Q2: ``What is the temperature in Fahrenheit?'' (input $t_F$)  
 
-We require consistency: If Q1 outputs $y$, then Q2 must output $1.8y+32$.
+We want consistency: If Q1 outputs $y$, then Q2 must output $1.8y+32$.
 
 \begin{solution}
 \[
 \forall t_C, \quad f(Q2, t_C \times 1.8 + 32) = 1.8 \cdot f(Q1,t_C) + 32
 \]
 \end{solution}
-\end{example}
+\end{exercise}
 
-\begin{example}[Monotonicity in Multiple Inputs: Flight Risk]
-A neural network predicts flight risk score $r$ for passengers. Inputs are number of missed flights $m$ 
-and number of valid documents provided $d$. We want:  
-- Increasing $m$ should never decrease $r$.  
-- Increasing $d$ should never increase $r$.
+% \begin{exercise}[Monotonicity in Multiple Inputs: Flight Risk]
+% A neural network predicts flight risk score $r$ for passengers. Inputs are number of missed flights $m$ 
+% and number of valid documents provided $d$. We want:  
+% - Increasing $m$ should never decrease $r$.  
+% - Increasing $d$ should never increase $r$.
 
-\begin{solution}
-Missed flights:
-\[
-m \leq m' \land d = d' \implies f(m,d) \leq f(m',d')
-\]
+% \begin{solution}
+% Missed flights:
+% \[
+% m \leq m' \land d = d' \implies f(m,d) \leq f(m',d')
+% \]
 
-Documents:
-\[
-d \leq d' \land m = m' \implies f(m,d) \geq f(m,d')
-\]
-\end{solution}
-\end{example}
+% Documents:
+% \[
+% d \leq d' \land m = m' \implies f(m,d) \geq f(m,d')
+% \]
+% \end{solution}
+% \end{exercise}
 
-\begin{example}[Temporal Safety: Medical Monitoring]
-A medical monitoring network takes as input heart rate readings over time and outputs an alarm signal 
-(0 = safe, 1 = alarm). Property:  
-If heart rate exceeds 180 bpm for 3 consecutive time steps, then the alarm must be raised at the next time step.
+% \begin{exercise}[Temporal Safety: Medical Monitoring]
+% A medical monitoring network takes as input heart rate readings over time and outputs an alarm signal 
+% (0 = safe, 1 = alarm). Property:  
+% If heart rate exceeds 180 bpm for 3 consecutive time steps, then the alarm must be raised at the next time step.
 
-\begin{solution}
-\[
-\forall t, \quad (HR_t > 180 \land HR_{t+1} > 180 \land HR_{t+2} > 180) \implies f(HR_{t+3}) = 1
-\]
-\end{solution}
-\end{example}
+% \begin{solution}
+% \[
+% \forall t, \quad (HR_t > 180 \land HR_{t+1} > 180 \land HR_{t+2} > 180) \implies f(HR_{t+3}) = 1
+% \]
+% \end{solution}
+% \end{exercise}
 
-\begin{example}[Counterexample: Monotonicity in Admission]
-A NN predicts admission probability to a university. Inputs: GPA $p$ and test score $s$.  
-Monotonicity property: higher GPA with same score should not decrease admission probability.  
+\begin{exercise}[Counterexample: Monotonicity in Admission]
+A network predicts admission probability to a university. Inputs: GPA $p$ and test score $s$.  
 
-We observe:  
-- A: GPA = 3.0, score = 1500, prediction = 0.8  
-- B: GPA = 3.5, score = 1500, prediction = 0.6  
+We want: a higher GPA with same score should not decrease admission probability.  
+
+But we observe a case violating this:
+\begin{itemize}
+ \item A: GPA = 3.0, score = 1500, prediction = 0.8  
+ \item B: GPA = 3.5, score = 1500, prediction = 0.6  
+\end{itemize}
+
+Using the numbers in this violating case, write the monotonicity requirement and show how this is a counterexample.
 
 \begin{solution}
 Monotonicity requirement:
@@ -1591,63 +1596,63 @@ Counterexample:
 3.0 \leq 3.5 \land 1500 = 1500 \quad \text{but} \quad f(3.0,1500)=0.8 > f(3.5,1500)=0.6
 \]
 \end{solution}
-\end{example}
+\end{exercise}
 
-\begin{example}[Robustness in Speech Recognition]
-A speech recognition NN maps audio clips $x$ to text. Robustness property: if background noise changes by at most 
-$\epsilon$ in volume, the transcription should remain the same.
+% \begin{exercise}[Robustness in Speech Recognition]
+% A speech recognition NN maps audio clips $x$ to text. Robustness property: if background noise changes by at most 
+% $\epsilon$ in volume, the transcription should remain the same.
 
-\begin{solution}
-\[
-\forall x', \quad \|x - x'\| \leq \epsilon \implies f(x') = f(x)
-\]
-\end{solution}
-\end{example}
+% \begin{solution}
+% \[
+% \forall x', \quad \|x - x'\| \leq \epsilon \implies f(x') = f(x)
+% \]
+% \end{solution}
+% \end{exercise}
 
-\begin{example}[Safety in Medical Diagnosis]
-A NN diagnoses diseases from patient data (age $a$, blood pressure $bp$, heart rate $hr$).  
-Safety property: If age $a > 80$ and $bp > 200$, then the network must never output ``safe''.
+% \begin{exercise}[Safety in Medical Diagnosis]
+% A NN diagnoses diseases from patient data (age $a$, blood pressure $bp$, heart rate $hr$).  
+% Safety property: If age $a > 80$ and $bp > 200$, then the network must never output ``safe''.
 
-\begin{solution}
-\[
-a > 80 \land bp > 200 \implies f(a,bp,hr) \neq \text{``safe''}
-\]
-\end{solution}
-\end{example}
+% \begin{solution}
+% \[
+% a > 80 \land bp > 200 \implies f(a,bp,hr) \neq \text{``safe''}
+% \]
+% \end{solution}
+% \end{exercise}
 
-\begin{example}[Consistency in Translation]
-A multilingual NN translates between English, French, and German.  
-If English $\to$ French translation of ``cat'' is ``chat'', then French $\to$ German translation of ``chat'' must be ``Katze''.
+% \begin{exercise}[Consistency in Translation]
+% A multilingual NN translates between English, French, and German.  
+% If English $\to$ French translation of ``cat'' is ``chat'', then French $\to$ German translation of ``chat'' must be ``Katze''.
 
-\begin{solution}
-\[
-f(\text{EN}\to\text{FR}, \text{``cat''}) = \text{``chat''} \implies 
-f(\text{FR}\to\text{DE}, \text{``chat''}) = \text{``Katze''}
-\]
-\end{solution}
-\end{example}
+% \begin{solution}
+% \[
+% f(\text{EN}\to\text{FR}, \text{``cat''}) = \text{``chat''} \implies 
+% f(\text{FR}\to\text{DE}, \text{``chat''}) = \text{``Katze''}
+% \]
+% \end{solution}
+% \end{exercise}
 
-\begin{example}[Monotonicity in Fairness]
-A network computes credit approval probability $f(p,s,g)$ with GPA $p$, score $s$, and gender $g$.  
-We require: increasing GPA or score cannot decrease approval, and gender should not matter.
+% \begin{exercise}[Monotonicity in Fairness]
+% A network computes credit approval probability $f(p,s,g)$ with GPA $p$, score $s$, and gender $g$.  
+% We require: increasing GPA or score cannot decrease approval, and gender should not matter.
 
-\begin{solution}
-\[
-p \leq p' \land s = s' \land g \neq g' \implies f(p,s,g) \leq f(p',s',g')
-\]
-\[
-s \leq s' \land p = p' \land g \neq g' \implies f(p,s,g) \leq f(p,s',g')
-\]
-\[
-f(p,s,\text{male}) = f(p,s,\text{female}) \quad \forall p,s
-\]
-\end{solution}
-\end{example}
+% \begin{solution}
+% \[
+% p \leq p' \land s = s' \land g \neq g' \implies f(p,s,g) \leq f(p',s',g')
+% \]
+% \[
+% s \leq s' \land p = p' \land g \neq g' \implies f(p,s,g) \leq f(p,s',g')
+% \]
+% \[
+% f(p,s,\text{male}) = f(p,s,\text{female}) \quad \forall p,s
+% \]
+% \end{solution}
+% \end{exercise}
 
-\begin{example}[Counterexample: Safety in Vehicles]
-A NN outputs car acceleration $a$. Property: if distance to obstacle $d<10$, then $a\leq 0$.  
+\begin{exercise}[Counterexample: Safety in Vehicles]
+A NN outputs car acceleration $a$. We want: if distance to obstacle $d<10$, then $a\leq 0$. But we observe a scenario where $d=5$ but $a=+2$.  
 
-Observed: $d=5$ but $a=+2$.  
+Write the safety requirement and show how this is a counterexample.
 
 \begin{solution}
 Safety requirement:
@@ -1660,7 +1665,7 @@ Counterexample:
 d=5, \quad f(d)=a=+2 \quad \text{violates property.}
 \]
 \end{solution}
-\end{example}
+\end{exercise}
 
 
 \chapter{Verification of Neural Networks}\label{sec:verification}
