@@ -510,7 +510,7 @@ where \(n\) is the number of input neurons and \(m\) is the number of output neu
 \begin{itemize}
     \item The hidden neurons compute:
     \[
-    x_3 = \relu{-0.5 x_1 + 0.5 x_2 + 1.0},\quad x_4 = \relu{1.0 x_1 + 1.0 x_2 - 1.0},
+    x_3 = \relu{-0.5 x_1 + 0.5 x_2 + 1.0},\quad x_4 = \relu{0.5 x_1 + -0.5 x_2 + -1.0},
     \]
     where $\relu{x} = \max(x, 0)$ is the ReLU activation function.
     \item The output neuron computes:
@@ -521,7 +521,7 @@ where \(n\) is the number of input neurons and \(m\) is the number of output neu
 
 Thus, this NN computes a function \(f: \mathbb{R}^2 \to \mathbb{R}\) where:
 \[
-f(x_1, x_2) = -\relu{-0.5 x_1 + 0.5 x_2 + 1.0} + \relu{1.0 x_1 + 1.0 x_2 - 1.0} - 1.0.
+f(x_1, x_2) = -\relu{-0.5 x_1 + 0.5 x_2 + 1.0} + \relu{0.5x_1 -0.5 x_2 - 1.0} - 1.0.
 \]
 \end{example}
 
@@ -837,8 +837,6 @@ For a vector $x = [2, 1, 0]$, softmax computes:
 This means that softmax maps the input vector $x$ to a probability distribution over the three classes, where the first class has a probability of 0.71, the second class has a probability of 0.24, and the third class has a probability of 0.05.
 \end{example}
 
-
-
 \begin{example}\label{ex:z3-dnn}
 Use Z3 to encode the DNN in~\autoref{fig:dnn} and compute its output $x5$ for the input $(x_1, x_2) = (2.0, 0.5)$.
 
@@ -850,7 +848,7 @@ Use Z3 to encode the DNN in~\autoref{fig:dnn} and compute its output $x5$ for th
     x2 = z3.Real('x2')
     x3 = -0.5*x1 + 0.5*x2 + 1.0    
     x3_ = z3.If(x3 <= 0, 0, x3)  # ReLU
-    x4 = 1.0*x1 + 1.0*x2 - 1.0
+    x4 = 0.5*x1 + -0.5*x2 + -1.0
     x4_ = z3.If(x4 <= 0, 0, x4)  # ReLU
     x5 = -1.0*x3_ + 1.0*x4_ - 1.0
     
