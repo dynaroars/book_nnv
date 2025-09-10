@@ -674,7 +674,24 @@ $\relu{-1.2} = 0$ (inactive), $\relu{0} = 0$ (inactive), and $\relu{2.8} = 2.8$ 
 \end{example}
 
 
-However, despite being piecewise linear, ReLU is \textbf{nonlinear} because it does not satisfy the two core properties of a linear function
+\paragraph{Logical encoding} ReLU can be encoded using the following logical formula:
+\[y = \relu{x} \iff (x \leq 0 \land y = 0) \lor (x > 0 \land y = x).\] 
+
+
+\begin{example}
+In Z3, we can declare ReLU as a piecewise linear function and use it in assertions as follows:
+\begin{lstlisting}[language=python]
+    import z3
+
+    def relu(x):
+        return z3.If(x <= 0, 0, x)
+
+    relu(-1.2)  # returns 0
+    relu(0)     # returns 0
+    relu(2.8)   # returns 2.8
+\end{lstlisting}
+\end{example}
+\paragraph{Nonlinear Property} However, despite being piecewise linear, ReLU is \textbf{nonlinear} because it does not satisfy the two core properties of a linear function
 
     \begin{itemize}
         \item \textit{Additivity:} $\text{ReLU}(x + y) \ne \text{ReLU}(x) + \text{ReLU}(y)$ in general,
@@ -820,6 +837,32 @@ For a vector $x = [2, 1, 0]$, softmax computes:
 This means that softmax maps the input vector $x$ to a probability distribution over the three classes, where the first class has a probability of 0.71, the second class has a probability of 0.24, and the third class has a probability of 0.05.
 \end{example}
 
+
+
+\begin{example}\label{ex:z3-dnn}
+Use Z3 to encode the DNN in~\autoref{fig:dnn} and compute its output $x5$ for the input $(x_1, x_2) = (2.0, 0.5)$.
+
+\begin{lstlisting}[language=python]
+    import z3
+
+    #setup the network
+    x1 = z3.Real('x1')
+    x2 = z3.Real('x2')
+    x3 = -0.5*x1 + 0.5*x2 + 1.0    
+    x3_ = z3.If(x3 <= 0, 0, x3)  # ReLU
+    x4 = 1.0*x1 + 1.0*x2 - 1.0
+    x4_ = z3.If(x4 <= 0, 0, x4)  # ReLU
+    x5 = -1.0*x3_ + 1.0*x4_ - 1.0
+    
+    #check output on given input
+    s = z3.Solver()
+    s.add(x1 == 2.0, x2 == 0.5)
+    if s.check() == z3.sat:
+        m = s.model()
+        print("Output x5 =", m.evaluate(x5))
+\end{lstlisting} 
+
+\end{example}
 
 \section{Neural Network Architectures and Layers}
 
@@ -1736,6 +1779,11 @@ We represent the DNN in~\autoref{fig:dnn} as a formula $\alpha$ as follows:
 We then check the satisfiability of $\alpha \land \phi_{in} \land \neg \phi_{out}$ using a constraint solver (e.g., an SMT solver).  In this case, the formula is satisfiable and the solver returns \sat{}, and we query the solver for a satisfying assignment to the input variables, e.g., $x_1=-1$ and $x_2=2$. This assignment is a counterexample (\autoref{sec:properties-counterexamples}) to the property, as it satisfies the input constraint $\phi_{in}$ but violates the output constraint $\phi_{out}$, i.e., $x_5 = -3.5$, which is  $< 0$.
 
 \end{example}
+
+
+\begin{exercise}
+Use Z3 to do~\autoref{ex:dnn-sat}. You might find~\autoref{ex:z3-dnn} useful.  Make sure that you also ask Z3 to  find a counterexample violating the property (does not have to be the same as above).
+\end{exercise}
 
 \section{Activation Pattern Search}\label{sec:activation-pattern}
  For ReLU-based DNNs, NNV becomes a search for \emph{activation patterns}, i.e., boolean assignments representing activation status of neurons, that lead to satisfaction the formula in~\autoref{eq:prob}. 
