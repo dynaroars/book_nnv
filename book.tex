@@ -76,7 +76,7 @@
   linkcolor=blue,
   urlcolor=blue,
 }
-\usepackage{cleveref}
+%\usepackage{cleveref}
 \usepackage{booktabs}
 \usepackage{tikz}
 \usetikzlibrary{calc,positioning,intersections}
@@ -393,12 +393,14 @@
 \chapter{Neural Networks}\label{sec:basic}
 
 \section{Basics of Neural Networks}
-A \emph{neural network} (\textbf{NN})~\cite{Goodfellow-et-al-2016} consists of an input layer, multiple hidden layers, and an output layer. Each layer has a number of neurons, each connected to neurons in the next layer through a predefined set of weights (derived by training the network with data). A \emph{Deep Neural Network} (\textbf{DNN}) is an NN with two or more hidden layers. 
+A \emph{neural network} (\textbf{NN})~\cite{Goodfellow-et-al-2016} consists of an input layer, multiple hidden layers, and an output layer. Each layer has a number of neurons, each connected to neurons in the next layer through a predefined set of weights (derived by training the network with data). A \emph{Deep Neural Network} (\textbf{DNN}) is an NN with \emph{two} or more hidden layers. 
 
 %A deep neural network consists of three types of layers: an input layer, multiple hidden layers, and an output layer. Each layer consists of a number of neurons, each connected to neurons from another layers through a predefined set of weights (derived by training the network with data). A network is called a \emph{fully connected feed-forward} neural network (FNN) if it connects every neuron in a layer (i.e., all weights are non-zero) to a neuron in the next layer.
 
 The output of an NN is obtained by iteratively computing  the  values  of  neurons  in  each  layer.
-The value of a neuron in the input layer is the input data. The value of a neuron in the hidden layers is computed by applying an \emph{affine transformation} (\autoref{sec:affine}) to values of neurons in the previous layers, then followed by an \emph{activation function} (\autoref{sec:activation}) such as ReLU and Sigmoid. The value of a neuron in the output layer is computed similarly but may skip the activation function.
+The value of a neuron in the input layer is the input data. 
+The value of a neuron in the hidden layers is computed by applying an \emph{affine transformation} (\autoref{sec:affine}) to values of neurons in the previous layers, then followed by an \emph{activation function} (\autoref{sec:activation}) such as ReLU and Sigmoid. 
+The value of a neuron in the output layer is computed similarly but may skip the activation function.
 
 \paragraph{NN as a Function} We can view an NN as a function that maps input vectors to output vectors: 
 \begin{equation}
@@ -502,7 +504,7 @@ where \(n\) is the number of input neurons and \(m\) is the number of output neu
 \end{figure}
 
 \begin{example}\label{ex:dnn}
-\Cref{fig:dnn} shows an NN with two inputs $x_1, x_2 \in \mathbb{R}$, two hidden neurons \(x_3, x_4\) in one hidden layer, and one output neuron \(x_5\). The connections between the neurons are weighted edges, and the biases are shown below each neuron.
+\autoref{fig:dnn} shows an NN with two inputs $x_1, x_2 \in \mathbb{R}$, two hidden neurons \(x_3, x_4\) in one hidden layer, and one output neuron \(x_5\). The connections between the neurons are weighted edges, and the biases are shown below each neuron.
 
 
 \begin{itemize}
@@ -526,7 +528,7 @@ f(x_1, x_2) = -\relu{-0.5 x_1 + 0.5 x_2 + 1.0} + \relu{1.0 x_1 + 1.0 x_2 - 1.0} 
 
 \section{Affine Transformation}\label{sec:affine}
 
-The affine transformation (AF) of a neuron consists of a \emph{linear combination}---i.e., a weighted sum---of its inputs, followed by the addition of a bias term. More specifically, for a neuron with weights \(w_1, \dots, w_n\), bias \(b\), and inputs \(v_1, \dots, v_n\) from the previous layer, the AF computes:
+The affine transformation (AF) of a neuron consists of a \emph{linear combination}---a weighted sum\footnote{A weighted sum is a sum of the form \( \sum_{i=1}^{n} w_i v_i \), where \(w_i\) are weights and \(v_i\) are variables or terms.}---of its inputs, followed by the addition of a bias term. More specifically, for a neuron with weights \(w_1, \dots, w_n\), bias \(b\), and inputs \(v_1, \dots, v_n\) from the previous layer, the AF computes:
 
 \begin{equation}\label{eq:affine}   
     f(v_1, v_2, \dots,v_n) = \sum_{i=1}^{n} w_i v_i + b.
@@ -682,7 +684,7 @@ However, despite being piecewise linear, ReLU is \textbf{nonlinear} because it d
 In simpler terms, ReLU is nonlinear because it does not form a straight line.  It has a \textbf{kink} (a sharp bend) at $x = 0$, where the slope changes abruptly from $0$ to $1$. This discontinuity in the derivative prevents the function from being globally linear.
 
 
-This non-linearity makes DNN verification difficult. In fact, verification NNS with ReLU is $\mathsf{NP}$-complete as shown in~\autoref{sec:complexity}. We will use ReLU throughout this book as the default activation function for hidden neurons in an NN.
+This non-linearity makes DNN verification difficult. In fact, verification DNNs with ReLU is $\mathsf{NP}$-complete as shown in~\autoref{sec:complexity}. We will use ReLU throughout this book as the default activation function for hidden neurons in an NN.
 
 \subsection{Sigmoid}\label{sec:sigmoid}
 
@@ -850,12 +852,12 @@ In an FNN, information flows in one direction: from the input layer, through one
 
 Widely used feedforward architectures include fully connected, convolutional, and residual networks. Each architecture has its own strengths and is suited for different types of tasks.
 
-\paragraph{Fully Connected NNs}
+\paragraph{Fully Connected NNs (FCNs)}
 
-In fully connected NNs, each neuron in a layer is connected to every neuron in the next layer. Thus, every neuron in the input layer is connected to every neuron in the first hidden layer, every neuron in the first hidden layer is connected to every neuron in the second hidden layer, and so on, until the output layer. Fully connected NNs, sometimes called \emph{dense networks}, are the most basic type of FNNs and are commonly used for tasks like classification. 
+In FCNs, each neuron in a layer is connected to every neuron in the next layer. Thus, every neuron in the input layer is connected to every neuron in the first hidden layer, every neuron in the first hidden layer is connected to every neuron in the second hidden layer, and so on, until the output layer. Fully connected NNs, sometimes called \emph{dense networks}, are the most basic type of FNNs and are commonly used for tasks like classification. 
 
 \begin{example}
-\autoref{fig:dnn} earlier showed a fully connected network with two inputs and one hidden layer with two neurons, and one output neuron.~\autoref{fig:ffn} below shows a fully connected network with four inputs, two hidden layers with five neurons each, and three output neurons (weights and biases not shown for simplicity).
+\autoref{fig:dnn} earlier is an FCN with two inputs and one hidden layer with two neurons, and one output neuron.~\autoref{fig:ffn} below shows an FCN with four inputs, two hidden layers with five neurons each, and three output neurons (weights and biases not shown for simplicity).
 
 \begin{figure}[htp]
     \centering
@@ -902,6 +904,11 @@ In fully connected NNs, each neuron in a layer is connected to every neuron in t
 \end{figure}
 \end{example}
 
+
+\begin{example}[Classifier]
+A common use case for FCNs is classification. They take an input, e.g., pixels of an image, and predict what the image is (e.g., cat, dog, car). The output layer represents the probabilities of each class (e.g., $y_1$ is the probability of cat, $y_2$ is the probability of dog). Moreover, the outputs are often passed through a softmax activation function (\autoref{sec:softmax}) to convert them into probabilities that sum to 1, and the class with the highest probability is chosen as the predicted label.
+
+\end{example}
 
 \paragraph{Convolutional NNs (CNNs)} CNNs replace fully connected layers with \emph{convolutional layers}, which apply local filters across the input space. In CNNs, each neuron receives several inputs, takes a weighted sum over them, passes it through an activation function, and responds with an output.  CNNs are commonly used in computer vision and image processing. Despite their local structure, CNNs remain feedforward: data flows forward without cycles.
 
@@ -1029,7 +1036,8 @@ Assume the input $x$ and each node applies the ReLU activation. With the weights
 
 \subsection{Other NN Architectures}
 
-Not all NNs are feedforward. Some architectures introduce cycles, dynamic connections, or non-Euclidean data structures.
+Not all NNs are feedforward. 
+Some architectures introduce cycles, dynamic connections, or non-Euclidean\footnote{Euclidean data refers to data that can be represented in a flat, two-dimensional space, such as images.} data structures (e.g., graphs).
 
 \subsubsection{Recurrent Neural Networks (RNNs)} RNNs, often used in natural language processing (NLP) and speech recognition, are designed to recognize patterns in sequences of data. RNNs have \emph{loops} in them, allowing information to be sent forward and backward.
 
@@ -1152,11 +1160,11 @@ ONNX operators that cover most sequential feedforward networks include:
 \end{itemize} 
 The ONNX representation would look like:
 
-\tvn{check for accuracy, I make it very small just to illustrate what ONNX looks like}
+%\tvn{check for accuracy, I make it very small just to illustrate what ONNX looks like}
 \begin{lstlisting}
 ir_version: 9
 opset_import { version: 13 }
-graph tiny_net {
+graph example_nn {
   input: "x"
   output: "x5"
 
@@ -1179,259 +1187,6 @@ graph tiny_net {
 \end{lstlisting}
 \end{example}
 
-% \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
-% (opset_version 13)
-% (node (name "input") (op_type "Input") (inputs) (outputs ("x1" "x2")))
-% (node (name "hidden1") (op_type "ReLU") (inputs ("x1" "x2")) (outputs ("x3")))
-% (node (name "hidden2") (op_type "ReLU") (inputs ("x1" "x2")) (outputs ("x4")))
-% (node (name "output") (op_type "Add") (inputs ("x3" "x4")) (outputs ("x5")))
-% \end{lstlisting}
-
-% \hai{ONNX onnx.helper.printable\_graph}
-
-% \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
-% graph torch_jit (
-%   %onnx::Flatten_0[FLOAT, 1x2]
-% ) initializers (
-%   %1.weight[FLOAT, 3x2]
-%   %1.bias[FLOAT, 3]
-%   %3.weight[FLOAT, 4x3]
-%   %3.bias[FLOAT, 4]
-%   %5.weight[FLOAT, 2x4]
-%   %5.bias[FLOAT, 2]
-% ) {
-%   %onnx::Gemm_7 = Flatten[axis = 1](%onnx::Flatten_0)
-%   %input = Gemm[alpha = 1, beta = 1, transB = 1](%onnx::Gemm_7, %1.weight, %1.bias)
-%   %onnx::Gemm_9 = Relu(%input)
-%   %input.3 = Gemm[alpha = 1, beta = 1, transB = 1](%onnx::Gemm_9, %3.weight, %3.bias)
-%   %onnx::Gemm_11 = Relu(%input.3)
-%   %12 = Gemm[alpha = 1, beta = 1, transB = 1](%onnx::Gemm_11, %5.weight, %5.bias)
-%   return %12
-% }
-% \end{lstlisting}
-
-
-% \hai{ONNX raw model (need to update weights to match the example)}
-
-% \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
-%     ir_version: 7
-%     producer_name: "pytorch"
-%     producer_version: "1.12.1"
-%     graph {
-%       node {
-%         input: "onnx::Flatten_0"
-%         output: "onnx::Gemm_7"
-%         name: "Flatten_0"
-%         op_type: "Flatten"
-%         attribute {
-%           name: "axis"
-%           i: 1
-%           type: INT
-%         }
-%       }
-%       node {
-%         input: "onnx::Gemm_7"
-%         input: "1.weight"
-%         input: "1.bias"
-%         output: "input"
-%         name: "Gemm_1"
-%         op_type: "Gemm"
-%         attribute {
-%           name: "alpha"
-%           f: 1.0
-%           type: FLOAT
-%         }
-%         attribute {
-%           name: "beta"
-%           f: 1.0
-%           type: FLOAT
-%         }
-%         attribute {
-%           name: "transB"
-%           i: 1
-%           type: INT
-%         }
-%       }
-%       node {
-%         input: "input"
-%         output: "onnx::Gemm_9"
-%         name: "Relu_2"
-%         op_type: "Relu"
-%       }
-%       node {
-%         input: "onnx::Gemm_9"
-%         input: "3.weight"
-%         input: "3.bias"
-%         output: "input.3"
-%         name: "Gemm_3"
-%         op_type: "Gemm"
-%         attribute {
-%           name: "alpha"
-%           f: 1.0
-%           type: FLOAT
-%         }
-%         attribute {
-%           name: "beta"
-%           f: 1.0
-%           type: FLOAT
-%         }
-%         attribute {
-%           name: "transB"
-%           i: 1
-%           type: INT
-%         }
-%       }
-%       node {
-%         input: "input.3"
-%         output: "onnx::Gemm_11"
-%         name: "Relu_4"
-%         op_type: "Relu"
-%       }
-%       node {
-%         input: "onnx::Gemm_11"
-%         input: "5.weight"
-%         input: "5.bias"
-%         output: "12"
-%         name: "Gemm_5"
-%         op_type: "Gemm"
-%         attribute {
-%           name: "alpha"
-%           f: 1.0
-%           type: FLOAT
-%         }
-%         attribute {
-%           name: "beta"
-%           f: 1.0
-%           type: FLOAT
-%         }
-%         attribute {
-%           name: "transB"
-%           i: 1
-%           type: INT
-%         }
-%       }
-%       name: "torch_jit"
-%       initializer {
-%         dims: 3
-%         dims: 2
-%         data_type: 1
-%         name: "1.weight"
-%         raw_data: "\020\204\t\277\177\231\302>g\022\030\277\343\222\346=\226\037\327>TR\367\276"
-%       }
-%       initializer {
-%         dims: 3
-%         data_type: 1
-%         name: "1.bias"
-%         raw_data: "HT\n?K\024\224>\252\\\000\272"
-%       }
-%       initializer {
-%         dims: 4
-%         dims: 3
-%         data_type: 1
-%         name: "3.weight"
-%         raw_data: "\007l\212\274I\023\006?\261B:>j.\247>1\302\221\276\361\\\036>\357~\206\276o\000\326>\013\345\260\2731\260%\276\006\242\272\276\367\331\373\276"
-%       }
-%       initializer {
-%         dims: 4
-%         data_type: 1
-%         name: "3.bias"
-%         raw_data: "\311\360\304=S\346-<\236\024\251\276U /\276"
-%       }
-%       initializer {
-%         dims: 2
-%         dims: 4
-%         data_type: 1
-%         name: "5.weight"
-%         raw_data: "\370\222\342\275\200w\336<\004A\273\276\000;\023>hz\246=@\221\327<j\222\266>\342\014\325>"
-%       }
-%       initializer {
-%         dims: 2
-%         data_type: 1
-%         name: "5.bias"
-%         raw_data: "\024\256{\276,/\205\276"
-%       }
-%       input {
-%         name: "onnx::Flatten_0"
-%         type {
-%           tensor_type {
-%             elem_type: 1
-%             shape {
-%               dim {
-%                 dim_value: 1
-%               }
-%               dim {
-%                 dim_value: 2
-%               }
-%             }
-%           }
-%         }
-%       }
-%       output {
-%         name: "12"
-%         type {
-%           tensor_type {
-%             elem_type: 1
-%             shape {
-%               dim {
-%                 dim_value: 1
-%               }
-%               dim {
-%                 dim_value: 2
-%               }
-%             }
-%           }
-%         }
-%       }
-%     }
-%     opset_import {
-%       version: 13
-%     }
-% \end{lstlisting}
-
-% \end{example}
-
-
-
-
-
-
-% \begin{figure}[htp]
-%     \begin{center}
-%     \begin{tikzpicture}[scale=0.8, transform shape]
-%         % --- Rolled RNN (left diagram) ---
-%         \begin{scope}
-%             % Layer labels
-%             \node at (0,1.5) {\textbf{Input}};
-%             \node at (2.4,1.5) {\textbf{Hidden}};
-%             \node at (4.8,1.5) {\textbf{Output}};
-%             % Nodes
-%             \node[circle, draw=black, fill=white, thick, minimum size=0.4in] (RI) at (0,0) {};
-%             \node[circle, draw=black, fill=white, thick, minimum size=0.4in] (RH) at (2.4,0) {};
-%             \node[circle, draw=black, fill=white, thick, minimum size=0.4in] (RO) at (4.8,0) {};
-%             % Main arrows
-%             \draw[->, thick] (RI) -- (RH);
-%             \draw[->, thick] (RH) -- (RO);
-%             % Recurrent/self-loop at hidden node
-%             \draw [->, thick] (RH) edge [out=-120,in=-60,looseness=8] (RH);
-%             % Caption
-%             \node[align=center] at (2.4,-1.7) {Rolled RNN};
-%         \end{scope}
-        
-%         % --- Unrolled RNN (right diagram) ---
-%         \begin{scope}[xshift=8cm]
-
-
-
-
-
-% \section{Properties of Neural Networks}
-
-% \paragraph{Robustness Properties}
-% \emph{Robustness}, a desirable property for all networks, ensures that small perturbations in the input data do not cause major changes in the output of the network. For example, if a few pixels in an image are changed, the network should still classify the image correctly. \emph{Adversarial attacks} are a common way to test the robustness of a neural network. In an adversarial attack, an attacker makes small changes to the input data to cause the network to misclassify the data.
-
-% \emph{Local} robustness refers to robustness of a neural network within a \emph{small neighborhood or region} of the input data. In contrast, \emph{global} robustness refers to robustness of a network across the \emph{entire input space}. Global robustness is harder to achieve than local robustness, as it requires the network to be robust to all possible inputs.
-
-% \paragraph{$\epsilon$-robustness} A neural network is $\epsilon$-robust if the difference between any two inputs $x$ and $x'$ is within a small range $\epsilon$, the output $f$ of the network does not change significantly (or remain the same), i.e., $\|x-x'\| \leq \epsilon \implies f(x) \approx f(x')$.
 
 
 \chapter{Properties}\label{chap:properties}
@@ -1479,6 +1234,16 @@ Thus local robustness says that a network is robust if all nearby inputs $x'$ (w
 
 Local robustness is what most adversarial robustness papers mean, e.g., checking whether an image of a cat is still classified as a cat under small pixel noise.
 
+\begin{example}[Local Robustness: Image Classification]
+Consider a neural network $f$ that classifies images into different categories (e.g., dog, cat, etc.). A robustness property requires that if an input image $c$ is classified as a dog, then any perturbed image $x$ that is visually similar to $c$ should also be classified as a dog. This can be expressed as:
+
+\[
+\forall x, \qquad \|c - x\| \leq \epsilon \implies f(x) = f(c)
+\]
+
+\end{example}
+
+
 
 \paragraph{Global Robustness}
 
@@ -1489,19 +1254,21 @@ A neural network $f$ is $\epsilon$-globally-robust with respect to norm $\| \cdo
 
  This says the property must hold for all pairs of inputs in the domain: whenever two points are within $\epsilon$ of each other, they must share the same label.
  
-This is very strong definition, and in practice, almost impossible unless the network is trivial (e.g., outputs the same label everywhere).
+Global robustness is a very strong definition, and in practice, almost impossible unless the network is trivial (e.g., outputs the same label everywhere).
 
 
 
+\begin{exercise}
+Suppose that an network classifies an input image $x$ as digit 7. 
+We want to ensure that if the image is slightly perturbed (e.g., brightness changed by a small amount $\epsilon$), 
+the network still outputs 7.
 
-\begin{example}[Local Robustness: Image Classification]
-Consider a neural network $f$ that classifies images into different categories (e.g., dog, cat, etc.). A robustness property requires that if an input image $c$ is classified as a dog, then any perturbed image $x$ that is visually similar to $c$ should also be classified as a dog. This can be expressed as:
-
+\begin{solution}
 \[
-\forall x, \qquad \|c - x\| \leq \epsilon \implies f(x) = f(c)
+\forall x', \quad \|x - x'\| \leq \epsilon \implies f(x') = f(x) = 7
 \]
-
-\end{example}
+\end{solution}
+\end{exercise}
 
 
 
@@ -1523,6 +1290,20 @@ where $d_{intruder}$ is the distance to the intruder, $d_{threshold}$ is a prede
 
 
 Unlike robustness properties, which are often desirable in all networks, safety properties are often \emph{specific} to the application domain. For example, a safety property for an autonomous vehicle may not be relevant for a surgical robot.
+
+
+
+\begin{exercise}[Safety: Self-Driving Car]
+A network controlling a self-driving car on a highway might require that:  
+If the car in front is at least 160 meters away  and moving slower than us, 
+then we should not accelerate.
+
+\begin{solution}
+\[
+d \geq 160 \land v_{\text{front}} < v_{\text{us}} \implies a_{\text{us}} \leq 0
+\]
+\end{solution}
+\end{exercise}
 
 \section{Other properties}\label{sec:other-properties}
 
@@ -5605,7 +5386,6 @@ In each specification, the inputs (condition distance and latent variables) are 
 
 
 
-
 \chapter{Conclusion}
 
 \appendix
@@ -6436,8 +6216,8 @@ For this exercise, you will find some interesting MILP problem online, formulate
 Note: Interesting here means the problem has a non-trivial structure, resembles real-world applications (like the table and chair example in~\autoref{ex:lp-example3}), or involves complex constraints.
 \item For each problem:
 \begin{itemize}
-    \item Write down the problem and cite the sources (e.g., exact URL or author(s)/Title/Year if from a paper).
-    \item Formulate the problem as a MILP (clearly indicate the objective, constraints).
+    \item Write down the problem and \emph{cite} the sources (e.g., exact URL or Author(s)/Title/Year if from a paper).
+    \item Formulate the problem as a MILP (clearly indicate the objective and constraints).
     \item Solve them by hand (you can type this out, but show all the steps, if possible, draw the graph showing the feasible region).
     \item Implement the formulation in Z3 and solve it.
 \end{itemize}
