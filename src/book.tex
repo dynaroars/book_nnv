@@ -1239,7 +1239,7 @@ expressed in a formal language supported by a DNN verifier. Additional propertie
 
 \section{Definition}\label{sec:properties-def}
 
-As described in~\autoref{sec:basic} NNs define functions of the form $f: \mathbb{R}^{n} \to \mathbb{R}^{m}$, 
+As described in~\autoref{chap:nn-basics} NNs define functions of the form $f: \mathbb{R}^{n} \to \mathbb{R}^{m}$, 
 where $n$ is the dimension of the input and $m$ is the dimension of the output. Thus, the properties or specifications of an NN---similarly to properties of software program---are defined in terms of its input and output:
 
 \begin{quote}
@@ -6448,15 +6448,15 @@ Minimize $z = x + y$ subject to:
 & x + 2y \geq 3, \\
 & 3x + y \geq 3, \\
 & x, y \geq 0, \\
-& x \in \mathbb{R}.
+& x,y \in \mathbb{R}.
 \end{aligned}
 \]
 
 You can either do this by hand on paper (and take picture) or write Python code with Z3. Either way, show all the steps (e.g., as comments in the Z3 code):
 \begin{enumerate}
     \item The constraints and objective function.
-    \item The corner or candidate points
-    \item The optimal value at each corner point.
+    \item The corner or candidate points (this exercise is very simple that you do need an algorithm like Simplex to solve. You can simply ``guess'' these points, e.g., the intersection of the given constraints)
+    \item The objective value at each corner point.
     \item The optimal solution.
 \end{enumerate}
 \end{exercise}
