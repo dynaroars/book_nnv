@@ -34,7 +34,7 @@
 
 
 \newbool{showsol}
-\setbool{showsol}{true}
+\setbool{showsol}{false}
 
 \newenvironment{solution}{%
   \ifbool{showsol}{%
@@ -390,7 +390,7 @@
 \tableofcontents
 
 \part{Basics of Neural Networks and Verification}
-\chapter{Neural Networks}\label{sec:basic}
+\chapter{Neural Networks}\label{chap:nn-basics}
 
 \section{Basics of Neural Networks}
 A \emph{neural network} (\textbf{NN})~\cite{Goodfellow-et-al-2016} consists of an input layer, multiple hidden layers, and an output layer. Each layer has a number of neurons, each connected to neurons in the next layer through a predefined set of weights (derived by training the network with data). A \emph{Deep Neural Network} (\textbf{DNN}) is an NN with \emph{two} or more hidden layers. 
@@ -5609,12 +5609,14 @@ In each specification, the inputs (condition distance and latent variables) are 
     \item Week 2
     \begin{itemize}
     \item HW due: Post a short introduction about yourself on Canvas
-    \item Reading: Logic~\autoref{chap:logics} and Liner Programming~\autoref{chap:lp}
+    \item Topics: Background on Logic~\autoref{chap:logics} and Linear Programming~\autoref{chap:lp}
     \item Quiz: no quiz this week
     \end{itemize}
     \item Week 3:
     \begin{itemize}
         \item HW due: MILP exercise~\autoref{ex:milp-online}
+        \item Topics: DNN and Properties and their formal representation (~\autoref{chap:nn-basics} and~\autoref{chap:properties})
+        \item Quiz:
     \end{itemize}
     \item Week 4:
     \item Week 5:
@@ -5624,6 +5626,9 @@ In each specification, the inputs (condition distance and latent variables) are 
     \item Week 9:
     \item Week 10:
 \end{enumerate}    
+
+
+
 
 \chapter{Comparing neural networks with software}\label{app:nn-vs-software}
 
@@ -6435,6 +6440,27 @@ Note: Interesting here means the problem has a non-trivial structure, resembles 
 \end{itemize}
 \end{itemize}
 
+\end{exercise}
+
+
+\begin{exercise}
+Minimize $z = x + y$ subject to:
+\[
+\begin{aligned}
+& x + 2y \geq 3, \\
+& 3x + y \geq 3, \\
+& x, y \geq 0, \\
+& x \in \mathbb{R}.
+\end{aligned}
+\]
+
+You can either do this by hand on paper (and take picture) or write Python code with Z3. Either way, show all the steps (e.g., as comments in the Z3 code):
+\begin{enumerate}
+    \item The constraints and objective function.
+    \item The corner or candidate points
+    \item The optimal value at each corner point.
+    \item The optimal solution.
+\end{enumerate}
 \end{exercise}
 
 % \paragraph{Example.}  
