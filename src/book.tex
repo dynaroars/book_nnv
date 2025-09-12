@@ -200,7 +200,8 @@
 \renewcommand{\figureautorefname}{Fig.}
 \renewcommand{\tableautorefname}{Tab.}
 \renewcommand{\equationautorefname}{Eq.}
-%\renewcommand{\exampleautorefname}{Ex.}
+%\renewcommand{\exampleautorefname}{Example}
+%\renewcommand{\exerciseautorefname}{Exercise}
 \renewcommand{\chapterautorefname}{\textsection\@gobble}
 \renewcommand{\sectionautorefname}{\textsection\@gobble}
 \renewcommand{\subsectionautorefname}{\textsection\@gobble}
@@ -1313,12 +1314,12 @@ the network still outputs 7.
 
 
 
-\subsection{Safety}
+\subsection{Safety}\label{sec:properties-safety}
 
 
 \textbf{Safety} properties ensure that the network conforms to certain safety constraints. This is particularly important in safety-critical applications, such as autonomous vehicles or medical diagnosis systems, where incorrect outputs can lead to catastrophic consequences. %For example, in a self-driving car, we want to ensure that the car maintains a safe distance from other vehicles and pedestrians under all scenarios.
 
-\begin{example}[Collision Avoidance System]
+\begin{example}[Collision Avoidance System]\label{ex:collision-safety}
     A safety property in a collision avoidance system such as an autonomous vehicle might be that if the intruder is distant and significantly slower than us, then we stay below a certain velocity threshold. Formally, this can be expressed as:
 \[
 d_{intruder} > d_{threshold} \land v_{intruder} < v_{threshold} \implies v_{us} < v_{threshold},
@@ -1331,7 +1332,7 @@ Unlike robustness properties, which are often desirable in all networks, safety 
 
 
 
-\begin{exercise}[Safety: Self-Driving Car]
+\begin{exercise}[Safety: Self-Driving Car]\label{exercise:safety}
 A network controlling a self-driving car on a highway might require that:  
 If the car in front is at least 160 meters away  and moving slower than us, 
 then we should not accelerate.
@@ -1738,13 +1739,22 @@ Note that in this network the hidden neurons ($v_1 \ldots v_4$) use ReLU activat
 
 \chapter{Verification of Neural Networks}\label{sec:verification}
 
+This chapter discusses the problem of verifying neural networks, i.e., checking if a given property holds for a neural network. 
+We first define the neural network verification (NNV) problem in~\autoref{sec:nnv-problem}. Then, we formulate this problem as a satisfiability problem, which is the basis for many DNN verification tools.
 
 \section{The Neural Network Verification (NNV) Problem}\label{sec:nnv-problem}
 
 \begin{definition}[NNV]
 Given a DNN \(N\) and a property $\phi$, the \emph{DNN verification problem} asks if $\phi$ is a valid property of $N$.
-Typically, $\phi$ is a formula of the form $\phi_{in} \Rightarrow \phi_{out}$, where $\phi_{in}$ is a property over the inputs of $N$ and $\phi_{out}$ is a property over the outputs of $N$.
+
+Typically, $\phi$ is a formula of the form 
+
+\[
+\phi_{in} \Rightarrow \phi_{out},
+\]
+where $\phi_{in}$ is the \emph{precondition}, i.e., a condition over the inputs of $N$, and $\phi_{out}$ is the \emph{postcondition}, i.e., a condition over the outputs of $N$.%\footnote{$\phi_{in}$ is also called the precondition, and $\phi_{out}$ is called the postcondition.}.
 %This form of properties has been used to encode safety and security requirements of DNNs, e.g., safety specifications to avoid collision in unmanned aircraft~\cite{kochenderfer2012next} and \emph{adversarial robustness}~\cite{katz2017towards} properties desired by all DNNs, in which a small input perturbation does not cause major spikes in the DNN's outputs.
+
 A DNN verifier attempts to find a \emph{counterexample} input to $N$ that satisfies $\phi_{in}$ but violates $\phi_{out}$.  If no such counterexample exists, $\phi$ is a valid property of $N$. Otherwise, $\phi$ is not valid and the counterexample can be used to retrain or debug the DNN~\cite{huang2017safety}.
 \end{definition}
 
@@ -1754,9 +1764,35 @@ A DNN verifier attempts to find a \emph{counterexample} input to $N$ that satisf
 
 % \footnote{This is encoded as the differences of the inputs being within a certain small range  ($\phi_{in}$) implies the differences of the outputs still fall within a certain range in $\phi_{out}$)}.
 
+\begin{example}[Safety Property for Collision Avoidance System]
+    In~\autoref{ex:collision-safety}, we defined a safety property (\autoref{sec:properties-safety}) for a collision avoidance system: 
+\[
+d_{intruder} > d_{threshold} \land v_{intruder} < v_{threshold} \implies v_{us} < v_{threshold},
+\]
+where $d_{intruder}$ is the distance to the intruder, $d_{threshold}$ is a predefined safe distance, $v_{intruder}$ is the speed of the intruder, and $v_{us}$ is our speed.  
 
-\begin{example}\label{ex:dnn}
-A \emph{valid} property for the DNN in~\autoref{fig:dnn} is that the output is $x_5 \le 0$ for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$. 
+Here, the precondition is 
+\[
+\phi_{in} = d_{intruder} > d_{threshold} \land v_{intruder} < v_{threshold},
+\]
+and the postcondition is 
+\[
+\phi_{out} = v_{us} < v_{threshold}.
+\]
+\end{example}
+
+
+
+
+\begin{example}\label{ex:dnn-b}
+
+\begin{figure}
+\centering
+\mydnn
+\caption{\label{fig:dnn-b}A simple DNN (similar to~\autoref{fig:dnn}).}
+\end{figure}
+
+For the DNN in~\autoref{fig:dnn-b} a \emph{valid} property is that the output is $x_5 \le 0$ for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$.
 
 An \emph{invalid} property is that $x_5 > 0$ for those similar inputs.
 A counterexample showing this property violation is $\{x_1=-1, x_2=2\}$, from which the network evaluates to $x_5=-3.5$. 
@@ -1769,7 +1805,7 @@ A counterexample showing this property violation is $\{x_1=-1, x_2=2\}$, from wh
 
 As with traditional software verification, DNN verification is often represented as a satisfiability problem, and check if a given property is satisfied by the DNN. 
 
-To do this, we first need to define a formula $\alpha$ to represent the network. Typically $\alpha$ is a conjunction ($\bigwedge$) of constraints representing the affine transformation (\autoref{sec:affine}) and activation function (\autoref{sec:activation}) of each neuron in the network.
+To do this, we first define a formula $\alpha$ to represent the network. Typically $\alpha$ is a conjunction ($\bigwedge$) of constraints representing the affine transformation (\autoref{sec:affine}) and activation function (\autoref{sec:activation}) of each neuron in the network.
 For example, for a fully-connected neural network (\autoref{sec:ffn}) with $L$ layers, $N$ ReLU neurons per layer, this formula is:
 
 \begin{align*}
@@ -1781,7 +1817,7 @@ With this definition the NNV problem can be formulated as checking the validity 
 \begin{equation}\label{eq:nnv}
     \alpha \implies (\phi_{in} \implies \phi_{out}).
 \end{equation}
-This formula checks if the network $N$ satisfies (implies) the property $\phi$, where $\phi_{in}$ is a precondition on the inputs and $\phi_{out}$ is a postcondition on the outputs. This validity checking can be reduced to checking the satisfiability of the formula:
+This formula checks if the network $N$ satisfies (implies) the property $\phi_{in} \implies \phi_{out}$. This validity checking can be reduced to checking the satisfiability of the formula:
 
 \begin{equation}\label{eq:prob}
   \alpha \land \phi_{in} \land \neg \phi_{out}
@@ -1789,7 +1825,7 @@ This formula checks if the network $N$ satisfies (implies) the property $\phi$, 
 If~\autoref{eq:prob} is unsatisfiable, then $\phi$ is a valid property of $N$. Otherwise, $\phi$ is not valid.  Moreover, we can extract a counterexample for the original problem from the satisfying assignment of~\autoref{eq:prob}.
 
 \begin{example}\label{ex:dnn-sat}
-We represent the DNN in~\autoref{fig:dnn} as a formula $\alpha$ as follows:
+We represent the DNN in~\autoref{fig:dnn-b} as a formula $\alpha$ as follows:
 \begin{align*}
 & x_3 = -0.5x_1 + 0.5x_2 + 1.0 ~\land~ \hat{x}_3 = \relu{x_3} ~\land \\
 & x_4 = 0.5x_1 - 0.5x_2 + 1.0  ~\land~ \hat{x}_4 = \relu{x_4} ~\land \\
@@ -1801,7 +1837,7 @@ We represent the DNN in~\autoref{fig:dnn} as a formula $\alpha$ as follows:
 \phi_{out} = (x_5 > 0)
 \end{equation*}
 
-We then check the satisfiability of $\alpha \land \phi_{in} \land \neg \phi_{out}$ using a constraint solver (e.g., an SMT solver).  In this case, the formula is satisfiable and the solver returns \sat{}, and we query the solver for a satisfying assignment to the input variables, e.g., $x_1=-1$ and $x_2=2$. This assignment is a counterexample (\autoref{sec:properties-counterexamples}) to the property, as it satisfies the input constraint $\phi_{in}$ but violates the output constraint $\phi_{out}$, i.e., $x_5 = -3.5$, which is  $< 0$.
+We then check the satisfiability of $\alpha \land \phi_{in} \land \neg \phi_{out}$ using a constraint solver (e.g., the Z3 SMT solver).  In this case, the formula is satisfiable and the solver returns \sat{}, and we query the solver for a satisfying assignment to the input variables, e.g., $x_1=-1$ and $x_2=2$. This assignment is a counterexample (\autoref{sec:properties-counterexamples}) to the property, as it satisfies the precond $\phi_{in}$ but violates the postcondition $\phi_{out}$, i.e., $x_5 = -3.5$, which is  $< 0$.
 
 \end{example}
 
@@ -1826,31 +1862,31 @@ Modern DNN verification techniques~\cite{bunel2020branch,wang2021beta,ferrari202
 
 ReLU-based NNV is \NP{}-complete as shown in~\cite{katz2017reluplex,salzer2023reachability} by reducing the 3-SAT problem to it. This means that the problem of checking whether a given ReLu-based DNN satisfies a property is computationally hard, and no polynomial-time algorithm is known to solve it in the general case.
 
-\section{Challenges} %TODO
+% \section{Challenges} %TODO
 
-\subsection{Scalability} Neural networks can be very large, with millions of parameters. This makes it difficult to verify their correctness, as the number of possible inputs grows exponentially with the size of the network.
+% \subsection{Scalability} Neural networks can be very large, with millions of parameters. This makes it difficult to verify their correctness, as the number of possible inputs grows exponentially with the size of the network.
 
-%TODO: put somewhere else  
-For DNN verification, AF is straightforward to reason about because it is a linear function. However, AFs are often followed by non-linear activation functions, described next in~\autoref{sec:activation}, which make the verification problem more challenging.
+% %TODO: put somewhere else  
+% For DNN verification, AF is straightforward to reason about because it is a linear function. However, AFs are often followed by non-linear activation functions, described next in~\autoref{sec:activation}, which make the verification problem more challenging.
 
-%TODO: put somewhere else
-For DNN verification, these non-linear activation functions make verification difficult because it introduces multiple possible outcomes for any input, making it hard to reason about the output of the network. For example, ReLU has two possible outputs for any input: 0 if the input is less than zero, and the input itself otherwise, and Sigmoid has a smooth curve with infinite possible outputs for any input.
-
-
-\subsection{Formalization}
+% %TODO: put somewhere else
+% For DNN verification, these non-linear activation functions make verification difficult because it introduces multiple possible outcomes for any input, making it hard to reason about the output of the network. For example, ReLU has two possible outputs for any input: 0 if the input is less than zero, and the input itself otherwise, and Sigmoid has a smooth curve with infinite possible outputs for any input.
 
 
-\subsection{Expressiveness}
+% \subsection{Formalization}
+
+
+% \subsection{Expressiveness}
 
 
 
-\section{Challenges in Specifying Properties}\tvn{TODO}
+% \section{Challenges in Specifying Properties}\tvn{TODO}
 
-Specifying desirable properties for neural networks is not straightforward. Some challenges include:
-\begin{itemize}
-    \item \textbf{Incomplete Specifications:} We may not be able to specify all desirable properties.
-    \item \textbf{Expressiveness} For tasks such as sentiment analysis or image recognition, functional correctness is hard to define precisely.
-\end{itemize}
+% Specifying desirable properties for neural networks is not straightforward. Some challenges include:
+% \begin{itemize}
+%     \item \textbf{Incomplete Specifications:} We may not be able to specify all desirable properties.
+%     \item \textbf{Expressiveness} For tasks such as sentiment analysis or image recognition, functional correctness is hard to define precisely.
+% \end{itemize}
 
 
 
