@@ -857,7 +857,7 @@ Use Z3 to encode the DNN in~\autoref{fig:dnn} and compute its output $x5$ for th
     s.add(x1 == 2.0, x2 == 0.5)
     if s.check() == z3.sat:
         m = s.model()
-        print("Output x5 =", m.evaluate(x5))
+        print("Output x5 is ", m.evaluate(x5))
 \end{lstlisting} 
 
 \end{example}
@@ -883,9 +883,6 @@ Graph NN & GNN & Graph-structured data, molecule modeling, recommendation \\
 \bottomrule
 \end{tabular}
 \end{table}
-
-
-
 
 \subsection{Feedforward Neural Networks (FNNs)}\label{sec:ffn}
 
