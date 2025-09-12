@@ -34,7 +34,7 @@
 
 
 \newbool{showsol}
-\setbool{showsol}{false}
+\setbool{showsol}{true}
 
 \newenvironment{solution}{%
   \ifbool{showsol}{%
@@ -859,12 +859,12 @@ Use Z3 to encode the DNN in~\autoref{fig:dnn} and compute its output $x5$ for th
         m = s.model()
         print("Output x5 is ", m.evaluate(x5))
 \end{lstlisting} 
-
 \end{example}
 
 \section{Neural Network Architectures and Layers}
 
 NNs vary in architecture depending on how information flows through them and how computations are structured. Most common models are variations of the \emph{feedforward network}, with additional structures or constraints layered on top. ~\autoref{tab:nn-types} summarizes several common NN architectures and their typical application domains.
+
 
 \begin{table}[ht]
 \caption{Popular NN Architectures and Applications}\label{tab:nn-types}
@@ -1411,6 +1411,31 @@ The goal of DNN verification (\autoref{sec:nnv-problem}) is to either prove that
 
 
 
+\begin{example}[Counterexample: Monotonicity in Admission]
+A network predicts admission probability to a university. Inputs: GPA $p$ and test score $s$.  
+
+We want: a higher GPA with same score should not decrease admission probability.  
+
+But we observe a case violating this:
+\begin{itemize}
+ \item A: GPA = 3.0, score = 1500, prediction = 0.8  
+ \item B: GPA = 3.5, score = 1500, prediction = 0.6  
+\end{itemize}
+
+Using the numbers in this violating case, write the monotonicity requirement and show how this is a counterexample.
+
+
+Monotonicity requirement:
+\[
+p \leq p' \land s = s' \implies f(p,s) \leq f(p',s')
+\]
+
+Counterexample:
+\[
+3.0 \leq 3.5 \land 1500 = 1500 \quad \text{but} \quad f(3.0,1500)=0.8 > f(3.5,1500)=0.6
+\]
+
+\end{example}
 
 
 \section{The VNN-LIB  Specification Language}
@@ -1610,31 +1635,6 @@ We want consistency: If Q1 outputs $y$, then Q2 must output $1.8y+32$.
 % \end{solution}
 % \end{exercise}
 
-\begin{exercise}[Counterexample: Monotonicity in Admission]
-A network predicts admission probability to a university. Inputs: GPA $p$ and test score $s$.  
-
-We want: a higher GPA with same score should not decrease admission probability.  
-
-But we observe a case violating this:
-\begin{itemize}
- \item A: GPA = 3.0, score = 1500, prediction = 0.8  
- \item B: GPA = 3.5, score = 1500, prediction = 0.6  
-\end{itemize}
-
-Using the numbers in this violating case, write the monotonicity requirement and show how this is a counterexample.
-
-\begin{solution}
-Monotonicity requirement:
-\[
-p \leq p' \land s = s' \implies f(p,s) \leq f(p',s')
-\]
-
-Counterexample:
-\[
-3.0 \leq 3.5 \land 1500 = 1500 \quad \text{but} \quad f(3.0,1500)=0.8 > f(3.5,1500)=0.6
-\]
-\end{solution}
-\end{exercise}
 
 % \begin{exercise}[Robustness in Speech Recognition]
 % A speech recognition NN maps audio clips $x$ to text. Robustness property: if background noise changes by at most 
@@ -1705,6 +1705,36 @@ d=5, \quad f(d)=a=+2 \quad \text{violates property.}
 \end{solution}
 \end{exercise}
 
+
+
+\begin{exercise}\label{exercise:z3-properties}
+
+Consider the following neural network:    
+\begin{center}
+\includegraphics[width=0.5\linewidth]{figure/proof_net.pdf}
+\end{center}
+
+
+Note that in this network the hidden neurons ($v_1 \ldots v_4$) use ReLU activation, but the output neurons ($y_1,y_2$) just use affine transformation.
+
+\begin{itemize}
+    \item Encode this network using Z3.
+    \begin{itemize}
+        \item Try to use Z3 to evaluate the network on various inputs.
+    \end{itemize}
+\item Come up with \textbf{three} properties that this network \emph{does not} have.  Recall that a property often has the form in~\autoref{sec:properties-def}. 
+\begin{itemize}
+    \item Argue why each property does not hold by providing a counterexample (\autoref{sec:properties-counterexamples}).
+    \item (Optional, Easy) Try to use Z3 to show that the properties you came up with do not hold by asking Z3 to find counterexamples (one for each property).
+\end{itemize}
+\item Come up with \textbf{three} properties that that this network has (i.e., as long as the precondition holds, the postcondition holds).   
+\begin{itemize}
+    \item Argue why each property always holds (e.g., for any input satisfying the range X, the first layer outputs values in range Y, etc).
+    \item (Optional, A bit harder) Try to use Z3 to show that the properties you came up will always hold by asking Z3 to prove that no counterexample exists (i.e., \texttt{unsat}).  
+\end{itemize}
+\end{itemize}
+
+\end{exercise}
 
 \chapter{Verification of Neural Networks}\label{sec:verification}
 
@@ -5611,9 +5641,14 @@ In each specification, the inputs (condition distance and latent variables) are 
     \begin{itemize}
         \item HW due: MILP exercise~\autoref{ex:milp-online}
         \item Topics: DNN and Properties and their formal representation (~\autoref{chap:nn-basics} and~\autoref{chap:properties})
-        \item Quiz:
+        \item Quiz:~\autoref{exercise:milp-hand}
     \end{itemize}
     \item Week 4:
+    \begin{itemize}
+        \item HW due: Neural Networks and Properties exercise~\autoref{exercise:z3-properties}
+        \item Topics: 
+        \item Quiz:
+    \end{itemize}
     \item Week 5:
     \item Week 6:
     \item Week 7:
@@ -6438,7 +6473,7 @@ Note: Interesting here means the problem has a non-trivial structure, resembles 
 \end{exercise}
 
 
-\begin{exercise}
+\begin{exercise}\label{exercise:milp-hand}
 Minimize $z = x + y$ subject to:
 \[
 \begin{aligned}
