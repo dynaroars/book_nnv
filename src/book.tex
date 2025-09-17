@@ -845,8 +845,8 @@ Use Z3 to encode the DNN in~\autoref{fig:dnn} and compute its output $x5$ for th
     import z3
 
     #setup the network
-    x1 = z3.Real('x1')
-    x2 = z3.Real('x2')
+    x1 = z3.Real(`x1')
+    x2 = z3.Real(`x2')
     x3 = -0.5*x1 + 0.5*x2 + 1.0    
     x3_ = z3.If(x3 <= 0, 0, x3)  # ReLU
     x4 = 0.5*x1 + -0.5*x2 + -1.0
@@ -1824,6 +1824,15 @@ This formula checks if the network $N$ satisfies (implies) the property $\phi_{i
 \end{equation}
 If~\autoref{eq:prob} is unsatisfiable, then $\phi$ is a valid property of $N$. Otherwise, $\phi$ is not valid.  Moreover, we can extract a counterexample for the original problem from the satisfying assignment of~\autoref{eq:prob}.
 
+\begin{exercise}\label{ex:prop-neg1}
+  Let $\alpha$ represent our network and the robustness property $| x - x | \le \epsilon \implies  f(x) = f(y)$. Form the satisfiability formula (\autoref{eq:prop1}) that we need to check.
+\end{exercise}
+
+
+\begin{exercise}\label{ex:prop-neg2}
+  Let $\alpha$ represent our network and the property $y>0$ for any input $x_1 \in [r_1,r_2], x_2 \in [r_3,r_4]$. Form the satisfiability formula (\autoref{eq:prop1}) that we need to check.
+\end{exercise}
+
 \begin{example}\label{ex:dnn-sat}
 We represent the DNN in~\autoref{fig:dnn-b} as a formula $\alpha$ as follows:
 \begin{align*}
@@ -1848,15 +1857,77 @@ Use Z3 to do~\autoref{ex:dnn-sat}. You might find~\autoref{ex:z3-dnn} useful.  M
 
 \section{Activation Pattern Search}\label{sec:activation-pattern}
  For ReLU-based DNNs, NNV becomes a search for \emph{activation patterns}, i.e., boolean assignments representing activation status of neurons, that lead to satisfaction the formula in~\autoref{eq:prob}. 
-
-Modern DNN verification techniques~\cite{bunel2020branch,wang2021beta,ferrari2022complete,duong2024harnessing,duong2023dpllt,ovalbab,katz2019marabou,bak2021nnenum} all adopt this idea and search for satisfying activation patterns.
-
-\tvn{example of activation pattern search? using the above DNN example}
-\hai{I will pull the example from our paper, but I think we also should create a tree to demonstrate how it proceeds -- I will work on this}
+ Modern DNN verification techniques~\cite{bunel2020branch,wang2021beta,ferrari2022complete,duong2024harnessing,duong2023dpllt,ovalbab,katz2019marabou,bak2021nnenum} all adopt this idea and search for satisfying activation patterns.
 
 
-\tvn{Partial Activation Pattern}
 
+ \subsection{Complete and Partial Activation Patterns}\label{sec:activation-patterns}
+
+The notion of activation patterns is related to Boolean satisfiability.
+In SAT solving, a \emph{complete assignment} assigns a truth value to every Boolean variable, while a \emph{partial assignment} assigns truth values to only a subset of the variables, leaving the rest undetermined.
+
+In the same way:
+
+\begin{definition}[Complete Activation Pattern]
+Let $N$ be a ReLU-based DNN with neurons $n_1,\dots,n_m$.
+A \emph{complete activation pattern} $p$ is a Boolean vector
+\[
+p = \langle b_1, b_2, \dots, b_m \rangle \in \{\texttt{true}, \texttt{false}\}^m
+\]
+that fixes the activation status of \emph{every} neuron:
+$b_i = \texttt{true}$ means $n_i$ is active ($z_i \ge 0$),
+$b_i = \texttt{false}$ means $n_i$ is inactive ($z_i < 0$).
+\end{definition}
+
+\begin{definition}[Partial Activation Pattern]
+A \emph{partial activation pattern} $p'$ is a Boolean vector over a subset of neurons, e.g.,
+\[
+p' = \{n_{i_1} = b_{i_1}, n_{i_2} = b_{i_2}, \dots, n_{i_k} = b_{i_k}\},
+\quad k < m.
+\]
+This implicitly represents all complete activation patterns that extend $p'$ with assignments to the remaining neurons.
+\end{definition}
+
+\paragraph{Example (Complete pattern).}
+Consider the toy DNN in~\autoref{fig:dnn-b} with two ReLU neurons $x_3, x_4$.
+The complete activation pattern
+\[
+p = b_3=\mathsf{true},\;b_4=\mathsf{false}\}
+\]
+fixes both neurons: $x_3$ is active  and $x_4$ is inactive.
+This uniquely defines a single (complete) assignment to ReLU activation status.
+%This uniquely defines one linear region of the input space.
+
+\paragraph{Example (Partial pattern).}
+If we only fix $n_1$ to be active,
+\[
+p' = \{b_1 = \mathsf{true}\},
+\]
+then $p'$ is a partial activation pattern.
+It represents two complete patterns:
+\[
+\{b_1=\mathsf{true}, b_2=\mathsf{true}\},
+\qquad
+\{b_1=\mathsf{true}, b_2=\mathsf{false}\}.
+\]
+Thus, a partial pattern corresponds to a union of multiple assignments to ReLU activation status.
+% show example of what it means like neuron x is active,  it would mean that the input is in this region, and the output is this linear function of the input. ...show some formula
+
+% \paragraph{Why partial patterns matter.}
+% During search, a solver may detect that a partial pattern already leads to unsatisfiability (e.g., $n_1=\mathsf{true}, n_2=\mathsf{false}$ contradicts input constraints).
+% In this case, \emph{all complete patterns extending it can be safely pruned}, avoiding exponential blowup.
+
+% \begin{example}[Unsatisfiable Partial Pattern]
+% Suppose $n_1=\mathsf{true}$ implies $x_3 \ge 0$.
+% Further, if $n_2=\mathsf{false}$ implies $x_4 < 0$, but combining these constraints with the input domain $x_1 \in [-1,1], x_2 \in [-2,2]$ is impossible, then the partial pattern
+% \[
+% \{n_1=\mathsf{true},\; n_2=\mathsf{false}\}
+% \]
+% is unsatisfiable.
+% Since it has no consistent inputs, both complete patterns containing this assignment are eliminated at once.
+% \end{example}
+
+\tvn{may be need to add some trees}
 
 \section{Complexity}\label{sec:complexity}
 
@@ -5953,7 +6024,7 @@ Z3~\cite{de2008z3} is a well-known SMT solver developed by Microsoft Research. H
 
 \begin{lstlisting}
     brew install z3        # using homebrew
-    pip install z3solver   # using pip
+    pip install z3-solver   # using pip
     apt install z3 python3-z3 # using apt (on Debian-based Linux systems)
     conda install z3solver # using conda
 \end{lstlisting}    
@@ -5963,8 +6034,8 @@ Then try its Python interface:
 
 \begin{lstlisting}
     from z3 import *
-    x = Int('x')
-    y = Int('y')
+    x = Int(`x')
+    y = Int(`y')
     solve(x > 2, y < 10, x + 2*y == 7)
 \end{lstlisting} 
 
@@ -5977,7 +6048,7 @@ We use Z3 to check satisfiability of propositional formulae and generate counter
 \begin{lstlisting}
 from z3 import *
 
-x, y = Bools('x y')
+x, y = Bools(`x y')
 formula = And(Or(x, y), Or(Not(x), y))
 s = Solver()
 s.add(formula)
@@ -6004,7 +6075,7 @@ We now use Z3 as an SMT solver to check linear constraints.
 
     \begin{lstlisting}
 from z3 import *
-x, y = Reals('x y')
+x, y = Reals(`x y')
 
 # example 1
 s = Solver()
@@ -6019,7 +6090,7 @@ print(s.model())  # Output: {x=0, y=0}
 
 
 # example 3
-x, y = Ints('x y')
+x, y = Ints(`x y')
 s = Solver()
 s.add(Implies(x > 3, y > 2))
 print(s.check()) # Output: sat
@@ -6052,7 +6123,7 @@ We want to check if the property \texttt{``For all $x \leq 0$, we have $y=0$''} 
 
 
 \begin{lstlisting}
-x, y = Reals('x y')
+x, y = Reals(`x y')
 s = Solver()
 
 # y = max(0, x-1)
