@@ -189,13 +189,13 @@
 % for captions
 %\def\Section{\S}
 %\newcommand{\Section}{\textsection\@gobble}
-\renewcommand{\figurename}{Fig.}
-\renewcommand{\tablename}{Tab.}
-\renewcommand{\algorithmcfname}{Alg.}
+% \renewcommand{\figurename}{Fig.}
+% \renewcommand{\tablename}{Tab.}
+% \renewcommand{\algorithmcfname}{Alg.}
 
 \makeatletter
 % for cross references
-% \renewcommand{\algorithmcflinename}{L.}
+% \renewcommand{\algorithmcflinename}{L.}and use it in
 \renewcommand{\algorithmautorefname}{Alg.}
 \renewcommand{\figureautorefname}{Fig.}
 \renewcommand{\tableautorefname}{Tab.}
@@ -208,10 +208,6 @@
 \renewcommand{\subsubsectionautorefname}{\textsection\@gobble}
 \renewcommand{\appendixautorefname}{\textsection\@gobble}
 
-% \renewcommand{\chapterautorefname}{\S\@gobble}
-% \renewcommand{\sectionautorefname}{\S\@gobble}
-% \renewcommand{\subsectionautorefname}{\S\@gobble}
-% \renewcommand{\appendixautorefname}{\S\@gobble}
 
 \makeatother
 \newcommand{\proofgen}{\texttt{BaB$_{\text{ProofGen}}$}}
@@ -680,7 +676,7 @@ $\relu{-1.2} = 0$ (inactive), $\relu{0} = 0$ (inactive), and $\relu{2.8} = 2.8$ 
 
 
 \begin{example}
-In Z3, we can declare ReLU as a piecewise linear function and use it in assertions as follows:
+In Z3, we can declare ReLU using \texttt{If()}
 \begin{lstlisting}[language=python]
     import z3
 
@@ -692,7 +688,7 @@ In Z3, we can declare ReLU as a piecewise linear function and use it in assertio
     relu(2.8)   # returns 2.8
 \end{lstlisting}
 \end{example}
-\paragraph{Nonlinear Property} However, despite being piecewise linear, ReLU is \textbf{nonlinear} because it does not satisfy the two core properties of a linear function
+\paragraph{Nonlinear Property} Despite being piecewise linear, ReLU is \textbf{nonlinear} because it does not satisfy the two core properties of a linear function
 
     \begin{itemize}
         \item \textit{Additivity:} $\text{ReLU}(x + y) \ne \text{ReLU}(x) + \text{ReLU}(y)$ in general,
@@ -702,7 +698,7 @@ In Z3, we can declare ReLU as a piecewise linear function and use it in assertio
 In simpler terms, ReLU is nonlinear because it does not form a straight line.  It has a \textbf{kink} (a sharp bend) at $x = 0$, where the slope changes abruptly from $0$ to $1$. This discontinuity in the derivative prevents the function from being globally linear.
 
 
-This non-linearity makes DNN verification difficult. In fact, verification DNNs with ReLU is $\mathsf{NP}$-complete as shown in~\autoref{sec:complexity}. We will use ReLU throughout this book as the default activation function for hidden neurons in an NN.
+This non-linearity makes DNN verification difficult. In fact, verifying DNNs with ReLU has the $\mathsf{NP}$-complete complexity as shown in~\autoref{sec:complexity}. We will use ReLU throughout this book as the default activation function for hidden neurons in an NN.
 
 \subsection{Sigmoid}\label{sec:sigmoid}
 
@@ -1890,20 +1886,19 @@ This implicitly represents all complete activation patterns that extend $p'$ wit
 
 \paragraph{Example (Complete pattern).}
 Consider the toy DNN in~\autoref{fig:dnn-b} with two ReLU neurons $x_3, x_4$.
-The complete activation pattern
+The activation pattern
 \[
-p = b_3=\mathsf{true},\;b_4=\mathsf{false}\}
+p = \{b_3=\mathsf{true},\;b_4=\mathsf{false}\}
 \]
-fixes both neurons: $x_3$ is active  and $x_4$ is inactive.
-This uniquely defines a single (complete) assignment to ReLU activation status.
-%This uniquely defines one linear region of the input space.
+is complete because it fixes both neurons: $x_3$ is active  and $x_4$ is inactive.
+This defines a full (complete) assignment to ReLU activation status.
 
 \paragraph{Example (Partial pattern).}
-If we only fix $n_1$ to be active,
+The pattern
 \[
 p' = \{b_1 = \mathsf{true}\},
 \]
-then $p'$ is a partial activation pattern.
+is partial because it only fixes $n_1$ to be active.
 It represents two complete patterns:
 \[
 \{b_1=\mathsf{true}, b_2=\mathsf{true}\},
@@ -2245,7 +2240,7 @@ Since $x_5 = -3.5 \le 0$, this assignment satisfies our search for $x_5 \le 0$, 
 \end{itemize}
 
 
-\tvn{Hai, above you mention MILP also employs BaB algorithm, could you write a paragraph or so about how MILP solvers use BaB and briefly show how that would apply to example 4.2.2 (just briefly, no need a full step by step demonstration). Is this BaB algorithm used by MILP very similar to the one used by DNN verification tools (minus the DNN specific optimizations and heuristics)? like the BnB algorithm described in~\autoref{alg:bab} }
+\tvn{Hai, above you mention MILP also employs BaB algorithm, could you write a paragraph or so about how MILP solvers use BaB and briefly show how that would apply to example 4.2.2 (just briefly, no need a full step by step demonstration). Is this BaB algorithm used by MILP very similar to the one used by DNN verification tools (minus the DNN specific optimizations and heuristics)? like the BaB algorithm described in~\autoref{alg:bab} }
 % ---
 
 % Let me know if you want this condensed further or expanded into sub-items for even more clarity!
@@ -3106,8 +3101,10 @@ Here we can see that by using Interval abstraction, the property \(x_{11}\ \geq\
 \part{DNN Verification Algorithms}
 \chapter{The Branch and Bound Search Algorithm}\label{chap:bab}
 
-Modern DNN verifiers typically adopt the Branch-and-Bound (BaB) approach to search for activation patterns (\autoref{sec:activation-pattern}).  At its core, a BaB search consists of two main components: (branch) splitting into the problem smaller subproblems
-by using \emph{neuron splitting}, which decides boolean values representing neuron activation status,
+To solve the NNV problem (\autoref{sec:nnv-problem}) modern DNN verifiers typically adopt the Branch-and-Bound (BaB) approach to search for activation pattern (\autoref{sec:activation-pattern}).
+
+At its core, a BaB search consists of two main components: (branch) splitting into the problem smaller subproblems
+using \emph{neuron splitting}, which decides boolean values representing neuron activation status,
 and (bound) using abstraction and LP solving to approximate bounds on neuron values to determine
 the satisfiability of the partial activation pattern (\autoref{sec:activation-pattern}) formed by the split.
 
@@ -3311,7 +3308,7 @@ Finally, \bab{} has an empty \texttt{ActPatterns}, stops the search, and returns
 
 Even the BaB search itself is optimized to avoid exploring the entire search space. For example, if \functiontextformat{Deduce} step determines infeasibility, a smarter \bab{} variant (e.g., the \neuralsat{} tool described in~\autoref{chap:neuralsat}) can analyze the conflict and add a new clause to the set of clauses (\texttt{clauses}) to prevent the same activation pattern from being selected again. This is similar to conflict-driven clause learning (CDCL) in modern SAT solvers and is implemented in the \neuralsat{} DNN verification tool~\cite{duong2025neuralsat}. In addition, heuristics are also used to select, e.g., which neuron to split next (\functiontextformat{Decide}). We explore these optimizations and strategies in~\autoref{part:optimizations}.
 
-% \tvn{TODO: this basic BnB is also used to create a proof tree, which is used to generate a proof in the \prooflang{} format. We will discuss this in~\autoref{chapter:proof-gen-check}.}
+% \tvn{TODO: this basic BaB is also used to create a proof tree, which is used to generate a proof in the \prooflang{} format. We will discuss this in~\autoref{chapter:proof-gen-check}.}
 
 
 
@@ -3973,7 +3970,7 @@ Thus, \tool{} was able to generate non-chronological backtracks and use BCP to p
 
 \chapter{The \reluplex{} Algorithm}\label{chap:reluplex}
 
-\reluplex{}~\cite{katz2017reluplex} is a classical BnB approach for verifying neural networks. The technique extends the simplex method~\cite{nelder1965simplex} to support the ReLU activation function (\textbf{Reluplex} = \textbf{Relu} + Sim\textbf{plex}). \reluplex{} has been succeeded by the Marabou~\cite{katz2019marabou} tool, which are more efficient and scalable. However, the core ideas of \reluplex{} are still relevant and therefore we present it here.
+\reluplex{}~\cite{katz2017reluplex} is a classical BaB (\autoref{chap:bab}) approach for verifying neural networks. The technique extends the simplex method~\cite{nelder1965simplex} to support the ReLU activation function (\textbf{Reluplex} = \textbf{Relu} + Sim\textbf{plex}). \reluplex{} has been succeeded by the Marabou~\cite{katz2019marabou} tool, which are more efficient and scalable. However, the core ideas of \reluplex{} are still relevant and therefore we present it here.
 
 \section{Illustration}
 
@@ -5732,10 +5729,12 @@ In each specification, the inputs (condition distance and latent variables) are 
 
 \chapter{Conclusion}
 
+
+
 \appendix
 
-\chapter{Schedule}
-
+\chapter{Schedule and Assignments}
+\section{Weekly Schedule}
 \begin{enumerate}
     \item Week 1: Introduction (videos of neural networks, basic terminologies and concepts).
     \item Week 2
@@ -5764,7 +5763,7 @@ In each specification, the inputs (condition distance and latent variables) are 
     \item Week 10:
 \end{enumerate}    
 
-
+\section{Programming Assignments}
 
 
 \chapter{Comparing neural networks with software}\label{app:nn-vs-software}
@@ -5908,17 +5907,20 @@ For the formula
 \[
 (x \lor y) \land (\lnot x \lor z), 
 \]
-evaluate its truth value under all $2^3=8$ possible assignments of $x,y,z$. Identify the satisfying assignments (eval to True).
+evaluate its truth value under all $2^3=8$ possible assignments of $x,y,z$.
 \end{exercise}
 
 \subsection{Satisfiability and Validity}
-\begin{itemize}
-  \item A formula $\phi$ is \emph{satisfiable} if there exists \textbf{some} $\alpha$ such that $\alpha(\phi) = \texttt{True}$.
-  \item A formula $\phi$ is \emph{unsatisfiable} if \textbf{no} assignment satisfies it.
-  \item A formula $\phi$ is \emph{valid} if \textbf{all} assignments satisfy it.
-\end{itemize}
+\begin{definition}[Satisfiability] A formula $\phi$
 
-\begin{example}
+\begin{itemize}
+  \item is \emph{satisfiable} if there exists \textbf{some} $\alpha$ such that $\alpha(\phi) = \texttt{True}$.
+  \item is \emph{unsatisfiable} if \textbf{no} assignment satisfies it.
+  \item is \emph{valid} if \textbf{all} assignments satisfy it.
+\end{itemize}
+\end{definition}
+
+\begin{example} The formula
     \[x\]
     is satisfiable (e.g., $\alpha(x) = \texttt{True}$).
 \[
@@ -5938,16 +5940,16 @@ Show that $(\phi \to \psi)$ is equivalent to $(\lnot \phi \lor \psi)$.
 \end{exercise}
 
 
-\subsection{SAT Solvers}\label{sec:sat-solvers}
+\subsection{SAT Solving}\label{sec:sat-solving}
 
-A SAT solver takes a propositional formula as input and determines its satisfiability by searching for a satisfying assignment. If one exists, it returns the assignment; otherwise, it reports \unsat{}. Modern solvers use search algorithms such as
-\emph{DPLL (Davis–Putnam–Logemann–Loveland)} and
-\emph{CDCL (Conflict-Driven Clause Learning)}.
+A SAT solver takes a propositional formula as input and determines its satisfiability by searching for a satisfying assignment. If one exists, it returns the assignment; otherwise, it reports \unsat{}. % Modern solvers use search algorithms such as
+% \emph{DPLL (Davis–Putnam–Logemann–Loveland)} and
+% \emph{CDCL (Conflict-Driven Clause Learning)}.
 
 \begin{example}
 \begin{align*}
-\phi_1 &= (x \lor y) \land (\lnot x \lor z) \quad \Rightarrow \text{SAT}, \\
-\phi_2 &= (x) \land (\lnot x) \quad \Rightarrow \text{UNSAT}.
+\phi_1 &= (x \lor y) \land (\lnot x \lor z) \quad \Rightarrow \, \sat{}\\
+\phi_2 &= (x) \land (\lnot x) \quad \Rightarrow \unsat{}
 \end{align*}
 \end{example}
 
@@ -5955,7 +5957,7 @@ A SAT solver takes a propositional formula as input and determines its satisfiab
 
 
 \begin{exercise}
-Use a SAT solver (such as \texttt{pysat} in Python) to check whether
+Use the Z3 solver to check whether
 \[
 (x \lor y) \land (\lnot x \lor y) \land (x \lor \lnot y)
 \] is satisfiable.  
@@ -5963,9 +5965,10 @@ Provide a satisfying assignment if it exists.
 \end{exercise}
 
 
+
+
 \paragraph{Conjunctive Normal Form (CNF)}
 In practice, SAT solvers do not take arbitrary formulae as input. Instead, they require the formula to be in \emph{Conjunctive Normal Form (CNF)}.
-
 
 
 \begin{example}
@@ -5976,9 +5979,15 @@ is in CNF. Each clause $(x \lor y)$, $(\lnot x \lor z)$ is a disjunction of lite
 \end{example}
 
 
+
+\subsection{Validity Checking}\label{sec:validity-checking}
+We can use a SAT solver to check if a formula $\alpha$ is valid (no satisfying assignment) by checking that its negation, $\overline{\alpha}$, is not satisfiabile.
+
+
+
 \section{Satisfiability Modulo Theories (SMT)}
 
-SAT solvers only reason about propositional formulae, which only contain Boolean variables and operators.  However, in verification problems, we often need to reason about arithmetic constraints $2x + 3y \leq 7; x \geq 0; x,y \in \mathbb{Z}$.
+SAT solvers only reason about propositional formulae, which only contain Boolean variables and logical operators such as $\land, \lor$.  However, in verification problems, we often need to reason about arithmetic constraints $2x + 3y \leq 7; x \geq 0; x,y \in \mathbb{Z}$.
 
 
 This leads to \emph{Satisfiability Modulo Theories (SMT)}:
@@ -5995,6 +6004,8 @@ The answer depends on the chosen theory. Here, over real numbers ($\mathbb{R}$),
 
 \end{example}
 \subsection{SMT Solvers}
+
+% Like SAT solving, an SMT solver ..
 
 Popular SMT solvers include Z3 (Microsoft Research), CVC5, and dReal.
 They combine:
@@ -6962,14 +6973,14 @@ Software verification typically deals with discrete systems and logical properti
 
 
 \autoref{fig:alg} shows the \tool{} algorithm, which takes as input the formula $\alpha$ representing the ReLU-based DNN $N$ and the formulae $\phi_{in}\Rightarrow \phi_{out}$ representing the property $\phi$ to be proved.
-Internally, \tool{} checks the satisfiability of the formula
-\begin{equation}\label{eq:prob1}
+Internally, \tool{} checks the satisfiability of the formula given in~\autoref{eq:prob}
+\begin{equation*}
   \alpha \land \phi_{in} \land \overline{\phi_{out}}.
-\end{equation}
+\end{equation*}
 \tool{} returns \texttt{unsat} if the formula unsatisfiable, indicating  that $\phi$ is a valid property of $N$, and \texttt{sat} if it is satisfiable, indicating the $N$ is not a valid property.
 
 \tool{} uses a  DPLL(T)-based algorithm to check unsatisfiability.
-First, the input formula in~\autoref{eq:prob1} is abstracted to a propositional formula
+First, the input formula in~\autoref{eq:prob} is abstracted to a propositional formula
 with variables encoding neuron activation status (\texttt{BooleanAbstraction}).
 Next, \tool{} assign values to Boolean variables (\texttt{Decide}) and checks for conflicts the assignment has with the real-valued constraints of the DNN and the property of interest (\texttt{BCP} and \texttt{Deduction}).
 If conflicts arise, \tool{} determines the assignment decisions causing the conflicts (\texttt{AnalyzeConflict}), backtracks to erase such decisions (\texttt{Backtrack}), and learns clauses to avoid those decisions in the future.
