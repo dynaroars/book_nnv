@@ -1592,7 +1592,7 @@ Safety:
 \end{example}
 
 \begin{exercise}[Global Consistency: Celsius and Fahrenheit]
-A neural network answers two related questions:  
+An NN answers two related questions:
 Q1: ``What is the temperature in Celsius?'' (input $t_C$)  
 Q2: ``What is the temperature in Fahrenheit?'' (input $t_F$)  
 
@@ -1689,7 +1689,7 @@ We want consistency: If Q1 outputs $y$, then Q2 must output $1.8y+32$.
 % \end{exercise}
 
 \begin{exercise}[Counterexample: Safety in Vehicles]
-A NN outputs car acceleration $a$. We want: if distance to obstacle $d<10$, then $a\leq 0$. But we observe a scenario where $d=5$ but $a=+2$.  
+A NN computes car acceleration $a$. We want a safety property: if distance to obstacle $d<10$, then $a\leq 0$. But we observe a scenario where $d=5$ but $a=+2$.
 
 Write the safety requirement and show how this is a counterexample.
 
@@ -1825,16 +1825,16 @@ This formula checks if the network $N$ satisfies (implies) the property $\phi_{i
 If~\autoref{eq:prob} is unsatisfiable, then $\phi$ is a valid property of $N$. Otherwise, $\phi$ is not valid.  Moreover, we can extract a counterexample for the original problem from the satisfying assignment of~\autoref{eq:prob}.
 
 \begin{exercise}\label{ex:prop-neg1}
-  Let $\alpha$ represent our network and the robustness property $| x - x | \le \epsilon \implies  f(x) = f(y)$. Form the satisfiability formula (\autoref{eq:prop1}) that we need to check.
+  Let $\alpha$ represent our network and the robustness property $| x - x | \le \epsilon \implies  f(x) = f(y)$. Form the satisfiability formula (\autoref{eq:prop}) that we need to check.
 \end{exercise}
 
 
 \begin{exercise}\label{ex:prop-neg2}
-  Let $\alpha$ represent our network and the property $y>0$ for any input $x_1 \in [r_1,r_2], x_2 \in [r_3,r_4]$. Form the satisfiability formula (\autoref{eq:prop1}) that we need to check.
+  Let $\alpha$ represent our network and the property $y>0$ for any input $x_1 \in [r_1,r_2], x_2 \in [r_3,r_4]$. Form the satisfiability formula (\autoref{eq:prop}) that we need to check.
 \end{exercise}
 
 \begin{example}\label{ex:dnn-sat}
-We represent the DNN in~\autoref{fig:dnn-b} as a formula $\alpha$ as follows:
+We represent the DNN in~\autoref{fig:dnn-b} as a formula $\alpha$:
 \begin{align*}
 & x_3 = -0.5x_1 + 0.5x_2 + 1.0 ~\land~ \hat{x}_3 = \relu{x_3} ~\land \\
 & x_4 = 0.5x_1 - 0.5x_2 + 1.0  ~\land~ \hat{x}_4 = \relu{x_4} ~\land \\
@@ -1842,7 +1842,7 @@ We represent the DNN in~\autoref{fig:dnn-b} as a formula $\alpha$ as follows:
 \end{align*}
 \noindent and the property $x_5 > 0$ for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$ as:
 \begin{equation*}
-\phi_{in} = (-1 \le x_1 \le 1) \land (-1 \le x_2 \le 2); \qquad
+\phi_{in} = (-1 \le x_1 \le 1) \land (-2 \le x_2 \le 2); \qquad
 \phi_{out} = (x_5 > 0)
 \end{equation*}
 
