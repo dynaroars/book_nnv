@@ -13,6 +13,10 @@
 \usepackage[margin=1.5in]{geometry}
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage{complexity}
+\usepackage{etoolbox}
+
+
+
 \numberwithin{equation}{section}
 
 \newtheorem{theorem}{Theorem}[section]
@@ -24,8 +28,30 @@
 \newtheorem{definition}{Definition}[section]
 \newtheorem{example}{Example}[section]
 \newtheorem{exercise}{Exercise}[section]
+\newtheorem{solutione}{Solution}[section]
 \theoremstyle{remark}
 \newtheorem{remark}{Remark}
+
+
+\newbool{showsol}
+\setbool{showsol}{false}
+
+\newenvironment{solution}{%
+  \ifbool{showsol}{%
+    \begin{solutione}%
+  }{%
+    \comment % start ignoring
+  }%
+}{%
+  \ifbool{showsol}{%
+    \end{solutione}%
+  }{%
+    \endcomment % stop ignoring
+  }%
+}
+
+
+
 
 \usepackage{soul}
 \usepackage[most]{tcolorbox}
@@ -50,21 +76,40 @@
   linkcolor=blue,
   urlcolor=blue,
 }
-\usepackage{cleveref}
+%\usepackage{cleveref}
 \usepackage{booktabs}
 \usepackage{tikz}
-\usetikzlibrary{calc,positioning}
+\usetikzlibrary{calc,positioning,intersections}
 \usepackage{pgfplots}
 \pgfplotsset{compat=1.18}
-
 
 \usepackage{anyfontsize}
 \usepackage{sectsty}
 
 \usepackage[makeroom]{cancel}
 
-\usepackage[linesnumbered,ruled,vlined]{algorithm2e}
+\usepackage{listings}
+\lstset{basicstyle=\ttfamily\scriptsize,
+  language=Python,
+  morekeywords={assert},
+  keywordstyle=\color{blue},
+  commentstyle=\color{magenta},
+  numbers=none,
+  mathescape,
+  stepnumber=1,
+  numbersep=8pt,
+  tabsize=4,
+  showspaces=false,
+  showstringspaces=false,
+  emph={},
+  emphstyle=\color{red}\bfseries
+}
+\definecolor{keywords}{RGB}{0,35,197}
+\definecolor{comments}{RGB}{19,121,0}
+\definecolor{highlight}{RGB}{255,255,102}
 
+
+\usepackage[linesnumbered,ruled,vlined]{algorithm2e}
 \SetKwFor{Parfor}{parfor}{do}{endparfor}
 
 \SetKwInOut{Input}{input}
@@ -83,7 +128,6 @@
 \SetKwData{layer}{layer}
 \SetKwData{layerbounds}{layer\_bounds}
 \DontPrintSemicolon
-
 
 \SetAlgoCaptionSeparator{.}
 \SetAlCapFnt{\footnotesize\rm}
@@ -145,28 +189,25 @@
 % for captions
 %\def\Section{\S}
 %\newcommand{\Section}{\textsection\@gobble}
-\renewcommand{\figurename}{Fig.}
-\renewcommand{\tablename}{Tab.}
-\renewcommand{\algorithmcfname}{Alg.}
+% \renewcommand{\figurename}{Fig.}
+% \renewcommand{\tablename}{Tab.}
+% \renewcommand{\algorithmcfname}{Alg.}
 
 \makeatletter
 % for cross references
-% \renewcommand{\algorithmcflinename}{L.}
+% \renewcommand{\algorithmcflinename}{L.}and use it in
 \renewcommand{\algorithmautorefname}{Alg.}
 \renewcommand{\figureautorefname}{Fig.}
 \renewcommand{\tableautorefname}{Tab.}
 \renewcommand{\equationautorefname}{Eq.}
-%\renewcommand{\exampleautorefname}{Ex.}
+%\renewcommand{\exampleautorefname}{Example}
+%\renewcommand{\exerciseautorefname}{Exercise}
 \renewcommand{\chapterautorefname}{\textsection\@gobble}
 \renewcommand{\sectionautorefname}{\textsection\@gobble}
 \renewcommand{\subsectionautorefname}{\textsection\@gobble}
 \renewcommand{\subsubsectionautorefname}{\textsection\@gobble}
 \renewcommand{\appendixautorefname}{\textsection\@gobble}
 
-% \renewcommand{\chapterautorefname}{\S\@gobble}
-% \renewcommand{\sectionautorefname}{\S\@gobble}
-% \renewcommand{\subsectionautorefname}{\S\@gobble}
-% \renewcommand{\appendixautorefname}{\S\@gobble}
 
 \makeatother
 \newcommand{\proofgen}{\texttt{BaB$_{\text{ProofGen}}$}}
@@ -232,10 +273,10 @@
     tabsize=2,
 }
 
-\lstset{
-    language=SMTLIB,
-    style=SMTLIB-style
-}
+% \lstset{
+%     language=SMTLIB,
+%     style=SMTLIB-style
+% }
 
 
 \begin{document}
@@ -346,15 +387,17 @@
 \tableofcontents
 
 \part{Basics of Neural Networks and Verification}
-\chapter{Neural Networks}\label{sec:basic}
+\chapter{Neural Networks}\label{chap:nn-basics}
 
 \section{Basics of Neural Networks}
-A \emph{neural network} (\textbf{NN})~\cite{Goodfellow-et-al-2016} consists of an input layer, multiple hidden layers, and an output layer. Each layer has a number of neurons, each connected to neurons in the next layer through a predefined set of weights (derived by training the network with data). A \emph{Deep Neural Network} (\textbf{DNN}) is an NN with two or more hidden layers. 
+A \emph{neural network} (\textbf{NN})~\cite{Goodfellow-et-al-2016} consists of an input layer, multiple hidden layers, and an output layer. Each layer has a number of neurons, each connected to neurons in the next layer through a predefined set of weights (derived by training the network with data). A \emph{Deep Neural Network} (\textbf{DNN}) is an NN with \emph{two} or more hidden layers. 
 
 %A deep neural network consists of three types of layers: an input layer, multiple hidden layers, and an output layer. Each layer consists of a number of neurons, each connected to neurons from another layers through a predefined set of weights (derived by training the network with data). A network is called a \emph{fully connected feed-forward} neural network (FNN) if it connects every neuron in a layer (i.e., all weights are non-zero) to a neuron in the next layer.
 
 The output of an NN is obtained by iteratively computing  the  values  of  neurons  in  each  layer.
-The value of a neuron in the input layer is the input data. The value of a neuron in the hidden layers is computed by applying an \emph{affine transformation} (\autoref{sec:affine}) to values of neurons in the previous layers, then followed by an \emph{activation function} (\autoref{sec:activation}) such as ReLU and Sigmoid. The value of a neuron in the output layer is computed similarly but may skip the activation function.
+The value of a neuron in the input layer is the input data. 
+The value of a neuron in the hidden layers is computed by applying an \emph{affine transformation} (\autoref{sec:affine}) to values of neurons in the previous layers, then followed by an \emph{activation function} (\autoref{sec:activation}) such as ReLU and Sigmoid. 
+The value of a neuron in the output layer is computed similarly but may skip the activation function.
 
 \paragraph{NN as a Function} We can view an NN as a function that maps input vectors to output vectors: 
 \begin{equation}
@@ -458,13 +501,13 @@ where \(n\) is the number of input neurons and \(m\) is the number of output neu
 \end{figure}
 
 \begin{example}\label{ex:dnn}
-\Cref{fig:dnn} shows an NN with two inputs $x_1, x_2 \in \mathbb{R}$, two hidden neurons \(x_3, x_4\) in one hidden layer, and one output neuron \(x_5\). The connections between the neurons are weighted edges, and the biases are shown below each neuron.
+\autoref{fig:dnn} shows an NN with two inputs $x_1, x_2 \in \mathbb{R}$, two hidden neurons \(x_3, x_4\) in one hidden layer, and one output neuron \(x_5\). The connections between the neurons are weighted edges, and the biases are shown below each neuron.
 
 
 \begin{itemize}
     \item The hidden neurons compute:
     \[
-    x_3 = \relu{-0.5 x_1 + 0.5 x_2 + 1.0},\quad x_4 = \relu{1.0 x_1 + 1.0 x_2 - 1.0},
+    x_3 = \relu{-0.5 x_1 + 0.5 x_2 + 1.0},\quad x_4 = \relu{0.5 x_1 + -0.5 x_2 + -1.0},
     \]
     where $\relu{x} = \max(x, 0)$ is the ReLU activation function.
     \item The output neuron computes:
@@ -475,14 +518,14 @@ where \(n\) is the number of input neurons and \(m\) is the number of output neu
 
 Thus, this NN computes a function \(f: \mathbb{R}^2 \to \mathbb{R}\) where:
 \[
-f(x_1, x_2) = -\relu{-0.5 x_1 + 0.5 x_2 + 1.0} + \relu{1.0 x_1 + 1.0 x_2 - 1.0} - 1.0.
+f(x_1, x_2) = -\relu{-0.5 x_1 + 0.5 x_2 + 1.0} + \relu{0.5x_1 -0.5 x_2 - 1.0} - 1.0.
 \]
 \end{example}
 
 
 \section{Affine Transformation}\label{sec:affine}
 
-The affine transformation (AF) of a neuron consists of a \emph{linear combination}---i.e., a weighted sum---of its inputs, followed by the addition of a bias term. More specifically, for a neuron with weights \(w_1, \dots, w_n\), bias \(b\), and inputs \(v_1, \dots, v_n\) from the previous layer, the affine transformation computes:
+The affine transformation (AF) of a neuron consists of a \emph{linear combination}---a weighted sum\footnote{A weighted sum is a sum of the form \( \sum_{i=1}^{n} w_i v_i \), where \(w_i\) are weights and \(v_i\) are variables or terms.}---of its inputs, followed by the addition of a bias term. More specifically, for a neuron with weights \(w_1, \dots, w_n\), bias \(b\), and inputs \(v_1, \dots, v_n\) from the previous layer, the AF computes:
 
 \begin{equation}\label{eq:affine}   
     f(v_1, v_2, \dots,v_n) = \sum_{i=1}^{n} w_i v_i + b.
@@ -490,9 +533,68 @@ The affine transformation (AF) of a neuron consists of a \emph{linear combinatio
 
 
 \begin{example}
-In~\autoref{fig:dnn}, neuron \(x_3\) receives inputs \(x_1\) and \(x_2\) with weights \(-0.5\), \(0.5\), and bias \(1.0\), so its affine transformation is $x_3 = -0.5 x_1 + 0.5 x_2 + 1.0$.
+In~\autoref{fig:dnn}, neuron \(x_3\) receives inputs \(x_1\) and \(x_2\) with weights \(-0.5\), \(0.5\), and bias \(1.0\), so its AF is $x_3 = -0.5 x_1 + 0.5 x_2 + 1.0$.
 \end{example}
 
+
+% \paragraph{Matrix Form} AF can also be represented in matrix form.
+% \begin{equation}
+% f(v_1, v_2, \dots,v_n) = \begin{pmatrix}
+% w_1 & w_2 & \cdots & w_n
+% \end{pmatrix}
+% \begin{pmatrix}
+% v_1 \\
+% v_2 \\
+% \vdots \\
+% v_n
+% \end{pmatrix}
+% +
+% b,
+% \end{equation}
+
+
+% or equivalently,
+% \begin{equation}
+% f(\vec{v}) = W \vec{v} + b,
+% \end{equation}
+% where $W$ is the weight matrix, $\vec{x}$ is the input vector, and $b$ is the bias vector.
+
+
+% The affine transformation can be expressed in matrix form as follows:
+
+% \[
+% \begin{pmatrix}
+% x_3 \\
+% x_4
+% \end{pmatrix}
+% =
+% \begin{pmatrix}
+% -0.5 & 0.5 \\
+% 1.0 & 1.0
+% \end{pmatrix}
+% \begin{pmatrix}
+% x_1 \\
+% x_2
+% \end{pmatrix}
+% +
+% \begin{pmatrix}
+% 1.0 \\
+% \end{pmatrix}
+% =
+% \begin{pmatrix}
+% -0.5 & 0.5 \\
+% 1.0 & 1.0
+% \end{pmatrix}
+% \begin{pmatrix}
+% x_1 \\
+% x_2
+% \end{pmatrix}
+% +
+% \begin{pmatrix}
+% 1.0 \\
+% -1.0
+% \end{pmatrix}
+% \]
 
 \section{Activation Functions}\label{sec:activation}
 Popular activation functions used in NNs include ReLU, Sigmoid, Tanh, and Softmax. All of these are non-linear\footnote{Non-linear means that the output of the function is not a linear combination of its inputs.} functions that introduce non-linearity to the network, allowing it to learn complex patterns in the data.
@@ -569,7 +671,24 @@ $\relu{-1.2} = 0$ (inactive), $\relu{0} = 0$ (inactive), and $\relu{2.8} = 2.8$ 
 \end{example}
 
 
-However, despite being piecewise linear, ReLU is \textbf{nonlinear} because it does not satisfy the two core properties of a linear function
+\paragraph{Logical encoding} ReLU can be encoded using the following logical formula:
+\[y = \relu{x} \iff (x \leq 0 \land y = 0) \lor (x > 0 \land y = x).\] 
+
+
+\begin{example}
+In Z3, we can declare ReLU using \texttt{If()}
+\begin{lstlisting}[language=python]
+    import z3
+
+    def relu(x):
+        return z3.If(x <= 0, 0, x)
+
+    relu(-1.2)  # returns 0
+    relu(0)     # returns 0
+    relu(2.8)   # returns 2.8
+\end{lstlisting}
+\end{example}
+\paragraph{Nonlinear Property} Despite being piecewise linear, ReLU is \textbf{nonlinear} because it does not satisfy the two core properties of a linear function
 
     \begin{itemize}
         \item \textit{Additivity:} $\text{ReLU}(x + y) \ne \text{ReLU}(x) + \text{ReLU}(y)$ in general,
@@ -579,7 +698,7 @@ However, despite being piecewise linear, ReLU is \textbf{nonlinear} because it d
 In simpler terms, ReLU is nonlinear because it does not form a straight line.  It has a \textbf{kink} (a sharp bend) at $x = 0$, where the slope changes abruptly from $0$ to $1$. This discontinuity in the derivative prevents the function from being globally linear.
 
 
-This non-linearity makes DNN verification difficult. In fact, verification NNS with ReLU is $\mathsf{NP}$-complete as shown in~\autoref{sec:complexity}. We will use ReLU throughout this book as the default activation function for hidden neurons in an NN.
+This non-linearity makes DNN verification difficult. In fact, verifying DNNs with ReLU has the $\mathsf{NP}$-complete complexity as shown in~\autoref{sec:complexity}. We will use ReLU throughout this book as the default activation function for hidden neurons in an NN.
 
 \subsection{Sigmoid}\label{sec:sigmoid}
 
@@ -715,10 +834,34 @@ For a vector $x = [2, 1, 0]$, softmax computes:
 This means that softmax maps the input vector $x$ to a probability distribution over the three classes, where the first class has a probability of 0.71, the second class has a probability of 0.24, and the third class has a probability of 0.05.
 \end{example}
 
+\begin{example}\label{ex:z3-dnn}
+Use Z3 to encode the DNN in~\autoref{fig:dnn} and compute its output $x5$ for the input $(x_1, x_2) = (2.0, 0.5)$.
+
+\begin{lstlisting}[language=python]
+    import z3
+
+    #setup the network
+    x1 = z3.Real(`x1')
+    x2 = z3.Real(`x2')
+    x3 = -0.5*x1 + 0.5*x2 + 1.0    
+    x3_ = z3.If(x3 <= 0, 0, x3)  # ReLU
+    x4 = 0.5*x1 + -0.5*x2 + -1.0
+    x4_ = z3.If(x4 <= 0, 0, x4)  # ReLU
+    x5 = -1.0*x3_ + 1.0*x4_ - 1.0
+    
+    #check output on given input
+    s = z3.Solver()
+    s.add(x1 == 2.0, x2 == 0.5)
+    if s.check() == z3.sat:
+        m = s.model()
+        print("Output x5 is ", m.evaluate(x5))
+\end{lstlisting} 
+\end{example}
 
 \section{Neural Network Architectures and Layers}
 
 NNs vary in architecture depending on how information flows through them and how computations are structured. Most common models are variations of the \emph{feedforward network}, with additional structures or constraints layered on top. ~\autoref{tab:nn-types} summarizes several common NN architectures and their typical application domains.
+
 
 \begin{table}[ht]
 \caption{Popular NN Architectures and Applications}\label{tab:nn-types}
@@ -738,21 +881,18 @@ Graph NN & GNN & Graph-structured data, molecule modeling, recommendation \\
 \end{tabular}
 \end{table}
 
-
-
-
 \subsection{Feedforward Neural Networks (FNNs)}\label{sec:ffn}
 
 In an FNN, information flows in one direction: from the input layer, through one or more hidden layers, and finally to the output layer. There are no loops or cycles in the computation graph. 
 
 Widely used feedforward architectures include fully connected, convolutional, and residual networks. Each architecture has its own strengths and is suited for different types of tasks.
 
-\paragraph{Fully Connected NNs}
+\paragraph{Fully Connected NNs (FCNs)}
 
-In fully connected NNs, each neuron in a layer is connected to every neuron in the next layer. Thus, every neuron in the input layer is connected to every neuron in the first hidden layer, every neuron in the first hidden layer is connected to every neuron in the second hidden layer, and so on, until the output layer. Fully connected NNs, sometimes called \emph{dense networks}, are the most basic type of FNNs and are commonly used for tasks like classification. 
+In FCNs, each neuron in a layer is connected to every neuron in the next layer. Thus, every neuron in the input layer is connected to every neuron in the first hidden layer, every neuron in the first hidden layer is connected to every neuron in the second hidden layer, and so on, until the output layer. Fully connected NNs, sometimes called \emph{dense networks}, are the most basic type of FNNs and are commonly used for tasks like classification. 
 
 \begin{example}
-\autoref{fig:dnn} earlier showed a fully connected network with two inputs and one hidden layer with two neurons, and one output neuron.~\autoref{fig:ffn} below shows a fully connected network with four inputs, two hidden layers with five neurons each, and three output neurons (weights and biases not shown for simplicity).
+\autoref{fig:dnn} earlier is an FCN with two inputs and one hidden layer with two neurons, and one output neuron.~\autoref{fig:ffn} below shows an FCN with four inputs, two hidden layers with five neurons each, and three output neurons (weights and biases not shown for simplicity).
 
 \begin{figure}[htp]
     \centering
@@ -799,6 +939,11 @@ In fully connected NNs, each neuron in a layer is connected to every neuron in t
 \end{figure}
 \end{example}
 
+
+\begin{example}[Classifier]
+A common use case for FCNs is classification. They take an input, e.g., pixels of an image, and predict what the image is (e.g., cat, dog, car). The output layer represents the probabilities of each class (e.g., $y_1$ is the probability of cat, $y_2$ is the probability of dog). Moreover, the outputs are often passed through a softmax activation function (\autoref{sec:softmax}) to convert them into probabilities that sum to 1, and the class with the highest probability is chosen as the predicted label.
+
+\end{example}
 
 \paragraph{Convolutional NNs (CNNs)} CNNs replace fully connected layers with \emph{convolutional layers}, which apply local filters across the input space. In CNNs, each neuron receives several inputs, takes a weighted sum over them, passes it through an activation function, and responds with an output.  CNNs are commonly used in computer vision and image processing. Despite their local structure, CNNs remain feedforward: data flows forward without cycles.
 
@@ -926,9 +1071,10 @@ Assume the input $x$ and each node applies the ReLU activation. With the weights
 
 \subsection{Other NN Architectures}
 
-Not all NNs are feedforward. Some architectures introduce cycles, dynamic connections, or non-Euclidean data structures.
+Not all NNs are feedforward. 
+Some architectures introduce cycles, dynamic connections, or non-Euclidean\footnote{Euclidean data refers to data that can be represented in a flat, two-dimensional space, such as images.} data structures (e.g., graphs).
 
-\paragraph{Recurrent Neural Networks (RNNs)} RNNs, often used in natural language processing (NLP) and speech recognition, are designed to recognize patterns in sequences of data. RNNs have \emph{loops} in them, allowing information to be sent forward and backward.
+\subsubsection{Recurrent Neural Networks (RNNs)} RNNs, often used in natural language processing (NLP) and speech recognition, are designed to recognize patterns in sequences of data. RNNs have \emph{loops} in them, allowing information to be sent forward and backward.
 
 
 \begin{figure}[h]
@@ -1017,9 +1163,9 @@ For the second time step, the hidden state is $h_2 = \relu{2x_2 - h_1 + 0.5}$, a
 
 \end{example}
 
-\paragraph{Transformers} Transformers are designed for long-range dependencies using \emph{self-attention} rather than recurrence. They dominate applications in natural language processing and are increasingly used in vision and reinforcement learning.
+\subsubsection{Transformers} Transformers are designed for long-range dependencies using \emph{self-attention} rather than recurrence. They dominate applications in natural language processing and are increasingly used in vision and reinforcement learning.
 
-\paragraph{Graph Neural Networks (GNNs)} operate on graphs, allowing each node to aggregate information from its neighbors. GNNs are used in applications involving structured data like molecules or social networks.
+\subsubsection{Graph Neural Networks (GNNs)} operate on graphs, allowing each node to aggregate information from its neighbors. GNNs are used in applications involving structured data like molecules or social networks.
 
 
 
@@ -1047,261 +1193,35 @@ ONNX operators that cover most sequential feedforward networks include:
     \item Hidden layer: $x_3 = \relu{-0.5x_1 + 0.5x_2 + 1.0}$, $x_4 = \relu{0.5x_1 - 0.5x_2 + 1.0}$.
     \item Output: $x_5 = -x_3 + x_4 - 1$.
 \end{itemize} 
-The ONNX representation would look like:\tvn{could we put in the exact ONNX code?}\hd{working on it}
+The ONNX representation would look like:
 
-\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
-(opset_version 13)
-(node (name "input") (op_type "Input") (inputs) (outputs ("x1" "x2")))
-(node (name "hidden1") (op_type "ReLU") (inputs ("x1" "x2")) (outputs ("x3")))
-(node (name "hidden2") (op_type "ReLU") (inputs ("x1" "x2")) (outputs ("x4")))
-(node (name "output") (op_type "Add") (inputs ("x3" "x4")) (outputs ("x5")))
-\end{lstlisting}
+%\tvn{check for accuracy, I make it very small just to illustrate what ONNX looks like}
+\begin{lstlisting}
+ir_version: 9
+opset_import { version: 13 }
+graph example_nn {
+  input: "x"
+  output: "x5"
 
-\hai{ONNX onnx.helper.printable\_graph}
+  node { op_type: "Gemm" input: "x" input: "W1" input: "b1" output: "h1" }   # -0.5*x1+0.5*x2+1
+  node { op_type: "Relu" input: "h1" output: "x3" }
 
-\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
-graph torch_jit (
-  %onnx::Flatten_0[FLOAT, 1x2]
-) initializers (
-  %1.weight[FLOAT, 3x2]
-  %1.bias[FLOAT, 3]
-  %3.weight[FLOAT, 4x3]
-  %3.bias[FLOAT, 4]
-  %5.weight[FLOAT, 2x4]
-  %5.bias[FLOAT, 2]
-) {
-  %onnx::Gemm_7 = Flatten[axis = 1](%onnx::Flatten_0)
-  %input = Gemm[alpha = 1, beta = 1, transB = 1](%onnx::Gemm_7, %1.weight, %1.bias)
-  %onnx::Gemm_9 = Relu(%input)
-  %input.3 = Gemm[alpha = 1, beta = 1, transB = 1](%onnx::Gemm_9, %3.weight, %3.bias)
-  %onnx::Gemm_11 = Relu(%input.3)
-  %12 = Gemm[alpha = 1, beta = 1, transB = 1](%onnx::Gemm_11, %5.weight, %5.bias)
-  return %12
+  node { op_type: "Gemm" input: "x" input: "W2" input: "b2" output: "h2" }   # 0.5*x1-0.5*x2+1
+  node { op_type: "Relu" input: "h2" output: "x4" }
+
+  node { op_type: "Neg" input: "x3" output: "nx3" }
+  node { op_type: "Add" input: "nx3" input: "x4" output: "s1" }
+  node { op_type: "Add" input: "s1" input: "c_minus_1" output: "x5" }
+
+  initializer { name: "W1" values: [-0.5, 0.5] }
+  initializer { name: "b1" values: [1.0] }
+  initializer { name: "W2" values: [0.5, -0.5] }
+  initializer { name: "b2" values: [1.0] }
+  initializer { name: "c_minus_1" values: [-1.0] }
 }
 \end{lstlisting}
-
-
-\hai{ONNX raw model (need to update weights to match the example)}
-
-\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
-    ir_version: 7
-    producer_name: "pytorch"
-    producer_version: "1.12.1"
-    graph {
-      node {
-        input: "onnx::Flatten_0"
-        output: "onnx::Gemm_7"
-        name: "Flatten_0"
-        op_type: "Flatten"
-        attribute {
-          name: "axis"
-          i: 1
-          type: INT
-        }
-      }
-      node {
-        input: "onnx::Gemm_7"
-        input: "1.weight"
-        input: "1.bias"
-        output: "input"
-        name: "Gemm_1"
-        op_type: "Gemm"
-        attribute {
-          name: "alpha"
-          f: 1.0
-          type: FLOAT
-        }
-        attribute {
-          name: "beta"
-          f: 1.0
-          type: FLOAT
-        }
-        attribute {
-          name: "transB"
-          i: 1
-          type: INT
-        }
-      }
-      node {
-        input: "input"
-        output: "onnx::Gemm_9"
-        name: "Relu_2"
-        op_type: "Relu"
-      }
-      node {
-        input: "onnx::Gemm_9"
-        input: "3.weight"
-        input: "3.bias"
-        output: "input.3"
-        name: "Gemm_3"
-        op_type: "Gemm"
-        attribute {
-          name: "alpha"
-          f: 1.0
-          type: FLOAT
-        }
-        attribute {
-          name: "beta"
-          f: 1.0
-          type: FLOAT
-        }
-        attribute {
-          name: "transB"
-          i: 1
-          type: INT
-        }
-      }
-      node {
-        input: "input.3"
-        output: "onnx::Gemm_11"
-        name: "Relu_4"
-        op_type: "Relu"
-      }
-      node {
-        input: "onnx::Gemm_11"
-        input: "5.weight"
-        input: "5.bias"
-        output: "12"
-        name: "Gemm_5"
-        op_type: "Gemm"
-        attribute {
-          name: "alpha"
-          f: 1.0
-          type: FLOAT
-        }
-        attribute {
-          name: "beta"
-          f: 1.0
-          type: FLOAT
-        }
-        attribute {
-          name: "transB"
-          i: 1
-          type: INT
-        }
-      }
-      name: "torch_jit"
-      initializer {
-        dims: 3
-        dims: 2
-        data_type: 1
-        name: "1.weight"
-        raw_data: "\020\204\t\277\177\231\302>g\022\030\277\343\222\346=\226\037\327>TR\367\276"
-      }
-      initializer {
-        dims: 3
-        data_type: 1
-        name: "1.bias"
-        raw_data: "HT\n?K\024\224>\252\\\000\272"
-      }
-      initializer {
-        dims: 4
-        dims: 3
-        data_type: 1
-        name: "3.weight"
-        raw_data: "\007l\212\274I\023\006?\261B:>j.\247>1\302\221\276\361\\\036>\357~\206\276o\000\326>\013\345\260\2731\260%\276\006\242\272\276\367\331\373\276"
-      }
-      initializer {
-        dims: 4
-        data_type: 1
-        name: "3.bias"
-        raw_data: "\311\360\304=S\346-<\236\024\251\276U /\276"
-      }
-      initializer {
-        dims: 2
-        dims: 4
-        data_type: 1
-        name: "5.weight"
-        raw_data: "\370\222\342\275\200w\336<\004A\273\276\000;\023>hz\246=@\221\327<j\222\266>\342\014\325>"
-      }
-      initializer {
-        dims: 2
-        data_type: 1
-        name: "5.bias"
-        raw_data: "\024\256{\276,/\205\276"
-      }
-      input {
-        name: "onnx::Flatten_0"
-        type {
-          tensor_type {
-            elem_type: 1
-            shape {
-              dim {
-                dim_value: 1
-              }
-              dim {
-                dim_value: 2
-              }
-            }
-          }
-        }
-      }
-      output {
-        name: "12"
-        type {
-          tensor_type {
-            elem_type: 1
-            shape {
-              dim {
-                dim_value: 1
-              }
-              dim {
-                dim_value: 2
-              }
-            }
-          }
-        }
-      }
-    }
-    opset_import {
-      version: 13
-    }
-\end{lstlisting}
-
 \end{example}
 
-
-
-
-
-
-% \begin{figure}[htp]
-%     \begin{center}
-%     \begin{tikzpicture}[scale=0.8, transform shape]
-%         % --- Rolled RNN (left diagram) ---
-%         \begin{scope}
-%             % Layer labels
-%             \node at (0,1.5) {\textbf{Input}};
-%             \node at (2.4,1.5) {\textbf{Hidden}};
-%             \node at (4.8,1.5) {\textbf{Output}};
-%             % Nodes
-%             \node[circle, draw=black, fill=white, thick, minimum size=0.4in] (RI) at (0,0) {};
-%             \node[circle, draw=black, fill=white, thick, minimum size=0.4in] (RH) at (2.4,0) {};
-%             \node[circle, draw=black, fill=white, thick, minimum size=0.4in] (RO) at (4.8,0) {};
-%             % Main arrows
-%             \draw[->, thick] (RI) -- (RH);
-%             \draw[->, thick] (RH) -- (RO);
-%             % Recurrent/self-loop at hidden node
-%             \draw [->, thick] (RH) edge [out=-120,in=-60,looseness=8] (RH);
-%             % Caption
-%             \node[align=center] at (2.4,-1.7) {Rolled RNN};
-%         \end{scope}
-        
-%         % --- Unrolled RNN (right diagram) ---
-%         \begin{scope}[xshift=8cm]
-
-
-
-
-
-% \section{Properties of Neural Networks}
-
-% \paragraph{Robustness Properties}
-% \emph{Robustness}, a desirable property for all networks, ensures that small perturbations in the input data do not cause major changes in the output of the network. For example, if a few pixels in an image are changed, the network should still classify the image correctly. \emph{Adversarial attacks} are a common way to test the robustness of a neural network. In an adversarial attack, an attacker makes small changes to the input data to cause the network to misclassify the data.
-
-% \emph{Local} robustness refers to robustness of a neural network within a \emph{small neighborhood or region} of the input data. In contrast, \emph{global} robustness refers to robustness of a network across the \emph{entire input space}. Global robustness is harder to achieve than local robustness, as it requires the network to be robust to all possible inputs.
-
-% \paragraph{$\epsilon$-robustness} A neural network is $\epsilon$-robust if the difference between any two inputs $x$ and $x'$ is within a small range $\epsilon$, the output $f$ of the network does not change significantly (or remain the same), i.e., $\|x-x'\| \leq \epsilon \implies f(x) \approx f(x')$.
 
 
 \chapter{Properties}\label{chap:properties}
@@ -1311,10 +1231,10 @@ Similar to software programs, neural networks (NNs) have desirable properties to
 Below we will discuss properties that are relevant to the verification of NNs. Specifically, these properties can be 
 expressed in a formal language supported by a DNN verifier. Additional properties can be found in the literature~\cite{seshia2018formal}.
 
-\section{Properties, Informally}
+\section{Definition}\label{sec:properties-def}
 
-As described in~\autoref{sec:basic} NNs define functions of the form $f: \mathbb{R}^{n} \to \mathbb{R}^{m}$, 
-where $n$ is the dimension of the input and $m$ is the dimension of the output. Thus, the properties (or specifications) of an NN---similarly to properties of software program---are defined in terms of its input and output:
+As described in~\autoref{chap:nn-basics} NNs define functions of the form $f: \mathbb{R}^{n} \to \mathbb{R}^{m}$, 
+where $n$ is the dimension of the input and $m$ is the dimension of the output. Thus, the properties or specifications of an NN---similarly to properties of software program---are defined in terms of its input and output:
 
 \begin{quote}
 \textit{For any input $x \in \mathbb{R}^{n}$ satisfying a precondition $P$, the neural network should produce an output $f(x) \in \mathbb{R}^{m}$ that satisfies a postcondition $Q$.}
@@ -1324,25 +1244,40 @@ This says that if the input $x$ satisfies the precondition $P$, then the output 
 
 
 
-
-
-
 \section{Common Properties in Neural Networks}
 
-We now define some commonly studied correctness properties in NNs verification.
+We now define some commonly studied properties in NNs verification.
 
-\subsection{Robustness}
+\subsection{Robustness}\label{sec:properties-robustness}
 
 \textbf{Robustness} ensures that small changes in the input do not drastically change the output. This is a desirable property for all neural networks, especially classifiers, where we want to ensure that similar inputs yield similar outputs. For example, a slightly blurred image of a red light should still be classified as a red light.
 
-There are two types of robustness properties: \emph{global} and \emph{local} robustness. \tvn{hai, define these two for DNN verification.  Also in DNN verification do you distinctly distinguish between global and local robustness? }
+There are two types of robustness properties: \emph{local} (robustness around a chosen point) and  \emph{global} (robustness everywhere).
 
-\hd{
+
+
+
 \paragraph{Local Robustness}
 A neural network $f$ is $\epsilon$-locally-robust at point $x$ with respect to norm $\| \cdot \|$ if 
 \begin{equation}
     \forall x', \qquad \|x-x'\| \leq \epsilon \implies f(x) = f(x').
 \end{equation}
+where $\|x - x'\| \leq \epsilon$ indicates that the difference between the two points is within a certain (small) threshold $\epsilon$.
+
+
+Thus local robustness says that a network is robust if all nearby inputs $x'$ (within radius $\epsilon$) are classified the same as $x$. In other words, no small perturbation around this specific point $x$ will fool the classifier."
+
+Local robustness is what most adversarial robustness papers mean, e.g., checking whether an image of a cat is still classified as a cat under small pixel noise.
+
+\begin{example}[Local Robustness: Image Classification]
+Consider a neural network $f$ that classifies images into different categories (e.g., dog, cat, etc.). A robustness property requires that if an input image $c$ is classified as a dog, then any perturbed image $x$ that is visually similar to $c$ should also be classified as a dog. This can be expressed as:
+
+\[
+\forall x, \qquad \|c - x\| \leq \epsilon \implies f(x) = f(c)
+\]
+
+\end{example}
+
 
 
 \paragraph{Global Robustness}
@@ -1352,41 +1287,35 @@ A neural network $f$ is $\epsilon$-globally-robust with respect to norm $\| \cdo
     \forall x_1, x_2, \qquad \|x_1 - x_2\| \leq \epsilon \implies f(x_1) = f(x_2).
 \end{equation}
 
-Note that the global robustness can clearly be trivially satisfied by labeling all points as the same class.
-}
+ This says the property must hold for all pairs of inputs in the domain: whenever two points are within $\epsilon$ of each other, they must share the same label.
+ 
+Global robustness is a very strong definition, and in practice, almost impossible unless the network is trivial (e.g., outputs the same label everywhere).
 
 
 
-\begin{example}[Image Classification]
-Consider a neural network $f$ that classifies images into different categories (e.g., dog, cat, etc.). A robustness property requires that if an input image $c$ is classified as a dog, then any perturbed image $x$ that is visually similar to $c$ should also be classified as a dog. This can be expressed as:
+\begin{exercise}
+Suppose that an network classifies an input image $x$ as digit 7. 
+We want to ensure that if the image is slightly perturbed (e.g., brightness changed by a small amount $\epsilon$), 
+the network still outputs 7.
 
+\begin{solution}
 \[
-\|x - c\| \leq \epsilon \implies f(x) = f(c), 
+\forall x', \quad \|x - x'\| \leq \epsilon \implies f(x') = f(x) = 7
 \]
-
-where $\|x - c\| \leq \epsilon$ indicates that the difference between the two images is within a certain (small) threshold, which is typically defined in terms of pixel-wise differences.
-
-\end{example}
+\end{solution}
+\end{exercise}
 
 
 
 
-\begin{example}\label{ex:acas-robustness}
-A typical ACAS XU network (\autoref{sec:acasxu}) maps 5D input to 5D output via 6 layers of 50 ReLU neurons. A local robustness property is:
-\[
--\varepsilon_i \leq x_i \leq \varepsilon_i \quad (0 \leq i < 5)
-\]
-\[
-y_0 \leq y_1, \quad y_0 \leq y_2, \quad y_0 \leq y_3, \quad y_0 \leq y_4,
-\]
-where $x_i$ are the input variables, $y_i$ are the output variables, and $\varepsilon_i$ are small perturbation bounds for each input dimension. This property states that if the inputs are perturbed within the bounds $\varepsilon_i$, then the first output neuron $y_0$ is less than or equal to all other output neurons $y_1, y_2, y_3, y_4$.\tvn{Hai, is this local?}\hd{yes, it is local. But it doesn't tailor to a specific input (center point), so people might call it a safety property.}
-\end{example}
-\subsection{Safety}
 
 
-\textbf{Safety} ensures that the network conforms to certain safety constraints, often specific to the application domain. This is particularly important in safety-critical applications, such as autonomous vehicles or medical diagnosis systems, where incorrect outputs can lead to catastrophic consequences. For example, in a self-driving car, we want to ensure that the car maintains a safe distance from other vehicles and pedestrians under all scenarios.
+\subsection{Safety}\label{sec:properties-safety}
 
-\begin{example}[Collision Avoidance System]
+
+\textbf{Safety} properties ensure that the network conforms to certain safety constraints. This is particularly important in safety-critical applications, such as autonomous vehicles or medical diagnosis systems, where incorrect outputs can lead to catastrophic consequences. %For example, in a self-driving car, we want to ensure that the car maintains a safe distance from other vehicles and pedestrians under all scenarios.
+
+\begin{example}[Collision Avoidance System]\label{ex:collision-safety}
     A safety property in a collision avoidance system such as an autonomous vehicle might be that if the intruder is distant and significantly slower than us, then we stay below a certain velocity threshold. Formally, this can be expressed as:
 \[
 d_{intruder} > d_{threshold} \land v_{intruder} < v_{threshold} \implies v_{us} < v_{threshold},
@@ -1394,24 +1323,40 @@ d_{intruder} > d_{threshold} \land v_{intruder} < v_{threshold} \implies v_{us} 
 where $d_{intruder}$ is the distance to the intruder, $d_{threshold}$ is a predefined safe distance, $v_{intruder}$ is the speed of the intruder, and $v_{us}$ is our speed.
 \end{example}
 
+
+Unlike robustness properties, which are often desirable in all networks, safety properties are often \emph{specific} to the application domain. For example, a safety property for an autonomous vehicle may not be relevant for a surgical robot.
+
+
+
+\begin{exercise}[Safety: Self-Driving Car]\label{exercise:safety}
+A network controlling a self-driving car on a highway might require that:  
+If the car in front is at least 160 meters away  and moving slower than us, 
+then we should not accelerate.
+
+\begin{solution}
+\[
+d \geq 160 \land v_{\text{front}} < v_{\text{us}} \implies a_{\text{us}} \leq 0
+\]
+\end{solution}
+\end{exercise}
+
 \section{Other properties}\label{sec:other-properties}
 
 \subsection{Consistency}
 
-\textbf{Consistency} ensures that a neural network behaves in a logically coherent manner, maintaining stable and predictable outputs under semantically equivalent or related inputs. This property requires that the network's predictions follow logical relationships and respect domain-specific invariants, preventing contradictory outputs that would violate fundamental assumptions of the problem domain. 
+\textbf{Consistency} requires that a NN behaves consistently when given semantically equivalent or related inputs.
 
-\begin{example}[Logical Consistency in Large Language Models]
-    A consistency property in an LLM-based question answering system requires that the model provides logically coherent answers to related questions. For instance, given a set of related queries about the same factual information, the model should maintain consistency. Formally, consider queries $q_1$, $q_2$, and $q_3$ about a person's age:
+\begin{example}[Logical Consistency in LLMs] Consider queries $q_1$, $q_2$, and $q_3$ about a person's age:
 \[
-q_1: \text{"How old is person X?"}
+q_1: \texttt{``How old is person X?''}
 \]
 \[
-q_2: \text{"What year was person X born if they are currently Y years old?"}
+q_2: \texttt{``What year was X born if they are currently Y years old?''}
 \]
 \[
-q_3: \text{"Will person X be Z years old in 2025?"}
+q_3: \texttt{``Will X be Z years old in 2025?''}
 \]
-The consistency property requires that if the LLM outputs age $Y$ for $q_1$, then the birth year in $q_2$ should be $\text{current\_year} - Y$, and the answer to $q_3$ should be logically consistent with the stated age. This prevents scenarios where an LLM claims someone is 30 years old but was born in 1985 when the current year is 2024, ensuring logical coherence across related factual queries.
+Thus, if the LLM outputs age $Y$ for $q_1$, then $q_2$ should output $\texttt{current\_year} - Y$, and the answer to $q_3$ should be logically consistent with the stated age. This prevents scenarios where an LLM claims someone is 30 years old but was born in 1985 when the current year is 2024.
 \end{example}
 
 
@@ -1427,41 +1372,73 @@ The consistency property requires that if the LLM outputs age $Y$ for $q_1$, the
 
 \subsection{Monotonicity}
 
-\textbf{Monotonicity} ensures that the neural network maintains a consistent ordering relationship between inputs and outputs, where an increase in certain input features always leads to a non-decreasing output value. This property is particularly important in applications where domain knowledge dictates logical ordering constraints, such as fairness-aware systems, medical diagnosis, and scientific applications where physical laws impose natural ordering relationships.
+\textbf{Monotonicity} ensures that the NN maintains a consistent ordering relationship between inputs and outputs: an increase in certain input features always leads to a non-decreasing output value. This property is important in applications where domain knowledge dictates logical ordering constraints, such as fairness-aware systems, medical diagnosis, and scientific applications where physical laws impose natural ordering relationships.
 
 \begin{example}[Fairness]
-    A monotonicity property in an AI system should ensure that relevant merit-based features are monotonic while demographic features like gender have no effect on the outcome. For instance, in a university admissions system, the admission probability should be monotonically non-decreasing with respect to GPA and test scores, regardless of gender. Formally, for applicants with profiles $(p, s, g)$ and $(p', s', g')$ where $p, p'$ are GPAs, $s, s'$ are test scores, and $g, g'$ are gender indicators:
+    A network modelling the probability of admission to a university should be monotonically non-decreasing with respect to GPA and test scores, regardless of gender. Formally, for applicants with profiles $(p, s, g)$ and $(p', s', g')$ where $p, p'$ are GPAs, $s, s'$ are test scores, and $g, g'$ are gender indicators:
 \[
 p \leq p' \land s = s' \land g \neq g' \implies f(p, s, g) \leq f(p', s', g'),
 \]
 \[
 s \leq s' \land p = p' \land g \neq g' \implies f(p, s, g) \leq f(p, s', g'),
 \]
-where $f$ is the neural network computing admission probability. Additionally, for gender fairness:
+where $f$ is the neural network computing admission probability. Additionally, for fairness:
 \[
 f(p, s, \text{male}) = f(p, s, \text{female}) \text{ for all } p, s,
 \]
-ensuring that applicants with identical academic qualifications receive the same treatment regardless of gender, while maintaining logical ordering based on academic merit.
+ensuring that applicants with identical academic qualifications receive the same treatment regardless of gender.
 \end{example}
 
 
 
-\section{Counterexamples}\label{sec:counterexamples}
+\section{Counterexamples}\label{sec:properties-counterexamples}
 
-A \emph{counterexample} (\textbf{cex}) is a witness that falsifies the correctness property. A counterexample is an assignment to the input variables that satisfies the precondition but violates the postcondition.
+A \emph{counterexample} (\textbf{cex}) is a witness that falsifies the correctness property. Given the property defined in~\autoref{sec:properties-def}, a counterexample is an input $x$ that satisfies the precondition $P$ but produces an output $f(x)$ that violates the postcondition $Q$.
+
 
 \begin{example}[Counterexample to Robustness Property]
-For the brightness robustness property:
+For local robustness property (\autoref{sec:properties-robustness}):
 \[
-\text{If } f(x) \neq f(c) \text{ and } \|x - c\| \leq \epsilon, \text{ then } x \text{ is a counterexample.}
+f(x) \neq f(x') \land \|x - x'\| \leq \epsilon \implies x' \text{ is a counterexample.}
 \]
+\end{example}
+
+The goal of DNN verification (\autoref{sec:nnv-problem}) is to either prove that a property holds---no cex exist---or find a cex that violates the property.
+
+
+
+
+\begin{example}[Counterexample: Monotonicity in Admission]
+A network predicts admission probability to a university. Inputs: GPA $p$ and test score $s$.  
+
+We want: a higher GPA with same score should not decrease admission probability.  
+
+But we observe a case violating this:
+\begin{itemize}
+ \item A: GPA = 3.0, score = 1500, prediction = 0.8  
+ \item B: GPA = 3.5, score = 1500, prediction = 0.6  
+\end{itemize}
+
+Using the numbers in this violating case, write the monotonicity requirement and show how this is a counterexample.
+
+
+Monotonicity requirement:
+\[
+p \leq p' \land s = s' \implies f(p,s) \leq f(p',s')
+\]
+
+Counterexample:
+\[
+3.0 \leq 3.5 \land 1500 = 1500 \quad \text{but} \quad f(3.0,1500)=0.8 > f(3.5,1500)=0.6
+\]
+
 \end{example}
 
 
 \section{The VNN-LIB  Specification Language}
 
 
-The VNN-LIB standard~\cite{demarchi2023supporting,vnnlib} defines a format to describe neural networks and properties. Such a standard format enables the sharing of benchmarks across different tools and platforms, facilitating evaluations and comparisons of their performance. The international VNN-COMP competition~\cite{brix2024fifth} also uses VNN-LIB to evaluate the performance of different neural network verification tools.
+The VNN-LIB standard~\cite{demarchi2023supporting,vnnlib} defines a format to describe neural networks and properties. Such a standard format enables the sharing of benchmarks across different tools and platforms, facilitating evaluations and comparisons of their performance. VNN-COMP~\cite{brix2024fifth} uses VNN-LIB to evaluate different neural network verification tools.
 
 
 Specifically, VNN-LIB defines a common format for the following components:
@@ -1491,8 +1468,18 @@ Properties are encoded in \textbf{SMT-LIB2}, referencing input/output variable n
 
 
 \begin{example}
+A typical ACAS XU network (\autoref{sec:acasxu}) maps 5D input to 5D output via 6 layers of 50 ReLU neurons. A property is of the network is
+\[
+-\varepsilon_i \leq x_i \leq \varepsilon_i \quad (0 \leq i < 5)
+\]
+\[
+y_0 \leq y_1, \quad y_0 \leq y_2, \quad y_0 \leq y_3, \quad y_0 \leq y_4,
+\]
+where $x_i$ are the input variables, $y_i$ are the output variables, and $\varepsilon_i$ are small perturbation bounds for each input dimension. This property states that if the inputs are perturbed within the bounds $\varepsilon_i$, then the first output neuron $y_0$ is less than or equal to all other output neurons $y_1, y_2, y_3, y_4$.
 
-    The VNN-LIB code for the property given in~\autoref{ex:acas-robustness} is as follows:
+%\tvn{Hai, is this local?}\hd{yes, it is local. But it doesn't tailor to a specific input (center point), so people might call it a safety property.}
+
+The VNN-LIB code for this property is as follows:
 
 \begin{lstlisting}[style=SMTLIB-style, language=SMTLIB,basicstyle=\ttfamily\scriptsize, multicols=2]
 ; declaring the input variables
@@ -1577,20 +1564,193 @@ Properties are encoded in \textbf{SMT-LIB2}, referencing input/output variable n
 
 
 
+\section{Exercises}
+
+\begin{example}[Robustness + Safety: Drone Controller]
+An autonomous drone computes its thrust level using  a network controller $f(w,d)$, where $w$ is winds speed and $d$ the distance to nearest obstacle. We want two properties:  
+\begin{enumerate}
+\item Robustness: If the wind speed reading changes by at most 1 unit ($|w-w'|\leq 1$) and distance remains the same, 
+   the thrust decision should remain the same.  
+\item Safety: If the obstacle distance is less than 5 meters, then thrust must not be greater than 2.
+\end{enumerate}
+
+\begin{solution}
+Robustness:
+\[
+\forall w, w', d, \quad |w-w'|\leq 1 \implies f(w,d) = f(w',d)
+\]
+
+Safety:
+\[
+\forall w, d, \quad d < 5 \implies f(w,d) \leq 2
+\]
+\end{solution}
+\end{example}
+
+\begin{exercise}[Global Consistency: Celsius and Fahrenheit]
+An NN answers two related questions:
+Q1: ``What is the temperature in Celsius?'' (input $t_C$)  
+Q2: ``What is the temperature in Fahrenheit?'' (input $t_F$)  
+
+We want consistency: If Q1 outputs $y$, then Q2 must output $1.8y+32$.
+
+\begin{solution}
+\[
+\forall t_C, \quad f(Q2, t_C \times 1.8 + 32) = 1.8 \cdot f(Q1,t_C) + 32
+\]
+\end{solution}
+\end{exercise}
+
+% \begin{exercise}[Monotonicity in Multiple Inputs: Flight Risk]
+% A neural network predicts flight risk score $r$ for passengers. Inputs are number of missed flights $m$ 
+% and number of valid documents provided $d$. We want:  
+% - Increasing $m$ should never decrease $r$.  
+% - Increasing $d$ should never increase $r$.
+
+% \begin{solution}
+% Missed flights:
+% \[
+% m \leq m' \land d = d' \implies f(m,d) \leq f(m',d')
+% \]
+
+% Documents:
+% \[
+% d \leq d' \land m = m' \implies f(m,d) \geq f(m,d')
+% \]
+% \end{solution}
+% \end{exercise}
+
+% \begin{exercise}[Temporal Safety: Medical Monitoring]
+% A medical monitoring network takes as input heart rate readings over time and outputs an alarm signal 
+% (0 = safe, 1 = alarm). Property:  
+% If heart rate exceeds 180 bpm for 3 consecutive time steps, then the alarm must be raised at the next time step.
+
+% \begin{solution}
+% \[
+% \forall t, \quad (HR_t > 180 \land HR_{t+1} > 180 \land HR_{t+2} > 180) \implies f(HR_{t+3}) = 1
+% \]
+% \end{solution}
+% \end{exercise}
+
+
+% \begin{exercise}[Robustness in Speech Recognition]
+% A speech recognition NN maps audio clips $x$ to text. Robustness property: if background noise changes by at most 
+% $\epsilon$ in volume, the transcription should remain the same.
+
+% \begin{solution}
+% \[
+% \forall x', \quad \|x - x'\| \leq \epsilon \implies f(x') = f(x)
+% \]
+% \end{solution}
+% \end{exercise}
+
+% \begin{exercise}[Safety in Medical Diagnosis]
+% A NN diagnoses diseases from patient data (age $a$, blood pressure $bp$, heart rate $hr$).  
+% Safety property: If age $a > 80$ and $bp > 200$, then the network must never output ``safe''.
+
+% \begin{solution}
+% \[
+% a > 80 \land bp > 200 \implies f(a,bp,hr) \neq \text{``safe''}
+% \]
+% \end{solution}
+% \end{exercise}
+
+% \begin{exercise}[Consistency in Translation]
+% A multilingual NN translates between English, French, and German.  
+% If English $\to$ French translation of ``cat'' is ``chat'', then French $\to$ German translation of ``chat'' must be ``Katze''.
+
+% \begin{solution}
+% \[
+% f(\text{EN}\to\text{FR}, \text{``cat''}) = \text{``chat''} \implies 
+% f(\text{FR}\to\text{DE}, \text{``chat''}) = \text{``Katze''}
+% \]
+% \end{solution}
+% \end{exercise}
+
+% \begin{exercise}[Monotonicity in Fairness]
+% A network computes credit approval probability $f(p,s,g)$ with GPA $p$, score $s$, and gender $g$.  
+% We require: increasing GPA or score cannot decrease approval, and gender should not matter.
+
+% \begin{solution}
+% \[
+% p \leq p' \land s = s' \land g \neq g' \implies f(p,s,g) \leq f(p',s',g')
+% \]
+% \[
+% s \leq s' \land p = p' \land g \neq g' \implies f(p,s,g) \leq f(p,s',g')
+% \]
+% \[
+% f(p,s,\text{male}) = f(p,s,\text{female}) \quad \forall p,s
+% \]
+% \end{solution}
+% \end{exercise}
+
+\begin{exercise}[Counterexample: Safety in Vehicles]
+A NN computes car acceleration $a$. We want a safety property: if distance to obstacle $d<10$, then $a\leq 0$. But we observe a scenario where $d=5$ but $a=+2$.
+
+Write the safety requirement and show how this is a counterexample.
+
+\begin{solution}
+Safety requirement:
+\[
+d < 10 \implies a \leq 0
+\]
+
+Counterexample:
+\[
+d=5, \quad f(d)=a=+2 \quad \text{violates property.}
+\]
+\end{solution}
+\end{exercise}
 
 
 
+\begin{exercise}\label{exercise:z3-properties}
 
+Consider the following neural network:    
+\begin{center}
+\includegraphics[width=0.5\linewidth]{figure/proof_net.pdf}
+\end{center}
+
+
+Note that in this network the hidden neurons ($v_1 \ldots v_4$) use ReLU activation, but the output neurons ($y_1,y_2$) just use affine transformation.
+
+\begin{itemize}
+    \item Encode this network using Z3.
+    \begin{itemize}
+        \item Try to use Z3 to evaluate the network on various inputs.
+    \end{itemize}
+\item Come up with \textbf{three} properties that this network \emph{does not} have.  Recall that a property often has the form in~\autoref{sec:properties-def}. 
+\begin{itemize}
+    \item Argue why each property does not hold by providing a counterexample (\autoref{sec:properties-counterexamples}).
+    \item (Optional, Easy) Try to use Z3 to show that the properties you came up with do not hold by asking Z3 to find counterexamples (one for each property).
+\end{itemize}
+\item Come up with \textbf{three} properties that that this network has (i.e., as long as the precondition holds, the postcondition holds).   
+\begin{itemize}
+    \item Argue why each property always holds (e.g., for any input satisfying the range X, the first layer outputs values in range Y, etc).
+    \item (Optional, A bit harder) Try to use Z3 to show that the properties you came up will always hold by asking Z3 to prove that no counterexample exists (i.e., \texttt{unsat}).  
+\end{itemize}
+\end{itemize}
+
+\end{exercise}
 
 \chapter{Verification of Neural Networks}\label{sec:verification}
 
+This chapter discusses the problem of verifying neural networks, i.e., checking if a given property holds for a neural network. 
+We first define the neural network verification (NNV) problem in~\autoref{sec:nnv-problem}. Then, we formulate this problem as a satisfiability problem, which is the basis for many DNN verification tools.
 
 \section{The Neural Network Verification (NNV) Problem}\label{sec:nnv-problem}
 
 \begin{definition}[NNV]
 Given a DNN \(N\) and a property $\phi$, the \emph{DNN verification problem} asks if $\phi$ is a valid property of $N$.
-Typically, $\phi$ is a formula of the form $\phi_{in} \Rightarrow \phi_{out}$, where $\phi_{in}$ is a property over the inputs of $N$ and $\phi_{out}$ is a property over the outputs of $N$.
+
+Typically, $\phi$ is a formula of the form 
+
+\[
+\phi_{in} \Rightarrow \phi_{out},
+\]
+where $\phi_{in}$ is the \emph{precondition}, i.e., a condition over the inputs of $N$, and $\phi_{out}$ is the \emph{postcondition}, i.e., a condition over the outputs of $N$.%\footnote{$\phi_{in}$ is also called the precondition, and $\phi_{out}$ is called the postcondition.}.
 %This form of properties has been used to encode safety and security requirements of DNNs, e.g., safety specifications to avoid collision in unmanned aircraft~\cite{kochenderfer2012next} and \emph{adversarial robustness}~\cite{katz2017towards} properties desired by all DNNs, in which a small input perturbation does not cause major spikes in the DNN's outputs.
+
 A DNN verifier attempts to find a \emph{counterexample} input to $N$ that satisfies $\phi_{in}$ but violates $\phi_{out}$.  If no such counterexample exists, $\phi$ is a valid property of $N$. Otherwise, $\phi$ is not valid and the counterexample can be used to retrain or debug the DNN~\cite{huang2017safety}.
 \end{definition}
 
@@ -1600,12 +1760,38 @@ A DNN verifier attempts to find a \emph{counterexample} input to $N$ that satisf
 
 % \footnote{This is encoded as the differences of the inputs being within a certain small range  ($\phi_{in}$) implies the differences of the outputs still fall within a certain range in $\phi_{out}$)}.
 
+\begin{example}[Safety Property for Collision Avoidance System]
+    In~\autoref{ex:collision-safety}, we defined a safety property (\autoref{sec:properties-safety}) for a collision avoidance system: 
+\[
+d_{intruder} > d_{threshold} \land v_{intruder} < v_{threshold} \implies v_{us} < v_{threshold},
+\]
+where $d_{intruder}$ is the distance to the intruder, $d_{threshold}$ is a predefined safe distance, $v_{intruder}$ is the speed of the intruder, and $v_{us}$ is our speed.  
 
-\begin{example}\label{ex:dnn}
-A \emph{valid} property for the DNN in~\autoref{fig:dnn} is that the output is $x_5 \le 0$ for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$. 
+Here, the precondition is 
+\[
+\phi_{in} = d_{intruder} > d_{threshold} \land v_{intruder} < v_{threshold},
+\]
+and the postcondition is 
+\[
+\phi_{out} = v_{us} < v_{threshold}.
+\]
+\end{example}
+
+
+
+
+\begin{example}\label{ex:dnn-b}
+
+\begin{figure}
+\centering
+\mydnn
+\caption{\label{fig:dnn-b}A simple DNN (similar to~\autoref{fig:dnn}).}
+\end{figure}
+
+For the DNN in~\autoref{fig:dnn-b} a \emph{valid} property is that the output is $x_5 \le 0$ for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$.
 
 An \emph{invalid} property is that $x_5 > 0$ for those similar inputs.
-A counterexample showing this property violation is $\{x_1=-1, x_2=2\}$, from which the DNN evaluates to $x_5=-3.5$. 
+A counterexample showing this property violation is $\{x_1=-1, x_2=2\}$, from which the network evaluates to $x_5=-3.5$. 
 \end{example}
 
 %Such properties can capture \emph{safety requirements} (e.g., a rule in an  collision avoidance system in~\cite{kochenderfer2012next,katz2017reluplex} is ``if the intruder is distant and significantly slower than us, then we stay below a certain threshold'') or \emph{local robustness}~\cite{katz2017towards} conditions (a form of adversarial robustness stating that small perturbations of a given input all yield the same output).
@@ -1615,7 +1801,7 @@ A counterexample showing this property violation is $\{x_1=-1, x_2=2\}$, from wh
 
 As with traditional software verification, DNN verification is often represented as a satisfiability problem, and check if a given property is satisfied by the DNN. 
 
-To do this, we first need to define a formula $\alpha$ to represent the network. Typically $\alpha$ is a conjunction ($\bigwedge$) of constraints representing the affine transformation (\autoref{sec:affine}) and activation function (\autoref{sec:activation}) of each neuron in the network.
+To do this, we first define a formula $\alpha$ to represent the network. Typically $\alpha$ is a conjunction ($\bigwedge$) of constraints representing the affine transformation (\autoref{sec:affine}) and activation function (\autoref{sec:activation}) of each neuron in the network.
 For example, for a fully-connected neural network (\autoref{sec:ffn}) with $L$ layers, $N$ ReLU neurons per layer, this formula is:
 
 \begin{align*}
@@ -1627,15 +1813,24 @@ With this definition the NNV problem can be formulated as checking the validity 
 \begin{equation}\label{eq:nnv}
     \alpha \implies (\phi_{in} \implies \phi_{out}).
 \end{equation}
-This formula checks if the network $N$ satisfies (implies) the property $\phi$, where $\phi_{in}$ is a precondition on the inputs and $\phi_{out}$ is a postcondition on the outputs. This validity checking can be reduced to checking the satisfiability of the formula:
+This formula checks if the network $N$ satisfies (implies) the property $\phi_{in} \implies \phi_{out}$. This validity checking can be reduced to checking the satisfiability of the formula:
 
 \begin{equation}\label{eq:prob}
   \alpha \land \phi_{in} \land \neg \phi_{out}
 \end{equation}
-If~\autoref{eq:prob} is unsatisfiable, then $\phi$ is a valid property of $\mathcal{N}$. Otherwise, $\phi$ is not valid.  Moreover, we can extract a counterexample for the original problem from the satisfying assignment of~\autoref{eq:prob}.
+If~\autoref{eq:prob} is unsatisfiable, then $\phi$ is a valid property of $N$. Otherwise, $\phi$ is not valid.  Moreover, we can extract a counterexample for the original problem from the satisfying assignment of~\autoref{eq:prob}.
+
+\begin{exercise}\label{ex:prop-neg1}
+  Let $\alpha$ represent our network and the robustness property $| x - x | \le \epsilon \implies  f(x) = f(y)$. Form the satisfiability formula (\autoref{eq:prop}) that we need to check.
+\end{exercise}
+
+
+\begin{exercise}\label{ex:prop-neg2}
+  Let $\alpha$ represent our network and the property $y>0$ for any input $x_1 \in [r_1,r_2], x_2 \in [r_3,r_4]$. Form the satisfiability formula (\autoref{eq:prop}) that we need to check.
+\end{exercise}
 
 \begin{example}\label{ex:dnn-sat}
-We represent the DNN in~\autoref{fig:dnn} as a formula $\alpha$ as follows:
+We represent the DNN in~\autoref{fig:dnn-b} as a formula $\alpha$:
 \begin{align*}
 & x_3 = -0.5x_1 + 0.5x_2 + 1.0 ~\land~ \hat{x}_3 = \relu{x_3} ~\land \\
 & x_4 = 0.5x_1 - 0.5x_2 + 1.0  ~\land~ \hat{x}_4 = \relu{x_4} ~\land \\
@@ -1643,55 +1838,121 @@ We represent the DNN in~\autoref{fig:dnn} as a formula $\alpha$ as follows:
 \end{align*}
 \noindent and the property $x_5 > 0$ for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$ as:
 \begin{equation*}
-\phi_{in} = (-1 \le x_1 \le 1) \land (-1 \le x_2 \le 2); \qquad
+\phi_{in} = (-1 \le x_1 \le 1) \land (-2 \le x_2 \le 2); \qquad
 \phi_{out} = (x_5 > 0)
 \end{equation*}
 
-We then check the satisfiability of $\alpha \land \phi_{in} \land \neg \phi_{out}$ using a constraint solver (e.g., an SMT solver).  In this case, the formula is satisfiable and the solver returns \sat{}, and we query the solver for a satisfying assignment to the input variables, e.g., $x_1=-1$ and $x_2=2$. This assignment is a counterexample (\autoref{sec:counterexamples}) to the property, as it satisfies the input constraint $\phi_{in}$ but violates the output constraint $\phi_{out}$, i.e., $x_5 = -3.5$, which is  $< 0$.
+We then check the satisfiability of $\alpha \land \phi_{in} \land \neg \phi_{out}$ using a constraint solver (e.g., the Z3 SMT solver).  In this case, the formula is satisfiable and the solver returns \sat{}, and we query the solver for a satisfying assignment to the input variables, e.g., $x_1=-1$ and $x_2=2$. This assignment is a counterexample (\autoref{sec:properties-counterexamples}) to the property, as it satisfies the precond $\phi_{in}$ but violates the postcondition $\phi_{out}$, i.e., $x_5 = -3.5$, which is  $< 0$.
 
 \end{example}
 
+
+\begin{exercise}
+Use Z3 to do~\autoref{ex:dnn-sat}. You might find~\autoref{ex:z3-dnn} useful.  Make sure that you also ask Z3 to  find a counterexample violating the property (does not have to be the same as above).
+\end{exercise}
+
 \section{Activation Pattern Search}\label{sec:activation-pattern}
  For ReLU-based DNNs, NNV becomes a search for \emph{activation patterns}, i.e., boolean assignments representing activation status of neurons, that lead to satisfaction the formula in~\autoref{eq:prob}. 
-
-Modern DNN verification techniques~\cite{bunel2020branch,wang2021beta,ferrari2022complete,duong2024harnessing,duong2023dpllt,ovalbab,katz2019marabou,bak2021nnenum} all adopt this idea and search for satisfying activation patterns.
-
-\tvn{example of activation pattern search? using the above DNN example}
-\hai{I will pull the example from our paper, but I think we also should create a tree to demonstrate how it proceeds -- I will work on this}
+ Modern DNN verification techniques~\cite{bunel2020branch,wang2021beta,ferrari2022complete,duong2024harnessing,duong2023dpllt,ovalbab,katz2019marabou,bak2021nnenum} all adopt this idea and search for satisfying activation patterns.
 
 
-\tvn{Partial Activation Pattern}
 
+ \subsection{Complete and Partial Activation Patterns}\label{sec:activation-patterns}
+
+The notion of activation patterns is related to Boolean satisfiability.
+In SAT solving, a \emph{complete assignment} assigns a truth value to every Boolean variable, while a \emph{partial assignment} assigns truth values to only a subset of the variables, leaving the rest undetermined.
+
+In the same way:
+
+\begin{definition}[Complete Activation Pattern]
+Let $N$ be a ReLU-based DNN with neurons $n_1,\dots,n_m$.
+A \emph{complete activation pattern} $p$ is a Boolean vector
+\[
+p = \langle b_1, b_2, \dots, b_m \rangle \in \{\texttt{true}, \texttt{false}\}^m
+\]
+that fixes the activation status of \emph{every} neuron:
+$b_i = \texttt{true}$ means $n_i$ is active ($z_i \ge 0$),
+$b_i = \texttt{false}$ means $n_i$ is inactive ($z_i < 0$).
+\end{definition}
+
+\begin{definition}[Partial Activation Pattern]
+A \emph{partial activation pattern} $p'$ is a Boolean vector over a subset of neurons, e.g.,
+\[
+p' = \{n_{i_1} = b_{i_1}, n_{i_2} = b_{i_2}, \dots, n_{i_k} = b_{i_k}\},
+\quad k < m.
+\]
+This implicitly represents all complete activation patterns that extend $p'$ with assignments to the remaining neurons.
+\end{definition}
+
+\paragraph{Example (Complete pattern).}
+Consider the toy DNN in~\autoref{fig:dnn-b} with two ReLU neurons $x_3, x_4$.
+The activation pattern
+\[
+p = \{b_3=\mathsf{true},\;b_4=\mathsf{false}\}
+\]
+is complete because it fixes both neurons: $x_3$ is active  and $x_4$ is inactive.
+This defines a full (complete) assignment to ReLU activation status.
+
+\paragraph{Example (Partial pattern).}
+The pattern
+\[
+p' = \{b_1 = \mathsf{true}\},
+\]
+is partial because it only fixes $n_1$ to be active.
+It represents two complete patterns:
+\[
+\{b_1=\mathsf{true}, b_2=\mathsf{true}\},
+\qquad
+\{b_1=\mathsf{true}, b_2=\mathsf{false}\}.
+\]
+Thus, a partial pattern corresponds to a union of multiple assignments to ReLU activation status.
+% show example of what it means like neuron x is active,  it would mean that the input is in this region, and the output is this linear function of the input. ...show some formula
+
+% \paragraph{Why partial patterns matter.}
+% During search, a solver may detect that a partial pattern already leads to unsatisfiability (e.g., $n_1=\mathsf{true}, n_2=\mathsf{false}$ contradicts input constraints).
+% In this case, \emph{all complete patterns extending it can be safely pruned}, avoiding exponential blowup.
+
+% \begin{example}[Unsatisfiable Partial Pattern]
+% Suppose $n_1=\mathsf{true}$ implies $x_3 \ge 0$.
+% Further, if $n_2=\mathsf{false}$ implies $x_4 < 0$, but combining these constraints with the input domain $x_1 \in [-1,1], x_2 \in [-2,2]$ is impossible, then the partial pattern
+% \[
+% \{n_1=\mathsf{true},\; n_2=\mathsf{false}\}
+% \]
+% is unsatisfiable.
+% Since it has no consistent inputs, both complete patterns containing this assignment are eliminated at once.
+% \end{example}
+
+\tvn{may be need to add some trees}
 
 \section{Complexity}\label{sec:complexity}
 
-ReLU-based NNV is \NP{}-complete as shown in~\cite{katz2017reluplex,salzer2023reachability}. This means that the problem of checking whether a given ReLu-based DNN satisfies a property is computationally hard, and no polynomial-time algorithm is known to solve it in the general case.
+ReLU-based NNV is \NP{}-complete as shown in~\cite{katz2017reluplex,salzer2023reachability} by reducing the 3-SAT problem to it. This means that the problem of checking whether a given ReLu-based DNN satisfies a property is computationally hard, and no polynomial-time algorithm is known to solve it in the general case.
 
-\section{Challenges} %TODO
+% \section{Challenges} %TODO
 
-\subsection{Scalability} Neural networks can be very large, with millions of parameters. This makes it difficult to verify their correctness, as the number of possible inputs grows exponentially with the size of the network.
+% \subsection{Scalability} Neural networks can be very large, with millions of parameters. This makes it difficult to verify their correctness, as the number of possible inputs grows exponentially with the size of the network.
 
-%TODO: put somewhere else  
-For DNN verification, AF is straightforward to reason about because it is a linear function. However, AFs are often followed by non-linear activation functions, described next in~\autoref{sec:activation}, which make the verification problem more challenging.
+% %TODO: put somewhere else  
+% For DNN verification, AF is straightforward to reason about because it is a linear function. However, AFs are often followed by non-linear activation functions, described next in~\autoref{sec:activation}, which make the verification problem more challenging.
 
-%TODO: put somewhere else
-For DNN verification, these non-linear activation functions make verification difficult because it introduces multiple possible outcomes for any input, making it hard to reason about the output of the network. For example, ReLU has two possible outputs for any input: 0 if the input is less than zero, and the input itself otherwise, and Sigmoid has a smooth curve with infinite possible outputs for any input.
-
-
-\subsection{Formalization}
+% %TODO: put somewhere else
+% For DNN verification, these non-linear activation functions make verification difficult because it introduces multiple possible outcomes for any input, making it hard to reason about the output of the network. For example, ReLU has two possible outputs for any input: 0 if the input is less than zero, and the input itself otherwise, and Sigmoid has a smooth curve with infinite possible outputs for any input.
 
 
-\subsection{Expressiveness}
+% \subsection{Formalization}
+
+
+% \subsection{Expressiveness}
 
 
 
-\section{Challenges in Specifying Properties}\tvn{TODO}
+% \section{Challenges in Specifying Properties}\tvn{TODO}
 
-Specifying desirable properties for neural networks is not straightforward. Some challenges include:
-\begin{itemize}
-    \item \textbf{Incomplete Specifications:} We may not be able to specify all desirable properties.
-    \item \textbf{Expressiveness} For tasks such as sentiment analysis or image recognition, functional correctness is hard to define precisely.
-\end{itemize}
+% Specifying desirable properties for neural networks is not straightforward. Some challenges include:
+% \begin{itemize}
+%     \item \textbf{Incomplete Specifications:} We may not be able to specify all desirable properties.
+%     \item \textbf{Expressiveness} For tasks such as sentiment analysis or image recognition, functional correctness is hard to define precisely.
+% \end{itemize}
 
 
 
@@ -1797,7 +2058,7 @@ We define
     \item $l, u$: lower and upper bounds on $z$ ($l \leq z \leq u$) over the input region 
 \end{itemize}
 
-The MILP encoding of $\hat{z} = \max(z, 0)$ is then:
+The MILP encoding of $\hat{z} = \max(z, 0)$ is then (\autoref{ex:relu_milp}):
 \begin{align*}
     &\hat{z} \geq z \\
     &\hat{z} \geq 0 \\
@@ -1979,7 +2240,7 @@ Since $x_5 = -3.5 \le 0$, this assignment satisfies our search for $x_5 \le 0$, 
 \end{itemize}
 
 
-\tvn{Hai, above you mention MILP also employs BaB algorithm, could you write a paragraph or so about how MILP solvers use BaB and briefly show how that would apply to example 4.2.2 (just briefly, no need a full step by step demonstration). Is this BaB algorithm used by MILP very similar to the one used by DNN verification tools (minus the DNN specific optimizations and heuristics)? like the BnB algorithm described in~\autoref{alg:bab} }
+\tvn{Hai, above you mention MILP also employs BaB algorithm, could you write a paragraph or so about how MILP solvers use BaB and briefly show how that would apply to example 4.2.2 (just briefly, no need a full step by step demonstration). Is this BaB algorithm used by MILP very similar to the one used by DNN verification tools (minus the DNN specific optimizations and heuristics)? like the BaB algorithm described in~\autoref{alg:bab} }
 % ---
 
 % Let me know if you want this condensed further or expanded into sub-items for even more clarity!
@@ -2840,8 +3101,10 @@ Here we can see that by using Interval abstraction, the property \(x_{11}\ \geq\
 \part{DNN Verification Algorithms}
 \chapter{The Branch and Bound Search Algorithm}\label{chap:bab}
 
-Modern DNN verifiers typically adopt the Branch-and-Bound (BaB) approach to search for activation patterns (\autoref{sec:activation-pattern}).  At its core, a BaB search consists of two main components: (branch) splitting into the problem smaller subproblems
-by using \emph{neuron splitting}, which decides boolean values representing neuron activation status,
+To solve the NNV problem (\autoref{sec:nnv-problem}) modern DNN verifiers typically adopt the Branch-and-Bound (BaB) approach to search for activation pattern (\autoref{sec:activation-pattern}).
+
+At its core, a BaB search consists of two main components: (branch) splitting into the problem smaller subproblems
+using \emph{neuron splitting}, which decides boolean values representing neuron activation status,
 and (bound) using abstraction and LP solving to approximate bounds on neuron values to determine
 the satisfiability of the partial activation pattern (\autoref{sec:activation-pattern}) formed by the split.
 
@@ -3045,7 +3308,7 @@ Finally, \bab{} has an empty \texttt{ActPatterns}, stops the search, and returns
 
 Even the BaB search itself is optimized to avoid exploring the entire search space. For example, if \functiontextformat{Deduce} step determines infeasibility, a smarter \bab{} variant (e.g., the \neuralsat{} tool described in~\autoref{chap:neuralsat}) can analyze the conflict and add a new clause to the set of clauses (\texttt{clauses}) to prevent the same activation pattern from being selected again. This is similar to conflict-driven clause learning (CDCL) in modern SAT solvers and is implemented in the \neuralsat{} DNN verification tool~\cite{duong2025neuralsat}. In addition, heuristics are also used to select, e.g., which neuron to split next (\functiontextformat{Decide}). We explore these optimizations and strategies in~\autoref{part:optimizations}.
 
-% \tvn{TODO: this basic BnB is also used to create a proof tree, which is used to generate a proof in the \prooflang{} format. We will discuss this in~\autoref{chapter:proof-gen-check}.}
+% \tvn{TODO: this basic BaB is also used to create a proof tree, which is used to generate a proof in the \prooflang{} format. We will discuss this in~\autoref{chapter:proof-gen-check}.}
 
 
 
@@ -3707,7 +3970,7 @@ Thus, \tool{} was able to generate non-chronological backtracks and use BCP to p
 
 \chapter{The \reluplex{} Algorithm}\label{chap:reluplex}
 
-\reluplex{}~\cite{katz2017reluplex} is a classical BnB approach for verifying neural networks. The technique extends the simplex method~\cite{nelder1965simplex} to support the ReLU activation function (\textbf{Reluplex} = \textbf{Relu} + Sim\textbf{plex}). \reluplex{} has been succeeded by the Marabou~\cite{katz2019marabou} tool, which are more efficient and scalable. However, the core ideas of \reluplex{} are still relevant and therefore we present it here.
+\reluplex{}~\cite{katz2017reluplex} is a classical BaB (\autoref{chap:bab}) approach for verifying neural networks. The technique extends the simplex method~\cite{nelder1965simplex} to support the ReLU activation function (\textbf{Reluplex} = \textbf{Relu} + Sim\textbf{plex}). \reluplex{} has been succeeded by the Marabou~\cite{katz2019marabou} tool, which are more efficient and scalable. However, the core ideas of \reluplex{} are still relevant and therefore we present it here.
 
 \section{Illustration}
 
@@ -5464,10 +5727,44 @@ In each specification, the inputs (condition distance and latent variables) are 
 
 
 
-
 \chapter{Conclusion}
 
+
+
 \appendix
+
+\chapter{Schedule and Assignments}
+\section{Weekly Schedule}
+\begin{enumerate}
+    \item Week 1: Introduction (videos of neural networks, basic terminologies and concepts).
+    \item Week 2
+    \begin{itemize}
+    \item HW due: Post a short introduction about yourself on Canvas
+    \item Topics: Background on Logic~\autoref{chap:logics} and Linear Programming~\autoref{chap:lp}
+    \item Quiz: no quiz this week
+    \end{itemize}
+    \item Week 3:
+    \begin{itemize}
+        \item HW due: MILP exercise~\autoref{ex:milp-online}
+        \item Topics: DNN and Properties and their formal representation (~\autoref{chap:nn-basics} and~\autoref{chap:properties})
+        \item Quiz:~\autoref{exercise:milp-hand}
+    \end{itemize}
+    \item Week 4:
+    \begin{itemize}
+        \item HW due: Neural Networks and Properties exercise~\autoref{exercise:z3-properties}
+        \item Topics: 
+        \item Quiz:
+    \end{itemize}
+    \item Week 5:
+    \item Week 6:
+    \item Week 7:
+    \item Week 8:
+    \item Week 9:
+    \item Week 10:
+\end{enumerate}    
+
+\section{Programming Assignments}
+
 
 \chapter{Comparing neural networks with software}\label{app:nn-vs-software}
 
@@ -5524,47 +5821,1030 @@ In each specification, the inputs (condition distance and latent variables) are 
 \end{tabular}    
 \end{table}
 
-\chapter{Logics and Linear Programming}\label{chap:logics}
+\chapter{Logics}\label{chap:logics}
 
-\section{Logics and Satisfiability}\label{sec:logics-sat}
+The field of neural network verification (NNV) relies heavily on two fundamental areas: 
+\emph{logic} (to formalize and reason about properties as logical formulae) and \emph{optimization} (to formulate and reason about numerical constraints).
+This chapter and the next (\autoref{chap:lp}) provides the necessary background on both topics in detail, starting with propositional logic and satisfiability, 
+and then moving to linear and mixed-integer programming.
 
 
-\subsection{Satisfiability (SAT)}\label{sec:sat}
-The classical satisfiability (SAT) problem asks if a given propositional formula over Boolean variables can be satisfied~\cite{biere2009handbook}.  Given a formula $f$, a SAT solver returns \sat{} if it can find a satisfying assignment that maps truth values to variables of $f$ that makes $f$ evaluate to true, and \unsat{} if it cannot find any satisfying assignments. The problem is \NP-Complete and research into methods for efficiently solving  problem instances has been ongoing for multiple decades.
+\section{Propositional Logic and Satisfiability}\label{sec:propositional-logic}
+
+Propositional, or Boolean, logic is the branch of logic that studies formulae built from Boolean variables, where each variable can take only the values \texttt{True} or \texttt{False}. These formulae are combined using logical connectives such as \texttt{and}, \texttt{or}, and \texttt{not}, and their evaluation always reduces to a single truth value.
+
+\subsection{Syntax}
+
+A \emph{propositional variable} is a symbol (e.g., $x, y, z$). Logical formulae are built \emph{inductively} from these variables using logical connectives as follows:
+
+\begin{itemize}
+  \item Variables: Any propositional variable $p$ is a formula.
+  \item Constants: $\top$ and $\bot$ are formulae.
+  \item Negation: If $\phi$ is a formula, then so is $\lnot \phi$.
+  \item Binary connectives: If $\phi, \psi$ are formulae, then so are
+    $(\phi \land \psi)$, $(\phi \lor \psi)$, and $(\phi \to \psi)$.
+\end{itemize}
+
+\begin{example}
+
+\[
+(x \lor y) \land (\lnot x \lor z)
+\]
+is a formula involving three variables $x,y,z$.
+\end{example}
+
+\paragraph{Special connectives} In addition to the standard connectives, we define some special connectives that are often useful:
+
+\begin{itemize}
+    \item \emph{Implication}: $\phi \to \psi \equiv \lnot \phi \lor \psi$
+    \item \emph{Biconditional} (or \emph{equivalence}): $\phi \leftrightarrow \psi \equiv (\phi \to \psi) \land (\psi \to \phi)$
+\end{itemize}
+
+
+\paragraph{Convert to Conjunctive Normal Form (CNF)} A formula is in CNF if it is a conjunction of disjunctions of literals,
+where a literal is either a variable $p$ or its negation $\lnot p$. 
+
+Any formula can be transformed into CNF. The process generally involves the following steps:
+\begin{enumerate}
+\item Eliminate biconditionals and implications.
+\item Move negations inward using De Morgan's laws.
+\item Distribute disjunctions over conjunctions.
+\end{enumerate}
+
+\begin{exercise}
+Transform the formula 
+\[
+(x \to y) \land (y \to z)
+\]
+into CNF.
+\end{exercise}
+
+
+\begin{commentbox}
+Notice here that we purely define the syntax of propositional logic, which allows us to construct valid formulae. We will discuss the semantics or meanings of formulae next (\autoref{sec:propositional-semantics}).
+\end{commentbox}
+\subsection{Semantics}\label{sec:propositional-semantics}
+
+A logical formula in propositional logic has a truth value, which can be either \texttt{True} or \texttt{False}. 
+For example, the formula $x \lor \neg{x}$ is always \texttt{True}, while the formula $x \land y$ is \texttt{True} if both $x$ and $y$ are \texttt{True}, and \texttt{False} otherwise.
+This is the \emph{semantics} of the formula.
+
+An \emph{assignment} $\alpha$ maps each formula to $\texttt{True}$ or $\texttt{False}$.
+The truth value of a formula is defined recursively
+\begin{align*}
+  \alpha(\top) &\quad = \texttt{True}, \\
+  \alpha(\bot) &\quad = \texttt{False}, \\
+  \alpha(p) &\quad \text{iff } \alpha(p) = \texttt{True}, \\
+  \alpha(\lnot \phi) = \texttt{True} &\quad \text{iff } \alpha(\lnot \phi) = \texttt{True}, \\
+  \alpha(\phi \land \psi) = \texttt{True} &\quad \text{iff } \alpha(\phi) = \texttt{True} \text{ and } \alpha(\psi) = \texttt{True}, \\
+  \alpha(\phi \lor \psi) = \texttt{True} &\quad \text{iff } \alpha(\phi) = \texttt{True} \text{ or } \alpha(\psi) = \texttt{True}, \\
+  \alpha(\phi \to \psi) = \texttt{True} &\quad \text{iff } \alpha(\phi) = \texttt{False} \text{ or } \alpha(\psi) = \texttt{True}.
+\end{align*}
+
+\begin{exercise}  
+For the formula 
+
+\[
+(x \lor y) \land (\lnot x \lor z), 
+\]
+evaluate its truth value under all $2^3=8$ possible assignments of $x,y,z$.
+\end{exercise}
+
+\subsection{Satisfiability and Validity}
+\begin{definition}[Satisfiability] A formula $\phi$
+
+\begin{itemize}
+  \item is \emph{satisfiable} if there exists \textbf{some} $\alpha$ such that $\alpha(\phi) = \texttt{True}$.
+  \item is \emph{unsatisfiable} if \textbf{no} assignment satisfies it.
+  \item is \emph{valid} if \textbf{all} assignments satisfy it.
+\end{itemize}
+\end{definition}
+
+\begin{example} The formula
+    \[x\]
+    is satisfiable (e.g., $\alpha(x) = \texttt{True}$).
+\[
+(x) \land (\lnot x)
+\]
+is unsatisfiable (no assignment works).
+In contrast,
+\[
+(x \lor \lnot x)
+\]
+is valid.
+\end{example}
+
+\begin{exercise}
+Show that $(\phi \to \psi)$ is equivalent to $(\lnot \phi \lor \psi)$.  
+(Hint: construct a truth table.)
+\end{exercise}
+
+
+\subsection{SAT Solving}\label{sec:sat-solving}
+
+A SAT solver takes a propositional formula as input and determines its satisfiability by searching for a satisfying assignment. If one exists, it returns the assignment; otherwise, it reports \unsat{}. % Modern solvers use search algorithms such as
+% \emph{DPLL (Davis–Putnam–Logemann–Loveland)} and
+% \emph{CDCL (Conflict-Driven Clause Learning)}.
+
+\begin{example}
+\begin{align*}
+\phi_1 &= (x \lor y) \land (\lnot x \lor z) \quad \Rightarrow \, \sat{}\\
+\phi_2 &= (x) \land (\lnot x) \quad \Rightarrow \unsat{}
+\end{align*}
+\end{example}
+
+
+
+
+\begin{exercise}
+Use the Z3 solver to check whether
+\[
+(x \lor y) \land (\lnot x \lor y) \land (x \lor \lnot y)
+\] is satisfiable.  
+Provide a satisfying assignment if it exists.
+\end{exercise}
+
+
+
+
+\paragraph{Conjunctive Normal Form (CNF)}
+In practice, SAT solvers do not take arbitrary formulae as input. Instead, they require the formula to be in \emph{Conjunctive Normal Form (CNF)}.
+
+
+\begin{example}
+\[
+(x \lor y) \land (\lnot x \lor z)
+\]
+is in CNF. Each clause $(x \lor y)$, $(\lnot x \lor z)$ is a disjunction of literals.
+\end{example}
+
+
+
+\subsection{Validity Checking}\label{sec:validity-checking}
+We can use a SAT solver to check if a formula $\alpha$ is valid (no satisfying assignment) by checking that its negation, $\overline{\alpha}$, is not satisfiabile.
+
+
+
+\section{Satisfiability Modulo Theories (SMT)}
+
+SAT solvers only reason about propositional formulae, which only contain Boolean variables and logical operators such as $\land, \lor$.  However, in verification problems, we often need to reason about arithmetic constraints $2x + 3y \leq 7; x \geq 0; x,y \in \mathbb{Z}$.
+
+
+This leads to \emph{Satisfiability Modulo Theories (SMT)}:
+\begin{itemize}
+  \item SMT generalizes SAT by adding background theories (e.g., linear arithmetic, bit-vectors, arrays).
+  \item An SMT formula mixes Boolean structure with constraints from these theories.
+\end{itemize}
+
+\begin{example}\label{ex:smt2}
+Is the formula $2x = 1$ satisfiable? 
+
+The answer depends on the chosen theory. Here, over real numbers ($\mathbb{R}$), it is SAT (e.g., $x=0.5$), but over integers ($\mathbb{Z}$) it is UNSAT.
+
+
+\end{example}
+\subsection{SMT Solvers}
+
+% Like SAT solving, an SMT solver ..
+
+Popular SMT solvers include Z3 (Microsoft Research), CVC5, and dReal.
+They combine:
+\begin{itemize}
+  \item A SAT solver for the Boolean skeleton.
+  \item A \emph{theory solver} or T-solver (e.g., linear arithmetic) for the numeric parts.
+\end{itemize}
+
+The SAT solver guesses a truth assignment for the Boolean structure. The T-solver checks whether the corresponding arithmetic constraints are feasible. This loop continues until either a satisfying assignment is found or \unsat{} is proven.
+
+\begin{exercise}
+Decide the satisfiability of:
+\[
+(x > 3) \land (y < 2) \land (x+y < 1).
+\]
+
+First, do the reasoning informally by hand, and then confirm with an SMT solver such as Z3.
+\end{exercise}
+
+
+\subsection{Z3 SMT Solver}
+
+Z3~\cite{de2008z3} is a well-known SMT solver developed by Microsoft Research. Here we'll show how to use it for various logical and arithmetic problems.
+
+
+\paragraph{Installing} You can install Z3 using your package manager, for example
+
+\begin{lstlisting}
+    brew install z3        # using homebrew
+    pip install z3-solver   # using pip
+    apt install z3 python3-z3 # using apt (on Debian-based Linux systems)
+    conda install z3solver # using conda
+\end{lstlisting}    
+
+
+Then try its Python interface:
+
+\begin{lstlisting}
+    from z3 import *
+    x = Int(`x')
+    y = Int(`y')
+    solve(x > 2, y < 10, x + 2*y == 7)
+\end{lstlisting} 
+
+
+
+\begin{example}[Propositional Logic]\label{ex:z3-propositional}
+
+We use Z3 to check satisfiability of propositional formulae and generate counterexamples.
+
+\begin{lstlisting}
+from z3 import *
+
+x, y = Bools(`x y')
+formula = And(Or(x, y), Or(Not(x), y))
+s = Solver()
+s.add(formula)
+print(s.check())   #output: sat
+print(s.model())   #a possible model is {x=True, y=True}
+\end{lstlisting}
+\end{example}
+
+\begin{exercise}
+Modify the code in~\autoref{ex:z3-propositional} to check 
+
+\[
+(x \land \lnot x).
+\]
+Confirm that the result is \texttt{unsat}.
+\end{exercise}
+
+
+
+
+\begin{example}[Linear Constraints.]
+
+We now use Z3 as an SMT solver to check linear constraints.
+
+    \begin{lstlisting}
+from z3 import *
+x, y = Reals(`x y')
+
+# example 1
+s = Solver()
+s.add(x > 0, y > 0, 2*x + y <= 1)
+print(s.check())  # Output: unsat
+
+# example 2
+s = Solver()
+s.add(x + y <= 4, x >= 0, y >= 0)
+print(s.check()) # Output: sat
+print(s.model())  # Output: {x=0, y=0}
+
+
+# example 3
+x, y = Ints(`x y')
+s = Solver()
+s.add(Implies(x > 3, y > 2))
+print(s.check()) # Output: sat
+print(s.model()) # Output: {x=0, y=0}
+\end{lstlisting}
+\end{example}
+
+\begin{exercise}
+Use Z3 to check whether the constraints
+\[
+x+y=5, \quad x \geq 0, \quad y \geq 0
+\]
+are satisfiable, and if so, ask Z3 for a model.
+\end{exercise}
+
+\begin{exercise}
+Use Z3 to check the formula given in~\autoref{ex:smt2}. Do it for both the reals and integers.
+\end{exercise}
+
+\begin{exercise}
+Use Z3 to formulate and check the statement \texttt{``If $x>3$ then $y>2$ AND $x \leq 1$''}.
+Is it satisfiable? What model does Z3 return?
+\end{exercise}
+
+
+
+\begin{example}[DNN-style checking]
+Consider a one-neuron ReLU: $y = \max(0, x - 1)$.  
+We want to check if the property \texttt{``For all $x \leq 0$, we have $y=0$''} holds.
+
+
+\begin{lstlisting}
+x, y = Reals(`x y')
+s = Solver()
+
+# y = max(0, x-1)
+s.add(y >= x-1, y >= 0)
+s.add(Or(y == x-1, y == 0)) # ReLU
+s.add(x <= 0, y != 0) # Negation of property
+
+print(s.check()) # Output: unsat, property holds
+\end{lstlisting}
+\end{example}
+
+
+\begin{exercise}
+Modify the above to check property:  
+\texttt{``For all $x \geq 2$, we have $y \geq 1$.''}  
+What does Z3 return?
+\end{exercise}
+
+
+\section{SAT and SMT Solving Algorithms}\label{sec:sat-smt-algorithms}
+
+Here we briefly discuss SAT and SMT solving algorithms, which are used to determine the satisfiability of propositional and SMT formulae.
+
+\subsection{Satisfiability (SAT) Problem}\label{sec:sat-problem}
+The classical satisfiability (SAT) problem asks if a given propositional formulae (\autoref{sec:propositional-logic}) can be satisfied~\cite{biere2009handbook}.  Given a formula CNF $f$, an SAT solver returns \sat{} if it can find a satisfying assignment that maps truth values to variables of $f$ that makes $f$ evaluate to true, and \unsat{} if it cannot find any satisfying assignments.
+
+The SAT problem is \NP-Complete and research into methods for efficiently solving  problem instances has been ongoing for multiple decades.
+
+
+\subsection{DPLL}
+
+
 
 \begin{figure}
+    \centering
   \includegraphics[width=0.8\linewidth]{figure/dpll.pdf}
   \caption{\label{fig:dpll} The classicial DPLL Algorithm.}
 \end{figure}
 
-\paragraph{DPLL}~\autoref{fig:dpll} gives an overview of \textbf{DPLL}, a SAT solving technique introduced in 1961 by Davis, Putnam, Logemann, and Loveland~\cite{davis1962machine}. DPLL is an iterative algorithm that takes as input a propositional formula and (i) decides an unassigned variable and assigns it a truth value, (ii) performs Boolean constraint propagation (BCP or also called Unit Propagation),  which detects single literal clauses that either force a literal to be true in a satisfying assignment or give rise to a conflict; (iii) analyzes the conflict to backtrack to a previous decision level \texttt{dl}; and (iv) erases assignments at levels greater than \texttt{dl} to try new  assignments. These steps repeat until DPLL finds  a satisfying assignment and returns \texttt{sat}, or decides that it cannot backtrack (\texttt{dl}=-1) and returns \texttt{unsat}.
+
+\autoref{fig:dpll} gives an overview of \textbf{DPLL}, a SAT solving technique introduced in 1961 by Davis, Putnam, Logemann, and Loveland~\cite{davis1962machine}. DPLL is an iterative algorithm that takes as input a propositional formula and (i) decides an unassigned variable and assigns it a truth value, (ii) performs Boolean constraint propagation (BCP or also called Unit Propagation),  which detects single literal clauses that either force a literal to be true in a satisfying assignment or give rise to a conflict; (iii) analyzes the conflict to backtrack to a previous decision level \texttt{dl}; and (iv) erases assignments at levels greater than \texttt{dl} to try new  assignments. 
+
+These steps repeat until DPLL finds  a satisfying assignment and returns \texttt{sat}, or decides that it cannot backtrack (\texttt{dl}=-1) and returns \texttt{unsat}.
 
 
 %DPLL is both sound (its results are correct) and complete (it can find a solution for any input in finite time). %Since its introduction, many heuristics have been introduced to make DPLL more efficient,
 %However, because SAT solving is NP-Complete and DPLL has a worst-case exponential time complexity. %However, many heuristics have been developed to help DPLL efficient in practice,  e.g., choosing variables to assign values and decision levels to backtrack to~\cite{TODO}.
 
 
-\paragraph{CDCL} Modern DPLL solving improves the original version with Conflict-Driven Clause Learning (\emph{CDCL}~\cite{bayardo1997using,marques1999grasp,569607}).
+\subsection{CDCL} 
+
+Modern DPLL solving improves the original version with Conflict-Driven Clause Learning (\emph{CDCL}~\cite{bayardo1997using,marques1999grasp,569607}).
 DPLL with CDCL can \emph{learn new clauses} to avoid past conflicts and backtrack more intelligently (e.g., using non-chronologically backjumping).
 %Similar to DPLL, CDCL is sound and complete, but also incurs an exponential complexity.  However, 
 Due to its ability to learn new clauses, CDCL can significantly  reduce the search space and allow SAT solvers to scale to large problems.
 In the following, whenever we refer to DPLL, we mean DPLL with CDCL.
 
-\paragraph{DPLL(T)} DPLL(T)~\cite{nieuwenhuis2006solving} extends DPLL for propositional formulae to check SMT formulae involving non-Boolean variables, e.g., real numbers and data structures such as strings, arrays, lists.
-DPLL(T) combines DPLL with dedicated \emph{theory solvers} to analyze formulae in those theories\footnote{SMT is Satisfiability Modulo Theories and the T in DPLL(T) stands for Theories.}.  %Examples of SMT formulae include those involving numerical variables with linear or nonlinear arithmetics (formale involving nonlinear operations such as multiplication and division among variables),
+\subsection{DPLL(T)} 
+
+DPLL(T)~\cite{nieuwenhuis2006solving} extends DPLL for propositional formulae to check SMT formulae involving non-Boolean variables, e.g., real numbers and data structures such as strings, arrays, lists.
+DPLL(T) combines DPLL with dedicated \emph{theory solvers} to analyze formulae in those theories\footnote{SMT is Satisfiability Modulo Theories and the T in DPLL(T) stands for Theories.}.  
 For example, to check a formula involving linear arithmetic over the reals (LRA), DPLL(T) may use a theory solver that uses linear programming to check the  constraints in the formula.
-Modern DPLL(T)-based SMT solvers such as Z3~\cite{moura2008z3} and CVC4~\cite{barrett2011cvc4} 
+
+Modern DPLL(T)-based SMT solvers such as Z3~\cite{demoura2008z3} and CVC4~\cite{barrett2011cvc4} 
 include solvers supporting a wide range of theories including linear arithmetic, nonlinear arithmetic, string, and arrays~\cite{kroening2016decision}.
 
+\chapter{Linear Programming (LP)}\label{chap:lp}
+
+Linear Programming (LP) and its generalization Mixed-Integer Linear Programming (MILP) 
+form the optimization backbone of many neural network verification techniques.
+This chapter provides an overview of LP and MILP that are related to DNN verification.
+
+
+\section{Linear Constraints and Objectives}\label{sec:lp}
+
+At a high level, LP is a method for optimizing an objective with respect to certain constraints. For example, we want to maximize profit while keeping production costs within budget. In LP, both the objective and constraints are \emph{linear}.
+
+
+\paragraph{Linear Constraints}
+
+Linear constraints are inequalities that involve linear combinations of variables.  A linear inequality has the general form
+\[
+c_1x_1 + c_2x_2 + \cdots + c_nx_n \leq b,
+\]
+
+where $c_i, b \in \mathbb{R}$. These constraints limit the feasible values that the variables $x_i$ can take.
+The set of points satisfying all constraints is called the \emph{feasible region}.
+
+
+\begin{example}
+Consider the following linear constraints:
+\[
+x + y \leq 4, \qquad x \geq 0, \qquad y \geq 0.
+\]
+The feasible region is a triangle with vertices at $(0,0), (4,0), (0,4)$.
+
+\begin{center}
+\begin{tikzpicture}[scale=0.8]
+\draw[->] (0,0) -- (5,0) node[right] {$x$};
+\draw[->] (0,0) -- (0,5) node[above] {$y$};
+\draw[thick, fill=blue!10] (0,0) -- (4,0) -- (0,4) -- cycle;
+\node at (2,1) {Feasible region};
+\end{tikzpicture}
+\end{center}
+\end{example}
+
+\paragraph{Linear Objective Functions}
+A linear objective function $z$ has the general form
+\[
+z(x_1, x_2, \ldots, x_n) = c_1x_1 + c_2x_2 + \cdots + c_nx_n,
+\]
+
+where $c_i \in \mathbb{R}$ are coefficients, and $x_i \in \mathbb{R}$ are decision variables. 
+
+
+\paragraph{Optimizing Goals}
+Our goal is to optimize (maximize or minimize) $z$ with respect to a set of linear constraints over the decision variables.
+\[
+\begin{aligned}
+& \text{maximize } z \\
+& \text{subject to } \\
+& \{c_1x_1 + c_2x_2 + \cdots + c_nx_n \leq b, \ldots    \}
+\end{aligned}
+\]
+
+\begin{example}\label{ex:lp-example1}
+Maximize 
+\[
+1.5x+2y
+\] subject to:
+\[
+\{x+y \leq 4, x \geq 0, y \geq 0\}.
+\]
+
+First, we can solve for the intersection points of the constraints:
+
+\[
+\begin{aligned}
+& x+y = 4 \\
+& x = 0 \\
+& y = 0
+\end{aligned}
+\]
+Solving these equations gives us the corner points or vertices of the feasible region:
+\[
+\begin{aligned}
+& (0,0) \\
+& (4,0) \\
+& (0,4)
+\end{aligned}
+\]
+
+Now, we can evaluate the objective function $z = 1.5x+2y$ at each vertex:
+
+\begin{center}
+\begin{tabular}{ccc}
+\hline
+x & y & z \\
+\hline
+0 & 0 & 0 \\
+4 & 0 & 6 \\
+0 & 4 & 8 \\
+\hline
+\end{tabular}
+\end{center}
+
+Thus, the maximum value of $z$ is 8, achieved at the vertex $(0,4)$.
+
+
+\paragraph{Geometric interpretation} The constraints represent the feasible region as a triangle with vertices at $(0,0)$, $(4,0)$, and $(0,4)$:
+
+\begin{center}
+\begin{tikzpicture}[scale=0.7, transform shape]
+    \begin{axis}[
+        axis lines = middle,
+        xlabel = $x$,
+        ylabel = $y$,
+        xmin=0, xmax=5,
+        ymin=0, ymax=5,
+        xtick={0,1,2,3,4},
+        ytick={0,1,2,3,4},
+        grid=both,
+        width=8cm,
+        height=8cm,
+    ]
+    % Feasible region
+    \addplot [
+        domain=0:4, 
+        samples=100, 
+        fill=blue!20, 
+        opacity=0.5
+    ] {4 - x} \closedcycle;
+    
+    % Constraints
+    \addplot [thick] {4 - x};
+    \addplot [thick] {0};
+    \addplot [thick] coordinates {(0,0) (0,4)};
+    
+    % Vertices
+    \filldraw[red] (axis cs:0,0) circle (2pt) node[anchor=north west] {$(0,0)$};
+    \filldraw[red] (axis cs:4,0) circle (2pt) node[anchor=north east] {$(4,0)$};
+    \filldraw[red] (axis cs:0,4) circle (2pt) node[anchor=south west] {$(0,4)$};
+    
+    % Objective function line
+    \addplot [dashed, thick] {8 - 1.5*x} node[pos=0.85, above] {$1.5x + 2y = 8$};
+    
+    \end{axis}
+\end{tikzpicture}
+\end{center}
+
+The objective function $z = 1.5x+2y$ is maximized at vertex $(0,4)$.
+
+\end{example}
+
+\begin{exercise}\label{ex:lp-exercise2}
+    Maximize $z=4x+5y$ subject to $\{x+y \le 20, \; 2x+4y \leq 72\}$.
+
+    \begin{enumerate}    
+        \item Identify the corner points.
+        \item Evaluate the objective function at each corner point.
+    \end{enumerate}
+\end{exercise}
 
 
 
-\section{Linear Programming}\label{app:lp}
 
-\tvn{Hai, give some LP background here.}
+\section{Mixed-Integer Linear Programming (MILP)}\label{sec:milp}
+
+LP (\autoref{sec:lp}) assumes continuous variables over real numbers.  
+A mixed-integer linear program (MILP) extends LP by requiring some variables to be integers (often binary 0 or 1).  This is useful because it allows for modeling discrete decisions and logical constraints, e.g., on/off decisions, yes/no choices, and active/inactive ReLU.
+
+\paragraph{Linear Constraints}
+In MILP, a linear constraint can involve both integer and continuous decision variables, and have the general form
+\[
+c_1x_1 + c_2x_2 + \cdots + c_nx_n + d_1y_1 + d_2y_2 + \cdots + d_my_m \leq b,
+\]
+where $x_i \in \mathbb{R}$ are continuous variables, $y_j \in \mathbb{Z}$ are integer variables, and $c_i, d_j, b \in \mathbb{R}$.
+
+\paragraph{Objective Function}
+A linear objective function $z$ in MILP can be expressed as:
+\[
+z(x_1, \ldots, x_n, y_1, \ldots, y_m) = c_1x_1 + c_2x_2 + \cdots + c_nx_n + d_1y_1 + d_2y_2 + \cdots + d_my_m,
+\]
+where $x_i \in \mathbb{R}$ are continuous variables, $y_j \in \mathbb{Z}$ are integer variables, and $c_i, d_j \in \mathbb{R}$.
+
+\paragraph{Optimizing Goals}
+In MILP, the goal is to find the optimal values of the decision variables $x$ and $y$ that maximize or minimize the objective function $z$, while satisfying all linear constraints.
+
+\[
+\begin{aligned}
+& \text{maximize } z(x_1, \ldots, x_n, y_1, \ldots, y_m) \\
+& \text{subject to } \\
+& \{c_1x_1 + c_2x_2 + \cdots + c_nx_n + d_1y_1 + d_2y_2 + \cdots + d_my_m \leq b\}
+\end{aligned}
+\]
+
+
+\begin{example}\label{ex:lp-example3}
+A company sells a chair for \$50 and a table for \$120. The production costs of the chair and the table are \$20 and \$70, respectively. It also takes 3 hours to produce a chair and 1 hour to produce a table. 
+Moreover, it takes 5 units of wood to produce a chair and 20 units of wood to produce a table.
+
+How many chairs and tables should the company produce to \emph{maximize} profit within a week without exceeding its monthly budget of 200 units of woods, 80 hours of labor, and \$800 in production costs? 
+
+First, the decision variables are defined as follows:
+\begin{itemize}
+    \item $x$: the number of chairs produced.
+    \item $y$: the number of tables produced.
+\end{itemize}
+
+The objective function to maximize profit $P$ is given by:
+\[
+P = 50x + 120y - 20x - 70y = 30x + 50y
+\]
+
+with subject to the constraints:
+\[
+\begin{aligned}
+& 5x + 20y \le 200 \implies x + 4y \le 40\\
+& 3x + y \le 80 \\
+& 20x + 70y \le 800 \implies 2x + 7y \le 80\\
+& x \ge 0 \\
+& y \ge 0.
+\end{aligned}
+\]
+
+\paragraph{Solving}
+
+First, we can find the corner points from the constraints
+\[
+\begin{aligned}
+    & x + 4y = 40 \\
+    & 3x + y = 80 \\
+    & 2x + 7y = 80 \\
+    & x = 0 \\
+    & y = 0
+\end{aligned}
+\]
+
+Solving these equations gives us the corner points or vertices of the feasible region:
+(0,0);
+(0, 10);
+$(\frac{80}{3} ,0)$; and 
+$(\frac{280}{11},\frac{40}{11})$ (from x + 4 y = 40 ~\&~ 3x + y = 80). Note that all of these are feasible with $2x + 7y \le 800$.
+
+
+
+
+Now, we can evaluate the objective function $P$ at each vertex:
+
+\begin{center}
+\begin{tabular}{ccc}
+\hline
+x & y & P = 30x + 50y \\
+\hline
+0 & 0 & 0 \\
+0 & 10 & 500 \\
+$\frac{80}{3}$ & 0 & 800 \\
+$\frac{280}{11}$ & $\frac{40}{11}$ &945.45 \\
+\hline
+\end{tabular}
+\end{center}
+
+Thus, the maximum value of $P$ is 945.45, achieved at the vertex $(\frac{280}{11},\frac{40}{11})$. 
+
+Of course, since we cannot produce fractional chairs or tables, we need to round these numbers to the nearest integers.
+This means the company should produce 24 chairs and 4 tables per week, and get a profit of \$920.00
+
+\end{example}
+
+
+
+\subsection{Encoding Binary Variables}
+MILP problems often involve disjunction or condition where the answer depends on some condition.  We can encode such condition using binary variables (0-1 integers), e.g., using  $z \in \{0,1\}$ to indicate whether a certain condition is met.  Moreover, we also use a ``trick'' with a large constant $M$, e.g., $\infty$, to encode logical implications.
+
+\begin{example}
+To encode ``if $z = \texttt{True}$ then $x \geq 5$'', use:
+\[
+x \geq 5 - M(1-z), \quad z \in \{0,1\}
+\]
+
+
+This works because 
+\begin{itemize}
+ \item $z=1 \implies x \ge 5 - M(0) \implies x \geq 5$.
+ \item $z=0 \implies x \geq 5 - M \implies x \ge -\infty$ (because $M$ is large this is vacuously true and can be discarded).
+\end{itemize}
+
+\end{example}
+
+
+\begin{exercise}
+Encode the disjunction $x \geq 5 \lor x \leq 3$ in MILP.
+
+\begin{solution}
+    We use two constraints:
+    \begin{itemize}
+    \item $x \geq 5 - M(1-z)$ (if $z=1$, this enforces $x \geq 5$)
+    \item $x \leq 3 + Mz$ (if $z=0$, this enforces $x \leq 3$)
+    \end{itemize}
+\end{solution}
+\end{exercise}
+
+
+\begin{example}[Encoding ReLU in MILP]\label{ex:relu_milp}
+
+To encode the ReLU (\autoref{sec:relu}) activation function $y = \max(0, x)$, use
+\[
+\begin{aligned}
+& y \geq x, \\
+& y \geq 0, \\
+& y \leq x + M(1-z), \\
+& y \leq Mz, \quad z \in \{0,1\}.
+\end{aligned}
+\]
+
+This works because 
+
+\begin{itemize}
+\item $z=1 \implies y=x$.    
+\item $z=0 \implies y=0$.  
+\end{itemize}
+
+
+\end{example}
+\begin{exercise}
+Consider again the ReLU example in \autoref{ex:relu_milp} but now $x$ has the bounds $L \leq x \leq U$. Modify the MILP encoding so that $L$ and $U$ are used \emph{directly} instead of a large constant $M$.
+
+\begin{solution}
+To modify the MILP encoding for the ReLU function with bounds $L \leq x \leq U$, we add the following constraints:
+\[
+\begin{aligned}
+& y \geq x, \\
+& y \geq 0, \\
+& y \leq x + (U-x)(1-z), \\
+& y \leq Uz, \quad z \in \{0,1\}, \\
+& L \leq x \leq U.
+\end{aligned}
+\]
+\end{solution}
+\end{exercise}
+
+
+\section{Using Z3 to Solve LP and MILP}
+
+We can use Z3's optimization capabilities to solve both LP and MILP problems. Note that in practice, we often use dedicated solvers such as Gurobi or CPLEX for large problems, but Z3 is effective for demonstration purposes.
+
+\begin{example}
+    Let's reconsider the example in~\autoref{ex:lp-example1}. We can model and solve it using Z3:
+
+    \begin{lstlisting}
+from z3 import *
+
+x, y = Reals("x y")
+opt = Optimize() # setup the optimization problem
+opt.add(x + y <= 4, x >= 0, y >= 0)
+
+# Objective
+z = 1.5*x + 2*y
+h = opt.maximize(z)
+
+# Solve
+if (opt.check() == sat): 
+    print("Optimal sol:", opt.model())  # output [x = 0, y = 4]
+    print("Max value:", opt.upper(h))   # output 8
+    \end{lstlisting}
+\end{example}
+
+
+\begin{exercise}
+Do~\autoref{ex:lp-exercise2} using Z3.
+\end{exercise}
+
+\begin{exercise}
+Do~\autoref{ex:lp-example3} using Z3.
+\end{exercise}
+
+
+
+\begin{exercise}\label{ex:milp-online}
+For this exercise, you will find some interesting MILP problem online, formulate it, and solve it using Z3. Specifically, do the following:
+\begin{itemize}
+\item Find \emph{two} interesting MILP problems online. These can be from textbooks, research papers, or online resources (Youtube, Google, online tutorials).
+
+Note: Interesting here means the problem has a non-trivial structure, resembles real-world applications (like the table and chair example in~\autoref{ex:lp-example3}), or involves complex constraints.
+\item For each problem:
+\begin{itemize}
+    \item Write down the problem and \emph{cite} the sources (e.g., exact URL or Author(s)/Title/Year if from a paper).
+    \item Formulate the problem as a MILP (clearly indicate the objective and constraints).
+    \item Solve them by hand (you can type this out, but show all the steps, if possible, draw the graph showing the feasible region).
+    \item Implement the formulation in Z3 and solve it.
+\end{itemize}
+\end{itemize}
+
+\end{exercise}
+
+
+\begin{exercise}\label{exercise:milp-hand}
+Minimize $z = x + y$ subject to:
+\[
+\begin{aligned}
+& x + 2y \geq 3, \\
+& 3x + y \geq 3, \\
+& x, y \geq 0, \\
+& x,y \in \mathbb{R}.
+\end{aligned}
+\]
+
+You can either do this by hand on paper (and take picture) or write Python code with Z3. Either way, show all the steps (e.g., as comments in the Z3 code):
+\begin{enumerate}
+    \item The constraints and objective function.
+    \item The corner or candidate points (this exercise is very simple that you do need an algorithm like Simplex to solve. You can simply ``guess'' these points, e.g., the intersection of the given constraints)
+    \item The objective value at each corner point.
+    \item The optimal solution.
+\end{enumerate}
+\end{exercise}
+
+% \paragraph{Example.}  
+% One-neuron ReLU: $y = \max(0,2x-1)$.  
+% Verify: “For all $x \in [0,0.4]$, $y=0$.”  
+% - Encode input range, ReLU, and negation ($y>0$).  
+% - MILP is infeasible.  
+% - Property holds.
+
+% ---
+
+% \section{Exercises}
+
+% \paragraph{Exercise 1 (Warm-up).}  
+% Maximize $2x+3y$ subject to $x+2y \leq 8, \; 2x+y \leq 8, \; x,y \geq 0$.  
+% (a) Sketch feasible region.  
+% (b) Identify corner points.  
+% (c) Find optimal solution.
+
+% \paragraph{Exercise 2.}  
+% Formulate and solve a diet problem with three foods and two nutrients.  
+% Find the cheapest diet satisfying requirements.
+
+% \paragraph{Exercise 3.}  
+% Duality practice:  
+% Write the dual of
+% \[
+% \min 5x_1+2x_2 \quad \text{s.t. } x_1+x_2 \geq 3, \; x_1, x_2 \geq 0.
+% \]
+
+% \paragraph{Exercise 4 (MILP).}  
+% Encode in MILP:  
+% “If factory A is open ($z_A=1$) then production $\geq 50$,  
+% if factory B is open ($z_B=1$) then production $\geq 30$.  
+% At most one factory may be open.”
+
+% \paragraph{Exercise 5 (Verification).}  
+% Network: $h=\max(0,x_1-x_2), \; y=h+x_2$.  
+% Verify: For all $x_1,x_2 \in [0,1]$, $y \geq 0$.  
+% Model as MILP and solve.
+
+
+
+% \section{Linear Constraints and Feasible Regions}
+
+% A \emph{linear constraint} has the form:
+% \[
+% a_1x_1 + a_2x_2 + \cdots + a_nx_n \leq b.
+% \]
+
+
+% \paragraph{Example.}  
+% Constraints:
+% \[
+% x + y \leq 4, \quad x \geq 0, \quad y \geq 0.
+% \]
+% The feasible region is a triangle bounded by the axes and the line $x+y=4$.
+
+% \begin{example}
+%     Sketch the feasible region defined by:
+% \[
+% 2x + y \leq 6, \quad x \geq 0, \quad y \geq 0.
+% \]
+% \end{example}
+% \section{Linear Programming Problems}
+
+% An LP is an optimization problem:
+% \[
+% \max c^T x \quad \text{subject to } Ax \leq b, \; x \geq 0.
+% \]
+
+% \paragraph{Example.}  
+% Maximize $x+y$ subject to
+% \[
+% x+y \leq 4, \quad x \geq 0, \quad y \geq 0.
+% \]
+% Solution: maximum is 4 at $(4,0)$ or $(0,4)$.
+
+% \paragraph{Exercise 6 (Homework).}  
+% Solve the LP:
+% \[
+% \max 3x+2y \quad \text{subject to } 
+% \quad 2x+y \leq 8, \; x+2y \leq 6, \; x,y \geq 0.
+% \]
+
+% \subsection{Duality (Optional Enrichment)}
+
+% Every LP has a \emph{dual} problem, and strong duality holds under mild conditions.  
+% Understanding duality is useful in verification because it enables certificates of infeasibility.
+
+% ---
+
+% \section{Mixed-Integer Linear Programming (MILP)}
+
+% \subsection{From Logic to MILP}
+
+% SAT handles logic, LP handles linear inequalities.
+% MILP combines both: some variables are required to be integers (often binary).
+
+% \paragraph{Example.}
+% Constraint:
+% \[
+% x \in \{0,1\}, \quad y \geq 2x.
+% \]
+% - If $x=0$, then $y \geq 0$.
+% - If $x=1$, then $y \geq 2$.
+
+% This encodes logical branching into optimization.
+
+% \paragraph{Exercise 7 (In-class).}  
+% Formulate “if $x=1$, then $y=0$” as linear constraints using a binary variable and a big-$M$ method.
+
+% \subsection{Encoding ReLU Constraints}
+
+% A ReLU is $y = \max(0,x)$.  
+% We introduce a binary variable $z$ to encode activation:
+% \begin{align*}
+% y &\geq x, \\
+% y &\geq 0, \\
+% y &\leq x + M(1-z), \\
+% y &\leq Mz.
+% \end{align*}
+% Here $M$ is a large constant.
+
+% - If $z=0$, $y=0$.
+% - If $z=1$, $y=x$.
+
+% \paragraph{Exercise 8 (Homework).}  
+% Write MILP constraints for $y = \max(0, 2x+1)$ with $-10 \leq x \leq 10$.
+
+% \subsection{Example: Verifying a Tiny Network}
+
+% Network: input $x \in [0,1]$, hidden neuron $h = \max(0, 2x-1)$, output $y=h$.
+
+% \paragraph{Property.}
+% Verify: for all $x \in [0,0.4]$, $y=0$.
+
+% \paragraph{Encoding.}
+% \begin{itemize}
+%   \item Input constraint: $0 \leq x \leq 0.4$.
+%   \item ReLU encoding for $h = \max(0, 2x-1)$.
+%   \item Negation of property: $y > 0$.
+% \end{itemize}
+
+% \paragraph{Result.}
+% MILP is infeasible $\Rightarrow$ property holds.
+
+% \paragraph{Exercise 9 (Homework).}  
+% Modify the property to “for all $x \in [0.6,1]$, $y > 0$.”  
+% Check if the MILP is feasible.
+
+% ---
+
+% ---
+
+% \section{Summary and Further Exercises}
+
+% \begin{itemize}
+%   \item Logic: propositional formulas, CNF, satisfiability.
+%   \item LP: optimization over linear constraints.
+%   \item MILP: integrates logic and LP, used for ReLU encoding.
+%   \item Application: encoding DNN verification as SAT/LP/MILP.
+% \end{itemize}
+
+% \paragraph{Homework Project.}
+% Take the network $y = \max(0, w_1x_1 + w_2x_2 + b)$ with $w_1=1, w_2=-1, b=0$.  
+% Verify the property: “For all $x_1,x_2 \in [0,1]$, we have $y \leq 1$.”  
+% Formulate the MILP and solve it using an MILP solver (e.g., Gurobi, CPLEX, or open-source solvers).
+
+
+
+
+
 
 \chapter{Software vs DNN Verification}\label{app:software-vs-dnn}
 
+
+\paragraph{General}
+Software verification and DNN verification share the common goal of ensuring the correctness and reliability of their respective systems. Both fields aim to identify and eliminate potential errors or vulnerabilities before deployment, ultimately enhancing user trust and system robustness.
+
+\begin{table}
+    \caption{Comparison of Software Verification and DNN Verification}
+\begin{tabular}{|c|c|c|}
+    \hline
+    \textbf{Aspect} & \textbf{Software Verification} & \textbf{DNN Verification} \\
+    \hline
+    \textbf{Input} & Source code, specifications & DNN model, input space \\
+    \hline
+    \textbf{Output} & Verification results, counterexamples & Verification results, adversarial examples \\
+    \hline
+    \textbf{Techniques} & Model checking, theorem proving & Formal methods, testing \\
+    \hline
+    \textbf{Challenges} & State explosion, incomplete specifications & High dimensionality, non-convexity \\
+    \hline
+\end{tabular}
+\end{table}
+
+\paragraph{Similarities} 
+
+\begin{table}
+\caption{Similarities of Software Verification and DNN Verification}
+\begin{tabular}{|c|c|c|}
+    \hline
+    \textbf{Aspect} & \textbf{Software Verification} & \textbf{DNN Verification} \\
+    \hline
+    \textbf{Input} & Source code, specifications & DNN model, input space \\
+    \hline
+    \textbf{Output} & Verification results, counterexamples & Verification results, adversarial examples \\
+    \hline
+    \textbf{Techniques} & Model checking, theorem proving & Formal methods, testing \\
+    \hline
+    \textbf{Challenges} & State explosion, incomplete specifications & High dimensionality, non-convexity \\
+    \hline
+\end{tabular}
+\end{table}
+
+
+\paragraph{Differences}
+Software verification typically deals with discrete systems and logical properties, while DNN verification focuses on continuous input spaces and the behavior of neural networks under various conditions. Additionally, the techniques used in each field differ significantly, with software verification relying on formal methods and testing, whereas DNN verification often employs specialized techniques such as adversarial training and robustness analysis.
+
+\begin{table}
+\caption{Differences of Software Verification and DNN Verification}
+\begin{tabular}{|c|c|c|}
+    \hline
+    \textbf{Aspect} & \textbf{Software Verification} & \textbf{DNN Verification} \\
+    \hline
+    \textbf{Input} & Source code, specifications & DNN model, input space \\
+    \hline
+    \textbf{Output} & Verification results, counterexamples & Verification results, adversarial examples \\
+    \hline
+    \textbf{Techniques} & Model checking, theorem proving & Formal methods, testing \\
+    \hline
+    \textbf{Challenges} & State explosion, incomplete specifications & High dimensionality, non-convexity \\
+    \hline
+\end{tabular}
+\end{table}
 
 \chapter{\neuralsat{} Algorithm}\label{sec:neuralsat-alg}
 
@@ -5693,10 +6973,10 @@ include solvers supporting a wide range of theories including linear arithmetic,
 
 
 \autoref{fig:alg} shows the \tool{} algorithm, which takes as input the formula $\alpha$ representing the ReLU-based DNN $N$ and the formulae $\phi_{in}\Rightarrow \phi_{out}$ representing the property $\phi$ to be proved.
-Internally, \tool{} checks the satisfiability of the formula
-\begin{equation}\label{eq:prob}
+Internally, \tool{} checks the satisfiability of the formula given in~\autoref{eq:prob}
+\begin{equation*}
   \alpha \land \phi_{in} \land \overline{\phi_{out}}.
-\end{equation}
+\end{equation*}
 \tool{} returns \texttt{unsat} if the formula unsatisfiable, indicating  that $\phi$ is a valid property of $N$, and \texttt{sat} if it is satisfiable, indicating the $N$ is not a valid property.
 
 \tool{} uses a  DPLL(T)-based algorithm to check unsatisfiability.
@@ -6299,27 +7579,30 @@ So, the PGD attack finds a counterexample at $(x_1 = -1,\ x_2 = 0.75)$.
 
 
 
-\chapter{Schedule}
-
-\begin{enumerate}
-    \item Week 1: 
-    \item Week 2:
-    \item Week 3: 
-    \item Week 3:    
-    \item Week 4:
-    \item Week 5:
-    \item Week 6:
-    \item Week 7:
-    \item Week 8:
-    \item Week 9:
-    \item Week 10:
-\end{enumerate}    
 
 
 \bibliographystyle{abbrv}
 \bibliography{book.bib}
 
-\appendix
 
 \end{document}
+
+
+
+
+| a | b  |  a ->  b
+--------------------
+| T | T  |   T   
+| T | F  |   F    
+| F | T  |   T
+| F | F  |   T 
+
+
+| a | b  |  !a  |  !a  v  b  |
+| T | T  |  F   |     T
+| T | F  |  F   |     F
+| F | T  |  T   |     T
+| F | F  |  T   |     T  
+
+
 
