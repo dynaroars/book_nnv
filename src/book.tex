@@ -244,6 +244,7 @@
 \newcommand{\sat}{\texttt{sat}}
 \newcommand{\unsat}{\texttt{unsat}}
 
+\newcommand{\code}[1]{\texttt{#1}}
 
 \lstdefinelanguage{SMTLIB}{
     morekeywords={assert, declare-const, declare-pwl, or, and, },
@@ -5767,11 +5768,11 @@ In each specification, the inputs (condition distance and latent variables) are 
 \section{Programming Assignment 1: Symbolic Execution of Neural Networks}\label{sec:pa1}
 
 
-In this PA, you will implement symbolic execution (SE) on a given fully-connected (deep) neural network (DNN) as described in~\autoref{sec:se-smt}. You can consider DNN as a specific type of programs and thus can ``execute'' it.  Symbolic execution would execute the DNN on symbolic inputs and returns symbolic outputs, i.e., a constraint representation.  In addition, we will represent the symbolic outputs as a logical formula and use a constraint solver to check for \emph{assertions}, i.e., properties about the DNN.
+In this PA you will implement symbolic execution (SE) on a given fully-connected (deep) neural network (DNN) as described in~\autoref{sec:se-smt}. You can consider DNN as a specific type of programs and thus can ``execute'' it.  Symbolic execution would execute the DNN on symbolic inputs and returns symbolic outputs, i.e., a constraint representation.  We will represent the symbolic outputs as a logical formula and use a constraint solver to check for \emph{assertions}, i.e., properties about the DNN. This assignment has two parts: (1) implement symbolic execution on a given DNN, and (2) evaluate the scalability of your implementation on various DNNs.
 
 You will use Python and the Z3 SMT solver (\autoref{sec:z3}) for this assignment. \textbf{Do not} use external libraries or any extra tools (other than \texttt{z3-solver}).
 
-\subsection{Complete Example}
+\subsection{Part1: Symbolic Execution}
 
 Consider the following fully-connected DNN with 2 inputs, 2 hidden layers, and 2 outputs.
 
@@ -5811,8 +5812,8 @@ Note that all of these settings are parameterized and I deliberately use this ex
 # it returns a single (but large) formula representing the symbolic states.
 symbolic_states = my_symbolic_execution(dnn)
 ...
-``done, obtained symbolic states for DNN with 2 inputs, 4 hidden neurons, and 2 outputs in 0.1s``
-assert z3.is_expr(symbolic_states)  #symbolic_states is a Z3 formula/expression
+``done, obtained symbolic states for DNN in 0.1s``
+assert z3.is_expr(symbolic_states)  #symbolic_states is a Z3 expression
 
 # your symbolic states should look something like this
 print(symbolic_states)   
@@ -6009,11 +6010,39 @@ model.add(Dense(units=2,
 \end{lstlisting}
 \end{enumerate}
 
+\subsection{Part:2: Evaluation}
+In this part you will show that symbolic execution \emph{does not} scale on large neurons.
+
+\begin{enumerate}
+    \item You will create a function \texttt{create\_random} that takes as input a list of positive integers representing the sizes of the neurons \texttt{[\#inputs, \#ofnumbers, \#ofneurons, ..., \#outputs]}, and create a neural network of that size with \emph{random} weights and bias (e.g., between say $-5$ and $5$).
+    \item You will run symbolic execution on this network as you did in PA1, get its results, and time the solving process.
+    \item You will do this for various sizes of neurons until you feel that your computer cannot handle it anymore (e.g., until it takes about a minute or two).
+    \item You will \textbf{save these networks} because you will reuse them to measure and compare execution time using abstraction in Part 2.
+    \item Finally, you will plot the results: the $x$-axis will show the size of the neurons (for simplicity, the product of all numbers in the input list) and the $y$-axis shows the time.
+\end{enumerate}
+
+Feel free to be creative in this process (e.g., play around with different sizes/layers), and discuss your findings in the \texttt{README} file. Below gives some code example:
+
+\begin{lstlisting}[language=Python]
+# Create a random network from a given 
+# number of inputs, hidden neurons, and outputs
+l = [2,3,4,3,3]   # 2 inputs, 3 hidden layers (with 3,4,3 hidden neurons for respective hidden layer 1, 2, 3), and 3 outputs.
+dnn = create_random_nn(l)
+
+symbolic_state = my_symbolic_execution(dnn)
+
+# time the execution
+import time
+st = time.time()
+_ = z3.solve(symbolic_state)
+print('time to solve: ', time.time() - st)
+\end{lstlisting}
+
 \subsection{Conventions and Requirements}
 
-Your program must have the following  (all of these are given in the concrete example above)
+Your program must have the following:
 
-\begin{enumerate}[label=\arabic*.]
+\begin{enumerate}
 \item a main function \texttt{my\_symbolic\_execution(dnn)} that 
     \begin{itemize}
     \item takes as input the DNN, whose specifications are given as example above (or using \texttt{tensorflow} or \texttt{pytorch})
@@ -6101,6 +6130,11 @@ python3 se.py   # this should execute both test() and test2 and show all outputs
     \item 3 points if your SE works for the addition example you created
     \item 2 points if your SE works on my own example (not provided). This means you should try to generalize your work and test it on various scenarios.
     \end{itemize}
+\item 10 points - for complete scalability analysis and plots (part 1 and part 2) as described
+  \begin{itemize} 
+    \item 5 points for \texttt{create\_random} code
+    \item 5 points for scalability plots and explanations    
+  \end{itemize}
 \item 5 points — for the answers in the README
     \begin{itemize}
     \item 5 — clear explanations on running the program and thorough answers for the given questions
