@@ -1567,7 +1567,7 @@ The VNN-LIB code for this property is as follows:
 
 \section{Exercises}
 
-\begin{example}[Robustness + Safety: Drone Controller]
+\begin{example}[Robustness + Safety: Drone Controller]\label{exercise:drone}
 An autonomous drone computes its thrust level using  a network controller $f(w,d)$, where $w$ is winds speed and $d$ the distance to nearest obstacle. We want two properties:  
 \begin{enumerate}
 \item Robustness: If the wind speed reading changes by at most 1 unit ($|w-w'|\leq 1$) and distance remains the same, 
@@ -5753,10 +5753,13 @@ In each specification, the inputs (condition distance and latent variables) are 
     \item Week 4:
     \begin{itemize}
         \item HW due: Neural Networks and Properties exercise~\autoref{exercise:z3-properties}
-        \item Topics: 
-        \item Quiz:
+        \item Topics: DNN Verification and Satisfiability Modulo Theories (SMT) (~\autoref{sec:verification} 
+        \item Quiz:~\autoref{exercise:drone}
     \end{itemize}
-    \item Week 5:
+    \item Week 5: No class this week (prof not available). No quiz or HW due. 
+    \begin{itemize}
+        \item Programming Assertionnment 1 (PA1): Symbolic Execution of Neural Networks~\autoref{sec:pa1}
+    \end{itemize}
     \item Week 6:
     \item Week 7:
     \item Week 8:
