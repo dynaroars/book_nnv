@@ -5733,7 +5733,8 @@ In each specification, the inputs (condition distance and latent variables) are 
 
 
 
-\part{Schedule and Assignments}
+\renewcommand{\appendixname}{Assignment}
+\appendix
 \chapter{Schedule and Assignments}
 \begin{enumerate}
     \item Week 1: Introduction (videos of neural networks, basic terminologies and concepts).
@@ -6143,6 +6144,7 @@ python3 se.py   # this should execute both test() and test2 and show all outputs
     \end{itemize}
 \end{itemize}
 
+\renewcommand{\appendixname}{Appendix}
 \appendix
 
 \chapter{Comparing neural networks with software}\label{app:nn-vs-software}
@@ -7865,7 +7867,7 @@ Since each literal is considered, this would be considered exhaustive theory pro
 
 \chapter{Adversarial Attacks}\label{chap:adversarial-attacks}
 
-Modern DNN verifiers (\crown{}, \neuralsat{}, etc) often first run an adversarial attack technique to check for obvious counterexamples. If one is found, the property is violated (and the verifier returns \sat). If no counterexample is found, the verifier proceeds to the more expensive search-based verification algorithm (e.g., \bab{} as shown in~\autoref{chap:bab}).
+Modern DNN verifiers such as \crown{} and \neuralsat{} often first run an adversarial attack technique to check for obvious counterexamples. If one is found, the property is violated (and the verifier returns \sat). If no counterexample is found, the verifier proceeds to the more expensive search-based verification algorithm (e.g., \bab{} as shown in~\autoref{chap:bab}).
 
 Thus, in the first phase of running adversarial attacks, the goal to \emph{falsify} the property, i.e., find a counterexample that violates the property. If this fails, then the goal is to \emph{verify} the property, i.e., prove that no counterexample exists. Of course, during the verification phase, the verifier may also discover counterexamples that the falsify phase misses.
 
