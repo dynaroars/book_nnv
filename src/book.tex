@@ -147,7 +147,7 @@
 \newcommand{\hai}[1]{\iftoggle{usecomment}{{\color{blue}{[HD]: #1}}}{}}
 
 \newcommand{\mynew}[1]{\iftoggle{usecomment}{{\color{red}{[NEW]: #1}}}{}}
-
+\newcommand{\alert}[1]{{\color{red}{#1}}}
 %\newcommand{\ignore}[1]{}
 
 
@@ -1816,10 +1816,10 @@ With this definition the NNV problem can be formulated as checking the validity 
 \end{equation}
 This formula checks if the network $N$ satisfies (implies) the property $\phi_{in} \implies \phi_{out}$. This validity checking can be reduced to checking the satisfiability of the formula:
 
-\begin{equation}\label{eq:prob}
+\begin{equation}\label{eq:prop}
   \alpha \land \phi_{in} \land \neg \phi_{out}
 \end{equation}
-If~\autoref{eq:prob} is unsatisfiable, then $\phi$ is a valid property of $N$. Otherwise, $\phi$ is not valid.  Moreover, we can extract a counterexample for the original problem from the satisfying assignment of~\autoref{eq:prob}.
+If~\autoref{eq:prop} is unsatisfiable, then $\phi$ is a valid property of $N$. Otherwise, $\phi$ is not valid.  Moreover, we can extract a counterexample for the original problem from the satisfying assignment of~\autoref{eq:prop}.
 
 \begin{exercise}\label{ex:prop-neg1}
   Let $\alpha$ represent our network and the robustness property $| x - x | \le \epsilon \implies  f(x) = f(y)$. Form the satisfiability formula (\autoref{eq:prop}) that we need to check.
@@ -5758,7 +5758,7 @@ In each specification, the inputs (condition distance and latent variables) are 
     \end{itemize}
     \item Week 5: No class this week (prof not available). No quiz or HW due. 
     \begin{itemize}
-        \item Programming Assertionnment 1 (PA1): Symbolic Execution of Neural Networks~\autoref{sec:pa1}
+        \item Programming Assignment 1 (PA1): Symbolic Execution of Neural Networks~\autoref{sec:pa1}. Due date \alert{Monday October 6, 2024 11:59pm}.
     \end{itemize}
     \item Week 6:
     \item Week 7:
