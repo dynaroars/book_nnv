@@ -14,11 +14,19 @@
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage{complexity}
 \usepackage{etoolbox}
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks,
+  citecolor=black,
+  filecolor=black,
+  linkcolor=blue,
+  urlcolor=blue,
+}
 
-
+\usepackage{soul}
+\usepackage[most]{tcolorbox}
 
 \numberwithin{equation}{section}
-
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{lemma}{Lemma}[section]
 \newtheorem{corollary}{Corollary}[section]
@@ -52,9 +60,6 @@
 
 
 
-
-\usepackage{soul}
-\usepackage[most]{tcolorbox}
 % \setsecnumdepth{subsection}
 % \setcounter{tocdepth}{3}
 \usepackage{multirow,multicol}
@@ -68,18 +73,14 @@
 \usepackage{wrapfig}
 \usepackage{subcaption}
 \setlength\intextsep{0pt} % remove extra space above and below in-line float
-\usepackage{hyperref}
-\hypersetup{
-  colorlinks,
-  citecolor=black,
-  filecolor=black,
-  linkcolor=blue,
-  urlcolor=blue,
-}
 %\usepackage{cleveref}
 \usepackage{booktabs}
 \usepackage{tikz}
 \usetikzlibrary{calc,positioning,intersections}
+\tikzstyle{input}=[circle,draw=green,fill=green!20,thick]
+\tikzstyle{hidden}=[circle,draw=yellow,fill=yellowfill,thick]
+\tikzstyle{output}=[circle,draw=red,fill=red!20,thick]
+
 \usepackage{pgfplots}
 \pgfplotsset{compat=1.18}
 
@@ -186,12 +187,6 @@
 
 \newcommand{\ignore}[1]{}
 
-% for captions
-%\def\Section{\S}
-%\newcommand{\Section}{\textsection\@gobble}
-% \renewcommand{\figurename}{Fig.}
-% \renewcommand{\tablename}{Tab.}
-% \renewcommand{\algorithmcfname}{Alg.}
 
 \makeatletter
 % for cross references
@@ -200,14 +195,13 @@
 \renewcommand{\figureautorefname}{Fig.}
 \renewcommand{\tableautorefname}{Tab.}
 \renewcommand{\equationautorefname}{Eq.}
-%\renewcommand{\exampleautorefname}{Example}
-%\renewcommand{\exerciseautorefname}{Exercise}
 \renewcommand{\chapterautorefname}{\textsection\@gobble}
 \renewcommand{\sectionautorefname}{\textsection\@gobble}
 \renewcommand{\subsectionautorefname}{\textsection\@gobble}
 \renewcommand{\subsubsectionautorefname}{\textsection\@gobble}
 \renewcommand{\appendixautorefname}{\textsection\@gobble}
-
+\newcommand{\exampleautorefname}{Ex.}
+\newcommand{\exerciseautorefname}{Exer.}
 
 \makeatother
 \newcommand{\proofgen}{\texttt{BaB$_{\text{ProofGen}}$}}
@@ -466,19 +460,18 @@ where \(n\) is the number of input neurons and \(m\) is the number of output neu
 % \end{align}
 % \end{example}
 
-\newcommand{\mydnn}{
-\begin{tikzpicture}[scale=0.8, transform shape]
+\newcommand{\mydnn}[1]{
+\begin{tikzpicture}[scale=#1, transform shape]
     % Input nodes
-    \node[circle, draw] (x1) {$x_1$};
-    \node[circle, draw, below=2.2cm of x1]  (x2) {$x_2$};
+    \node[input] (x1) at (0,1)  {$x_1$};
+    \node[input] (x2) at (0,-1) {$x_2$};
 
     % Hidden layer
-    \node[circle, draw, right=2.6cm of x1] (x3) {$x_3$};
-    \node[circle, draw, right=2.6cm of x2] (x4) {$x_4$};
+    \node[hidden] (x3) at (2.8,1) {$x_3$};
+    \node[hidden] (x4) at (2.8,-1) {$x_4$};
 
     % Output layer node (centered horizontally)
-    \coordinate (mid) at ($(x3)!0.5!(x4)$);
-    \node[circle, draw, right=2.8cm of mid] (x5) {$x_5$};
+    \node[output] (x5) at (5,0) {$x_5$};
 
     % Connections with weights
     \draw[->] (x1) -- node[above left=-3pt] {$-0.5$} (x3);
@@ -497,7 +490,7 @@ where \(n\) is the number of input neurons and \(m\) is the number of output neu
 
 \begin{figure}
     \centering
-    \mydnn
+    \mydnn{1}
     \caption{\label{fig:dnn}A simple DNN with two inputs $x_1,x_2$, two hidden neurons $x_3,x_4$, and one output neuron $x_5$.}
 \end{figure}
 
@@ -1707,9 +1700,67 @@ d=5, \quad f(d)=a=+2 \quad \text{violates property.}
 
 \begin{exercise}\label{exercise:z3-properties}
 
+
+\newcommand{\proofnet}[1]{
+\begin{tikzpicture}[scale=#1,every node/.style={scale=#1},->,thick]
+  % Styles
+
+
+  % Nodes
+  \node[input]  (x1) at (0,1) {$x_1$};
+  \node[input]  (x2) at (0,-1) {$x_2$};
+
+  \node[hidden] (v1) at (2.5,1) {$v_1$};
+  \node[hidden] (v2) at (2.5,-1)   {$v_2$};
+  \node[hidden] (v3) at (5,1) {$v_3$};
+  \node[hidden] (v4) at (5,-1) {$v_4$};
+
+  \node[output] (y1) at (7.5,1) {$y_1$};
+  \node[output] (y2) at (7.5,-1) {$y_2$};
+
+  % Edges with weights
+  % x1 to hidden
+  \draw (x1) -- (v1) node[midway,above] {$-0.5$};
+
+
+  \draw (x1) -- (v2) node[near end,below] {$0.3$};
+
+  % x2 to hidden
+  \draw (x2) -- (v2) node[midway,below] {$0.2$};
+  \draw (x2) -- (v1) node[near end,above] {$0.2$};
+  
+
+  % hidden layer connections
+  \draw (v1) -- (v3) node[midway,above] {$-0.9$};
+
+  \draw (v1) -- (v4) node[near end,below] {$0.6$};
+  
+  
+  \draw (v2) -- (v4) node[midway,below] {$0.9$};
+  \draw (v2) -- (v3) node[near end,above] {$0.6$};
+
+  % hidden to outputs
+  \draw (v3) -- (y1) node[midway,above] {$-0.1$};
+  \draw (v3) -- (y2) node[near end,below] {$-0.3$};
+  \draw (v4) -- (y1) node[near end,above] {$0.2$};
+  \draw (v4) -- (y2) node[midway,below] {$0.5$};
+
+  % biases
+  \node[above] at (v1.north) {$-0.5$};  
+  \node[above] at (v3.north) {$0.2$};  
+  \node[above] at (y1.north) {$-0.4$};
+
+  \node[below] at (v2.south) {$0.3$};
+  \node[below] at (v4.south) {$-0.1$};
+  \node[below] at (y2.south) {$-0.5$};
+
+\end{tikzpicture}
+}
+
 Consider the following neural network:    
 \begin{center}
-\includegraphics[width=0.5\linewidth]{figure/proof_net.pdf}
+\proofnet{1}
+%\includegraphics[width=0.5\linewidth]{figure/proof_net.pdf}
 \end{center}
 
 
@@ -1785,7 +1836,7 @@ and the postcondition is
 
 \begin{figure}
 \centering
-\mydnn
+\mydnn{1}
 \caption{\label{fig:dnn-b}A simple DNN (similar to~\autoref{fig:dnn}).}
 \end{figure}
 
@@ -1795,7 +1846,7 @@ An \emph{invalid} property is that $x_5 > 0$ for those similar inputs.
 A counterexample showing this property violation is $\{x_1=-1, x_2=2\}$, from which the network evaluates to $x_5=-3.5$. 
 \end{example}
 
-%Such properties can capture \emph{safety requirements} (e.g., a rule in an  collision avoidance system in~\cite{kochenderfer2012next,katz2017reluplex} is ``if the intruder is distant and significantly slower than us, then we stay below a certain threshold'') or \emph{local robustness}~\cite{katz2017towards} conditions (a form of adversarial robustness stating that small perturbations of a given input all yield the same output).
+%Such properties can capture \emph{safety requirements} (e.g., a rule in an  collision avoidance system in~\cite{kochenderfer2012next,katz2017reluplex} is ``if the intruder is distant and significantly slower than us, then we stay below a certain threshold'') or \emph{local robustness}~\cite{katz2017towards} conditions (a form of adversarial robustness stating that small perturbations of a given input all yield the same  output).
 
 
 \section{Satisfiability Formulation}\label{sec:satisfiability-and-activation-pattern-search}
@@ -1974,7 +2025,7 @@ We can adapt traditional SE to our problem by treating the DNN as a program and 
 \begin{example}\label{ex:se-dnn}
 \begin{figure}
 \centering
-\mydnn
+\mydnn{1}
 \caption{\label{fig:dnn-a}A simple DNN (similar to~\autoref{fig:dnn}).}
 \end{figure}    
 
@@ -2704,7 +2755,7 @@ f^{a}([l_1, u_1],..., [l_n, u_n]) = [f^a_L, f^a_U] =
 
 \begin{figure}
 \centering
-\mydnn
+\mydnn{1}
 \caption{\label{fig:dnn-abs}A simple DNN (similar to~\autoref{fig:dnn}).}
 \end{figure}    
 
