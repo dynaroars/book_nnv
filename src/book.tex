@@ -1316,13 +1316,13 @@ the network still outputs 7.
 
 \textbf{Safety} properties ensure that the network conforms to certain safety constraints. This is particularly important in safety-critical applications, such as autonomous vehicles or medical diagnosis systems, where incorrect outputs can lead to catastrophic consequences. %For example, in a self-driving car, we want to ensure that the car maintains a safe distance from other vehicles and pedestrians under all scenarios.
 
-\begin{example}[Collision Avoidance System]\label{ex:collision-safety}
+\begin{exercise}[Collision Avoidance System]\label{ex:collision-safety}
     A safety property in a collision avoidance system such as an autonomous vehicle might be that if the intruder is distant and significantly slower than us, then we stay below a certain velocity threshold. Formally, this can be expressed as:
 \[
 d_{intruder} > d_{threshold} \land v_{intruder} < v_{threshold} \implies v_{us} < v_{threshold},
 \]
 where $d_{intruder}$ is the distance to the intruder, $d_{threshold}$ is a predefined safe distance, $v_{intruder}$ is the speed of the intruder, and $v_{us}$ is our speed.
-\end{example}
+\end{exercise}
 
 
 Unlike robustness properties, which are often desirable in all networks, safety properties are often \emph{specific} to the application domain. For example, a safety property for an autonomous vehicle may not be relevant for a surgical robot.
