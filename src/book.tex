@@ -5772,7 +5772,7 @@ In each specification, the inputs (condition distance and latent variables) are 
 \section{Programming Assignment 1: Symbolic Execution of Neural Networks}\label{sec:pa1}
 
 
-In this PA you will implement symbolic execution (SE) on a given fully-connected (deep) neural network (DNN) as described in~\autoref{sec:se-smt}. You can consider DNN as a specific type of programs and thus can ``execute'' it.  Symbolic execution would execute the DNN on symbolic inputs and returns symbolic outputs, i.e., a constraint representation.  We will represent the symbolic outputs as a logical formula and use a constraint solver to check for \emph{assertions}, i.e., properties about the DNN. This assignment has two parts: (1) implement symbolic execution on a given DNN, and (2) evaluate the scalability of your implementation on various DNNs.
+In this PA you will implement an neural network (NN) verifier using symbolic execution (SE) as described in~\autoref{sec:se-smt}. You can consider NNs as a specific type of programs and thus can ``execute'' it.  SE runs the NN on symbolic inputs and returns symbolic outputs, i.e., a constraint representation.  You will represent the symbolic outputs as a logical formula and use a constraint solver to check \emph{assertions}, i.e., properties about the DNN. This PA has two parts: (1) implement SE on a given DNN, and (2) evaluate the scalability of your SE on various DNNs.
 
 You will use Python and the Z3 SMT solver (\autoref{sec:z3}) for this assignment. \textbf{Do not} use external libraries or any extra tools (other than \texttt{z3-solver}).
 
@@ -5785,7 +5785,7 @@ Consider the following fully-connected DNN with 2 inputs, 2 hidden layers, and 2
 \end{center}
 
 \begin{enumerate}[label=\arabic*.]
-\item \textbf{DNN Encoding}: We can encode this DNN and additional details using Python:
+\item \textbf{DNN Encoding}: We can encode this DNN using Python:
 
 \begin{lstlisting}[language=Python]
 # (weights, bias, use activation function relu or not)
@@ -5831,7 +5831,7 @@ print(symbolic_states)
 #     o1 == -1*n1_0 + n1_1)
 \end{lstlisting}
 
-\item \textbf{Constraint Solving}: We can use a constraint solver such as \texttt{Z3} to query various things about this DNN from the obtained symbolic states. Examples include: 
+\item \textbf{Constraint Solving}: We will use \texttt{Z3} to query various things about this DNN from the obtained symbolic states. Examples include:
 
 \begin{enumerate}[label=(\alph*)]
 \item Generating random inputs and obtain outputs.  Note that these are random values (that satisfy the symbolic states), so your results might look different.
@@ -6015,12 +6015,12 @@ model.add(Dense(units=2,
 \end{enumerate}
 
 \subsection{Part:2: Evaluation}
-In this part you will show that symbolic execution \emph{does not} scale on large neurons.
+In this part you will show that symbolic execution \emph{does not} scale on large DNNs.
 
 \begin{enumerate}
     \item You will create a function \texttt{create\_random} that takes as input a list of positive integers representing the sizes of the neurons \texttt{[\#inputs, \#ofnumbers, \#ofneurons, ..., \#outputs]}, and create a neural network of that size with \emph{random} weights and bias (e.g., between say $-5$ and $5$).
     \item You will run symbolic execution on this network as you did in PA1, get its results, and time the solving process.
-    \item You will do this for various sizes of neurons until you feel that your computer cannot handle it anymore (e.g., until it takes about a minute or two).
+    \item You will do this for various sizes of neurons until you feel that your computer cannot handle it anymore (e.g., until it takes more than a minute or two).
     \item You will \textbf{save these networks} because you will reuse them to measure and compare execution time using abstraction in Part 2.
     \item Finally, you will plot the results: the $x$-axis will show the size of the neurons (for simplicity, the product of all numbers in the input list) and the $y$-axis shows the time.
 \end{enumerate}
@@ -6030,7 +6030,8 @@ Feel free to be creative in this process (e.g., play around with different sizes
 \begin{lstlisting}[language=Python]
 # Create a random network from a given 
 # number of inputs, hidden neurons, and outputs
-l = [2,3,4,3,3]   # 2 inputs, 3 hidden layers (with 3,4,3 hidden neurons for respective hidden layer 1, 2, 3), and 3 outputs.
+l = [2,3,4,3,3]   # 2 inputs, 3 hidden layers (with 3,4,3 hidden neurons for 
+                  # respective hidden layer 1, 2, 3), and 3 outputs.
 dnn = create_random_nn(l)
 
 symbolic_state = my_symbolic_execution(dnn)
@@ -6046,15 +6047,17 @@ print('time to solve: ', time.time() - st)
 
 Your program must have the following:
 
+\paragraph{Part 1}
+
 \begin{enumerate}
-\item a main function \texttt{my\_symbolic\_execution(dnn)} that 
+\item a function \texttt{my\_symbolic\_execution(dnn)} that 
     \begin{itemize}
     \item takes as input the DNN, whose specifications are given as example above (or using \texttt{tensorflow} or \texttt{pytorch})
         \begin{itemize}
         \item This goes without saying: do not hard-code the DNN in your program (e.g., do not hardcode the example given above in your code).  Your program should work with any DNN input.
         \end{itemize}
     \item returns \textit{symbolic states} of the DNN represented as a Z3 expression (a formula) as shown above
-    \item this goes without saying but do NOT write this function only to work with the given example (i.e., do not hard-code the weight values etc in your program). This function should work with any DNN input (though it could be slow for big DNN's).
+    \item this goes without saying but do NOT write this function only to work with the given example, i.e., do not hard-code the weight values etc in your program. This function should work with any DNN input (though it could be slow for big DNN's).
     \end{itemize}
 \item in your resulting formula, you must name 
     \begin{itemize}
@@ -6088,24 +6091,38 @@ Your program must have the following:
     \end{itemize}
 \end{enumerate}
 
-You can be as creative as you want, but your SE must not run for too long and must not take up too much space (e.g., do not generate over 50MB of files).  Use the \texttt{README} to tell me exactly how to compile/run your program, e.g., \texttt{python3 se.py}.
+
+You can be as creative as you want, but your SE must not run for too long and must not take up too much space (e.g., do not generate over 50MB of files).  Use the \code{README} to tell me exactly how to compile/run your program, e.g., \code{python3 se.py}.
+
+\paragraph{Part 2}
+\begin{enumerate}
+\item a function \code{create\_random(sizes:int)} that
+\begin{itemize}
+    \item takes as input the list \code{sizes} and returns a DNN of that size as descibed above.
+\end{itemize}
+\item a testing function \code{test3()} that runs \code{create\_random} on various sizes of DNNs, runs \code{my\_symbolic\_execution} on them as you did with \code{test()} and \code{test2()} above, and time the execution.
+\item a plot (in pdf, png, or jpeg) showing the scalability of \code{my\_symbolic\_execution} on various DNNs
+\item in the \code{README}, write your observation and conclusion about the scalability of symbolic execution.  You must refer to the plot and describe it to support your conclusion.
+\item \textbf{BONUS}: as you will see, SE does not scale. Come up with ways to improve it and implement it in a new function \code{my\_symbolic\_execution\_optimize(dnn)}. Then compare its scalability with \code{my\_symbolic\_execution(dnn)} using the same DNNs created in \code{test3()}.  Discuss your new SE and result findings in the \code{README} file (see below for details).
+
+\end{enumerate}
 
 \subsection{What to Turn In}
 
 You must submit a \textbf{zip file} containing the following files. Use the following names:
 
 \begin{enumerate}
-\item the zip file must be named \texttt{pa1-yourgroupname.zip} (1 submission per group)
-\item One single main source file \texttt{se.py}. Indicate in the README file on how I can run it.
+\item the zip file must be named \code{pa1-yourname.zip} (1 submission per group)
+\item One single main source file \code{se.py}. Indicate in the \code{README} file on how I can run it.
     \begin{itemize}
-    \item your file should include at least a \texttt{my\_symbolic\_execution} function and two test functions \texttt{test} and \texttt{test2()} as indicated above
+    \item your file should include at least a \code{my\_symbolic\_execution} function and the test functions \code{test}, \code{test2()}, and \code{test3()} as indicated above
     \end{itemize}
-\item a \texttt{readme.txt} file
+\item a \code{README.txt} or \code{README.md} file
 \item 2 screen shots showing how (1) you start your program (e.g., the commands used to run your program) and (2) the end of the run (e.g., of your program on the terminal screen)
 \item Nothing else, do not include any binary files or anything else.
 \end{enumerate}
 
-The \texttt{readme.txt} file should be a \textit{plain ASCII text file} (not a Word file, not an RTF file, not an HTML file) consisting of the following:
+The \code{README} file should be a \textit{plain ASCII text file} or \textit{Markdown file}. DO NOT submit a Word, RTF, HTML, etc. The \code{README} should include the following:
 
 \begin{enumerate}
 \item \textbf{Complete run} show how you run your program \textbf{AND} its complete outputs, e.g.,
@@ -6115,28 +6132,35 @@ python3 se.py   # this should execute both test() and test2 and show all outputs
 ....            # (something similar to the outputs for the complete example above)
 \end{lstlisting}
 
-\item \textbf{Answer the following questions about your SE}
+\item \textbf{Answer the following questions about your SE} in your \code{README} file
     \begin{enumerate}[label=(\alph*)]
     \item Briefly describe your SE algorithm
-    \item What do you think the most difficult part of this assignment?  (e.g., programming symbolic execution, using Z3, etc)
+    \item What do you think the most difficult part of this assignment?  (e.g., programming symbolic execution, using Z3, dealing with scalability,etc)
     \item What advice do you give other students (e.g., students in this class next year) about this PA?
+    \end{enumerate}
+
+
+\item \textbf{BONUS}: if you implement the bonus part, then include \code{my\_symbolic\_execution\_optimize(dnn)} in \code{se.py}, and include in your \code{README} file:
+    \begin{enumerate}[label=(\alph*)]
+    \item Briefly describe your new SE algorithm
+    \item Discuss your findings and results (e.g., plots, runtime differences, etc)
     \end{enumerate}
 \end{enumerate}
 
 \section*{Grading Rubric}
 
-\subsection*{Grading (out of 20 points):}
+\subsection*{Grading (out of 30 points):}
 
 \begin{itemize}
 \item 15 points — for a complete SE as described
     \begin{itemize}
-    \item 10 points if your SE works for the given example (i.e., \texttt{test()} produces similar results)
+    \item 10 points if your SE works for the given example (e.g., \texttt{test()} produces expected results)
     \item 3 points if your SE works for the addition example you created
     \item 2 points if your SE works on my own example (not provided). This means you should try to generalize your work and test it on various scenarios.
     \end{itemize}
 \item 10 points - for complete scalability analysis and plots (part 1 and part 2) as described
   \begin{itemize} 
-    \item 5 points for \texttt{create\_random} code
+    \item 5 points for \texttt{create\_random} code and testing function \texttt{test3()}
     \item 5 points for scalability plots and explanations    
   \end{itemize}
 \item 5 points — for the answers in the README
@@ -6144,6 +6168,11 @@ python3 se.py   # this should execute both test() and test2 and show all outputs
     \item 5 — clear explanations on running the program and thorough answers for the given questions
     \item 2 — vague or hard to understand; omits important details
     \item 0 — little to no effort, or submitted an RTF/DOC/PDF file instead of plain TXT
+    \end{itemize}
+\item \textbf{BONUS} (up to 5 extra points) — for the new SE algorithm and its analysis as described
+    \begin{itemize}
+    \item 3 points for the new SE algorithm
+    \item 2 points for the analysis and results
     \end{itemize}
 \end{itemize}
 
