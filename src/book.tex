@@ -461,7 +461,7 @@ where \(n\) is the number of input neurons and \(m\) is the number of output neu
 % \end{example}
 
 \newcommand{\mydnn}[1]{
-\begin{tikzpicture}[scale=#1, transform shape]
+\begin{tikzpicture}[scale=#1, transform shape, semithick, ->]
     % Input nodes
     \node[input] (x1) at (0,1)  {$x_1$};
     \node[input] (x2) at (0,-1) {$x_2$};
@@ -474,12 +474,12 @@ where \(n\) is the number of input neurons and \(m\) is the number of output neu
     \node[output] (x5) at (5,0) {$x_5$};
 
     % Connections with weights
-    \draw[->] (x1) -- node[above left=-3pt] {$-0.5$} (x3);
-    \draw[->] (x1) -- node[pos=0.2] {$0.5$} (x4);
-    \draw[->] (x2) -- node[pos=0.2] {$0.5$} (x3);
-    \draw[->] (x2) -- node[below left=-3pt] {$-0.5$} (x4);
-    \draw[->] (x3) -- node[above] {$-1.0$} (x5);
-    \draw[->] (x4) -- node[below] {$1.0$} (x5);
+    \draw (x1) -- node[above left=-3pt] {$-0.5$} (x3);
+    \draw (x1) -- node[pos=0.2] {$0.5$} (x4);
+    \draw (x2) -- node[pos=0.2] {$0.5$} (x3);
+    \draw (x2) -- node[below left=-3pt] {$-0.5$} (x4);
+    \draw (x3) -- node[above] {$-1.0$} (x5);
+    \draw (x4) -- node[below] {$1.0$} (x5);
 
     % Output weights under x3, x4, x5 (biases)
     \node[below=0.1cm of x3] {$+1.0$};
@@ -1702,7 +1702,7 @@ d=5, \quad f(d)=a=+2 \quad \text{violates property.}
 
 
 \newcommand{\proofnet}[1]{
-\begin{tikzpicture}[scale=#1,every node/.style={scale=#1},->,thick]
+\begin{tikzpicture}[scale=#1,every node/.style={scale=#1},->,semithick]
   % Styles
 
 
@@ -1757,10 +1757,9 @@ d=5, \quad f(d)=a=+2 \quad \text{violates property.}
 \end{tikzpicture}
 }
 
-Consider the following neural network:    
+Consider the following NN:
 \begin{center}
 \proofnet{1}
-%\includegraphics[width=0.5\linewidth]{figure/proof_net.pdf}
 \end{center}
 
 
@@ -1793,7 +1792,7 @@ We first define the neural network verification (NNV) problem in~\autoref{sec:nn
 \section{The Neural Network Verification (NNV) Problem}\label{sec:nnv-problem}
 
 \begin{definition}[NNV]
-Given a DNN \(N\) and a property $\phi$, the \emph{DNN verification problem} asks if $\phi$ is a valid property of $N$.
+Given a DNN \(N\) and a property $\phi$, the \emph{NN verification} (NNV) problem asks if $\phi$ is a valid property of $N$.
 
 Typically, $\phi$ is a formula of the form 
 
@@ -1856,10 +1855,10 @@ As with traditional software verification, DNN verification is often represented
 To do this, we first define a formula $\alpha$ to represent the network. Typically $\alpha$ is a conjunction ($\bigwedge$) of constraints representing the affine transformation (\autoref{sec:affine}) and activation function (\autoref{sec:activation}) of each neuron in the network.
 For example, for a fully-connected neural network (\autoref{sec:ffn}) with $L$ layers, $N$ ReLU neurons per layer, this formula is:
 
-\begin{align*}
-\alpha = &\bigwedge_{\begin{smallmatrix}i \in [1,L]\\ j \in [1,N]\end{smallmatrix}}~~v_{i,j} \equiv ReLU \Big( \sum_{k \in [1,N]} (w_{i-1,j,k} \cdot v_{i-1,j}) + b_{i,j}\Big)    \\
- = &\bigwedge_{\begin{smallmatrix}i \in [1,L]\\ j \in [1,N]\end{smallmatrix}}~~v_{i,j} \equiv \max \Big( \sum_{k \in [1,N]} (w_{i-1,j,k} \cdot v_{i-1,j}) + b_{i,j}, 0 \Big)
-\end{align*}
+\begin{equation}
+\alpha = \bigwedge_{\begin{smallmatrix}i \in [1,L]\\ j \in [1,N]\end{smallmatrix}}~~v_{i,j} \equiv \relu{\sum_{k \in [1,N]} (w_{i-1,j,k} \cdot v_{i-1,j}) + b_{i,j}}
+\end{equation}
+where $v_{i,j}$ is the output of the $j$-th neuron in layer $i$, $w_{i-1,j,k}$ is the weight connecting the $k$-th neuron in layer $i-1$ to the $j$-th neuron in layer $i$, and $b_{i,j}$ is the bias of the $j$-th neuron in layer $i$.  The input layer is layer 0, i.e., $v_{0,j}$ are the input variables.
 
 With this definition the NNV problem can be formulated as checking the validity of the following formula:
 \begin{equation}\label{eq:nnv}
@@ -1882,11 +1881,11 @@ If~\autoref{eq:prop} is unsatisfiable, then $\phi$ is a valid property of $N$. O
 \end{exercise}
 
 \begin{example}\label{ex:dnn-sat}
-We represent the DNN in~\autoref{fig:dnn-b} as a formula $\alpha$:
+We represent the network in~\autoref{fig:dnn-b} as a formula $\alpha$:
 \begin{align*}
-& x_3 = -0.5x_1 + 0.5x_2 + 1.0 ~\land~ \hat{x}_3 = \relu{x_3} ~\land \\
-& x_4 = 0.5x_1 - 0.5x_2 + 1.0  ~\land~ \hat{x}_4 = \relu{x_4} ~\land \\
-& x_5 = -\hat{x}_3 + \hat{x}_4 - 1.0,
+& x_3 = \relu{-0.5x_1 + 0.5x_2 + 1.0 ~\land~ \hat{x}_3} ~\land \\
+& x_4 = \relu{0.5x_1 - 0.5x_2 + 1.0  ~\land~ \hat{x}_4} ~\land \\
+& x_5 = -x_3 + x_4 - 1.0,
 \end{align*}
 \noindent and the property $x_5 > 0$ for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$ as:
 \begin{equation*}
@@ -1894,7 +1893,7 @@ We represent the DNN in~\autoref{fig:dnn-b} as a formula $\alpha$:
 \phi_{out} = (x_5 > 0)
 \end{equation*}
 
-We then check the satisfiability of $\alpha \land \phi_{in} \land \neg \phi_{out}$ using a constraint solver (e.g., the Z3 SMT solver).  In this case, the formula is satisfiable and the solver returns \sat{}, and we query the solver for a satisfying assignment to the input variables, e.g., $x_1=-1$ and $x_2=2$. This assignment is a counterexample (\autoref{sec:properties-counterexamples}) to the property, as it satisfies the precond $\phi_{in}$ but violates the postcondition $\phi_{out}$, i.e., $x_5 = -3.5$, which is  $< 0$.
+We then check the satisfiability of $\alpha \land \phi_{in} \land \neg \phi_{out}$ using a constraint solver (e.g., the Z3 SMT solver).  In this case, the formula is satisfiable, i.e., the property is invalid, and the solver returns \sat{}.  Any satisfying assignment, e.g., $x_1=-1$ and $x_2=2$, is a counterexample (\autoref{sec:properties-counterexamples}) to the property, as it satisfies the precond $\phi_{in}$ but violates the postcondition $\phi_{out}$, i.e., $x_5 = -3.5$, which is  $< 0$.
 
 \end{example}
 
