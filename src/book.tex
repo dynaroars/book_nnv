@@ -35,7 +35,7 @@
 \theoremstyle{definition}
 \newtheorem{definition}{Definition}[section]
 \newtheorem{example}{Example}[section]
-\newtheorem{exercise}{Exercise}[section]
+\newtheorem{problem}{Problem}[section]
 \newtheorem{solutione}{Solution}[section]
 \theoremstyle{remark}
 \newtheorem{remark}{Remark}
@@ -201,7 +201,7 @@
 \renewcommand{\subsubsectionautorefname}{\textsection\@gobble}
 \renewcommand{\appendixautorefname}{\textsection\@gobble}
 \newcommand{\exampleautorefname}{Ex.}
-\newcommand{\exerciseautorefname}{Exer.}
+\newcommand{\problemautorefname}{Prob.}
 
 \makeatother
 \newcommand{\proofgen}{\texttt{BaB$_{\text{ProofGen}}$}}
@@ -1287,7 +1287,7 @@ Global robustness is a very strong definition, and in practice, almost impossibl
 
 
 
-\begin{exercise}
+\begin{problem}
 Suppose that an network classifies an input image $x$ as digit 7. 
 We want to ensure that if the image is slightly perturbed (e.g., brightness changed by a small amount $\epsilon$), 
 the network still outputs 7.
@@ -1297,7 +1297,7 @@ the network still outputs 7.
 \forall x', \quad \|x - x'\| \leq \epsilon \implies f(x') = f(x) = 7
 \]
 \end{solution}
-\end{exercise}
+\end{problem}
 
 
 
@@ -1309,20 +1309,20 @@ the network still outputs 7.
 
 \textbf{Safety} properties ensure that the network conforms to certain safety constraints. This is particularly important in safety-critical applications, such as autonomous vehicles or medical diagnosis systems, where incorrect outputs can lead to catastrophic consequences. %For example, in a self-driving car, we want to ensure that the car maintains a safe distance from other vehicles and pedestrians under all scenarios.
 
-\begin{exercise}[Collision Avoidance System]\label{ex:collision-safety}
+\begin{problem}[Collision Avoidance System]\label{ex:collision-safety}
     A safety property in a collision avoidance system such as an autonomous vehicle might be that if the intruder is distant and significantly slower than us, then we stay below a certain velocity threshold. Formally, this can be expressed as:
 \[
 d_{intruder} > d_{threshold} \land v_{intruder} < v_{threshold} \implies v_{us} < v_{threshold},
 \]
 where $d_{intruder}$ is the distance to the intruder, $d_{threshold}$ is a predefined safe distance, $v_{intruder}$ is the speed of the intruder, and $v_{us}$ is our speed.
-\end{exercise}
+\end{problem}
 
 
 Unlike robustness properties, which are often desirable in all networks, safety properties are often \emph{specific} to the application domain. For example, a safety property for an autonomous vehicle may not be relevant for a surgical robot.
 
 
 
-\begin{exercise}[Safety: Self-Driving Car]\label{exercise:safety}
+\begin{problem}[Safety: Self-Driving Car]\label{problem:safety}
 A network controlling a self-driving car on a highway might require that:  
 If the car in front is at least 160 meters away  and moving slower than us, 
 then we should not accelerate.
@@ -1332,7 +1332,7 @@ then we should not accelerate.
 d \geq 160 \land v_{\text{front}} < v_{\text{us}} \implies a_{\text{us}} \leq 0
 \]
 \end{solution}
-\end{exercise}
+\end{problem}
 
 \section{Other properties}\label{sec:other-properties}
 
@@ -1558,9 +1558,9 @@ The VNN-LIB code for this property is as follows:
 
 
 
-\section{Exercises}
+\section{problems}
 
-\begin{exercise}[Robustness + Safety: Drone Controller]\label{exercise:drone}
+\begin{problem}[Robustness + Safety: Drone Controller]\label{problem:drone}
 An autonomous drone computes its thrust level using  a network controller $f(w,d)$, where $w$ is winds speed and $d$ the distance to nearest obstacle. We want two properties:  
 \begin{enumerate}
 \item Robustness: If the wind speed reading changes by at most 1 unit ($|w-w'|\leq 1$) and distance remains the same, 
@@ -1579,9 +1579,9 @@ Safety:
 \forall w, d, \quad d < 5 \implies f(w,d) \leq 2
 \]
 \end{solution}
-\end{exercise}
+\end{problem}
 
-\begin{exercise}[Global Consistency: Celsius and Fahrenheit]
+\begin{problem}[Global Consistency: Celsius and Fahrenheit]
 An NN answers two related questions:
 Q1: ``What is the temperature in Celsius?'' (input $t_C$)  
 Q2: ``What is the temperature in Fahrenheit?'' (input $t_F$)  
@@ -1593,9 +1593,9 @@ We want consistency: If Q1 outputs $y$, then Q2 must output $1.8y+32$.
 \forall t_C, \quad f(Q2, t_C \times 1.8 + 32) = 1.8 \cdot f(Q1,t_C) + 32
 \]
 \end{solution}
-\end{exercise}
+\end{problem}
 
-% \begin{exercise}[Monotonicity in Multiple Inputs: Flight Risk]
+% \begin{problem}[Monotonicity in Multiple Inputs: Flight Risk]
 % A neural network predicts flight risk score $r$ for passengers. Inputs are number of missed flights $m$ 
 % and number of valid documents provided $d$. We want:  
 % - Increasing $m$ should never decrease $r$.  
@@ -1612,9 +1612,9 @@ We want consistency: If Q1 outputs $y$, then Q2 must output $1.8y+32$.
 % d \leq d' \land m = m' \implies f(m,d) \geq f(m,d')
 % \]
 % \end{solution}
-% \end{exercise}
+% \end{problem}
 
-% \begin{exercise}[Temporal Safety: Medical Monitoring]
+% \begin{problem}[Temporal Safety: Medical Monitoring]
 % A medical monitoring network takes as input heart rate readings over time and outputs an alarm signal 
 % (0 = safe, 1 = alarm). Property:  
 % If heart rate exceeds 180 bpm for 3 consecutive time steps, then the alarm must be raised at the next time step.
@@ -1624,10 +1624,10 @@ We want consistency: If Q1 outputs $y$, then Q2 must output $1.8y+32$.
 % \forall t, \quad (HR_t > 180 \land HR_{t+1} > 180 \land HR_{t+2} > 180) \implies f(HR_{t+3}) = 1
 % \]
 % \end{solution}
-% \end{exercise}
+% \end{problem}
 
 
-% \begin{exercise}[Robustness in Speech Recognition]
+% \begin{problem}[Robustness in Speech Recognition]
 % A speech recognition NN maps audio clips $x$ to text. Robustness property: if background noise changes by at most 
 % $\epsilon$ in volume, the transcription should remain the same.
 
@@ -1636,9 +1636,9 @@ We want consistency: If Q1 outputs $y$, then Q2 must output $1.8y+32$.
 % \forall x', \quad \|x - x'\| \leq \epsilon \implies f(x') = f(x)
 % \]
 % \end{solution}
-% \end{exercise}
+% \end{problem}
 
-% \begin{exercise}[Safety in Medical Diagnosis]
+% \begin{problem}[Safety in Medical Diagnosis]
 % A NN diagnoses diseases from patient data (age $a$, blood pressure $bp$, heart rate $hr$).  
 % Safety property: If age $a > 80$ and $bp > 200$, then the network must never output ``safe''.
 
@@ -1647,9 +1647,9 @@ We want consistency: If Q1 outputs $y$, then Q2 must output $1.8y+32$.
 % a > 80 \land bp > 200 \implies f(a,bp,hr) \neq \text{``safe''}
 % \]
 % \end{solution}
-% \end{exercise}
+% \end{problem}
 
-% \begin{exercise}[Consistency in Translation]
+% \begin{problem}[Consistency in Translation]
 % A multilingual NN translates between English, French, and German.  
 % If English $\to$ French translation of ``cat'' is ``chat'', then French $\to$ German translation of ``chat'' must be ``Katze''.
 
@@ -1659,9 +1659,9 @@ We want consistency: If Q1 outputs $y$, then Q2 must output $1.8y+32$.
 % f(\text{FR}\to\text{DE}, \text{``chat''}) = \text{``Katze''}
 % \]
 % \end{solution}
-% \end{exercise}
+% \end{problem}
 
-% \begin{exercise}[Monotonicity in Fairness]
+% \begin{problem}[Monotonicity in Fairness]
 % A network computes credit approval probability $f(p,s,g)$ with GPA $p$, score $s$, and gender $g$.  
 % We require: increasing GPA or score cannot decrease approval, and gender should not matter.
 
@@ -1676,9 +1676,9 @@ We want consistency: If Q1 outputs $y$, then Q2 must output $1.8y+32$.
 % f(p,s,\text{male}) = f(p,s,\text{female}) \quad \forall p,s
 % \]
 % \end{solution}
-% \end{exercise}
+% \end{problem}
 
-\begin{exercise}[Counterexample: Safety in Vehicles]
+\begin{problem}[Counterexample: Safety in Vehicles]
 A NN computes car acceleration $a$. We want a safety property: if distance to obstacle $d<10$, then $a\leq 0$. But we observe a scenario where $d=5$ but $a=+2$.
 
 Write the safety requirement and show how this is a counterexample.
@@ -1694,11 +1694,11 @@ Counterexample:
 d=5, \quad f(d)=a=+2 \quad \text{violates property.}
 \]
 \end{solution}
-\end{exercise}
+\end{problem}
 
 
 
-\begin{exercise}\label{exercise:z3-properties}
+\begin{problem}\label{problem:z3-properties}
 
 
 \newcommand{\proofnet}[1]{
@@ -1782,7 +1782,7 @@ Note that in this network the hidden neurons ($v_1 \ldots v_4$) use ReLU activat
 \end{itemize}
 \end{itemize}
 
-\end{exercise}
+\end{problem}
 
 \chapter{Verification of Neural Networks}\label{sec:verification}
 
@@ -1864,20 +1864,20 @@ This formula checks if the network $N$ satisfies (implies) the property $\phi_{i
 \end{equation}
 If~\autoref{eq:nnv2} is unsatisfiable, then $\phi$ is a valid property of $N$. Otherwise, $\phi$ is not valid.  Moreover, we can extract a counterexample for the original problem from the satisfying assignment of~\autoref{eq:nnv2}.
 
-\begin{exercise}\label{ex:prop-neg1}
+\begin{problem}\label{ex:prop-neg1}
   Let $\alpha$ represent our network and the robustness property $| x - x | \le \epsilon \implies  f(x) = f(y)$. Form the satisfiability formula (\autoref{eq:nnv2}) that we need to check. Check them using Z3. 
-\end{exercise}
+\end{problem}
 
 
-\begin{exercise}\label{ex:prop-neg2}
+\begin{problem}\label{ex:prop-neg2}
   Let $\alpha$ represent our network and the property $y>0$ for any input $x_1 \in [r_1,r_2], x_2 \in [r_3,r_4]$. Form the satisfiability formula (\autoref{eq:nnv2}) that we need to check. Check them using Z3.
-\end{exercise}
+\end{problem}
 
 
-\begin{exercise}[Validity Formulation]\label{ex:negation-trick}
+\begin{problem}[Validity Formulation]\label{ex:negation-trick}
 Show that $\alpha \implies (\phi_{in} \implies \phi_{out})$ (\autoref{eq:nnv}) is valid if and only if $\alpha \land \phi_{in} \land \neg \phi_{out}$ (\autoref{eq:nnv2}) is unsatisfiable.
 First, do this by hand by explicitly writing out the logical equivalences step by step. Then, verify your result using Z3, i.e., show that the negation of the first formula is equivalent to the second formula.
-\end{exercise}
+\end{problem}
 
 \begin{example}\label{ex:dnn-sat}
 We represent the network in~\autoref{fig:dnn-b} as a formula $\alpha$:
@@ -1897,9 +1897,9 @@ We then check the satisfiability of $\alpha \land \phi_{in} \land \neg \phi_{out
 \end{example}
 
 
-\begin{exercise}\label{exercise:z3-dnn}
+\begin{problem}\label{problem:z3-dnn}
 Use Z3 to do~\autoref{ex:dnn-sat}. You might find~\autoref{ex:z3-dnn} useful.  Make sure that you also ask Z3 to  find a counterexample violating the property (does not have to be the same as above).
-\end{exercise}
+\end{problem}
 
 \section{Activation Pattern Search}\label{sec:activation-pattern}
 
@@ -1961,7 +1961,7 @@ $\langle \texttt{true}, \texttt{false}, \texttt{true} \rangle$ and
 $\langle \texttt{true}, \texttt{false}, \texttt{false} \rangle$.  
 \end{example}
 
-\begin{exercise}[Pattern Enumeration]\label{exercise:pattern-enumeration}
+\begin{problem}[Pattern Enumeration]\label{problem:pattern-enumeration}
 Consider an NN with 3 ReLU neurons:
 \begin{enumerate}
   \item How many complete activation patterns are there?
@@ -1976,10 +1976,10 @@ Consider an NN with 3 ReLU neurons:
 $\{n_1=\mathsf{true},n_2=\mathsf{true},n_3=\mathsf{false}\}$ and  
 $\{n_1=\mathsf{true},n_2=\mathsf{false},n_3=\mathsf{false}\}$.  
 \end{solution}
-\end{exercise}
+\end{problem}
 
 
-\begin{exercise}[Counting Complete Patterns Compatible with a Partial Pattern]
+\begin{problem}[Counting Complete Patterns Compatible with a Partial Pattern]
 Suppose we have a DNN with $m=10$ ReLU neurons. Consider a partial pattern $p'$ that fixes 4 neurons.
 \begin{enumerate}
   \item How many complete patterns extend $p'$?
@@ -1991,7 +1991,7 @@ Suppose we have a DNN with $m=10$ ReLU neurons. Consider a partial pattern $p'$ 
 (a) $2^{10-4}=2^6=64$.  
 (b) $2^{10-6}=2^4=16$.  
 (c) General: $2^{m-k}$.  
-\end{exercise}
+\end{problem}
 
 \subsubsection{Activation Patterns and LP Constraints}
 Once having an activation pattern $p$, we can simplify the formula $\alpha$ representing the DNN by replacing each ReLU function with a linear constraint according to the activation status specified in $p$. For example, if $p$ specifies that neuron $n_i$ is active, we replace $\relu{z_i}$ with $z_i$ and add the constraint $z_i \ge 0$; if $n_i$ is inactive, we replace $\relu{z_i}$ with $0$ and add the constraint $z_i < 0$.
@@ -2053,7 +2053,7 @@ Because $q$ does not fix the status of $x_4$, we cannot simplify the ReLU for $x
 
 
 
-\begin{exercise}\label{exercise:nnv-pattern}
+\begin{problem}\label{problem:nnv-pattern}
 Consider the toy DNN in \autoref{fig:dnn-b}. Suppose we fix the activation pattern
 \[
 p=\{\mathsf{true}, \mathsf{true}\}.
@@ -2067,10 +2067,10 @@ p=\{\mathsf{true}, \mathsf{true}\}.
 % $b_3=\mathsf{true}$ means $-0.5x_1+0.5x_2+1 \ge 0$.  
 % $b_4=\mathsf{false}$ means $0.5x_1-0.5x_2+1 < 0$.  
 % Thus, region = $\{(x_1,x_2)\mid -0.5x_1+0.5x_2+1 \ge 0,\;0.5x_1-0.5x_2+1 < 0\}$, a convex polyhedron.  
-\end{exercise}
+\end{problem}
 
 
-% \begin{exercise}[Satisfiability via Partial Patterns]
+% \begin{problem}[Satisfiability via Partial Patterns]
 % Let $N$ be a DNN with ReLU neurons $n_1,\dots,n_4$. Suppose we want to verify the property
 % \[
 % x_1 \in [-1,1],\;x_2 \in [-1,1] \implies y \ge 0.
@@ -2085,9 +2085,9 @@ p=\{\mathsf{true}, \mathsf{true}\}.
 % (a) Instead of enumerating all $2^4=16$ complete patterns, use partial patterns like $\{n_1=\text{true},n_2=\text{false}\}$ to check feasibility early.  
 % (b) Translate ReLU conditions into linear constraints and check satisfiability with an LP/SMT solver.  
 % (c) If infeasible, then no input activates that pattern, so no counterexample can lie there.  
-% \end{exercise}
+% \end{problem}
 
-% \begin{exercise}[Overlapping Regions]
+% \begin{problem}[Overlapping Regions]
 % Consider a network with 3 ReLU neurons: $n_1,n_2,n_3$.
 % \begin{enumerate}
 %   \item Show that the regions defined by different complete activation patterns are disjoint.
@@ -2097,7 +2097,7 @@ p=\{\mathsf{true}, \mathsf{true}\}.
 % \textbf{Solution Sketch:}  
 % (a) Complete patterns differ in at least one activation assignment $\Rightarrow$ disjoint regions since ReLU sign constraints are mutually exclusive.  
 % (b) Partial patterns don’t fix all neurons. Example: $p'=\{n_1=\mathsf{true}\}$ overlaps with $p''=\{n_2=\mathsf{true}\}$ because both allow different settings of unfixed neurons; their corresponding regions may intersect.  
-% \end{exercise}
+% \end{problem}
 
 
 
@@ -3233,7 +3233,7 @@ Therefore, DeepPoly achieves a balance, combining the expressiveness of polyhedr
 
 \section{Abstractions for Other Activation Functions}
 
-\section{Exercises}
+\section{problems}
 \subsection{Interval Abstraction}
 
 \begin{example}[Full Example of Interval Abstraction]\label{ex:interval-abstraction-full}
@@ -4340,10 +4340,10 @@ Thus, in this example, we conclude that property in~\autoref{eq:prop1} is \emph{
 \end{example}
 
 \section{Excercises}
-\begin{exercise}
+\begin{problem}
 Consider the DNN in~\autoref{fig:reluplex} and the property in~\autoref{eq:prop1}.  Use \reluplex{} to verify the property.  If you find a counterexample, provide it.  You will need to provide all the steps in the \reluplex{} algorithm, e.g., DNN encoding, basic variable encoding, and the \reluplex{} search through a series of configurations as shown in~\autoref{ex:reluplex}.
 
-\end{exercise}
+\end{problem}
 
 
 \chapter{GPU and Multicore Parallelism}
@@ -5925,15 +5925,15 @@ In each specification, the inputs (condition distance and latent variables) are 
     \end{itemize}
     \item Week 3 (Sept 10):
     \begin{itemize}
-        \item HW due: MILP exercise~\autoref{ex:milp-online}
+        \item HW due: MILP problem~\autoref{ex:milp-online}
         \item Topics: DNN and Properties and their formal representation (~\autoref{chap:nn-basics} and~\autoref{chap:properties})
-        \item Quiz:~\autoref{exercise:milp-hand}
+        \item Quiz:~\autoref{problem:milp-hand}
     \end{itemize}
     \item Week 4 (Sept 17):
     \begin{itemize}
-        \item HW due: Neural Networks and Properties exercise~\autoref{exercise:z3-properties}
-        \item Topics: DNN Verification (~\autoref{sec:verification}) 
-        \item Quiz:~\autoref{exercise:drone}
+        \item HW due: Neural Networks and Properties~\autoref{problem:z3-properties}
+        \item Topics: DNN Verification (\autoref{sec:verification}) 
+        \item Quiz:~\autoref{problem:drone}
     \end{itemize}
     \item Week 5 (Sept 24): No class this week (prof not available). No quiz or HW due. 
     \begin{itemize}
@@ -5941,12 +5941,12 @@ In each specification, the inputs (condition distance and latent variables) are 
     \end{itemize}
     \item Week 6 (Oct 1):
     \begin{itemize}
-        \item HW due:~\autoref{ex:negation-trick},~\autoref{exercise:z3-dnn}, and~\autoref{exercise:pattern-enumeration}. %, and ~\autoref{exercise:nnv-pattern}
+        \item HW due:~\autoref{ex:negation-trick},~\autoref{problem:z3-dnn}, and~\autoref{problem:pattern-enumeration}. %, and ~\autoref{problem:nnv-pattern}
     \end{itemize}
-    \item Week 7:
-    \item Week 8:
-    \item Week 9:
-    \item Week 10:
+    \item Week 7 (Oct 8):
+    \item Week 8 (Oct 15):
+    \item Week 9 (Oct 22):
+    \item Week 10 (Oct 29):
 \end{enumerate}    
 
 
@@ -6466,13 +6466,13 @@ Any formula can be transformed into CNF. The process generally involves the foll
 \item Distribute disjunctions over conjunctions.
 \end{enumerate}
 
-\begin{exercise}
+\begin{problem}
 Transform the formula 
 \[
 (x \to y) \land (y \to z)
 \]
 into CNF.
-\end{exercise}
+\end{problem}
 
 
 \begin{commentbox}
@@ -6496,14 +6496,14 @@ The truth value of a formula is defined recursively
   \alpha(\phi \to \psi) = \texttt{True} &\quad \text{iff } \alpha(\phi) = \texttt{False} \text{ or } \alpha(\psi) = \texttt{True}.
 \end{align*}
 
-\begin{exercise}  
+\begin{problem}  
 For the formula 
 
 \[
 (x \lor y) \land (\lnot x \lor z), 
 \]
 evaluate its truth value under all $2^3=8$ possible assignments of $x,y,z$.
-\end{exercise}
+\end{problem}
 
 \subsection{Satisfiability and Validity}
 \begin{definition}[Satisfiability] A formula $\phi$
@@ -6529,10 +6529,10 @@ In contrast,
 is valid.
 \end{example}
 
-\begin{exercise}
+\begin{problem}
 Show that $(\phi \to \psi)$ is equivalent to $(\lnot \phi \lor \psi)$.  
 (Hint: construct a truth table.)
-\end{exercise}
+\end{problem}
 
 
 \subsection{SAT Solving}\label{sec:sat-solving}
@@ -6551,13 +6551,13 @@ A SAT solver takes a propositional formula as input and determines its satisfiab
 
 
 
-\begin{exercise}
+\begin{problem}
 Use the Z3 solver to check whether
 \[
 (x \lor y) \land (\lnot x \lor y) \land (x \lor \lnot y)
 \] is satisfiable.  
 Provide a satisfying assignment if it exists.
-\end{exercise}
+\end{problem}
 
 
 
@@ -6611,14 +6611,14 @@ They combine:
 
 The SAT solver guesses a truth assignment for the Boolean structure. The T-solver checks whether the corresponding arithmetic constraints are feasible. This loop continues until either a satisfying assignment is found or \unsat{} is proven.
 
-\begin{exercise}
+\begin{problem}
 Decide the satisfiability of:
 \[
 (x > 3) \land (y < 2) \land (x+y < 1).
 \]
 
 First, do the reasoning informally by hand, and then confirm with an SMT solver such as Z3.
-\end{exercise}
+\end{problem}
 
 
 \subsection{Z3 SMT Solver}\label{sec:z3}
@@ -6663,14 +6663,14 @@ print(s.model())   #a possible model is {x=True, y=True}
 \end{lstlisting}
 \end{example}
 
-\begin{exercise}
+\begin{problem}
 Modify the code in~\autoref{ex:z3-propositional} to check 
 
 \[
 (x \land \lnot x).
 \]
 Confirm that the result is \texttt{unsat}.
-\end{exercise}
+\end{problem}
 
 
 
@@ -6704,22 +6704,22 @@ print(s.model()) # Output: {x=0, y=0}
 \end{lstlisting}
 \end{example}
 
-\begin{exercise}
+\begin{problem}
 Use Z3 to check whether the constraints
 \[
 x+y=5, \quad x \geq 0, \quad y \geq 0
 \]
 are satisfiable, and if so, ask Z3 for a model.
-\end{exercise}
+\end{problem}
 
-\begin{exercise}
+\begin{problem}
 Use Z3 to check the formula given in~\autoref{ex:smt2}. Do it for both the reals and integers.
-\end{exercise}
+\end{problem}
 
-\begin{exercise}
+\begin{problem}
 Use Z3 to formulate and check the statement \texttt{``If $x>3$ then $y>2$ AND $x \leq 1$''}.
 Is it satisfiable? What model does Z3 return?
-\end{exercise}
+\end{problem}
 
 
 
@@ -6742,11 +6742,11 @@ print(s.check()) # Output: unsat, property holds
 \end{example}
 
 
-\begin{exercise}
+\begin{problem}
 Modify the above to check property:  
 \texttt{``For all $x \geq 2$, we have $y \geq 1$.''}  
 What does Z3 return?
-\end{exercise}
+\end{problem}
 
 
 \section{SAT and SMT Solving Algorithms}\label{sec:sat-smt-algorithms}
@@ -6944,14 +6944,14 @@ The objective function $z = 1.5x+2y$ is maximized at vertex $(0,4)$.
 
 \end{example}
 
-\begin{exercise}\label{ex:lp-exercise2}
+\begin{problem}\label{ex:lp-problem2}
     Maximize $z=4x+5y$ subject to $\{x+y \le 20, \; 2x+4y \leq 72\}$.
 
     \begin{enumerate}    
         \item Identify the corner points.
         \item Evaluate the objective function at each corner point.
     \end{enumerate}
-\end{exercise}
+\end{problem}
 
 
 
@@ -7081,7 +7081,7 @@ This works because
 \end{example}
 
 
-\begin{exercise}
+\begin{problem}
 Encode the disjunction $x \geq 5 \lor x \leq 3$ in MILP.
 
 \begin{solution}
@@ -7091,7 +7091,7 @@ Encode the disjunction $x \geq 5 \lor x \leq 3$ in MILP.
     \item $x \leq 3 + Mz$ (if $z=0$, this enforces $x \leq 3$)
     \end{itemize}
 \end{solution}
-\end{exercise}
+\end{problem}
 
 
 \begin{example}[Encoding ReLU in MILP]\label{ex:relu_milp}
@@ -7115,7 +7115,7 @@ This works because
 
 
 \end{example}
-\begin{exercise}
+\begin{problem}
 Consider again the ReLU example in \autoref{ex:relu_milp} but now $x$ has the bounds $L \leq x \leq U$. Modify the MILP encoding so that $L$ and $U$ are used \emph{directly} instead of a large constant $M$.
 
 \begin{solution}
@@ -7130,7 +7130,7 @@ To modify the MILP encoding for the ReLU function with bounds $L \leq x \leq U$,
 \end{aligned}
 \]
 \end{solution}
-\end{exercise}
+\end{problem}
 
 
 \section{Using Z3 to Solve LP and MILP}
@@ -7159,18 +7159,18 @@ if (opt.check() == sat):
 \end{example}
 
 
-\begin{exercise}
-Do~\autoref{ex:lp-exercise2} using Z3.
-\end{exercise}
+\begin{problem}
+Do~\autoref{ex:lp-problem2} using Z3.
+\end{problem}
 
-\begin{exercise}
+\begin{problem}
 Do~\autoref{ex:lp-example3} using Z3.
-\end{exercise}
+\end{problem}
 
 
 
-\begin{exercise}\label{ex:milp-online}
-For this exercise, you will find some interesting MILP problem online, formulate it, and solve it using Z3. Specifically, do the following:
+\begin{problem}\label{ex:milp-online}
+For this problem, you will find some interesting MILP problem online, formulate it, and solve it using Z3. Specifically, do the following:
 \begin{itemize}
 \item Find \emph{two} interesting MILP problems online. These can be from textbooks, research papers, or online resources (Youtube, Google, online tutorials).
 
@@ -7184,10 +7184,10 @@ Note: Interesting here means the problem has a non-trivial structure, resembles 
 \end{itemize}
 \end{itemize}
 
-\end{exercise}
+\end{problem}
 
 
-\begin{exercise}\label{exercise:milp-hand}
+\begin{problem}\label{problem:milp-hand}
 Minimize $z = x + y$ subject to:
 \[
 \begin{aligned}
@@ -7201,11 +7201,11 @@ Minimize $z = x + y$ subject to:
 You can either do this by hand on paper (and take picture) or write Python code with Z3. Either way, show all the steps (e.g., as comments in the Z3 code):
 \begin{enumerate}
     \item The constraints and objective function.
-    \item The corner or candidate points (this exercise is very simple that you do need an algorithm like Simplex to solve. You can simply ``guess'' these points, e.g., the intersection of the given constraints)
+    \item The corner or candidate points (this problem is very simple that you do need an algorithm like Simplex to solve. You can simply ``guess'' these points, e.g., the intersection of the given constraints)
     \item The objective value at each corner point.
     \item The optimal solution.
 \end{enumerate}
-\end{exercise}
+\end{problem}
 
 % \paragraph{Example.}  
 % One-neuron ReLU: $y = \max(0,2x-1)$.  
@@ -7216,32 +7216,32 @@ You can either do this by hand on paper (and take picture) or write Python code 
 
 % ---
 
-% \section{Exercises}
+% \section{problems}
 
-% \paragraph{Exercise 1 (Warm-up).}  
+% \paragraph{problem 1 (Warm-up).}  
 % Maximize $2x+3y$ subject to $x+2y \leq 8, \; 2x+y \leq 8, \; x,y \geq 0$.  
 % (a) Sketch feasible region.  
 % (b) Identify corner points.  
 % (c) Find optimal solution.
 
-% \paragraph{Exercise 2.}  
+% \paragraph{problem 2.}  
 % Formulate and solve a diet problem with three foods and two nutrients.  
 % Find the cheapest diet satisfying requirements.
 
-% \paragraph{Exercise 3.}  
+% \paragraph{problem 3.}  
 % Duality practice:  
 % Write the dual of
 % \[
 % \min 5x_1+2x_2 \quad \text{s.t. } x_1+x_2 \geq 3, \; x_1, x_2 \geq 0.
 % \]
 
-% \paragraph{Exercise 4 (MILP).}  
+% \paragraph{problem 4 (MILP).}  
 % Encode in MILP:  
 % “If factory A is open ($z_A=1$) then production $\geq 50$,  
 % if factory B is open ($z_B=1$) then production $\geq 30$.  
 % At most one factory may be open.”
 
-% \paragraph{Exercise 5 (Verification).}  
+% \paragraph{problem 5 (Verification).}  
 % Network: $h=\max(0,x_1-x_2), \; y=h+x_2$.  
 % Verify: For all $x_1,x_2 \in [0,1]$, $y \geq 0$.  
 % Model as MILP and solve.
@@ -7283,7 +7283,7 @@ You can either do this by hand on paper (and take picture) or write Python code 
 % \]
 % Solution: maximum is 4 at $(4,0)$ or $(0,4)$.
 
-% \paragraph{Exercise 6 (Homework).}  
+% \paragraph{problem 6 (Homework).}  
 % Solve the LP:
 % \[
 % \max 3x+2y \quad \text{subject to } 
@@ -7314,7 +7314,7 @@ You can either do this by hand on paper (and take picture) or write Python code 
 
 % This encodes logical branching into optimization.
 
-% \paragraph{Exercise 7 (In-class).}  
+% \paragraph{problem 7 (In-class).}  
 % Formulate “if $x=1$, then $y=0$” as linear constraints using a binary variable and a big-$M$ method.
 
 % \subsection{Encoding ReLU Constraints}
@@ -7332,7 +7332,7 @@ You can either do this by hand on paper (and take picture) or write Python code 
 % - If $z=0$, $y=0$.
 % - If $z=1$, $y=x$.
 
-% \paragraph{Exercise 8 (Homework).}  
+% \paragraph{problem 8 (Homework).}  
 % Write MILP constraints for $y = \max(0, 2x+1)$ with $-10 \leq x \leq 10$.
 
 % \subsection{Example: Verifying a Tiny Network}
@@ -7352,7 +7352,7 @@ You can either do this by hand on paper (and take picture) or write Python code 
 % \paragraph{Result.}
 % MILP is infeasible $\Rightarrow$ property holds.
 
-% \paragraph{Exercise 9 (Homework).}  
+% \paragraph{problem 9 (Homework).}  
 % Modify the property to “for all $x \in [0.6,1]$, $y > 0$.”  
 % Check if the MILP is feasible.
 
@@ -7360,7 +7360,7 @@ You can either do this by hand on paper (and take picture) or write Python code 
 
 % ---
 
-% \section{Summary and Further Exercises}
+% \section{Summary and Further problems}
 
 % \begin{itemize}
 %   \item Logic: propositional formulas, CNF, satisfiability.
