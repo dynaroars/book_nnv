@@ -1874,7 +1874,7 @@ If~\autoref{eq:nnv2} is unsatisfiable, then $\phi$ is a valid property of $N$. O
 \end{exercise}
 
 
-\begin{exercise}[Postcondition Negation]\label{ex:negation-trick}
+\begin{exercise}[Validity Formulation]\label{ex:negation-trick}
 Show that $\alpha \implies (\phi_{in} \implies \phi_{out})$ (\autoref{eq:nnv}) is valid if and only if $\alpha \land \phi_{in} \land \neg \phi_{out}$ (\autoref{eq:nnv2}) is unsatisfiable.
 First, do this by hand by explicitly writing out the logical equivalences step by step. Then, verify your result using Z3, i.e., show that the negation of the first formula is equivalent to the second formula.
 \end{exercise}
@@ -5916,32 +5916,32 @@ In each specification, the inputs (condition distance and latent variables) are 
 \appendix
 \chapter{Schedule and Assignments}
 \begin{enumerate}
-    \item Week 1: Introduction (videos of neural networks, basic terminologies and concepts).
-    \item Week 2
+    \item Week 1 (Aug 27): Introduction (videos of neural networks, basic terminologies and concepts).
+    \item Week 2 (Sept 3):
     \begin{itemize}
     \item HW due: Post a short introduction about yourself on Canvas
     \item Topics: Background on Logic~\autoref{chap:logics} and Linear Programming~\autoref{chap:lp}
     \item Quiz: no quiz this week
     \end{itemize}
-    \item Week 3:
+    \item Week 3 (Sept 10):
     \begin{itemize}
         \item HW due: MILP exercise~\autoref{ex:milp-online}
         \item Topics: DNN and Properties and their formal representation (~\autoref{chap:nn-basics} and~\autoref{chap:properties})
         \item Quiz:~\autoref{exercise:milp-hand}
     \end{itemize}
-    \item Week 4:
+    \item Week 4 (Sept 17):
     \begin{itemize}
         \item HW due: Neural Networks and Properties exercise~\autoref{exercise:z3-properties}
         \item Topics: DNN Verification (~\autoref{sec:verification}) 
         \item Quiz:~\autoref{exercise:drone}
     \end{itemize}
-    \item Week 5: No class this week (prof not available). No quiz or HW due. 
+    \item Week 5 (Sept 24): No class this week (prof not available). No quiz or HW due. 
     \begin{itemize}
         \item Programming Assignment 1 (PA1): Symbolic Execution of Neural Networks~\autoref{sec:pa1}. Due date \alert{Monday October 6, 2024 11:59pm}.
     \end{itemize}
-    \item Week 6:
+    \item Week 6 (Oct 1):
     \begin{itemize}
-        \item HW due:~\autoref{exercise:z3-dnn},~\autoref{exercise:pattern-enumeration}, and ~\autoref{exercise:nnv-pattern}
+        \item HW due:~\autoref{ex:negation-trick},~\autoref{exercise:z3-dnn}, and~\autoref{exercise:pattern-enumeration}. %, and ~\autoref{exercise:nnv-pattern}
     \end{itemize}
     \item Week 7:
     \item Week 8:
