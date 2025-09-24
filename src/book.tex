@@ -1931,21 +1931,16 @@ A \emph{complete activation pattern} assigns an activation status to \emph{every
 \[
 p = \langle b_1, b_2, \dots, b_m \rangle \in \{\texttt{true},\texttt{false}\}^m .
 \]
-Each complete activation pattern corresponds to exactly one linear region of the input space.  
 \end{definition}
 
 
 \begin{definition}[Partial Activation Pattern]\label{def:partial-pattern}
 A \emph{partial activation pattern} assigns activation statuses to only a subset of the neurons.  
-It represents all complete activation patterns that extend it, and therefore corresponds to a union of multiple linear regions.  
+\[
+q = \langle b_1, b_2, *, b_4, *, \dots, b_m \rangle \in \{\texttt{true},\texttt{false},*\}^m ,
+\]
+where $*$ means ``undetermined'' or ``don't care''. Each partial activation pattern represents multiple complete activation patterns.
 \end{definition}
-
-\subsubsection{Activation Patterns and LP Constraints}
-Once we fix an activation pattern $p$, we can simplify the formula $\alpha$ representing the DNN by replacing each ReLU function with a linear constraint according to the activation status specified in $p$. For example, if $p$ specifies that neuron $n_i$ is active, we replace $\relu{z_i}$ with $z_i$ and add the constraint $z_i \ge 0$; if $n_i$ is inactive, we replace $\relu{z_i}$ with $0$ and add the constraint $z_i < 0$.
-This gives us the formula $\alpha_p$ corresponding to the linear region defined by $p$.
-
-For a complete activation pattern $p$, $\alpha_p$ is a purely linear formula, which can be checked for satisfiability using LP techniques (\autoref{chap:lp}).
-For a partial activation pattern $p$, $\alpha_p$ may still contain some ReLU functions, but fewer than in the original formula $\alpha$.  Thus, checking the satisfiability of $\alpha_p \land \phi_{in} \land \neg \phi_{out}$ is easier than checking that of $\alpha \land \phi_{in} \land \neg \phi_{out}$.
 
 
 \begin{example}  
@@ -1961,11 +1956,21 @@ In contrast, a partial activation pattern such as
 \[
 q = \langle \texttt{true}, \texttt{false}, * \rangle
 \]
-(where $*$ denotes ``undetermined'' or ``don't care'') represents \emph{both} complete patterns  
+represents \emph{both} complete patterns  
 $\langle \texttt{true}, \texttt{false}, \texttt{true} \rangle$ and  
 $\langle \texttt{true}, \texttt{false}, \texttt{false} \rangle$.  
-Thus $q$ compactly captures multiple linear regions at once.
 \end{example}
+
+
+\subsubsection{Activation Patterns and LP Constraints}
+Once we fix an activation pattern $p$, we can simplify the formula $\alpha$ representing the DNN by replacing each ReLU function with a linear constraint according to the activation status specified in $p$. For example, if $p$ specifies that neuron $n_i$ is active, we replace $\relu{z_i}$ with $z_i$ and add the constraint $z_i \ge 0$; if $n_i$ is inactive, we replace $\relu{z_i}$ with $0$ and add the constraint $z_i < 0$.
+This gives us the formula $\alpha_p$ corresponding to the linear region defined by $p$.
+
+A complete activation pattern $p$ defines a unique linear region of the DNN. This is because with a complete pattern $p$, $\alpha_p$ becomes a purely linear formula.
+In contrast, a partial activation pattern $q$ defines multiple linear regions, one for each complete pattern it represents.  With $q$, $\alpha_q$ may still contain some ReLU functions that are not fixed by $q$.  However, since $q$ fixes the status of some neurons, we can simplify $\alpha$ by replacing the ReLU functions of those neurons with linear constraints.
+
+In any case, given an activation pattern, we can reduce the complexity of the satisfiability check by fixing the activation status of some neurons. Thus, checking the satisfiability of $\alpha_p \land \phi_{in} \land \neg \phi_{out}$ is easier than checking that of $\alpha \land \phi_{in} \land \neg \phi_{out}$.
+
 
 \begin{example}  
 Consider the DNN from~\autoref{fig:dnn-b}, represented as the formula
