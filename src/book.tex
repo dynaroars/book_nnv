@@ -1919,6 +1919,7 @@ As long as one of the disjuncts in~\autoref{eq:nnv3} is satisfiable, i.e., we co
 This allows us to break down the verification problem into smaller subproblems, each searches for \emph{activation pattern}, or boolean assignment of activation statuses of all neurons, that satisfies the formula in~\autoref{eq:nnv2}.
 Modern DNN verification techniques~\cite{bunel2020branch,wang2021beta,ferrari2022complete,duong2024harnessing,duong2023dpllt,ovalbab,katz2019marabou,bak2021nnenum} all adopt this idea and search for satisfying activation patterns.
 
+\subsection{Activation Patterns}
 \begin{definition}[Activation Pattern]\label{def:activation-pattern}
 Let $N$ be a DNN with ReLU neurons $n_1,\dots,n_m$.  
 An \emph{activation pattern} is a Boolean assignment of the activation status of a subset (or all) of the neurons.  
@@ -1938,6 +1939,14 @@ Each complete activation pattern corresponds to exactly one linear region of the
 A \emph{partial activation pattern} assigns activation statuses to only a subset of the neurons.  
 It represents all complete activation patterns that extend it, and therefore corresponds to a union of multiple linear regions.  
 \end{definition}
+
+\subsubsection{Activation Patterns and LP Constraints}
+Once we fix an activation pattern $p$, we can simplify the formula $\alpha$ representing the DNN by replacing each ReLU function with a linear constraint according to the activation status specified in $p$. For example, if $p$ specifies that neuron $n_i$ is active, we replace $\relu{z_i}$ with $z_i$ and add the constraint $z_i \ge 0$; if $n_i$ is inactive, we replace $\relu{z_i}$ with $0$ and add the constraint $z_i < 0$.
+This gives us the formula $\alpha_p$ corresponding to the linear region defined by $p$.
+
+For a complete activation pattern $p$, $\alpha_p$ is a purely linear formula, which can be checked for satisfiability using LP techniques (\autoref{chap:lp}).
+For a partial activation pattern $p$, $\alpha_p$ may still contain some ReLU functions, but fewer than in the original formula $\alpha$.  Thus, checking the satisfiability of $\alpha_p \land \phi_{in} \land \neg \phi_{out}$ is easier than checking that of $\alpha \land \phi_{in} \land \neg \phi_{out}$.
+
 
 \begin{example}  
 Consider a DNN with three ReLU neurons $n_1,n_2,n_3$.  
@@ -1962,20 +1971,17 @@ Thus $q$ compactly captures multiple linear regions at once.
 Consider the DNN from~\autoref{fig:dnn-b}, represented as the formula
 \[
 \begin{aligned}
-& x_3 = \relu{-0.5x_1 + 0.5x_2 + 1.0 ~\land~ \hat{x}_3} ~\land \\
-& x_4 = \relu{0.5x_1 - 0.5x_2 + 1.0  ~\land~ \hat{x}_4} ~\land \\
-& x_5 = -x_3 + x_4 - 1.0 .
+& \hat{x}_3 = -0.5x_1 + 0.5x_2 + 1.0, \\
+& \hat{x}_4 = 0.5x_1 - 0.5x_2 + 1.0, \\    
+& x_3 = \relu{\hat{x}_3} ~\land \\
+& x_4 = \relu{\hat{x}_4} ~\land \\
+& x_5 = -x_3 + x_4 - 1.0,
 \end{aligned}
 \]
 
-Here $x_3$ and $x_4$ are ReLU neurons, and $x_5$ is a linear output.  
-The activation status of the network is determined by the signs of the pre-activation values
-\[
-\hat{x}_3 = -0.5x_1 + 0.5x_2 + 1.0, 
-\qquad 
-\hat{x}_4 = 0.5x_1 - 0.5x_2 + 1.0 .
-\]
-\end{example}
+Here $\hat{x}_3$ and $\hat{x}_4$ are the pre-activation values of the ReLU neurons $x_3$ and $x_4$, respectively. 
+Thus, if we fix the activation status of $x_3$ and $x_4$, we can simplify the formula by replacing the ReLU functions with linear constraints.
+
 
 \begin{itemize}
   \item \textbf{Complete activation pattern.}  
@@ -1985,7 +1991,7 @@ The activation status of the network is determined by the signs of the pre-activ
   p = \langle \texttt{true}, \texttt{false} \rangle
   \]
   means that $\hat{x}_3 \geq 0$ (so $x_3 = \hat{x}_3$) while $\hat{x}_4 < 0$ (so $x_4 = 0$).  
-  In this case, the network reduces to the linear function
+  In this case, the network reduces to a single linear constraint (region):
   \[
   x_5 = -(-0.5x_1 + 0.5x_2 + 1.0) + 0 - 1.0 = 0.5x_1 - 0.5x_2 - 2.0 .
   \]
@@ -1996,88 +2002,18 @@ The activation status of the network is determined by the signs of the pre-activ
   \[
   q = \langle \texttt{true}, * \rangle
   \]
-  means $\hat{x}_3 \geq 0$ but places no restriction on $\hat{x}_4$.  
-  Thus $q$ compactly represents two complete patterns:
-  \[
-  \langle \texttt{true}, \texttt{true} \rangle \quad \text{and} \quad
-  \langle \texttt{true}, \texttt{false} \rangle .
-  \]
-  The corresponding input space is the union of the two linear regions where $x_3$ is active and $x_4$ may be either active or inactive.
+  means $\hat{x}_3 \geq 0$ but places no restriction on $\hat{x}_4$.  Here, the network reduces to
+\[
+\begin{aligned}
+& \hat{x}_4 = 0.5x_1 - 0.5x_2 + 1.0, \\    
+& x_4 = \relu{\hat{x}_4} ~\land \\
+& x_5 = -(-0.5x_1 + 0.5x_2 + 1.0) + x_4 - 1.0,
+\end{aligned}
+\]
+
+Because $q$ does not fix the status of $x_4$, we cannot simplify the ReLU for $x_4$. Thus, the formula still contains a ReLU function which splits the input space into two linear regions corresponding to the two possible activation statuses of $x_4$.
 \end{itemize}
-
-This example illustrates how a complete activation pattern corresponds to a single linear region of the input space with a fixed linear function, while a partial pattern captures multiple regions simultaneously.
-
-
-\paragraph{Discussion.}  
-Modern DNN verification techniques~\cite{bunel2020branch,wang2021beta,ferrari2022complete,duong2024harnessing,duong2023dpllt,ovalbab,katz2019marabou,bak2021nnenum} adopt this principle by systematically searching over the space of activation patterns.  
-By analyzing partial patterns, they can prune large subsets of infeasible or redundant regions without exploring each complete pattern individually, which is essential given that the number of possible complete activation patterns grows exponentially with the number of neurons.
-
-
- \subsection{Complete and Partial Activation Patterns}\label{sec:activation-patterns}
-
-The notion of activation patterns is related to Boolean satisfiability.
-In SAT solving, a \emph{complete assignment} assigns a truth value to every Boolean variable, while a \emph{partial assignment} assigns truth values to only a subset of the variables, leaving the rest undetermined.
-
-In the same way:
-
-\begin{definition}[Complete Activation Pattern]
-Let $N$ be a ReLU-based DNN with neurons $n_1,\dots,n_m$.
-A \emph{complete activation pattern} $p$ is a Boolean vector
-\[
-p = \langle b_1, b_2, \dots, b_m \rangle \in \{\texttt{true}, \texttt{false}\}^m
-\]
-that fixes the activation status of \emph{every} neuron:
-$b_i = \texttt{true}$ means $n_i$ is active ($z_i \ge 0$),
-$b_i = \texttt{false}$ means $n_i$ is inactive ($z_i < 0$).
-\end{definition}
-
-\begin{definition}[Partial Activation Pattern]
-A \emph{partial activation pattern} $p'$ is a Boolean vector over a subset of neurons, e.g.,
-\[
-p' = \{n_{i_1} = b_{i_1}, n_{i_2} = b_{i_2}, \dots, n_{i_k} = b_{i_k}\},
-\quad k < m.
-\]
-This implicitly represents all complete activation patterns that extend $p'$ with assignments to the remaining neurons.
-\end{definition}
-
-\paragraph{Example (Complete pattern).}
-Consider the toy DNN in~\autoref{fig:dnn-b} with two ReLU neurons $x_3, x_4$.
-The activation pattern
-\[
-p = \{b_3=\mathsf{true},\;b_4=\mathsf{false}\}
-\]
-is complete because it fixes both neurons: $x_3$ is active  and $x_4$ is inactive.
-This defines a full (complete) assignment to ReLU activation status.
-
-\paragraph{Example (Partial pattern).}
-The pattern
-\[
-p' = \{b_1 = \mathsf{true}\},
-\]
-is partial because it only fixes $n_1$ to be active.
-It represents two complete patterns:
-\[
-\{b_1=\mathsf{true}, b_2=\mathsf{true}\},
-\qquad
-\{b_1=\mathsf{true}, b_2=\mathsf{false}\}.
-\]
-Thus, a partial pattern corresponds to a union of multiple assignments to ReLU activation status.
-% show example of what it means like neuron x is active,  it would mean that the input is in this region, and the output is this linear function of the input. ...show some formula
-
-% \paragraph{Why partial patterns matter.}
-% During search, a solver may detect that a partial pattern already leads to unsatisfiability (e.g., $n_1=\mathsf{true}, n_2=\mathsf{false}$ contradicts input constraints).
-% In this case, \emph{all complete patterns extending it can be safely pruned}, avoiding exponential blowup.
-
-% \begin{example}[Unsatisfiable Partial Pattern]
-% Suppose $n_1=\mathsf{true}$ implies $x_3 \ge 0$.
-% Further, if $n_2=\mathsf{false}$ implies $x_4 < 0$, but combining these constraints with the input domain $x_1 \in [-1,1], x_2 \in [-2,2]$ is impossible, then the partial pattern
-% \[
-% \{n_1=\mathsf{true},\; n_2=\mathsf{false}\}
-% \]
-% is unsatisfiable.
-% Since it has no consistent inputs, both complete patterns containing this assignment are eliminated at once.
-% \end{example}
-
+\end{example}
 
 
 \begin{exercise}[Pattern Enumeration]
