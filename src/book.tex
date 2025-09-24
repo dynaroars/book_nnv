@@ -1792,24 +1792,19 @@ We first define the neural network verification (NNV) problem in~\autoref{sec:nn
 \section{The Neural Network Verification (NNV) Problem}\label{sec:nnv-problem}
 
 \begin{definition}[NNV]
-Given a DNN \(N\) and a property $\phi$, the \emph{NN verification} (NNV) problem asks if $\phi$ is a valid property of $N$.
+Given a DNN \(N\) and a property $\phi$, the \emph{NN verification} (NNV) problem asks if $\phi$ is a valid property\footnote{\autoref{chap:properties} provides various examples of properties.} of $N$.
 
 Typically, $\phi$ is a formula of the form 
 
 \[
 \phi_{in} \Rightarrow \phi_{out},
 \]
-where $\phi_{in}$ is the \emph{precondition}, i.e., a condition over the inputs of $N$, and $\phi_{out}$ is the \emph{postcondition}, i.e., a condition over the outputs of $N$.%\footnote{$\phi_{in}$ is also called the precondition, and $\phi_{out}$ is called the postcondition.}.
-%This form of properties has been used to encode safety and security requirements of DNNs, e.g., safety specifications to avoid collision in unmanned aircraft~\cite{kochenderfer2012next} and \emph{adversarial robustness}~\cite{katz2017towards} properties desired by all DNNs, in which a small input perturbation does not cause major spikes in the DNN's outputs.
+where $\phi_{in}$ is the \emph{precondition}, i.e., a condition over the inputs of $N$, and $\phi_{out}$ is the \emph{postcondition}, i.e., a condition over the outputs of $N$.
 
 A DNN verifier attempts to find a \emph{counterexample} input to $N$ that satisfies $\phi_{in}$ but violates $\phi_{out}$.  If no such counterexample exists, $\phi$ is a valid property of $N$. Otherwise, $\phi$ is not valid and the counterexample can be used to retrain or debug the DNN~\cite{huang2017safety}.
 \end{definition}
 
 
-% Verification tool such as Marabou and nnenum are then applied to the network to prove that the network is safe or identifier counterexample representing small input differences causing large output changes.
-
-
-% \footnote{This is encoded as the differences of the inputs being within a certain small range  ($\phi_{in}$) implies the differences of the outputs still fall within a certain range in $\phi_{out}$)}.
 
 \begin{example}[Safety Property for Collision Avoidance System]
     In~\autoref{ex:collision-safety}, we defined a safety property (\autoref{sec:properties-safety}) for a collision avoidance system: 
@@ -1845,8 +1840,6 @@ An \emph{invalid} property is that $x_5 > 0$ for those similar inputs.
 A counterexample showing this property violation is $\{x_1=-1, x_2=2\}$, from which the network evaluates to $x_5=-3.5$. 
 \end{example}
 
-%Such properties can capture \emph{safety requirements} (e.g., a rule in an  collision avoidance system in~\cite{kochenderfer2012next,katz2017reluplex} is ``if the intruder is distant and significantly slower than us, then we stay below a certain threshold'') or \emph{local robustness}~\cite{katz2017towards} conditions (a form of adversarial robustness stating that small perturbations of a given input all yield the same  output).
-
 
 \section{Satisfiability Formulation}\label{sec:satisfiability-and-activation-pattern-search}
 
@@ -1866,18 +1859,24 @@ With this definition the NNV problem can be formulated as checking the validity 
 \end{equation}
 This formula checks if the network $N$ satisfies (implies) the property $\phi_{in} \implies \phi_{out}$. This validity checking can be reduced to checking the satisfiability of the formula:
 
-\begin{equation}\label{eq:prop}
+\begin{equation}\label{eq:nnv2}
   \alpha \land \phi_{in} \land \neg \phi_{out}
 \end{equation}
-If~\autoref{eq:prop} is unsatisfiable, then $\phi$ is a valid property of $N$. Otherwise, $\phi$ is not valid.  Moreover, we can extract a counterexample for the original problem from the satisfying assignment of~\autoref{eq:prop}.
+If~\autoref{eq:nnv2} is unsatisfiable, then $\phi$ is a valid property of $N$. Otherwise, $\phi$ is not valid.  Moreover, we can extract a counterexample for the original problem from the satisfying assignment of~\autoref{eq:nnv2}.
 
 \begin{exercise}\label{ex:prop-neg1}
-  Let $\alpha$ represent our network and the robustness property $| x - x | \le \epsilon \implies  f(x) = f(y)$. Form the satisfiability formula (\autoref{eq:prop}) that we need to check.
+  Let $\alpha$ represent our network and the robustness property $| x - x | \le \epsilon \implies  f(x) = f(y)$. Form the satisfiability formula (\autoref{eq:nnv2}) that we need to check. Check them using Z3. 
 \end{exercise}
 
 
 \begin{exercise}\label{ex:prop-neg2}
-  Let $\alpha$ represent our network and the property $y>0$ for any input $x_1 \in [r_1,r_2], x_2 \in [r_3,r_4]$. Form the satisfiability formula (\autoref{eq:prop}) that we need to check.
+  Let $\alpha$ represent our network and the property $y>0$ for any input $x_1 \in [r_1,r_2], x_2 \in [r_3,r_4]$. Form the satisfiability formula (\autoref{eq:nnv2}) that we need to check. Check them using Z3.
+\end{exercise}
+
+
+\begin{exercise}[Postcondition Negation]\label{ex:negation-trick}
+Show that $\alpha \implies (\phi_{in} \implies \phi_{out})$ (\autoref{eq:nnv}) is valid if and only if $\alpha \land \phi_{in} \land \neg \phi_{out}$ (\autoref{eq:nnv2}) is unsatisfiable.
+First, do this by hand by explicitly writing out the logical equivalences step by step. Then, verify your result using Z3, i.e., show that the negation of the first formula is equivalent to the second formula.
 \end{exercise}
 
 \begin{example}\label{ex:dnn-sat}
@@ -1893,7 +1892,7 @@ We represent the network in~\autoref{fig:dnn-b} as a formula $\alpha$:
 \phi_{out} = (x_5 > 0)
 \end{equation*}
 
-We then check the satisfiability of $\alpha \land \phi_{in} \land \neg \phi_{out}$ using a constraint solver (e.g., the Z3 SMT solver).  In this case, the formula is satisfiable, i.e., the property is invalid, and the solver returns \sat{}.  Any satisfying assignment, e.g., $x_1=-1$ and $x_2=2$, is a counterexample (\autoref{sec:properties-counterexamples}) to the property, as it satisfies the precond $\phi_{in}$ but violates the postcondition $\phi_{out}$, i.e., $x_5 = -3.5$, which is  $< 0$.
+We then check the satisfiability of $\alpha \land \phi_{in} \land \neg \phi_{out}$ using a constraint solver (e.g., the Z3 SMT solver).  In this case, the formula is satisfiable, i.e., the property is invalid, and the solver returns \sat{}.  Any satisfying assignment, e.g., $x_1=-1$ and $x_2=2$, is a counterexample (\autoref{sec:properties-counterexamples}) to the property, as it satisfies the precondition $\phi_{in}$ but violates the postcondition $\phi_{out}$, i.e., $x_5 = -3.5$, which is  $< 0$.
 
 \end{example}
 
@@ -1903,9 +1902,115 @@ Use Z3 to do~\autoref{ex:dnn-sat}. You might find~\autoref{ex:z3-dnn} useful.  M
 \end{exercise}
 
 \section{Activation Pattern Search}\label{sec:activation-pattern}
- For ReLU-based DNNs, NNV becomes a search for \emph{activation patterns}, i.e., boolean assignments representing activation status of neurons, that satisfy the formula in~\autoref{eq:prop}. 
- Modern DNN verification techniques~\cite{bunel2020branch,wang2021beta,ferrari2022complete,duong2024harnessing,duong2023dpllt,ovalbab,katz2019marabou,bak2021nnenum} all adopt this idea and search for satisfying activation patterns.
 
+An NN has many possible---potentially infinite---inputs, making it impossible to check all inputs to show no counterexample exists. However, DNNs with piecewise linear activation functions have a special structure that can be exploited to make verification feasible. 
+For example, each ReLU (\autoref{sec:relu}) function partitions the input space into two regions---active and infactive---where the function behaves linearly. 
+Thus, a DNN with piecewise linear activations partitions the input space into a finite number of linear regions, each defined by a unique combination of activation statuses of all neurons. 
+Within each region, the DNN behaves as a linear constraint, which can be efficiently analyzed using LP techniques (\autoref{chap:lp}).
+
+Thus, verifying a DNN reduces to checking if any of these linear regions contains a counterexample. More specifically, we can rewrite~\autoref{eq:nnv2} as:
+\begin{equation}\label{eq:nnv3}
+  \bigvee_{p \in P} \left( \alpha_p \land \phi_{in} \land \neg \phi_{out} \right)
+\end{equation}
+where $P$ is the set of all possible activation patterns---boolean assignments of activation statuses of all neurons--
+of the DNN, and $\alpha_p$ is the formula $\alpha$ restricted to the linear region defined by the activation pattern $p$. This means that $\alpha_p$ includes additional constraints that fix the activation status of each neuron according to $p$. For example, if $p$ specifies that neuron $n_i$ is active, then $\alpha_p$ includes the constraint $z_i \ge 0$; if $n_i$ is inactive, then $\alpha_p$ includes $z_i < 0$.
+As long as one of the disjuncts in~\autoref{eq:nnv3} is satisfiable, i.e., we could find a counterexample in one of the linear regions, the entire formula is satisfiable, indicating that the property is invalid. Conversely, if all disjuncts are unsatisfiable, the property is valid.
+
+This allows us to break down the verification problem into smaller subproblems, each searches for \emph{activation pattern}, or boolean assignment of activation statuses of all neurons, that satisfies the formula in~\autoref{eq:nnv2}.
+Modern DNN verification techniques~\cite{bunel2020branch,wang2021beta,ferrari2022complete,duong2024harnessing,duong2023dpllt,ovalbab,katz2019marabou,bak2021nnenum} all adopt this idea and search for satisfying activation patterns.
+
+\begin{definition}[Activation Pattern]\label{def:activation-pattern}
+Let $N$ be a DNN with ReLU neurons $n_1,\dots,n_m$.  
+An \emph{activation pattern} is a Boolean assignment of the activation status of a subset (or all) of the neurons.  
+If a neuron $n_i$ is active, we set $b_i = \texttt{true}$ (meaning $z_i \geq 0$); if it is inactive, $b_i = \texttt{false}$ (meaning $z_i < 0$). 
+\end{definition}
+
+\begin{definition}[Complete Activation Pattern]\label{def:complete-pattern}
+A \emph{complete activation pattern} assigns an activation status to \emph{every} neuron in the DNN:
+\[
+p = \langle b_1, b_2, \dots, b_m \rangle \in \{\texttt{true},\texttt{false}\}^m .
+\]
+Each complete activation pattern corresponds to exactly one linear region of the input space.  
+\end{definition}
+
+
+\begin{definition}[Partial Activation Pattern]\label{def:partial-pattern}
+A \emph{partial activation pattern} assigns activation statuses to only a subset of the neurons.  
+It represents all complete activation patterns that extend it, and therefore corresponds to a union of multiple linear regions.  
+\end{definition}
+
+\begin{example}  
+Consider a DNN with three ReLU neurons $n_1,n_2,n_3$.  
+A complete activation pattern might be 
+\[
+p = \langle \texttt{true}, \texttt{false}, \texttt{true} \rangle ,
+\]
+which means $n_1$ and $n_3$ are active while $n_2$ is inactive.  
+
+
+In contrast, a partial activation pattern such as
+\[
+q = \langle \texttt{true}, \texttt{false}, * \rangle
+\]
+(where $*$ denotes ``undetermined'' or ``don't care'') represents \emph{both} complete patterns  
+$\langle \texttt{true}, \texttt{false}, \texttt{true} \rangle$ and  
+$\langle \texttt{true}, \texttt{false}, \texttt{false} \rangle$.  
+Thus $q$ compactly captures multiple linear regions at once.
+\end{example}
+
+\begin{example}  
+Consider the DNN from~\autoref{fig:dnn-b}, represented as the formula
+\[
+\begin{aligned}
+& x_3 = \relu{-0.5x_1 + 0.5x_2 + 1.0 ~\land~ \hat{x}_3} ~\land \\
+& x_4 = \relu{0.5x_1 - 0.5x_2 + 1.0  ~\land~ \hat{x}_4} ~\land \\
+& x_5 = -x_3 + x_4 - 1.0 .
+\end{aligned}
+\]
+
+Here $x_3$ and $x_4$ are ReLU neurons, and $x_5$ is a linear output.  
+The activation status of the network is determined by the signs of the pre-activation values
+\[
+\hat{x}_3 = -0.5x_1 + 0.5x_2 + 1.0, 
+\qquad 
+\hat{x}_4 = 0.5x_1 - 0.5x_2 + 1.0 .
+\]
+\end{example}
+
+\begin{itemize}
+  \item \textbf{Complete activation pattern.}  
+  A complete activation pattern specifies the status of both ReLU neurons.  
+  For instance,
+  \[
+  p = \langle \texttt{true}, \texttt{false} \rangle
+  \]
+  means that $\hat{x}_3 \geq 0$ (so $x_3 = \hat{x}_3$) while $\hat{x}_4 < 0$ (so $x_4 = 0$).  
+  In this case, the network reduces to the linear function
+  \[
+  x_5 = -(-0.5x_1 + 0.5x_2 + 1.0) + 0 - 1.0 = 0.5x_1 - 0.5x_2 - 2.0 .
+  \]
+
+  \item \textbf{Partial activation pattern.}  
+  A partial pattern specifies only some activation statuses.  
+  For example,
+  \[
+  q = \langle \texttt{true}, * \rangle
+  \]
+  means $\hat{x}_3 \geq 0$ but places no restriction on $\hat{x}_4$.  
+  Thus $q$ compactly represents two complete patterns:
+  \[
+  \langle \texttt{true}, \texttt{true} \rangle \quad \text{and} \quad
+  \langle \texttt{true}, \texttt{false} \rangle .
+  \]
+  The corresponding input space is the union of the two linear regions where $x_3$ is active and $x_4$ may be either active or inactive.
+\end{itemize}
+
+This example illustrates how a complete activation pattern corresponds to a single linear region of the input space with a fixed linear function, while a partial pattern captures multiple regions simultaneously.
+
+
+\paragraph{Discussion.}  
+Modern DNN verification techniques~\cite{bunel2020branch,wang2021beta,ferrari2022complete,duong2024harnessing,duong2023dpllt,ovalbab,katz2019marabou,bak2021nnenum} adopt this principle by systematically searching over the space of activation patterns.  
+By analyzing partial patterns, they can prune large subsets of infeasible or redundant regions without exploring each complete pattern individually, which is essential given that the number of possible complete activation patterns grows exponentially with the number of neurons.
 
 
  \subsection{Complete and Partial Activation Patterns}\label{sec:activation-patterns}
@@ -1972,6 +2077,88 @@ Thus, a partial pattern corresponds to a union of multiple assignments to ReLU a
 % is unsatisfiable.
 % Since it has no consistent inputs, both complete patterns containing this assignment are eliminated at once.
 % \end{example}
+
+
+
+\begin{exercise}[Pattern Enumeration]
+Consider an NN with 3 ReLU neurons: $n_1, n_2, n_3$.
+\begin{enumerate}
+  \item How many complete activation patterns are there?
+  \item How many partial patterns of size 2 (i.e., fixing 2 neurons but leaving 1 unspecified) are there?
+  \item Give an explicit example of one partial pattern and list all the complete patterns it represents.
+\end{enumerate}
+
+\begin{solution}
+(a) $2^3 = 8$ complete patterns.  
+(b) Choose 2 neurons to fix: $\binom{3}{2}=3$ ways. For each, $2^2=4$ assignments. Total = $12$ partial patterns.  
+(c) Example: $p'=\{n_1=\mathsf{true}, n_3=\mathsf{false}\}$ represents  
+$\{n_1=\mathsf{true},n_2=\mathsf{true},n_3=\mathsf{false}\}$ and  
+$\{n_1=\mathsf{true},n_2=\mathsf{false},n_3=\mathsf{false}\}$.  
+\end{solution}
+\end{exercise}
+
+\begin{exercise}[Constraint Induction from Pattern]
+Consider the toy DNN in \autoref{fig:dnn-b}. Suppose we fix the activation pattern
+\[
+p=\{b_3=\mathsf{true}, b_4=\mathsf{false}\}.
+\]
+\begin{enumerate}
+  \item Write down the corresponding linear constraints on inputs $(x_1,x_2)$ implied by this pattern.
+  \item Show that $p$ defines a convex polyhedron in the input space.
+\end{enumerate}
+
+\textbf{Solution Sketch:}  
+$b_3=\mathsf{true}$ means $-0.5x_1+0.5x_2+1 \ge 0$.  
+$b_4=\mathsf{false}$ means $0.5x_1-0.5x_2+1 < 0$.  
+Thus, region = $\{(x_1,x_2)\mid -0.5x_1+0.5x_2+1 \ge 0,\;0.5x_1-0.5x_2+1 < 0\}$, a convex polyhedron.  
+\end{exercise}
+
+
+\begin{exercise}[Counting Complete Patterns Compatible with a Partial Pattern]
+Suppose we have a DNN with $m=10$ ReLU neurons. Consider a partial pattern $p'$ that fixes 4 neurons.
+\begin{enumerate}
+  \item How many complete patterns extend $p'$?
+  \item Suppose we restrict $p'$ further by adding 2 more neuron assignments. How many extensions now?
+  \item Generalize: If $p'$ fixes $k$ neurons out of $m$, how many complete patterns extend it?
+\end{enumerate}
+
+\textbf{Solution Sketch:}  
+(a) $2^{10-4}=2^6=64$.  
+(b) $2^{10-6}=2^4=16$.  
+(c) General: $2^{m-k}$.  
+\end{exercise}
+
+\begin{exercise}[Satisfiability via Partial Patterns]
+Let $N$ be a DNN with ReLU neurons $n_1,\dots,n_4$. Suppose we want to verify the property
+\[
+x_1 \in [-1,1],\;x_2 \in [-1,1] \implies y \ge 0.
+\]
+\begin{enumerate}
+  \item Explain how partial activation patterns can be used to prune the search space when checking satisfiability of $\alpha \land \phi_{in} \land (y < 0)$.
+  \item For each partial pattern that fixes $n_1,n_2$ only, describe how you would test whether it is feasible (i.e., corresponds to a non-empty input region).
+  \item Argue why infeasible partial patterns can be safely discarded in verification search.
+\end{enumerate}
+
+\textbf{Solution Sketch:}  
+(a) Instead of enumerating all $2^4=16$ complete patterns, use partial patterns like $\{n_1=\text{true},n_2=\text{false}\}$ to check feasibility early.  
+(b) Translate ReLU conditions into linear constraints and check satisfiability with an LP/SMT solver.  
+(c) If infeasible, then no input activates that pattern, so no counterexample can lie there.  
+\end{exercise}
+
+\begin{exercise}[Overlapping Regions]
+Consider a network with 3 ReLU neurons: $n_1,n_2,n_3$.
+\begin{enumerate}
+  \item Show that the regions defined by different complete activation patterns are disjoint.
+  \item Show that regions defined by different partial activation patterns can overlap. Give an explicit example.
+\end{enumerate}
+
+\textbf{Solution Sketch:}  
+(a) Complete patterns differ in at least one activation assignment $\Rightarrow$ disjoint regions since ReLU sign constraints are mutually exclusive.  
+(b) Partial patterns don’t fix all neurons. Example: $p'=\{n_1=\mathsf{true}\}$ overlaps with $p''=\{n_2=\mathsf{true}\}$ because both allow different settings of unfixed neurons; their corresponding regions may intersect.  
+\end{exercise}
+
+
+
 
 \tvn{may be need to add some trees}
 
@@ -3720,7 +3907,7 @@ A neuron is \emph{stable} if its activation status does not change regardless of
 
 The key idea in using neuron stability is that if we can determine that a neuron is stable,  we can assign the exact truth value for the corresponding Boolean variable instead of having to guess. This has a similar effect as \functiontextformat{BCP}---reducing mistaken assignments by \functiontextformat{Decide}---but it operates at the theory level instead of the propositional Boolean level.
 
-%First, the T-solver creates a linear constraint system from the input assignment $\sigma$ and $\alpha \land \phi_{in} \land \overline{\phi_{out}}$, i.e., the formula in ~\autoref{eq:prop} representing the original problem  (line~\ref{line:lpsolver}).
+%First, the T-solver creates a linear constraint system from the input assignment $\sigma$ and $\alpha \land \phi_{in} \land \overline{\phi_{out}}$, i.e., the formula in ~\autoref{eq:nnv2} representing the original problem  (line~\ref{line:lpsolver}).
 %First, the T-solver creates a set of linear constraints representing ReLU activation for hidden neurons whose activation status have been decided.
 %Next, those constraints are used in \textsc{Stabilize} for inferring status of neurons that are unassigned, \textsc{Deduce} then applies the polytope abstraction to check satisfiability.
 %If the abstraction confirms the infeasibility, \textsc{Deduce} returns \texttt{False} so that \textsc{AnalyzeConflict} can analyze the assignment and and learn the conflict clause.
@@ -4466,7 +4653,7 @@ To achieve this, we present \proofcheck{}, a proof checker for \prooflang{} proo
 
 
 The goal of \proofcheck{} is to verify that the \prooflang{} tree generated by a DNN verification tool is correct (i.e., the proof tree is a proof of unsatisfiability of the DNN verification problem).
-\proofcheck{} thus must verify that the constraint represented by each \emph{leaf} node in the proof tree is unsatisfiable. To check each node, \proofcheck{} forms an MILP problem (\autoref{sec:milp}) consisting of the constraint in~\autoref{eq:prop} (the DNN, the input condition, and the negation of the output) with the constraints representing the activation pattern encoded by the tree path to the leaf node. \proofcheck{} then invokes an LP solver to check that the MILP problem is infeasible, which indicates unsatisfiability of the leaf node. 
+\proofcheck{} thus must verify that the constraint represented by each \emph{leaf} node in the proof tree is unsatisfiable. To check each node, \proofcheck{} forms an MILP problem (\autoref{sec:milp}) consisting of the constraint in~\autoref{eq:nnv2} (the DNN, the input condition, and the negation of the output) with the constraints representing the activation pattern encoded by the tree path to the leaf node. \proofcheck{} then invokes an LP solver to check that the MILP problem is infeasible, which indicates unsatisfiability of the leaf node. 
 
 \begin{algorithm}[t]
     \footnotesize
@@ -4542,7 +4729,7 @@ If the proof tree is invalid, \proofcheck{} raises an error.
 
 \begin{example} 
     For the \prooflang{} proof in~\autoref{fig:proof_example}, we need to check that the four leaf nodes 3, 5, 6, and 7 of the proof tree in~\autoref{fig:example}b are unsatisfiability. Assume \proofcheck{} first selects node 3, it forms the MILP problem for leaf node 3 by conjoining the constraint representing $0.6v_1 + 0.9v_2 - 0.1 \le 0$ (i.e., $\overline{v_4}$) %\tvn{Hai check}\hd{by setting $a_1^{(2)}=0$ representing that $\hat{z}_1^{(2)} \le 0$ (see~\autoref{eq:mip}e) or \emph{implicitly} conjoining the inequality $0.6\hat{z}^{(1)}_0 + 0.9\hat{z}^{(1)}_1 - 0.1 \le 0$ (or ${z}_1^{(2)} \le 0$), where $\hat{z}^{(1)}_0$, $\hat{z}^{(1)}_1$ represent the outputs of $v_1$ and $v_2$, respectively.} 
-with the constraints in~\autoref{eq:prop} representing the input ranges and the DNN with the objective of optimizing the output. \proofcheck{} then invokes an LP solver, which determines that this MILP is infeasible, i.e., leaf node 3 indeed leads to unsatisfiability. \proofcheck{} continues this process for the other three leaf nodes and returns \certified as all leaf nodes are unsatisfiable.
+with the constraints in~\autoref{eq:nnv2} representing the input ranges and the DNN with the objective of optimizing the output. \proofcheck{} then invokes an LP solver, which determines that this MILP is infeasible, i.e., leaf node 3 indeed leads to unsatisfiability. \proofcheck{} continues this process for the other three leaf nodes and returns \certified as all leaf nodes are unsatisfiable.
 \end{example}
 
 \subsubsection{MILP Formulation}\label{sec:milp-formulation}
@@ -7437,14 +7624,14 @@ Software verification typically deals with discrete systems and logical properti
 
 
 \autoref{fig:alg} shows the \tool{} algorithm, which takes as input the formula $\alpha$ representing the ReLU-based DNN $N$ and the formulae $\phi_{in}\Rightarrow \phi_{out}$ representing the property $\phi$ to be proved.
-Internally, \tool{} checks the satisfiability of the formula given in~\autoref{eq:prop}
+Internally, \tool{} checks the satisfiability of the formula given in~\autoref{eq:nnv2}
 \begin{equation*}
   \alpha \land \phi_{in} \land \overline{\phi_{out}}.
 \end{equation*}
 \tool{} returns \texttt{unsat} if the formula unsatisfiable, indicating  that $\phi$ is a valid property of $N$, and \texttt{sat} if it is satisfiable, indicating the $N$ is not a valid property.
 
 \tool{} uses a  DPLL(T)-based algorithm to check unsatisfiability.
-First, the input formula in~\autoref{eq:prop} is abstracted to a propositional formula
+First, the input formula in~\autoref{eq:nnv2} is abstracted to a propositional formula
 with variables encoding neuron activation status (\texttt{BooleanAbstraction}).
 Next, \tool{} assign values to Boolean variables (\texttt{Decide}) and checks for conflicts the assignment has with the real-valued constraints of the DNN and the property of interest (\texttt{BCP} and \texttt{Deduction}).
 If conflicts arise, \tool{} determines the assignment decisions causing the conflicts (\texttt{AnalyzeConflict}), backtracks to erase such decisions (\texttt{Backtrack}), and learns clauses to avoid those decisions in the future.
@@ -7693,7 +7880,7 @@ Once obtaining the asserting clause, \texttt{AnalyzeConflict} stops the search, 
 
 %is a main benefit of CDCL and
 The process of learning clauses allows \tool{} to learn from its past mistakes.
-While such clauses are logically implied by the formula in ~\autoref{eq:prop} and therefore do not change the result, they help prune the search space and allow DPLL and therefore \tool{} to scale. For example, after learning the clause $c_5$, together with assignment $v_5@3$, we immediately infer $v_1 \mapsto F$ through BCP instead of having to guess through \texttt{Decide}.
+While such clauses are logically implied by the formula in ~\autoref{eq:nnv2} and therefore do not change the result, they help prune the search space and allow DPLL and therefore \tool{} to scale. For example, after learning the clause $c_5$, together with assignment $v_5@3$, we immediately infer $v_1 \mapsto F$ through BCP instead of having to guess through \texttt{Decide}.
 
 %The literal lit is the literal in cl assigned last, and var denotes its associated variable. The antecedent clause of var, denoted by ante, contains ¬lit as the only satisfied literal, and other literals, all of which are currently unsatisfied. The clauses cl and ante thus contain lit and ¬lit, respectively, and can therefore be resolved with the resolution variable var. The resolvent clause is again a conflicting clause, which is the basis for the next resolution step.
 
@@ -7806,7 +7993,7 @@ We found the combination of clause learning and restarts effective for DNN verif
 
     $\lpmodel \leftarrow \LPSolver(\assignment, \network \land \phi_{in} \land \overline{\phi_{out}})$\;\label{line:lpsolver}
     \lIf{$\Solve(\lpmodel) \equiv \infeasible$}{\Return {\false}}\label{line:solve}
-    \lIf(\tcp*[h]{orig prob (~\autoref{eq:prop}) is satisfiable}){$\isTotal(\assignment)$}{\Return {\true} }\label{line:full}
+    \lIf(\tcp*[h]{orig prob (~\autoref{eq:nnv2}) is satisfiable}){$\isTotal(\assignment)$}{\Return {\true} }\label{line:full}
     %$\inputs = \GetInputs(\phi_{in})$
     % $\ninputs \leftarrow \GetNumInputs(\network)$
     % $\layernodes = \FindLayerNodes(\assignment)$\;
@@ -7842,7 +8029,7 @@ We found the combination of clause learning and restarts effective for DNN verif
 
 \autoref{alg:deduction} describes \texttt{Deduction}, which returns \texttt{False} if infeasibility occurs and  \texttt{True} otherwise.
 %\textsc{Deduce} is a theory solver that takes the arguments including: the current assignment $\sigma$, neural network $\alpha$, precondition $\phi_{in}$ over inputs and postcondition $\phi_{out}$ over outputs.
-First, it creates a linear constraint system from the input assignment $\sigma$ and $\alpha \land \phi_{in} \land \overline{\phi_{out}}$, i.e., the formula in ~\autoref{eq:prop} representing the original problem  (line~\ref{line:lpsolver}).
+First, it creates a linear constraint system from the input assignment $\sigma$ and $\alpha \land \phi_{in} \land \overline{\phi_{out}}$, i.e., the formula in ~\autoref{eq:nnv2} representing the original problem  (line~\ref{line:lpsolver}).
 The key idea is that we can remove ReLU activation for hidden neurons whose activation status have been decided.
 For constraints in $\alpha$ associated with variables that are not in the $\sigma$,  we ignore them and just consider the cutting planes introduced by the partial assignment.
 %Fixup preceding sentence based on answer.}
