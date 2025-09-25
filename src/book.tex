@@ -474,17 +474,17 @@ where \(n\) is the number of input neurons and \(m\) is the number of output neu
     \node[output] (x5) at (5,0) {$x_5$};
 
     % Connections with weights
-    \draw (x1) -- node[above left=-3pt] {$-0.5$} (x3);
-    \draw (x1) -- node[pos=0.2] {$0.5$} (x4);
-    \draw (x2) -- node[pos=0.2] {$0.5$} (x3);
-    \draw (x2) -- node[below left=-3pt] {$-0.5$} (x4);
-    \draw (x3) -- node[above] {$-1.0$} (x5);
-    \draw (x4) -- node[below] {$1.0$} (x5);
+    \draw (x1) -- (x3) node[midway, above] {$-0.5$} ;
+    \draw (x1) -- (x4) node[near end, below] {$0.5$} ;
+    \draw (x2) -- (x3) node[near end, above] {$0.5$} ;
+    \draw (x2) -- (x4) node[midway, below] {$-0.5$} ;
+    \draw (x3) -- (x5) node[midway, below] {$-1.0$};
+    \draw (x4) -- (x5) node[midway, below] {$1.0$};
 
     % Output weights under x3, x4, x5 (biases)
-    \node[below=0.1cm of x3] {$+1.0$};
-    \node[below=0.1cm of x4] {$-1.0$};
-    \node[below=0.1cm of x5] {$-1.0$};
+    \node[above] at (x3.north) {$+1.0$};
+    \node[below] at (x4.south) {$-1.0$};
+    \node[above] at (x5.north) {$-1.0$};
 \end{tikzpicture}
 }
 
@@ -667,15 +667,13 @@ $\relu{-1.2} = 0$ (inactive), $\relu{0} = 0$ (inactive), and $\relu{2.8} = 2.8$ 
 
 \paragraph{Logical encoding} ReLU can be encoded using the following logical formula:
 \[y = \relu{x} \iff (x \leq 0 \land y = 0) \lor (x > 0 \land y = x).\] 
-
+In other words, if \(x \le 0\), \(y\) must be zero; otherwise; otherwise, \(y\) must equal \(x\).
 
 \begin{example}
 In Z3, we can declare ReLU using \texttt{If()}
 \begin{lstlisting}[language=python]
     import z3
-
-    def relu(x):
-        return z3.If(x <= 0, 0, x)
+    def relu(x): return z3.If(x <= 0, 0, x)
 
     relu(-1.2)  # returns 0
     relu(0)     # returns 0
@@ -1787,7 +1785,8 @@ Note that in this network the hidden neurons ($v_1 \ldots v_4$) use ReLU activat
 \chapter{Verification of Neural Networks}\label{sec:verification}
 
 This chapter discusses the problem of verifying neural networks, i.e., checking if a given property holds for a neural network. 
-We first define the neural network verification (NNV) problem in~\autoref{sec:nnv-problem}. Then, we formulate this problem as a satisfiability problem, which is the basis for many DNN verification tools.
+We first define the neural network verification (NNV) problem in~\autoref{sec:nnv-problem} and its satisfiability formulation.
+We also discuss activation patterns, which are a key concept used in many DNN verification techniques.
 
 \section{The Neural Network Verification (NNV) Problem}\label{sec:nnv-problem}
 
@@ -1987,10 +1986,11 @@ Suppose we have a DNN with $m=10$ ReLU neurons. Consider a partial pattern $p'$ 
   \item Generalize: If $p'$ fixes $k$ neurons out of $m$, how many complete patterns extend it?
 \end{enumerate}
 
-\textbf{Solution Sketch:}  
+\begin{solution}
 (a) $2^{10-4}=2^6=64$.  
 (b) $2^{10-6}=2^4=16$.  
-(c) General: $2^{m-k}$.  
+(c) General: $2^{m-k}$.
+\end{solution}
 \end{problem}
 
 \subsubsection{Activation Patterns and LP Constraints}
@@ -2054,7 +2054,7 @@ Because $q$ does not fix the status of $x_4$, we cannot simplify the ReLU for $x
 
 
 \begin{problem}\label{problem:nnv-pattern}
-Consider the toy DNN in \autoref{fig:dnn-b}. Suppose we fix the activation pattern
+Consider the DNN in \autoref{fig:dnn-b}. Suppose we fix the activation pattern
 \[
 p=\{\mathsf{true}, \mathsf{true}\}.
 \]
