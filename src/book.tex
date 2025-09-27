@@ -1785,7 +1785,7 @@ Note that in this network the hidden neurons ($v_1 \ldots v_4$) use ReLU activat
 \chapter{Verification of Neural Networks}\label{sec:verification}
 
 This chapter discusses the problem of verifying neural networks, i.e., checking if a given property holds for a neural network. 
-We first define the neural network verification (NNV) problem in~\autoref{sec:nnv-problem} and its satisfiability formulation.
+We first define theNN verification (NNV) problem in~\autoref{sec:nnv-problem} and its satisfiability formulation.
 We also discuss activation patterns, which are a key concept used in many DNN verification techniques.
 
 \section{The Neural Network Verification (NNV) Problem}\label{sec:nnv-problem}
@@ -1934,7 +1934,7 @@ p = \langle b_1, b_2, \dots, b_m \rangle \in \{\texttt{true},\texttt{false}\}^m 
 
 
 \begin{definition}[Partial Activation Pattern]\label{def:partial-pattern}
-A \emph{partial activation pattern} assigns activation statuses to only a subset of the neurons.  
+A \emph{partial activation pattern} assigns activation statuses to only a \emph{subset} of the neurons.  
 \[
 q = \langle b_1, b_2, *, b_4, *, \dots, b_m \rangle \in \{\texttt{true},\texttt{false},*\}^m ,
 \]
@@ -2004,11 +2004,11 @@ In any case, given an activation pattern, we can reduce the complexity of the sa
 
 
 \begin{example}  
-Consider the DNN from~\autoref{fig:dnn-b}, represented as the formula
+Recall the DNN from~\autoref{fig:dnn-b} can be represented as the formula $\alpha$
 \[
 \begin{aligned}
-& \hat{x}_3 = -0.5x_1 + 0.5x_2 + 1.0, \\
-& \hat{x}_4 = 0.5x_1 - 0.5x_2 + 1.0, \\    
+& \hat{x}_3 = -0.5x_1 + 0.5x_2 + 1.0 ~\land\\
+& \hat{x}_4 = 0.5x_1 - 0.5x_2 + 1.0 ~\land\\    
 & x_3 = \relu{\hat{x}_3} ~\land \\
 & x_4 = \relu{\hat{x}_4} ~\land \\
 & x_5 = -x_3 + x_4 - 1.0,
@@ -2016,7 +2016,7 @@ Consider the DNN from~\autoref{fig:dnn-b}, represented as the formula
 \]
 
 Here $\hat{x}_3$ and $\hat{x}_4$ are the pre-activation values of the ReLU neurons $x_3$ and $x_4$, respectively. 
-Thus, if we fix the activation status of $x_3$ and $x_4$, we can simplify the formula by replacing the ReLU functions with linear constraints.
+Thus, if we fix the activation status of $x_3$ and $x_4$, we can simplify $\alpha$ by replacing the ReLUs with linear constraints.
 
 
 \begin{itemize}
@@ -2041,7 +2041,7 @@ Thus, if we fix the activation status of $x_3$ and $x_4$, we can simplify the fo
   means $\hat{x}_3 \geq 0$ but places no restriction on $\hat{x}_4$.  Here, the network reduces to
 \[
 \begin{aligned}
-& \hat{x}_4 = 0.5x_1 - 0.5x_2 + 1.0, \\    
+& \hat{x}_4 = 0.5x_1 - 0.5x_2 + 1.0 ~\land\\    
 & x_4 = \relu{\hat{x}_4} ~\land \\
 & x_5 = -(-0.5x_1 + 0.5x_2 + 1.0) + x_4 - 1.0,
 \end{aligned}
