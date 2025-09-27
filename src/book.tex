@@ -277,6 +277,8 @@
 \begin{document}
 
 \pagestyle{empty}
+
+
 \begin{tikzpicture}[overlay,remember picture]
 
     % Background color
@@ -380,6 +382,65 @@
 
 \newpage
 \tableofcontents
+
+
+
+
+\newcommand{\proofnet}[1]{
+\begin{tikzpicture}[scale=#1,every node/.style={scale=#1},->,semithick]
+  % Styles
+
+
+  % Nodes
+  \node[input]  (x1) at (0,1) {$x_1$};
+  \node[input]  (x2) at (0,-1) {$x_2$};
+
+  \node[hidden] (v1) at (2.5,1) {$v_1$};
+  \node[hidden] (v2) at (2.5,-1)   {$v_2$};
+  \node[hidden] (v3) at (5,1) {$v_3$};
+  \node[hidden] (v4) at (5,-1) {$v_4$};
+
+  \node[output] (y1) at (7.5,1) {$y_1$};
+  \node[output] (y2) at (7.5,-1) {$y_2$};
+
+  % Edges with weights
+  % x1 to hidden
+  \draw (x1) -- (v1) node[midway,above] {$-0.5$};
+
+
+  \draw (x1) -- (v2) node[near end,below] {$0.3$};
+
+  % x2 to hidden
+  \draw (x2) -- (v2) node[midway,below] {$0.2$};
+  \draw (x2) -- (v1) node[near end,above] {$0.2$};
+  
+
+  % hidden layer connections
+  \draw (v1) -- (v3) node[midway,above] {$-0.9$};
+
+  \draw (v1) -- (v4) node[near end,below] {$0.6$};
+  
+  
+  \draw (v2) -- (v4) node[midway,below] {$0.9$};
+  \draw (v2) -- (v3) node[near end,above] {$0.6$};
+
+  % hidden to outputs
+  \draw (v3) -- (y1) node[midway,above] {$-0.1$};
+  \draw (v3) -- (y2) node[near end,below] {$-0.3$};
+  \draw (v4) -- (y1) node[near end,above] {$0.2$};
+  \draw (v4) -- (y2) node[midway,below] {$0.5$};
+
+  % biases
+  \node[above] at (v1.north) {$-0.5$};  
+  \node[above] at (v3.north) {$0.2$};  
+  \node[above] at (y1.north) {$-0.4$};
+
+  \node[below] at (v2.south) {$0.3$};
+  \node[below] at (v4.south) {$-0.1$};
+  \node[below] at (y2.south) {$-0.5$};
+
+\end{tikzpicture}
+}
 
 \part{Basics of Neural Networks and Verification}
 \chapter{Neural Networks}\label{chap:nn-basics}
@@ -1698,70 +1759,20 @@ d=5, \quad f(d)=a=+2 \quad \text{violates property.}
 
 \begin{problem}\label{problem:z3-properties}
 
-
-\newcommand{\proofnet}[1]{
-\begin{tikzpicture}[scale=#1,every node/.style={scale=#1},->,semithick]
-  % Styles
-
-
-  % Nodes
-  \node[input]  (x1) at (0,1) {$x_1$};
-  \node[input]  (x2) at (0,-1) {$x_2$};
-
-  \node[hidden] (v1) at (2.5,1) {$v_1$};
-  \node[hidden] (v2) at (2.5,-1)   {$v_2$};
-  \node[hidden] (v3) at (5,1) {$v_3$};
-  \node[hidden] (v4) at (5,-1) {$v_4$};
-
-  \node[output] (y1) at (7.5,1) {$y_1$};
-  \node[output] (y2) at (7.5,-1) {$y_2$};
-
-  % Edges with weights
-  % x1 to hidden
-  \draw (x1) -- (v1) node[midway,above] {$-0.5$};
-
-
-  \draw (x1) -- (v2) node[near end,below] {$0.3$};
-
-  % x2 to hidden
-  \draw (x2) -- (v2) node[midway,below] {$0.2$};
-  \draw (x2) -- (v1) node[near end,above] {$0.2$};
-  
-
-  % hidden layer connections
-  \draw (v1) -- (v3) node[midway,above] {$-0.9$};
-
-  \draw (v1) -- (v4) node[near end,below] {$0.6$};
-  
-  
-  \draw (v2) -- (v4) node[midway,below] {$0.9$};
-  \draw (v2) -- (v3) node[near end,above] {$0.6$};
-
-  % hidden to outputs
-  \draw (v3) -- (y1) node[midway,above] {$-0.1$};
-  \draw (v3) -- (y2) node[near end,below] {$-0.3$};
-  \draw (v4) -- (y1) node[near end,above] {$0.2$};
-  \draw (v4) -- (y2) node[midway,below] {$0.5$};
-
-  % biases
-  \node[above] at (v1.north) {$-0.5$};  
-  \node[above] at (v3.north) {$0.2$};  
-  \node[above] at (y1.north) {$-0.4$};
-
-  \node[below] at (v2.south) {$0.3$};
-  \node[below] at (v4.south) {$-0.1$};
-  \node[below] at (y2.south) {$-0.5$};
-
-\end{tikzpicture}
-}
-
-Consider the following NN:
-\begin{center}
+\begin{figure}
+\centering
 \proofnet{1}
-\end{center}
+\caption{\label{fig:proofnet}A simple NN with 2 inputs, 4 hidden ReLU neurons, and 2 outputs.}
+\end{figure}
 
 
-Note that in this network the hidden neurons ($v_1 \ldots v_4$) use ReLU activation, but the output neurons ($y_1,y_2$) just use affine transformation.
+
+Consider the NN in~\autoref{fig:proofnet}. Note that in this network the hidden neurons ($v_1 \ldots v_4$) use ReLU activation, but the output neurons ($y_1,y_2$) just use affine transformation.
+
+
+
+
+
 
 \begin{itemize}
     \item Encode this network using Z3.
@@ -3281,7 +3292,7 @@ Here we can see that by using Interval abstraction, the property \(x_{11}\ \geq\
 \part{DNN Verification Algorithms}
 \chapter{The Branch and Bound Search Algorithm}\label{chap:bab}
 
-To solve the NNV problem (\autoref{sec:nnv-problem}) modern DNN verifiers typically adopt the Branch-and-Bound (BaB) approach to search for activation pattern (\autoref{sec:activation-pattern}).
+To solve the NNV problem (\autoref{sec:nnv-problem}) modern DNN verifiers typically adopt the Branch-and-Bound (BaB) approach to search for satisfying activation patterns (\autoref{sec:activation-pattern}).
 
 At its core, a BaB search consists of two main components: (branch) splitting into the problem smaller subproblems
 using \emph{neuron splitting}, which decides boolean values representing neuron activation status,
@@ -3456,8 +3467,8 @@ If \functiontextformat{Deduce} determines that the problem is infeasible, it loo
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.5\linewidth]{figure/proof_net.pdf}
-    \caption{A simple DNN.}\label{fig:example1}
+    \proofnet{1}
+    \caption{A simple DNN (similar to~\autoref{fig:proofnet})}\label{fig:example1}
 \end{figure}
 %White nodes correspond to branching nodes where \neuralsat{} makes decisions to split ReLU neurons.
 
