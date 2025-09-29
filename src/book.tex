@@ -1892,8 +1892,8 @@ First, do this by hand by explicitly writing out the logical equivalences step b
 \begin{example}\label{ex:dnn-sat}
 We represent the network in~\autoref{fig:dnn-b} as a formula $\alpha$:
 \begin{align*}
-& x_3 = \relu{-0.5x_1 + 0.5x_2 + 1.0 ~\land~ \hat{x}_3} ~\land \\
-& x_4 = \relu{0.5x_1 - 0.5x_2 + 1.0  ~\land~ \hat{x}_4} ~\land \\
+& x_3 = \relu{-0.5x_1 + 0.5x_2 + 1.0}  ~\land \\
+& x_4 = \relu{0.5x_1 - 0.5x_2 - 1.0}  ~\land \\
 & x_5 = -x_3 + x_4 - 1.0,
 \end{align*}
 \noindent and the property $x_5 > 0$ for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$ as:
@@ -3292,12 +3292,9 @@ Here we can see that by using Interval abstraction, the property \(x_{11}\ \geq\
 \part{DNN Verification Algorithms}
 \chapter{The Branch and Bound Search Algorithm}\label{chap:bab}
 
-To solve the NNV problem (\autoref{sec:nnv-problem}) modern DNN verifiers typically adopt the Branch-and-Bound (BaB) approach to search for satisfying activation patterns (\autoref{sec:activation-pattern}).
+To tackle the NNV problem (\autoref{sec:nnv-problem}) modern DNN verifiers typically adopt the Branch-and-Bound (BaB) approach to search for counterexample by exploring the space of possible neuron activation patterns  (\autoref{sec:activation-pattern}). The BaB algorithm systematically splits (\emph{branch}) the verification problem into smaller subproblems by deciding the activation status (active/inactive) of neurons, and uses abstraction (bound) techniques to compute upper and lower bounds on the output values for these subproblems. If a subproblem's bounds indicate that it cannot contain a counterexample, it is pruned from the search space. This process continues until either a counterexample is found or all subproblems are exhausted, proving the property holds.
 
-At its core, a BaB search consists of two main components: (branch) splitting into the problem smaller subproblems
-using \emph{neuron splitting}, which decides boolean values representing neuron activation status,
-and (bound) using abstraction and LP solving to approximate bounds on neuron values to determine
-the satisfiability of the partial activation pattern (\autoref{sec:activation-pattern}) formed by the split.
+
 
 \section{The Algorithm}\label{sec:bab-alg}
 
@@ -3447,7 +3444,7 @@ the satisfiability of the partial activation pattern (\autoref{sec:activation-pa
 
 \autoref{alg:bab} shows \bab{}, a reference BaB architecture~\cite{nakagawa2014consolidating} for modern DNN verifiers. \bab{} takes as input a ReLU-based DNN $\mathcal{N}$ and a formulae $\phi_{in}\Rightarrow \phi_{out}$ representing the property of interest.
 \bab{} maintains a set of activation patterns (\texttt{ActPatterns}) that represent the current activation pattern of the DNN. Initially, \texttt{ActPatterns} is initialized with an empty activation pattern (\autoref{line:activation}).
-In each iteration, \bab{} selects an activation pattern $\sigma_i$ from \texttt{ActPatterns} (\tvn{also remove $\sigma_i$ from \texttt{ActPatterns}}?)\hd{yes}.  It then calls \functiontextformat{Deduce} to check the feasibility of the problem based on the current activation pattern. (Note that we do this even on the empty activation pattern, which is the initial state of the search, because the problem might be trivially infeasible.)
+In each iteration, \bab{} selects and removes an activation pattern $\sigma_i$ from \texttt{ActPatterns}.  It then calls \functiontextformat{Deduce} to check the feasibility of the problem based on the current activation pattern. (Note that we do this even on the empty activation pattern, which is the initial state of the search, because the problem might be trivially infeasible.)
 
 If \functiontextformat{Deduce} determines that the problem is feasible (using the current activation pattern $\sigma_i$), it calls \functiontextformat{Decide} to select a neuron $v_i$ to split, which essentially means the problem is split into two independent subproblems: one with $v_i$ (active) and the other with $\overline{v_i}$ (inactive). \bab{} then adds the two new activation patterns $\sigma_i \land v_i$ and $\sigma_i \land \overline{v_i}$ to \texttt{ActPatterns}. \bab{} then loops back to~\autoref{line:dpllstart} to process the next activation pattern.
 \tvn{briefly describe what Decide do? in particular what does it do to determine/create an cex when the activation pattern is partially assigned?}
