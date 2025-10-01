@@ -549,6 +549,39 @@ where \(n\) is the number of input neurons and \(m\) is the number of output neu
 \end{tikzpicture}
 }
 
+
+\newcommand{\mydnntwo}[1]{
+\begin{tikzpicture}[scale=#1, transform shape, semithick, ->]
+    % Input nodes
+    \node[input] (x1) at (0,1)  {$x_1$};
+    \node[input] (x2) at (0,-1) {$x_2$};
+
+    % Hidden layer
+    \node[hidden] (x3) at (2.8,1) {$x_3$};
+    \node[hidden] (x4) at (2.8,-1) {$x_4$};
+
+    % Output layer node (centered horizontally)
+    \node[output] (x5) at (5,1) {$x_5$};
+    \node[output] (x6) at (5,-1) {$x_6$};
+
+    % Connections with weights
+    \draw (x1) -- (x3) node[midway, above] {$-0.7$} ;
+    \draw (x1) -- (x4) node[near end, below] {$1.2$} ;
+    \draw (x2) -- (x3) node[near end, above] {$0.3$} ;
+    \draw (x2) -- (x4) node[midway, below] {$-0.5$} ;
+    \draw (x3) -- (x5) node[midway, below] {$-2.0$};
+    \draw (x4) -- (x5) node[near end, below] {$3.0$};
+    \draw (x3) -- (x6) node[near end, below] {$-1.8$};
+    \draw (x4) -- (x6) node[midway, below] {$0.7$};
+
+    % Output weights under x3, x4, x5 (biases)
+    \node[above] at (x3.north) {$+.8$};
+    \node[below] at (x4.south) {$-2.0$};
+    \node[above] at (x5.north) {$-1.2$};
+    \node[below] at (x6.south) {$-.3$};
+\end{tikzpicture}
+}
+
 \begin{figure}
     \centering
     \mydnn{1}
@@ -1910,6 +1943,22 @@ We then check the satisfiability of $\alpha \land \phi_{in} \land \neg \phi_{out
 \begin{problem}\label{problem:z3-dnn}
 Use Z3 to do~\autoref{ex:dnn-sat}. You might find~\autoref{ex:z3-dnn} useful.  Make sure that you also ask Z3 to  find a counterexample violating the property (does not have to be the same as above).
 \end{problem}
+
+\begin{problem}\label{problem:mydnntwo}
+\begin{figure}
+    \centering
+\mydnntwo{1.2}
+    \caption{A simple DNN with 2 inputs, 2 hidden ReLU neurons, and 2 outputs.}
+    \label{fig:mydnntwo}
+\end{figure}
+Consider the DNN in~\autoref{fig:mydnntwo}.  Do the following:
+\begin{itemize}
+    \item write the formula $\alpha$ representing the network. \item Then create the property that the output $x_5 \ge x_6$ for any inputs $x_1 \in [-1,1], x_2\in[-1,1]$.  \item Generate the satisfiability formula (\autoref{eq:nnv2}).  
+\end{itemize}    
+DO NOT use Z3 to check this formula.
+\end{problem}
+
+
 
 \section{Activation Pattern Search}\label{sec:activation-pattern}
 
