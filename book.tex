@@ -1617,7 +1617,7 @@ The VNN-LIB code for this property is as follows:
 
 
 
-\section{problems}
+\section{Problems}
 
 \begin{problem}[Robustness + Safety: Drone Controller]\label{problem:drone}
 An autonomous drone computes its thrust level using  a network controller $f(w,d)$, where $w$ is winds speed and $d$ the distance to nearest obstacle. We want two properties:  
@@ -1867,7 +1867,7 @@ With this definition the NNV problem can be formulated as checking the validity 
 \begin{equation}\label{eq:nnv}
     \alpha \implies (\phi_{in} \implies \phi_{out}).
 \end{equation}
-This formula checks if the network $N$ satisfies (implies) the property $\phi_{in} \implies \phi_{out}$. This validity checking can be reduced to checking the satisfiability of the formula:
+Formula~\autoref{eq:nnv} checks if network $N$ satisfies (implies) the property $\phi_{in} \implies \phi_{out}$. This validity checking can be reduced to checking the satisfiability of the formula:
 
 \begin{equation}\label{eq:nnv2}
   \alpha \land \phi_{in} \land \neg \phi_{out}
@@ -1913,21 +1913,21 @@ Use Z3 to do~\autoref{ex:dnn-sat}. You might find~\autoref{ex:z3-dnn} useful.  M
 
 \section{Activation Pattern Search}\label{sec:activation-pattern}
 
-An NN has many possible---potentially infinite---inputs, making it impossible to check all inputs to show no counterexample exists. However, DNNs with piecewise linear activation functions have a special structure that can be exploited to make verification feasible. 
-For example, each ReLU (\autoref{sec:relu}) function partitions the input space into two regions---active and infactive---where the function behaves linearly. 
-Thus, a DNN with piecewise linear activations partitions the input space into a finite number of linear regions, each defined by a unique combination of activation statuses of all neurons. 
-Within each region, the DNN behaves as a linear constraint, which can be efficiently analyzed using LP techniques (\autoref{chap:lp}).
+An NN has many possible---potentially infinite---inputs, making it impossible to verify, which requires checking all inputs to show no counterexample exists. However, DNNs with piecewise linear activation functions have a special structure that can be exploited to make verification feasible. 
+For example, each ReLU (\autoref{sec:relu}) function partitions the input space into two regions---active and inactive.
+Within each region, the DNN behavior can be encoded as \emph{a linear constraint}, which can be efficiently analyzed.
 
-Thus, verifying a DNN reduces to checking if any of these linear regions contains a counterexample. More specifically, we can rewrite~\autoref{eq:nnv2} as:
+Thus, verifying a DNN reduces to checking that none of these linear regions contains a counterexample. More specifically, we can rewrite~\autoref{eq:nnv2} as:
 \begin{equation}\label{eq:nnv3}
   \bigvee_{p \in P} \left( \alpha_p \land \phi_{in} \land \neg \phi_{out} \right)
 \end{equation}
 where $P$ is the set of all possible activation patterns---boolean assignments of activation statuses of all neurons--
-of the DNN, and $\alpha_p$ is the formula $\alpha$ restricted to the linear region defined by the activation pattern $p$. This means that $\alpha_p$ includes additional constraints that fix the activation status of each neuron according to $p$. For example, if $p$ specifies that neuron $n_i$ is active, then $\alpha_p$ includes the constraint $z_i \ge 0$; if $n_i$ is inactive, then $\alpha_p$ includes $z_i < 0$.
+of the DNN, and $\alpha_p$ is the formula $\alpha$ restricted to the linear region defined by the activation pattern $p$. This means that $\alpha_p$ includes additional constraints that fix the activation status of each neuron according to $p$. For example, if $p$ specifies that neuron $n_i$ is active, then $\alpha_p$ includes the constraint $z_i \ge 0$, indicating that the pre-activation value $z_i$ of neuron $n_i$ is non-negative. Similarly, if $n_i$ is inactive, then $\alpha_p$ includes $z_i < 0$.
+
 As long as one of the disjuncts in~\autoref{eq:nnv3} is satisfiable, i.e., we could find a counterexample in one of the linear regions, the entire formula is satisfiable, indicating that the property is invalid. Conversely, if all disjuncts are unsatisfiable, the property is valid.
 
 This allows us to break down the verification problem into smaller subproblems, each searches for \emph{activation pattern}, or boolean assignment of activation statuses of all neurons, that satisfies the formula in~\autoref{eq:nnv2}.
-Modern DNN verification techniques~\cite{bunel2020branch,wang2021beta,ferrari2022complete,duong2024harnessing,duong2023dpllt,ovalbab,katz2019marabou,bak2021nnenum} all adopt this idea and search for satisfying activation patterns.
+Modern DNN verification techniques~\cite{bunel2020branch,wang2021beta,ferrari2022complete,duong2024harnessing,duong2023dpllt,ovalbab,katz2019marabou,bak2021nnenum} all adopt this idea and search for a satisfying activation pattern to find a counterexample.
 
 \subsection{Activation Patterns}
 \begin{definition}[Activation Pattern]\label{def:activation-pattern}
