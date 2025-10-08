@@ -195,11 +195,13 @@
 \renewcommand{\figureautorefname}{Fig.}
 \renewcommand{\tableautorefname}{Tab.}
 \renewcommand{\equationautorefname}{Eq.}
+\providecommand{\definitionautorefname}{Def.}
 \renewcommand{\chapterautorefname}{\textsection\@gobble}
 \renewcommand{\sectionautorefname}{\textsection\@gobble}
 \renewcommand{\subsectionautorefname}{\textsection\@gobble}
 \renewcommand{\subsubsectionautorefname}{\textsection\@gobble}
 \renewcommand{\appendixautorefname}{\textsection\@gobble}
+
 \newcommand{\exampleautorefname}{Ex.}
 \newcommand{\problemautorefname}{Prob.}
 
@@ -356,8 +358,8 @@
     % Title
     \node[align=center] at ($(current page.center)+(0,-5)$) 
     {
-        {\fontsize{24}{24} \selectfont {{Engineering A Verifier}}} \\[0.15in]
-        {\fontsize{24}{24} \selectfont {{for Deep Neural Networks}}} \\[1in]    
+        {\fontsize{24}{24} \selectfont {{Introduction to}}} \\[0.15in]
+        {\fontsize{24}{24} \selectfont {{Deep Neural Network Verification}}} \\[1in]
         %{\fontsize{18}{18} \selectfont {{A Handbook for International Students}}} \\[1.in]
 
         {\fontsize{14}{19.2} \selectfont \textcolor{ForestGreen}{ \bf ThanhVu Nguyen}}\\[0.1in]
@@ -569,13 +571,13 @@ where \(n\) is the number of input neurons and \(m\) is the number of output neu
     \draw (x1) -- (x4) node[near end, below] {$1.2$} ;
     \draw (x2) -- (x3) node[near end, above] {$0.3$} ;
     \draw (x2) -- (x4) node[midway, below] {$-0.5$} ;
-    \draw (x3) -- (x5) node[midway, below] {$-2.0$};
-    \draw (x4) -- (x5) node[near end, below] {$3.0$};
+    \draw (x3) -- (x5) node[midway, above] {$-2.0$};
+    \draw (x4) -- (x5) node[near end, above] {$3.0$};
     \draw (x3) -- (x6) node[near end, below] {$-1.8$};
     \draw (x4) -- (x6) node[midway, below] {$0.7$};
 
-    % Output weights under x3, x4, x5 (biases)
-    \node[above] at (x3.north) {$+.8$};
+    % Biases
+    \node[above] at (x3.north) {$.8$};
     \node[below] at (x4.south) {$-2.0$};
     \node[above] at (x5.north) {$-1.2$};
     \node[below] at (x6.south) {$-.3$};
@@ -1834,7 +1836,7 @@ We also discuss activation patterns, which are a key concept used in many DNN ve
 
 \section{The Neural Network Verification (NNV) Problem}\label{sec:nnv-problem}
 
-\begin{definition}[NNV]
+\begin{definition}[NNV]\label{def:nnv}
 Given a DNN \(N\) and a property $\phi$, the \emph{NN verification} (NNV) problem asks if $\phi$ is a valid property\footnote{\autoref{chap:properties} provides various examples of properties.} of $N$.
 
 Typically, $\phi$ is a formula of the form 
@@ -1884,11 +1886,12 @@ A counterexample showing this property violation is $\{x_1=-1, x_2=2\}$, from wh
 \end{example}
 
 
-\section{Satisfiability Formulation}\label{sec:satisfiability-and-activation-pattern-search}
+\section{Satisfiability Formulation and Checking}\label{sec:satisfiability-and-activation-pattern-search}
 
-As with traditional software verification, DNN verification is often represented as a satisfiability problem, and check if a given property is satisfied by the DNN. 
+As with traditional software verification, DNN verification is often represented as a satisfiability problem, which can be solved using an SMT solver (e.g., Z3~\cite{de2008z3}) or a MILP solver (e.g., Gurobi~\cite{gurobi}).
 
-To do this, we first define a formula $\alpha$ to represent the network. Typically $\alpha$ is a conjunction ($\bigwedge$) of constraints representing the affine transformation (\autoref{sec:affine}) and activation function (\autoref{sec:activation}) of each neuron in the network.
+\paragraph{Formulation} To formulate the problem, we first define a formula $\alpha$ to represent the network.
+Typically $\alpha$ is a conjunction ($\bigwedge$) of constraints representing the affine transformation (\autoref{sec:affine}) and activation function (\autoref{sec:activation}) of each neuron in the network.
 For example, for a fully-connected neural network (\autoref{sec:ffn}) with $L$ layers, $N$ ReLU neurons per layer, this formula is:
 
 \begin{equation}
@@ -1896,7 +1899,9 @@ For example, for a fully-connected neural network (\autoref{sec:ffn}) with $L$ l
 \end{equation}
 where $v_{i,j}$ is the output of the $j$-th neuron in layer $i$, $w_{i-1,j,k}$ is the weight connecting the $k$-th neuron in layer $i-1$ to the $j$-th neuron in layer $i$, and $b_{i,j}$ is the bias of the $j$-th neuron in layer $i$.  The input layer is layer 0, i.e., $v_{0,j}$ are the input variables.
 
-With this definition the NNV problem can be formulated as checking the validity of the following formula:
+
+
+With this the NNV problem (\autoref{def:nnv}) can be formulated as checking the validity of the following formula:
 \begin{equation}\label{eq:nnv}
     \alpha \implies (\phi_{in} \implies \phi_{out}).
 \end{equation}
@@ -1935,10 +1940,10 @@ We represent the network in~\autoref{fig:dnn-b} as a formula $\alpha$:
 \phi_{out} = (x_5 > 0)
 \end{equation*}
 
-We then check the satisfiability of $\alpha \land \phi_{in} \land \neg \phi_{out}$ using a constraint solver (e.g., the Z3 SMT solver).  In this case, the formula is satisfiable, i.e., the property is invalid, and the solver returns \sat{}.  Any satisfying assignment, e.g., $x_1=-1$ and $x_2=2$, is a counterexample (\autoref{sec:properties-counterexamples}) to the property, as it satisfies the precondition $\phi_{in}$ but violates the postcondition $\phi_{out}$, i.e., $x_5 = -3.5$, which is  $< 0$.
+\paragraph{Satisfiability Solving} We can check the satisfiability of $\alpha \land \phi_{in} \land \neg \phi_{out}$ using a constraint solver (e.g., the Z3 SMT solver).~\autoref{sec:se-smt} shows how to perform symbolic execution and Z3 to automatically generate this formula from a given DNN and property, and check its satisfiability.~\autoref{sec:using-milp} shows how to use formulate this as a MILP problem and use a MILP solver (e.g., Gurobi) to check its satisfiability.
 
+In this case, the formula is satisfiable, i.e., the property is invalid, and the solver returns \sat{}.  Any satisfying assignment, e.g., $x_1=-1$ and $x_2=2$, is a counterexample (\autoref{sec:properties-counterexamples}) to the property, as it satisfies the precondition $\phi_{in}$ but violates the postcondition $\phi_{out}$, i.e., $x_5 = -3.5$, which is  $< 0$.
 \end{example}
-
 
 \begin{problem}\label{problem:z3-dnn}
 Use Z3 to do~\autoref{ex:dnn-sat}. You might find~\autoref{ex:z3-dnn} useful.  Make sure that you also ask Z3 to  find a counterexample violating the property (does not have to be the same as above).
@@ -1953,16 +1958,17 @@ Use Z3 to do~\autoref{ex:dnn-sat}. You might find~\autoref{ex:z3-dnn} useful.  M
 \end{figure}
 Consider the DNN in~\autoref{fig:mydnntwo}.  Do the following:
 \begin{itemize}
-    \item write the formula $\alpha$ representing the network. \item Then create the property that the output $x_5 \ge x_6$ for any inputs $x_1 \in [-1,1], x_2\in[-1,1]$.  \item Generate the satisfiability formula (\autoref{eq:nnv2}).  
+    \item Write the formula $\alpha$ representing the network. 
+    \item Create the property $\phi$ that the output $x_5 \ge x_6$ for any inputs $x_1 \in [-1,1], x_2\in[-1,1]$.  
+    \item Generate the satisfiability formula (\autoref{eq:nnv2}).  DO NOT use Z3 to check it.
 \end{itemize}    
-DO NOT use Z3 to check this formula.
 \end{problem}
 
 
 
 \section{Activation Pattern Search}\label{sec:activation-pattern}
 
-An NN has many possible---potentially infinite---inputs, making it impossible to verify, which requires checking all inputs to show no counterexample exists. However, DNNs with piecewise linear activation functions have a special structure that can be exploited to make verification feasible. 
+An NN has many possible---potentially infinite---inputs, making it impossible to check all inputs to show no counterexample exists. However, DNNs with piecewise linear activation functions have a special structure that can be exploited to do this. 
 For example, each ReLU (\autoref{sec:relu}) function partitions the input space into two regions---active and inactive.
 Within each region, the DNN behavior can be encoded as \emph{a linear constraint}, which can be efficiently analyzed.
 
@@ -2265,11 +2271,11 @@ While using symbolic execution and SMT solving is a straightforward way to verif
     \item \textbf{Precision Issues:} SMT solvers may struggle with precision issues when dealing with floating-point arithmetic, which is common in DNNs. This can lead to incorrect results or false positives/negatives in the verification process.
 \end{itemize}
 
-For these reasons, SMT solving is mostly used to demonstrate the correctness of small DNNs, e.g., in a classroom setting.  Modern-based DNN verification tools do not use SMT solving, and instead, rely on more efficient techniques including abstraction and MILP solving (\autoref{sec:milp}).
+For these reasons, SMT solving is mostly used to demonstrate the correctness of small DNNs, e.g., in a classroom setting.  Modern-based DNN verification tools do not use SMT solving, and instead, rely on more efficient techniques including abstraction and MILP solving (\autoref{sec:using-milp}).
 
 \tvn{Hai, include some references or results, e.g., from Nguyen's, showing that SMT solvers are not scalable for DNN verification.}\hai{where can I find the results?}\tvn{Not sure, I thought Nguyen record the results/graphs in some TeX document. Could you ask him?}
 
-\section{MILP}\label{sec:milp}
+\section{MILP}\label{sec:using-milp}
 Due to scalability issues with SMT solvers (\autoref{sec:smt-limitations}), modern DNN verification techniques ~\cite{wang2018efficient,tjeng2019evaluating,duong2024harnessing} often rely on Mixed Integer Linear Programming (MILP) solving, which is specialized for linear constraints and more efficient for DNN reasoning. %Many state-of-the-art DNN verification tools use the industrial-strength MILP solver Gurobi~\cite{gurobi}.
 
 The fundamental distinction between SMT and MILP solving lies in their problem formulation and solution approach. 
@@ -2508,7 +2514,7 @@ Since $x_5 = -3.5 \le 0$, this assignment satisfies our search for $x_5 \le 0$, 
 \chapter{Abstractions}\label{chap:abstractions}
 
 
-As mentioned in~\autoref{sec:milp}, and DNN verification in general, we need to compute the bounds of the neurons. However, computing these bounds precisely is often infeasible due to the complexity of the DNN structure and non-linear activation functions such as ReLU. To address this, modern DNN verifiers use \emph{abstraction} techniques to approximate the set of possible values that a post-ReLU neuron can have. 
+As mentioned in~\autoref{sec:using-milp}, and DNN verification in general, we need to compute the bounds of the neurons. However, computing these bounds precisely is often infeasible due to the complexity of the DNN structure and non-linear activation functions such as ReLU. To address this, modern DNN verifiers use \emph{abstraction} techniques to approximate the set of possible values that a post-ReLU neuron can have. 
 
 \section{Overview of Abstractions for ReLU} 
 
@@ -4652,7 +4658,7 @@ To achieve this, we present \proofcheck{}, a proof checker for \prooflang{} proo
 
 
 The goal of \proofcheck{} is to verify that the \prooflang{} tree generated by a DNN verification tool is correct (i.e., the proof tree is a proof of unsatisfiability of the DNN verification problem).
-\proofcheck{} thus must verify that the constraint represented by each \emph{leaf} node in the proof tree is unsatisfiable. To check each node, \proofcheck{} forms an MILP problem (\autoref{sec:milp}) consisting of the constraint in~\autoref{eq:nnv2} (the DNN, the input condition, and the negation of the output) with the constraints representing the activation pattern encoded by the tree path to the leaf node. \proofcheck{} then invokes an LP solver to check that the MILP problem is infeasible, which indicates unsatisfiability of the leaf node. 
+\proofcheck{} thus must verify that the constraint represented by each \emph{leaf} node in the proof tree is unsatisfiable. To check each node, \proofcheck{} forms an MILP problem (\autoref{sec:using-milp}) consisting of the constraint in~\autoref{eq:nnv2} (the DNN, the input condition, and the negation of the output) with the constraints representing the activation pattern encoded by the tree path to the leaf node. \proofcheck{} then invokes an LP solver to check that the MILP problem is infeasible, which indicates unsatisfiability of the leaf node. 
 
 \begin{algorithm}[t]
     \footnotesize
@@ -7011,9 +7017,7 @@ The objective function $z = 1.5x+2y$ is maximized at vertex $(0,4)$.
 \end{problem}
 
 
-
-
-\section{Mixed-Integer Linear Programming (MILP)}\label{sec:milp}
+\section{Mixed-Integer Linear Programming (MILP)}\label{sec:milp-basics}
 
 LP (\autoref{sec:lp}) assumes continuous variables over real numbers.  
 A mixed-integer linear program (MILP) extends LP by requiring some variables to be integers (often binary 0 or 1).  This is useful because it allows for modeling discrete decisions and logical constraints, e.g., on/off decisions, yes/no choices, and active/inactive ReLU.
