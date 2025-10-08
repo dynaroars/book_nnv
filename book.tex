@@ -2058,30 +2058,35 @@ In this case, the SMT solver returns \sat{} and a satisfying assignment, e.g., $
 
 While using symbolic execution and SMT solving is a straightforward way to verify DNNs, it has several practical limitations:
 \begin{itemize}
-    \item \textbf{Path Explosion and Scalability}: the number of paths that the solver has to analyze can grow exponentially with the number of ReLU-based neurons and layers as each ReLU, represented as a disjunction of linear functions, has two possible outputs for any input.  This leads to the notorious 
-    \emph{path explosion} problem and becoming intractable for large DNNs.
+    \item \textbf{Path Explosion and Scalability}: the number of paths that the solver has to analyze can grow exponentially with the number of ReLU-based neurons and layers as each ReLU, represented as a disjunction of linear functions, has two possible outputs for any input (i.e., the input value itself or 0).  This leads to the notorious \emph{path explosion} problem and becoming intractable for large DNNs. Programming assignment 1 (\autoref{sec:pa1}) demonstrates this issue.
     
     \item \textbf{Non-linearity:} Other non-linear activation functions (\autoref{sec:activation}), such as Sigmoid or Tanh, might not be easily representable as disjunctions of linear functions as ReLU. This can lead to complex formulae that are hard to reason about and/or result in a large search space for the SMT solver.
     
     \item \textbf{Precision Issues:} SMT solvers may struggle with precision issues when dealing with floating-point arithmetic, which is common in DNNs. This can lead to incorrect results or false positives/negatives in the verification process.
 \end{itemize}
 
-For these reasons, SMT solving is mostly used to demonstrate the correctness of small DNNs, e.g., in a classroom setting.  Modern-based DNN verification tools do not use SMT solving, and instead, rely on more efficient techniques including abstraction and MILP solving (\autoref{sec:using-milp}).
+For these reasons, SMT solving is mostly used on toy examples, e.g., in a classroom setting.  Modern-based DNN verification tools do not use SMT solving, and instead, rely on more efficient techniques such as abstraction (\autoref{chap:abstractions}).
 
-\tvn{Hai, include some references or results, e.g., from Nguyen's, showing that SMT solvers are not scalable for DNN verification.}\hai{where can I find the results?}\tvn{Not sure, I thought Nguyen record the results/graphs in some TeX document. Could you ask him?}
+%\tvn{Hai, include some references or results, e.g., from Nguyen's, showing that SMT solvers are not scalable for DNN verification.}\hai{where can I find the results?}\tvn{Not sure, I thought Nguyen record the results/graphs in some TeX document. Could you ask him?}
 
 \section{MILP}\label{sec:using-milp}
-Due to scalability issues with SMT solvers (\autoref{sec:smt-limitations}), modern DNN verification techniques ~\cite{wang2018efficient,tjeng2019evaluating,duong2024harnessing} often rely on Mixed Integer Linear Programming (MILP) solving, which is specialized for linear constraints and more efficient for DNN reasoning. %Many state-of-the-art DNN verification tools use the industrial-strength MILP solver Gurobi~\cite{gurobi}.
 
-The fundamental distinction between SMT and MILP solving lies in their problem formulation and solution approach. 
-SMT solvers address satisfiability problems: determining whether there exist variable assignments that make a given logical formula true. 
-SMT solvers can handle diverse mathematical theories including non-linear arithmetic.
-MILP solvers address optimization problems: finding the best solution (according to some objective function) that satisfy a given set of \emph{linear} constraints. 
+Instead of using SMT solving, we can also formulate the NNV problem as a Mixed Integer Linear Programming (MILP) problem (\autoref{sec:lp}) and use a MILP solver such as Gurobi~\cite{gurobi} to solve it.
+The fundamental difference between SMT and MILP solving is that SMT solvers aims to find satisfying assignments that make a given logical formula true. In contrast, MILP solvers aim to find the best solution (according to some objective function) that satisfy a given set of \emph{linear} constraints.
+
+Thus, to use MILP, we need to encode the DNN as a set of linear constraints, and use binary indicator variables (\autoref{sec:milp-binary}) to represent the non-linear activation functions such as ReLU.  This creates an MILP problem solvable using a MILP solver.
+
+% Due to scalability issues with SMT solvers (\autoref{sec:smt-limitations}), modern DNN verification techniques ~\cite{wang2018efficient,tjeng2019evaluating,duong2024harnessing} often rely on Mixed Integer Linear Programming (MILP) solving, which is specialized for linear constraints and more efficient for DNN reasoning. %Many state-of-the-art DNN verification tools use the industrial-strength MILP solver Gurobi~\cite{gurobi}.
+
+% The fundamental distinction between SMT and MILP solving lies in their problem formulation and solution approach. 
+% SMT solvers address satisfiability problems: determining whether there exist variable assignments that make a given logical formula true. 
+% SMT solvers can handle diverse mathematical theories including non-linear arithmetic.
+% MILP solvers address optimization problems: finding the best solution (according to some objective function) that satisfy a given set of \emph{linear} constraints. 
 
 
-MILP solvers cannot directly solve general SMT problems because they are restricted to linear constraints and cannot handle the non-linear theories and complex logical structures that SMT problems often contain. 
-While SMT solvers could theoretically encode MILP problems as satisfiability queries, they are not designed for optimization and would be highly inefficient. 
-Despite both approaches having exponential worst-case complexity, MILP solvers often demonstrate superior practical performance due to their restriction to linear constraints, which enables several key optimizations such as linear relaxations, preprocessing techniques, and specialized algorithms. 
+% MILP solvers cannot directly solve general SMT problems because they are restricted to linear constraints and cannot handle the non-linear theories and complex logical structures that SMT problems often contain. 
+% While SMT solvers could theoretically encode MILP problems as satisfiability queries, they are not designed for optimization and would be highly inefficient. 
+% Despite both approaches having exponential worst-case complexity, MILP solvers often demonstrate superior practical performance due to their restriction to linear constraints, which enables several key optimizations such as linear relaxations, preprocessing techniques, and specialized algorithms. 
 
 
 %\paragraph{MILP} Mixed Integer Linear Programming (MILP) is an optimization technique that solves problems involving both continuous variables (real numbers) and integer variables (including binary 0/1 variables), subject to linear constraints. Unlike SMT solvers that handle complex logical formulae with disjunctions, MILP solvers are specifically designed for linear constraints and can leverage decades of optimization research to solve large-scale problems efficiently.
@@ -2089,7 +2094,7 @@ Despite both approaches having exponential worst-case complexity, MILP solvers o
 
 \subsection{ReLU Encoding}\label{sec:relu-encoding}
 
-To use MILP solving, we encode non-linear activation functions like ReLU using \emph{binary indicator} variables and linear constraints. For each neuron, we introduce a binary variable that indicates whether the neuron is ``active'' (output equals input) or ``inactive'' (output is zero). This transforms the non-linear $\max(x,0)$ operation into a set of linear inequalities controlled by the binary variable. 
+We first encode non-linear activation functions like ReLU using \emph {binary indicator} variables and linear constraints. For each neuron, we introduce a binary variable that indicates whether the neuron is ``active'' (output equals input) or ``inactive'' (output is zero). This transforms the non-linear $\max(x,0)$ operation into a set of linear inequalities controlled by the binary variable. 
 We define 
 
 \begin{itemize}
@@ -3139,7 +3144,7 @@ Here we can see that by using Interval abstraction, the property \(x_{11}\ \geq\
 
 
 
-\part{DNN Verification Algorithms}
+\part{DNN Verification Algorithms}\label{part:algorithms}
 \chapter{The Branch and Bound Search Algorithm}\label{chap:bab}
 
 As we have seen in~\autoref{sec:constraint-solving}, the NNV verification problem can be formulated as a satisfiability problem, solvable using constraint solving.  However, constraint solvers, e.g., SMT and MILP solvers, often struggle to scale to large DNNs due to the complexity of the underlying problem. Thus, modern DNN verification techniques reframe the problem to search for \emph{activation patterns} that satisfy the constraints, and use the Branch-and-Bound (BaB) algorithm to explore the space of possible activation patterns.
@@ -6025,7 +6030,7 @@ In each specification, the inputs (condition distance and latent variables) are 
 \end{enumerate}    
 
 \chapter{Programming Assignments}\label{chap:pa}
-\section{Programming Assignment 1: Symbolic Execution of Neural Networks}\label{sec:pa1}
+\section{PA2: Symbolic Execution of Neural Networks}\label{sec:pa1}
 
 
 In this PA you will implement an neural network (NN) verifier using symbolic execution (SE) as described in~\autoref{sec:se-smt}. You can consider NNs as a specific type of programs and thus can ``execute'' it.  SE runs the NN on symbolic inputs and returns symbolic outputs, i.e., a constraint representation.  You will represent the symbolic outputs as a logical formula and use a constraint solver to check \emph{assertions}, i.e., properties about the DNN. This PA has two parts: (1) implement SE on a given DNN, and (2) evaluate the scalability of your SE on various DNNs.
@@ -6580,7 +6585,8 @@ evaluate its truth value under all $2^3=8$ possible assignments of $x,y,z$.
 \end{problem}
 
 \subsection{Satisfiability and Validity}
-\begin{definition}[Satisfiability] A formula $\phi$
+\begin{definition}[Satisfiability]\label{def:sat-validity}
+     A formula $\phi$
 
 \begin{itemize}
   \item is \emph{satisfiable} if there exists \textbf{some} $\alpha$ such that $\alpha(\phi) = \texttt{True}$.
@@ -6650,8 +6656,14 @@ is in CNF. Each clause $(x \lor y)$, $(\lnot x \lor z)$ is a disjunction of lite
 
 
 \subsection{Validity Checking}\label{sec:validity-checking}
-We can use a SAT solver to check if a formula $\alpha$ is valid (no satisfying assignment) by checking that its negation, $\overline{\alpha}$, is not satisfiabile.
+By~\autoref{def:sat-validity}, a formula $\alpha$ is valid if all assignments satisfy it.
+This is equivalent to saying that its negation $\overline{\alpha}$ is unsatisfiable (no assignment satisfies it), i.e., 
+\[
+\text{valid}(\alpha) \iff \text{unsat}(\overline{\alpha})
+\]  
+Thus, to check the validity of $\alpha$, we can use a SAT solver to check that $\overline{\alpha}$ is \unsat{}.
 
+%We can use a SAT solver to check if a formula $\alpha$ is valid (no satisfying assignment) by checking that its \emph{negation}, $\overline{\alpha}$, is \emph{not} satisfiabile. 
 
 
 \section{Satisfiability Modulo Theories (SMT)}
@@ -6825,7 +6837,7 @@ What does Z3 return?
 
 \section{SAT and SMT Solving Algorithms}\label{sec:sat-smt-algorithms}
 
-Here we briefly discuss SAT and SMT solving algorithms, which are used to determine the satisfiability of propositional and SMT formulae.
+Here we briefly discuss SAT and SMT solving algorithms, which are used to determine the satisfiability (and therefore validity) of SAT and SMT formulae.
 
 \subsection{Satisfiability (SAT) Problem}\label{sec:sat-problem}
 The classical satisfiability (SAT) problem asks if a given propositional formulae (\autoref{sec:propositional-logic}) can be satisfied~\cite{biere2009handbook}.  Given a formula CNF $f$, an SAT solver returns \sat{} if it can find a satisfying assignment that maps truth values to variables of $f$ that makes $f$ evaluate to true, and \unsat{} if it cannot find any satisfying assignments.
@@ -6839,7 +6851,7 @@ The SAT problem is \NP-Complete and research into methods for efficiently solvin
 
 \begin{figure}
     \centering
-  \includegraphics[width=0.8\linewidth]{figure/dpll.pdf}
+  \includegraphics[width=0.6\linewidth]{figure/dpll.pdf}
   \caption{\label{fig:dpll} The classicial DPLL Algorithm.}
 \end{figure}
 
@@ -7134,7 +7146,7 @@ This means the company should produce 24 chairs and 4 tables per week, and get a
 
 
 
-\subsection{Encoding Binary Variables}
+\subsection{Encoding Binary Variables}\label{sec:milp-binary}
 MILP problems often involve disjunction or condition where the answer depends on some condition.  We can encode such condition using binary variables (0-1 integers), e.g., using  $z \in \{0,1\}$ to indicate whether a certain condition is met.  Moreover, we also use a ``trick'' with a large constant $M$, e.g., $\infty$, to encode logical implications.
 
 \begin{example}
@@ -7459,6 +7471,7 @@ Software verification and DNN verification share the common goal of ensuring the
 
 \begin{table}
     \caption{Comparison of Software Verification and DNN Verification}
+    \footnotesize
 \begin{tabular}{|c|c|c|}
     \hline
     \textbf{Aspect} & \textbf{Software Verification} & \textbf{DNN Verification} \\
@@ -7478,6 +7491,7 @@ Software verification and DNN verification share the common goal of ensuring the
 
 \begin{table}
 \caption{Similarities of Software Verification and DNN Verification}
+\footnotesize
 \begin{tabular}{|c|c|c|}
     \hline
     \textbf{Aspect} & \textbf{Software Verification} & \textbf{DNN Verification} \\
@@ -7492,7 +7506,6 @@ Software verification and DNN verification share the common goal of ensuring the
     \hline
 \end{tabular}
 \end{table}
-
 
 \paragraph{Differences}
 Software verification typically deals with discrete systems and logical properties, while DNN verification focuses on continuous input spaces and the behavior of neural networks under various conditions. Additionally, the techniques used in each field differ significantly, with software verification relying on formal methods and testing, whereas DNN verification often employs specialized techniques such as adversarial training and robustness analysis.
