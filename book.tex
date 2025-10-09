@@ -2073,8 +2073,7 @@ For these reasons, SMT solving is mostly used on toy examples, e.g., in a classr
 
 Instead of using SMT solving, we can also formulate the NNV problem as a Mixed Integer Linear Programming (MILP) problem (\autoref{sec:lp}) and use a MILP solver such as Gurobi~\cite{gurobi} to solve it.
 The fundamental difference between SMT and MILP solving is that SMT solvers aims to find satisfying assignments that make a given logical formula true. In contrast, MILP solvers aim to find the best solution (according to some objective function) that satisfy a given set of \emph{linear} constraints.
-
-Thus, to use MILP, we need to encode the DNN as a set of linear constraints, and use binary indicator variables (\autoref{sec:milp-binary}) to represent the non-linear activation functions such as ReLU.  This creates an MILP problem solvable using a MILP solver.
+Thus, we need to encode the DNN as a set of linear constraints, and use binary indicator variables (\autoref{sec:milp-binary}) to represent the non-linear activation functions such as ReLU.  This creates an MILP problem solvable using a MILP solver.
 
 % Due to scalability issues with SMT solvers (\autoref{sec:smt-limitations}), modern DNN verification techniques ~\cite{wang2018efficient,tjeng2019evaluating,duong2024harnessing} often rely on Mixed Integer Linear Programming (MILP) solving, which is specialized for linear constraints and more efficient for DNN reasoning. %Many state-of-the-art DNN verification tools use the industrial-strength MILP solver Gurobi~\cite{gurobi}.
 
@@ -2094,13 +2093,13 @@ Thus, to use MILP, we need to encode the DNN as a set of linear constraints, and
 
 \subsection{ReLU Encoding}\label{sec:relu-encoding}
 
-We first encode non-linear activation functions like ReLU using \emph {binary indicator} variables and linear constraints. For each neuron, we introduce a binary variable that indicates whether the neuron is ``active'' (output equals input) or ``inactive'' (output is zero). This transforms the non-linear $\max(x,0)$ operation into a set of linear inequalities controlled by the binary variable. 
+We first encode non-linear activation functions like ReLU using \emph {binary indicator} variables and linear constraints. For each neuron, we introduce a binary variable that indicates whether the neuron is ``active'' (output equals input) or ``inactive'' (output is zero). This transforms the non-linear $\max(z,0)$ operation into a set of linear inequalities controlled by the binary variable. 
 We define 
 
 \begin{itemize}
     \item $z$: the pre-activation value, i.e., the value that goes into ReLU
     \item $\hat{z}$: the post-activation value, i.e., the output of ReLU
-    \item $a \in \{0,1\}$: a binary indicator variable encoding whether the neuron is active ($z \le 0$) or inactive ($z < 0$)
+    \item $a \in \{0,1\}$: a binary indicator variable encoding whether the neuron is active ($z \ge 0$) or inactive ($z < 0$)
     \item $l, u$: lower and upper bounds on $z$ ($l \leq z \leq u$) over the input region 
 \end{itemize}
 
@@ -2113,11 +2112,14 @@ The MILP encoding of $\hat{z} = \max(z, 0)$ is then (\autoref{ex:relu_milp}):
     &a \in \{0,1\}
 \end{align*}
 
-These constraints enforce $\hat{z} = z$ when $a = 1$ (active, $z \geq 0$) and $\hat{z} = 0$ when $a = 0$ (inactive, $z < 0$), which capture the semantics of ReLU. Notice that these constraints are linear and involve both continuous variable $\hat{z}$ and binary variable $a$.
+These constraints enforce $\hat{z} = z$ when $a = 1$ (active, $z \geq 0$) and $\hat{z} = 0$ when $a = 0$ (inactive, $z < 0$), which captures the two possible ReLU outputs ($0$ or $z$).
+Note that constraints are linear and involve both continuous variable $\hat{z}$ and binary variable $a$.  
 
 
 
-Note the importance of the upper and lower bounds $u$ and $l$ on $z$. These bounds are critical not only for making the MILP encoding tight, but also for ensuring that the binary indicator $a$ can only take on values that are valid given the possible range of $z$. For example, if $u < 0$, then $z$ can never be non-negative, so the active phase ($a=1$) is infeasible (the constraints are not satisfiable) and should be ruled out by the MILP encoding; similarly, if $l \geq 0$, only the active phase is possible. Being able to eliminate infeasible cases is crucial for the efficiency of the MILP solver, as it reduces the search space. In general, the tightness of the bounds $l$ and $u$ is crucial for the efficiency of the MILP solver and a major focus of DNN reasoning is developing techniques to capture these bounds more precisely (\autoref{chap:abstractions}).
+\paragraph{Importance upper and lower bounds} These bounds are critical not only for making the MILP encoding tight, but also for ensuring that the binary indicator $a$ can only take on values that are valid given the possible range of $z$. For example, if $u < 0$, then $z$ can never be non-negative, so the active phase ($a=1$) is infeasible (the constraints are not satisfiable) and should be ruled out by the MILP encodin.  Similarly, if $l \geq 0$, only the active phase is possible. Being able to eliminate infeasible cases is crucial for the efficiency of the MILP solver, as it significantly reduces the search space. 
+
+In general, the tightness of the bounds $l$ and $u$ is crucial for the efficiency of the MILP solver and a major focus of DNN reasoning is developing techniques to capture these bounds more precisely (\autoref{chap:abstractions}).
 
 \paragraph{Computing Bounds $l \le e \le u$}  To determine the pairs of values that achieve the lower and upper bounds of a linear expression $e$:
 \[
@@ -2127,19 +2129,19 @@ where each variable $x_i$ ranges over $[l_i, u_i]$, we proceed as follow:
 
 \begin{itemize}
     \item \textbf{For the lower bound} ($l_3$):
-    For each variable $x_i$, use $u_i$ (its upper bound) if $a_i < 0$, and use $l_i$ (its lower bound) if $a_i \geq 0$.
+    For each $x_i$, use its upper bound $u_i$ if $a_i < 0$, and use its lower bound $l_i$ if $a_i \geq 0$.
     \item \textbf{For the upper bound} ($u_3$):
-    For each variable $x_i$, use $l_i$ if $a_i < 0$, and use $u_i$ if $a_i \geq 0$.
+    For each $x_i$, use $l_i$ if $a_i < 0$, and use $u_i$ if $a_i \geq 0$.
 \end{itemize}
 
-This guarantees that the extreme values of $e$ are achieved at some corner of the input box, with the exact pair determined by the sign of each coefficient.
+This guarantees that the extreme values of $e$ are achieved at some corner of the input box.
 
 
 
 
 \begin{example}
     Consider the neuron $x_3$ in the DNN in~\autoref{fig:dnn-a} from~\autoref{ex:smt-dnn}. 
-    We have $x_3 = -0.5x_1 + 0.5x_2 + 1.0$ as the pre-activation value of $x_3$. The upper $u_3$ and lower $l_3$ bounds on $z_3$ over the input region $x_1 \in [-1,1]$ and $x_2\in[-2,2]$ are:
+    We have $x_3 = -0.5x_1 + 0.5x_2 + 1.0$ as the pre-activation value of $x_3$. The upper $u_3$ and lower $l_3$ bounds on $x_3$ over the input region $x_1 \in [-1,1]$ and $x_2\in[-2,2]$ are:
 \begin{align*}
     & z_3 = -0.5x_1 + 0.5x_2 + 1.0 \\
     & l_3 = -0.5(1) + 0.5(-2) + 1.0 = -0.5 \\
@@ -2149,9 +2151,7 @@ This guarantees that the extreme values of $e$ are achieved at some corner of th
 Notice that we use different pairs of values to compute the lower (1,-2) and upper (-1,2) bounds.
 
 
-
-Let $\hat{x}_3$ be the output of neuron $x_3$ after applying ReLU, and let $a_3$ be a binary variable indicating whether neuron $x_3$ is active (1) or inactive (0).
-We encode the ReLU activation of neuron $x_3$:
+With the computed bounds, we encode the ReLU output of $x_3$:
 \begin{align*}
     &\hat{x}_3 \geq x_3 \\
     &\hat{x}_3 \geq 0 \\
@@ -2189,8 +2189,8 @@ where $x$ is input, $y$ is output, and $z^{(i)}$, $\hat{z}^{(i)}$, $W^{(i)}$, an
 Deactivating a neuron, $a_j^{(i)} = 0$, simplifies the first of the (e) constraints to $\hat{z}_j^{(i)} \le 0$, and activating a neuron simplifies the second to $\hat{z}_j^{(i)} \le z_j^{(i)}$, which is consistent with the semantics of $\hat{z}_j^{(i)} = max(z_j^{(i)},0)$.
 
 \begin{example}\label{ex:milp-dnn}
-    We create the following MILP formulation for the example in~\autoref{ex:smt-dnn}. The DNN~\autoref{fig:dnn-a} in the example has two inputs $x_1, x_2$, 1 hidden layer with 2 neurons $x_3, x_4$, each with its own ReLU output $\hat{x}_3, \hat{x}_4$, and 1 output neuron $x_5$.
-    We will use property $x_5 > 0$ for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$:
+    We create the following MILP formulation for~\autoref{ex:smt-dnn}. The DNN~\autoref{fig:dnn-a} in the example has two inputs $x_1, x_2$, 1 hidden layer with 2 neurons $x_3, x_4$, each with its own ReLU output $\hat{x}_3, \hat{x}_4$, and 1 output neuron $x_5$.
+    We will use the property stating that $x_5 > 0$ for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$:
 
 
 
@@ -2212,23 +2212,23 @@ a_3, a_4 &\in \{0, 1\} \\
 \end{align*}
 
 
-\item Encoding output layer (post-activation):
+\item Encoding output layer:
 \begin{align*}
 x_5 &= -\hat{z}_3 + \hat{z}_4 - 1.0
 \end{align*}
 
-\item Negating property
+\item Negating the property
 \begin{align*}
 x_5 &\le 0
 \end{align*}
 
-\item Computing upper and lower bounds over given input ranges. For example, with $x_1 \in [-1,1]$ and $x_2 \in [-2,2]$, we have: 
+\item Computing upper and lower bounds over given input ranges. Here, with $x_1 \in [-1,1]$ and $x_2 \in [-2,2]$, we have: 
 \begin{align*}
 z_3 &\in [-0.5 \cdot 1 + 0.5 \cdot (-2) + 1, -0.5 \cdot (-1) + 0.5 \cdot 2 + 1] = [-0.5, 2.5] \\
 z_4 &\in [0.5 \cdot (-1) - 0.5 \cdot 2 - 1, 0.5 \cdot 1 - 0.5 \cdot (-2) - 1] = [-2.5, 0.5]
 \end{align*}
 
-So we set $l_3 = -0.5, u_3 = 2.5, l_4 = -2.5, u_4 = 0.5$. 
+So we set $l_3 = -0.5, u_3 = 2.5$, and $l_4 = -2.5, u_4 = 0.5$. 
 
 \item \textbf{Substituting bounds into the constraints:}
 \begin{align*}
@@ -2251,6 +2251,8 @@ So we set $l_3 = -0.5, u_3 = 2.5, l_4 = -2.5, u_4 = 0.5$.
 & \text{where } z_3 \in [-0.5, 2.5], z_4 \in [-2.5, 0.5], \hat{z}_3 \in [0, 2.5], \hat{z}_4 \in [0, 0.5].
 \end{align*}
 
+\tvn{Do we need to specify the ranges (e.g., $z_3 \in [-0.5, 2.5]$) at the end or they are redundant?}
+
 \item \textbf{Solving} The MILP solver will find a satisfying assignment if one exists, such as $x_1 = -1, x_2 = 2$, which leads to:
 \begin{align*}
 z_3 &= -0.5(-1) + 0.5(2) + 1.0 = 2.5 \\
@@ -2260,7 +2262,7 @@ a_4 &= 0, \hat{z}_4 = 0 \quad \text{(neuron inactive)} \\
 x_5 &= -2.5 + 0 - 1.0 = -3.5
 \end{align*}
 Since $x_5 = -3.5 \le 0$, this assignment satisfies our search for $x_5 \le 0$, so the solver stops.
-
+%\tvn{why find satisfying and not optimizing some objective?}
 \end{enumerate}
 \end{example}
 
@@ -7145,7 +7147,6 @@ This means the company should produce 24 chairs and 4 tables per week, and get a
 \end{example}
 
 
-
 \subsection{Encoding Binary Variables}\label{sec:milp-binary}
 MILP problems often involve disjunction or condition where the answer depends on some condition.  We can encode such condition using binary variables (0-1 integers), e.g., using  $z \in \{0,1\}$ to indicate whether a certain condition is met.  Moreover, we also use a ``trick'' with a large constant $M$, e.g., $\infty$, to encode logical implications.
 
@@ -8273,21 +8274,27 @@ So, the PGD attack finds a counterexample at $(x_1 = -1,\ x_2 = 0.75)$.
 \end{document}
 
 
+when a = 0, 
 
-
-| a | b  |  a ->  b
---------------------
-| T | T  |   T   
-| T | F  |   F    
-| F | T  |   T
-| F | F  |   T 
-
-
-| a | b  |  !a  |  !a  v  b  |
-| T | T  |  F   |     T
-| T | F  |  F   |     F
-| F | T  |  T   |     T
-| F | F  |  T   |     T  
+z^ >= z
+z^ <= 0 ,  z^ >=0   =>     z^  = 0
+z^ <= z - l    -1 - -5     z^ <= 4 
 
 
 
+
+when a = 1
+z^ <= u
+z^ <= z  ,  z^ >=z  => z^ = z 
+
+
+
+x1 = [-1,1]
+x2 = [-2,2]
+
+
+
+x3 = -0.5x1 + 0.5x2 + 1
+
+u  = x3 =  -0.5(-1) + 0.5(2) + 1  =  2.5 
+l = x3 = -0.5(1) + 0.5(-2) + 1  =  -0.5
