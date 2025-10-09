@@ -1940,7 +1940,7 @@ We represent the network in~\autoref{fig:dnn-b} as a formula $\alpha$:
 \phi_{out} = (x_5 > 0)
 \end{equation*}
 
-\paragraph{Satisfiability Solving} We can check the satisfiability of $\alpha \land \phi_{in} \land \neg \phi_{out}$ using constraint solving.~\autoref{sec:se-smt} shows how to perform symbolic execution and an SMT solver (e.g., Z3) to automatically generate this formula from a given DNN and property, and check its satisfiability.~\autoref{sec:using-milp} shows how to use formulate this as a MILP problem and use a MILP solver (e.g., Gurobi) to check its satisfiability.
+\paragraph{Satisfiability Solving} We can check the satisfiability of $\alpha \land \phi_{in} \land \neg \phi_{out}$ using constraint solving.~\autoref{sec:se-smt} shows how to perform symbolic execution and an SMT solver (e.g., Z3) to automatically generate this formula from a given DNN and property, and check its satisfiability.~\autoref{sec:using-milp} shows how to encode the problem as a MILP constraints, solvable using a MILP solver (e.g., Gurobi).
 
 In this case, the formula is satisfiable, i.e., the property is invalid, and the solver returns \sat{}.  Any satisfying assignment, e.g., $x_1=-1$ and $x_2=2$, is a counterexample (\autoref{sec:properties-counterexamples}) to the property, as it satisfies the precondition $\phi_{in}$ but violates the postcondition $\phi_{out}$, i.e., $x_5 = -3.5$, which is  $< 0$.
 \end{example}
@@ -2071,9 +2071,11 @@ For these reasons, SMT solving is mostly used on toy examples, e.g., in a classr
 
 \section{MILP}\label{sec:using-milp}
 
-Instead of using SMT solving, we can also formulate the NNV problem as a Mixed Integer Linear Programming (MILP) problem (\autoref{sec:lp}) and use a MILP solver such as Gurobi~\cite{gurobi} to solve it.
-The fundamental difference between SMT and MILP solving is that SMT solvers aims to find satisfying assignments that make a given logical formula true. In contrast, MILP solvers aim to find the best solution (according to some objective function) that satisfy a given set of \emph{linear} constraints.
-Thus, we need to encode the DNN as a set of linear constraints, and use binary indicator variables (\autoref{sec:milp-binary}) to represent the non-linear activation functions such as ReLU.  This creates an MILP problem solvable using a MILP solver.
+Instead of using SMT solving, we can encode the NNV problem as a Mixed Integer Linear Programming (MILP) constraints (\autoref{sec:lp}), and then invoke an MILP solver such as Gurobi~\cite{gurobi} to check their feasibility (\autoref{sec:lp-feasibility}).
+
+
+% The fundamental difference between SMT and MILP solving is that SMT solvers aims to find satisfying assignments that make a given logical formula true. In contrast, MILP solvers aim to find the best solution (according to some objective function) that satisfy a given set of \emph{linear} constraints.
+% Thus, we need to encode the DNN as a set of linear constraints, and use binary indicator variables (\autoref{sec:milp-binary}) to represent the non-linear activation functions such as ReLU.  This creates an MILP problem solvable using a MILP solver.
 
 % Due to scalability issues with SMT solvers (\autoref{sec:smt-limitations}), modern DNN verification techniques ~\cite{wang2018efficient,tjeng2019evaluating,duong2024harnessing} often rely on Mixed Integer Linear Programming (MILP) solving, which is specialized for linear constraints and more efficient for DNN reasoning. %Many state-of-the-art DNN verification tools use the industrial-strength MILP solver Gurobi~\cite{gurobi}.
 
@@ -2093,7 +2095,7 @@ Thus, we need to encode the DNN as a set of linear constraints, and use binary i
 
 \subsection{ReLU Encoding}\label{sec:relu-encoding}
 
-We first encode non-linear activation functions like ReLU using \emph {binary indicator} variables and linear constraints. For each neuron, we introduce a binary variable that indicates whether the neuron is ``active'' (output equals input) or ``inactive'' (output is zero). This transforms the non-linear $\max(z,0)$ operation into a set of linear inequalities controlled by the binary variable. 
+We first encode non-linear activation functions like ReLU using \emph {binary indicator} variables and linear constraints. For each neuron, we introduce a binary variable (\autoref{sec:milp-binary}) that indicates whether the neuron is ``active'' (output equals input) or ``inactive'' (output is zero). This transforms the non-linear $\max(z,0)$ operation into a set of linear inequalities controlled by the binary variable. 
 We define 
 
 \begin{itemize}
@@ -2167,7 +2169,7 @@ Note that because $l_3 = -0.5$ and $u_3 = 2.5$, $a_3$ can be either 0 or 1, depe
 \end{example}
 
 
-\subsection{DNN encoding} More generally, we can encode the DNN as a set of linear constraints as follows:
+\subsection{DNN encoding} More generally, we can encode the DNN as a set of MILP linear constraints as follows:
 
 \begin{equation}\label{eq:mip}
     \begin{aligned}
@@ -6907,7 +6909,7 @@ where $c_i, b \in \mathbb{R}$. These constraints limit the feasible values that 
 The set of points satisfying all constraints is called the \emph{feasible region}.
 
 
-\begin{example}
+\begin{example}\label{ex:lp-constraints}
 Consider the following linear constraints:
 \[
 x + y \leq 4, \qquad x \geq 0, \qquad y \geq 0.
@@ -7223,7 +7225,7 @@ To modify the MILP encoding for the ReLU function with bounds $L \leq x \leq U$,
 We can use Z3's optimization capabilities to solve both LP and MILP problems. Note that in practice, we often use dedicated solvers such as Gurobi or CPLEX for large problems, but Z3 is effective for demonstration purposes.
 
 \begin{example}
-    Let's reconsider the example in~\autoref{ex:lp-example1}. We can model and solve it using Z3:
+    We can model and solve~\autoref{ex:lp-example1} using Z3 as follows:
 
     \begin{lstlisting}
 from z3 import *
@@ -7445,21 +7447,30 @@ You can either do this by hand on paper (and take picture) or write Python code 
 
 % ---
 
-% \section{Summary and Further problems}
+---
 
-% \begin{itemize}
-%   \item Logic: propositional formulas, CNF, satisfiability.
-%   \item LP: optimization over linear constraints.
-%   \item MILP: integrates logic and LP, used for ReLU encoding.
-%   \item Application: encoding DNN verification as SAT/LP/MILP.
-% \end{itemize}
+\subsection{Using LP as Feasibility Checking}\label{sec:lp-feasibility}
 
-% \paragraph{Homework Project.}
-% Take the network $y = \max(0, w_1x_1 + w_2x_2 + b)$ with $w_1=1, w_2=-1, b=0$.  
-% Verify the property: “For all $x_1,x_2 \in [0,1]$, we have $y \leq 1$.”  
-% Formulate the MILP and solve it using an MILP solver (e.g., Gurobi, CPLEX, or open-source solvers).
+In addition to optimization, LP can be used for \emph{feasibility} (or satisfiability) checking of linear constraints, i.e., 
+are there any values for the variables that satisfy all the constraints?
+This is achieved by running an LP solver with a constant objective (e.g., ``minimize 0''), in which case it simply tries to find \emph{any} point in the feasible region or shows that none exists (infeasible). This thus makes it usefful for property checking and verification (e.g., showing that no counterexample exists).
 
 
+The main difference between LP feasibility and SMT satisfiability is the type of constraints they can handle. SMT satisfiability can handle richer logics involving booleans, integers, nonlinear arithmetic, and other theories while LP feasibility is limited to linear equalities/inequalities over real numbers. But for problems that involve only linear real arithmetic, LP feasibility is sufficient and often more efficient. For problems involving more complex logic or theories, SMT solvers are necessary.
+
+
+
+% \subsubsection*{Examples (adapted from earlier LP sections)}
+
+\begin{example}
+
+For the constraints in~\autoref{ex:lp-constraints}:    
+\begin{align}
+x+y \le 4,\quad x\ge 0,\quad y\ge 0
+\end{align}
+
+Running an LP solver with objective $\min 0$ will return a point, e.g., (x=0,y=0), within the feasible region.
+\end{example}
 
 
 
