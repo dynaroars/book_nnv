@@ -121,8 +121,8 @@ class ReluTransformer(nn.Module):
 \begin{lstlisting}[language=Python]
     class ZonotopeAbstraction(nn.Module):
 
-        def __init__(self, dnn):
-            # TODO: convert dnn layers to corresponding zonotope abstraction transformers
+        def __init__(self, DNN):
+            # TODO: convert DNN to corresponding zonotope abstraction transformers
             self.transformers = ...
 
         def forward(self, lb, ub):
