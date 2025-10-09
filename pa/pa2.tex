@@ -7,11 +7,24 @@ You will use Python and PyTorch for this assignment. \textbf{Do not} use externa
 This PA has two main parts: (1) implement zonotope abstract transformers for linear layers and ReLU activations, and (2) evaluate the precision and scalability compared to symbolic execution from PA1.
 
 
-\subsection{Part1: Zonotope for Linear Layers}
+\subsection{Part 1: Zonotope Representation}
 
-Linear (affine) transformations can be handled exactly in zonotope abstraction. You will implement the missing components in the provided zonotope framework.
+\subsubsection{From Bounds to Zonotope}
 
-\subsubsection{Concretize Bounds}
+A zonotope is represented by a tuple of a center vector and a generator matrix. 
+Given the bounds of a zonotope, we can convert it to a zonotope.
+\begin{lstlisting}[language=Python]
+def zonotope(lb, ub):
+    """
+    Computes zonotope from interval bounds [l, u].
+    """
+    center = (lb + ub) / 2
+    generator = (ub - lb) / 2
+    return center, generator
+\end{lstlisting}
+
+\subsubsection{From Zonotope to Bounds}
+
 Given the center and generators of a zonotope, we can concretize the bounds of the zonotope.
 \begin{lstlisting}[language=Python]
 def concrete(center, generator):
@@ -28,13 +41,22 @@ def concrete(center, generator):
         
     Returns:
         (lb, ub): Interval bounds for each dimension
+
+    # TODO: compute interval bounds from zonotope
+    # 1. compute lower bound
+    # 2. compute upper bound
     """
+    return lb, ub
+    
 \end{lstlisting}
+
+\subsection{Part 2: Zonotope for Linear Layers}
+Linear (affine) transformations can be handled exactly in zonotope abstraction. You will implement the missing components in the provided zonotope framework.
 
 \begin{lstlisting}[language=Python]
 class LinearTransformer(nn.Module):
-    def __init__(self, in_features, out_features, bias=True):
-        # TODO: initialize weights and bias
+    def __init__(self, W, b):
+        # TODO: store weights and bias
     
     def forward(self, center, generator):
         """
@@ -53,9 +75,67 @@ class LinearTransformer(nn.Module):
         # 2. Transform generator matrix using weight matrix 
         # 3. Return transformed (center, generator)
 
+        return new_center, new_generator
+
     \end{lstlisting}
 
 
-\subsection{Part2: Zonotope for ReLU Activations}
+\subsection{Part 3: Zonotope for ReLU Activations}
 
-\subsection{Part3: Evaluation}
+ReLU activations are non-linear and require over-approximation in zonotope abstraction. For each neuron with bounds $[l, u]$, there are three cases to handle.
+
+\begin{lstlisting}[language=Python]
+class ReluTransformer(nn.Module):
+    
+    def forward(self, center, generator):
+        """
+        Apply ReLU abstraction to zonotope representation: ReLU(x) = max(0, x)
+        
+        Three cases for each neuron i with bounds [l_i, u_i]:
+        1. Active case (l_i >= 0): ReLU is identity, Z' = Z  
+        2. Inactive case (u_i <= 0): ReLU outputs 0, Z' = {0}
+        3. Unstable case (l_i < 0 < u_i): requires over-approximation
+        
+        Args:
+            center: center vector of input zonotope
+            generator: generator matrix of input zonotope  
+            
+        Returns:
+            (new_center, new_generator): over-approximated zonotope after ReLU
+        """
+        # TODO:
+        # 1. Compute current bounds using concrete(center, generator)
+        # 2. Create new generator matrix with extra row for ReLU error
+        # 3. For each neuron, handle based on bounds [l, u]:
+        #    - Active (l >= 0): keep unchanged
+        #    - Inactive (u <= 0): set to zero
+        #    - Unstable (l < 0 < u): apply slope approximation
+        # 4. Return transformed (center, generator)
+
+        return new_center, new_generator
+
+\end{lstlisting}
+
+\subsection{Part 4: Putting It All Together}
+
+\begin{lstlisting}[language=Python]
+    class ZonotopeAbstraction(nn.Module):
+
+        def __init__(self, dnn):
+            # TODO: convert dnn layers to corresponding zonotope abstraction transformers
+            self.transformers = ...
+
+        def forward(self, lb, ub):
+            # 1. convert bounds to zonotope
+            center, generator = ...
+            # 2. propagate zonotope through layers
+            for transformer in self.transformers:
+                center, generator = ...
+
+            # 3. convert zonotope to bounds
+            lb, ub = ...
+            return (lb, ub)
+
+\end{lstlisting}
+
+\subsection{Part 5: Evaluation}
