@@ -1,1 +1,61 @@
 \section{PA2: Abstract Domain Analysis of Neural Networks}\label{sec:pa2}
+
+In this PA you will implement neural network (NN) verification using \emph{zonotope abstraction} as described in~\autoref{sec:zonotope-abstraction}. While symbolic execution (PA1) computes exact symbolic representations, abstract interpretation uses over-approximations to make verification more scalable at the cost of some precision. You will implement zonotope abstract transformers and compare their precision-scalability trade-offs with symbolic execution.
+
+You will use Python and PyTorch for this assignment. \textbf{Do not} use external verification libraries (other than standard numerical libraries like \texttt{torch}, \texttt{numpy}).
+
+This PA has two main parts: (1) implement zonotope abstract transformers for linear layers and ReLU activations, and (2) evaluate the precision and scalability compared to symbolic execution from PA1.
+
+
+\subsection{Part1: Zonotope for Linear Layers}
+
+Linear (affine) transformations can be handled exactly in zonotope abstraction. You will implement the missing components in the provided zonotope framework.
+
+\subsubsection{Concretize Bounds}
+Given the center and generators of a zonotope, we can concretize the bounds of the zonotope.
+\begin{lstlisting}[language=Python]
+def concrete(center, generator):
+    """
+    Computes interval bounds [l, u] from zonotope (center, generator).
+    
+    A zonotope $\mathcal{Z} = \{c + \sum_{i=1}^{m} \epsilon_i g_i \mid \epsilon_i \in [-1,1]\}$ can be converted to interval bounds:
+    Lower bound: $l = c - \sum_{i=1}^{m} |g_i|$ (when all $\epsilon_i = -\text{sign}(g_i)$)
+    Upper bound: $u = c + \sum_{i=1}^{m} |g_i|$ (when all $\epsilon_i = +\text{sign}(g_i)$)
+    
+    Args:
+        center: Center vector c of the zonotope
+        generator: Generator matrix G 
+        
+    Returns:
+        (lb, ub): Interval bounds for each dimension
+    """
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+class LinearTransformer(nn.Module):
+    def __init__(self, in_features, out_features, bias=True):
+        # TODO: initialize weights and bias
+    
+    def forward(self, center, generator):
+        """
+        Apply affine transformation f(x) = Wx + b to zonotope Z = (c, G)
+        Result: f^a(Z) = (Wc + b, WG)
+        
+        Args:
+            center: center vector c of input zonotope
+            generator: generator matrix G of input zonotope  
+            
+        Returns:
+            (new_center, new_generator): transformed zonotope
+        """
+        # TODO: 
+        # 1. Transform center using weight matrix and bias
+        # 2. Transform generator matrix using weight matrix 
+        # 3. Return transformed (center, generator)
+
+    \end{lstlisting}
+
+
+\subsection{Part2: Zonotope for ReLU Activations}
+
+\subsection{Part3: Evaluation}
