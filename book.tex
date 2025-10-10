@@ -2071,7 +2071,7 @@ For these reasons, SMT solving is mostly used on toy examples, e.g., in a classr
 
 \section{MILP}\label{sec:using-milp}
 
-Instead of using SMT solving, we can encode the NNV problem as a Mixed Integer Linear Programming (MILP) constraints (\autoref{sec:lp}), and then invoke an MILP solver such as Gurobi~\cite{gurobi} to check their feasibility (\autoref{sec:lp-feasibility}).
+Instead of using SMT solving, we can encode the NNV problem as a Mixed Integer Linear Programming (MILP) constraints (\autoref{sec:lp}), and then invoke an MILP solver such as Gurobi~\cite{gurobi} to check their \emph{feasibility} or satisfiability (\autoref{sec:lp-feasibility}).
 
 
 % The fundamental difference between SMT and MILP solving is that SMT solvers aims to find satisfying assignments that make a given logical formula true. In contrast, MILP solvers aim to find the best solution (according to some objective function) that satisfy a given set of \emph{linear} constraints.
@@ -2105,7 +2105,7 @@ We define
     \item $l, u$: lower and upper bounds on $z$ ($l \leq z \leq u$) over the input region 
 \end{itemize}
 
-The MILP encoding of $\hat{z} = \max(z, 0)$ is then (\autoref{ex:relu_milp}):
+The MILP encoding of $\hat{z} = \max(z, 0)$ is then (\autoref{ex:relu_milp} shows a simpler example that does not involve bounds):
 \begin{align*}
     &\hat{z} \geq z \\
     &\hat{z} \geq 0 \\
@@ -2114,7 +2114,7 @@ The MILP encoding of $\hat{z} = \max(z, 0)$ is then (\autoref{ex:relu_milp}):
     &a \in \{0,1\}
 \end{align*}
 
-These constraints enforce $\hat{z} = z$ when $a = 1$ (active, $z \geq 0$) and $\hat{z} = 0$ when $a = 0$ (inactive, $z < 0$), which captures the two possible ReLU outputs ($0$ or $z$).
+These constraints enforce $\hat{z} = z$ when $a = 1$ (active) and $\hat{z} = 0$ when $a = 0$ (inactive), which captures the two possible ReLU outputs ($0$ or $z$).
 Note that constraints are linear and involve both continuous variable $\hat{z}$ and binary variable $a$.  
 
 
@@ -2123,11 +2123,11 @@ Note that constraints are linear and involve both continuous variable $\hat{z}$ 
 
 In general, the tightness of the bounds $l$ and $u$ is crucial for the efficiency of the MILP solver and a major focus of DNN reasoning is developing techniques to capture these bounds more precisely (\autoref{chap:abstractions}).
 
-\paragraph{Computing Bounds $l \le e \le u$}  To determine the pairs of values that achieve the lower and upper bounds of a linear expression $e$:
+\paragraph{Computing Bounds $l \le e \le u$}  Given a linear expression $e$
 \[
  e = a_1 x_1 + a_2 x_2 + \ldots + b,
 \]
-where each variable $x_i$ ranges over $[l_i, u_i]$, we proceed as follow:
+where each variable $x_i$ ranges over $[l_i, u_i]$, a simple way to compute the bounds $l \le e \le u$ is using \emph{interval} arithmetic (\autoref{sec:interval-abstraction}):
 
 \begin{itemize}
     \item \textbf{For the lower bound} ($l_3$):
@@ -2141,8 +2141,15 @@ This guarantees that the extreme values of $e$ are achieved at some corner of th
 
 
 
-\begin{example}
-    Consider the neuron $x_3$ in the DNN in~\autoref{fig:dnn-a} from~\autoref{ex:smt-dnn}. 
+\begin{example}\label{ex:relu_milp}
+
+\begin{figure}
+\centering
+\mydnn{1}
+\caption{\label{fig:dnn-c}A simple DNN (similar to~\autoref{fig:dnn}).}
+\end{figure}   
+
+    Consider neuron $x_3$ in the DNN in~\autoref{fig:dnn-c}. 
     We have $x_3 = -0.5x_1 + 0.5x_2 + 1.0$ as the pre-activation value of $x_3$. The upper $u_3$ and lower $l_3$ bounds on $x_3$ over the input region $x_1 \in [-1,1]$ and $x_2\in[-2,2]$ are:
 \begin{align*}
     & z_3 = -0.5x_1 + 0.5x_2 + 1.0 \\
@@ -2190,19 +2197,24 @@ where $x$ is input, $y$ is output, and $z^{(i)}$, $\hat{z}^{(i)}$, $W^{(i)}$, an
 \end{enumerate}
 Deactivating a neuron, $a_j^{(i)} = 0$, simplifies the first of the (e) constraints to $\hat{z}_j^{(i)} \le 0$, and activating a neuron simplifies the second to $\hat{z}_j^{(i)} \le z_j^{(i)}$, which is consistent with the semantics of $\hat{z}_j^{(i)} = max(z_j^{(i)},0)$.
 
-\begin{example}\label{ex:milp-dnn}
-    We create the following MILP formulation for~\autoref{ex:smt-dnn}. The DNN~\autoref{fig:dnn-a} in the example has two inputs $x_1, x_2$, 1 hidden layer with 2 neurons $x_3, x_4$, each with its own ReLU output $\hat{x}_3, \hat{x}_4$, and 1 output neuron $x_5$.
-    We will use the property stating that $x_5 > 0$ for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$:
+ 
 
+\begin{example}[Full example]\label{ex:milp-dnn}
+
+
+
+    We use MILP to formulate and check if the DNN in~\autoref{fig:dnn-c} satisfies the property $x_5 > 0$ for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$. We do this by checking the feasibility of the MILP constraints encoding $\alpha \land \phi_{in} \land \neg \phi_{out}$, where $\alpha$ is the MILP encoding of the DNN, $\phi_{in}$ is the precondition on the inputs, and $\phi_{out}$ is the postcondition on the outputs.  We do this in several steps:
 
 
 \begin{enumerate}    
-\item Encoding precondition representing input bounds:
+\item Encoding precondition $\phi_{in}$ representing input bounds and the postcondition $\neg \phi_{out}$ representing the negation of the postcondition:
 \begin{align*}
--1 \le x_1 \le 1;\quad -2 \le x_2 \le 2
+\phi_{in} &: -1 \le x_1 \le 1;\quad -2 \le x_2 \le 2 \\
+\neg \phi_{out} &: x_5 \le 0
 \end{align*}
 
-\item Encoding hidden layer (pre- and post-activation): 
+\item Encoding the DNN
+Hidden layer (pre- and post-activation): 
 \begin{align*}
 z_3 &= -0.5x_1 + 0.5x_2 + 1.0 \\
 z_4 &= 0.5x_1 - 0.5x_2 - 1.0 \\
@@ -2213,16 +2225,11 @@ a_3, a_4 &\in \{0, 1\} \\
 \hat{z}_4 &\le a_4 \cdot u_4, \quad \hat{z}_4 \le z_4 - l_4(1 - a_4)
 \end{align*}
 
-
-\item Encoding output layer:
+Output layer:
 \begin{align*}
 x_5 &= -\hat{z}_3 + \hat{z}_4 - 1.0
 \end{align*}
 
-\item Negating the property
-\begin{align*}
-x_5 &\le 0
-\end{align*}
 
 \item Computing upper and lower bounds over given input ranges. Here, with $x_1 \in [-1,1]$ and $x_2 \in [-2,2]$, we have: 
 \begin{align*}
@@ -2253,9 +2260,9 @@ So we set $l_3 = -0.5, u_3 = 2.5$, and $l_4 = -2.5, u_4 = 0.5$.
 & \text{where } z_3 \in [-0.5, 2.5], z_4 \in [-2.5, 0.5], \hat{z}_3 \in [0, 2.5], \hat{z}_4 \in [0, 0.5].
 \end{align*}
 
-\tvn{Do we need to specify the ranges (e.g., $z_3 \in [-0.5, 2.5]$) at the end or they are redundant?}
+%\tvn{Do we need to specify the ranges (e.g., $z_3 \in [-0.5, 2.5]$) at the end or they are redundant?}
 
-\item \textbf{Solving} The MILP solver will find a satisfying assignment if one exists, such as $x_1 = -1, x_2 = 2$, which leads to:
+\item \textbf{Solving} From the MILP formulation, the MILP solver attempts to find a feasible (\autoref{sec:lp-feasibility}) or satisfying assignment representing a counterexample violating the property.  In this example, it might find $x_1 = -1, x_2 = 2$, which leads to:
 \begin{align*}
 z_3 &= -0.5(-1) + 0.5(2) + 1.0 = 2.5 \\
 z_4 &= 0.5(-1) - 0.5(2) - 1.0 = -2.5 \\
@@ -2263,14 +2270,13 @@ a_3 &= 1, \hat{z}_3 = 2.5 \quad \text{(neuron active)} \\
 a_4 &= 0, \hat{z}_4 = 0 \quad \text{(neuron inactive)} \\
 x_5 &= -2.5 + 0 - 1.0 = -3.5
 \end{align*}
-Since $x_5 = -3.5 \le 0$, this assignment satisfies our search for $x_5 \le 0$, so the solver stops.
-%\tvn{why find satisfying and not optimizing some objective?}
+Since $x_5 = -3.5 \le 0$, this assignment satisfies our search for $x_5 \le 0$ and  thus is a counterexample. 
 \end{enumerate}
 \end{example}
 
 
-\tvn{So far we talk about bounds for pre-ReLU values, right? is that the same as post-ReLU?  In other words, when we talk about abstraction for ReLU, are we talking about these pre-ReLU bounds, which currently use intervals?  or the abstraction for ReLU refer to something else and not these pre-ReLU bounds?}
-\hd{no, we are referring to post-ReLU bounds. For example, a pre-ReLU interval is  $z_3 \in [-0.5, 2.5]$ --- indicating an unstable neuron, and we will abstraction to compute bounds for the post-ReLU e.g., $\hat{z}_3$.}
+% \tvn{So far we talk about bounds for pre-ReLU values, right? is that the same as post-ReLU?  In other words, when we talk about abstraction for ReLU, are we talking about these pre-ReLU bounds, which currently use intervals?  or the abstraction for ReLU refer to something else and not these pre-ReLU bounds?}
+% \hd{no, we are referring to post-ReLU bounds. For example, a pre-ReLU interval is  $z_3 \in [-0.5, 2.5]$ --- indicating an unstable neuron, and we will abstraction to compute bounds for the post-ReLU e.g., $\hat{z}_3$.}\tvn{I am still confused, see example~\autoref{ex:relu_milp} .. I am computing the upper and lower bounds of $x_3$, not $\hat{x}_3$. The bounds of $\hat{x}_3$ is always $[0, u_3]$.}
 
 \subsection{Limitations}\label{sec:milp-limitations}
 
