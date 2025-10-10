@@ -2811,7 +2811,7 @@ However, the cost of efficiency is precision. Intervals approximate each variabl
 
 \begin{example}
 
-Suppose we have $v_1 \in [0, 1]$, $v_2 = -v_1$, and $z = v_1 + v_2$\tvn{Hai, do we have these kinds of correlation in DNN verification?}. The concrete value of $z$ is always 0, but the interval abstraction gives $z \in [-1, 1]$, which is a very loose over-approximation. 
+Suppose we have $v_1 \in [0, 1]$, $v_2 = -v_1$, and $z = v_1 + v_2$\tvn{Hai, do we have these kinds of correlation in DNN verification?}\hd{No, we don't.}. The concrete value of $z$ is always 0, but the interval abstraction gives $z \in [-1, 1]$, which is a very loose over-approximation. 
 
 Moreover, if we apply ReLU, then the true output is $\myrelu(z) = \myrelu(0) = 0$, but the interval abstraction gives $\myrelu^a([-1, 1]) = [0, 1]$, which is again a loose over-approximation.
 \end{example}
