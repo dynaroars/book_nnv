@@ -2872,7 +2872,7 @@ f^a(\mathcal{Z}) = (Wc + b, WG)
 \]
 The new center becomes \(Wc + b\) and the new generator matrix becomes \(WG\). Since affine transformations preserve zonotope structure, this transformation is exact with no over-approximation.
 
-\begin{example}\label{ex:zonotope_init}
+\begin{example}\label{ex:zonotope_linear_example}
 Consider the DNN in~\autoref{fig:dnn-abs} with inputs \(x_1 \in [1, 2]\) and \(x_2 \in [-1, 3]\). The affine function for neuron \(x_3\) is given by:
 \[
 f(x_1,x_2) = -0.5\,x_1 + 0.5\,x_2 + 1.0
@@ -2922,12 +2922,83 @@ Activation functions like ReLU are non-affine and do not preserve zonotope struc
     \item \textbf{Unstable case} (\(l < 0 < u\)): The range crosses zero, requiring over-approximation using a parallelogram that bounds the ReLU function over \([l, u]\).
 \end{itemize}
 
-For the unstable case, the zonotope approximation introduces a new generator to capture the ReLU's piecewise-linear behavior, typically using the slope \(\lambda = \frac{u}{u-l}\) for the lower bound and maintaining the upper bound \(y = u\).
+For the unstable case, we need to over-approximate the ReLU function \(y = \max(0, x)\) over the interval \([l, u]\) where \(l < 0 < u\). Since the ReLU function is non-convex (it has a corner at \(x = 0\)), we cannot represent it exactly with a zonotope. Instead, we construct a parallelogram that contains all possible ReLU outputs.
 
-\begin{example}[ReLU on zonotope]
-Continuing from the previous example, applying ReLU to the zonotope output \((0.75, [-0.25, 1.0])\) with bounds \([-0.5, 2.0]\):
+The zonotope approximation uses two linear constraints to bound the ReLU:
+\begin{itemize}
+    \item \textbf{Lower bound constraint:} \(y \geq \lambda x\), where \(\lambda = \frac{u}{u-l}\) is the slope of the line connecting points \((l, 0)\) and \((u, u)\).
+    \item \textbf{Upper bound constraint:} \(y \leq \lambda x + u(1-\lambda)\), which is the line with slope \(\lambda\) passing through \((u, u)\).
+\end{itemize}
 
-Since \(l = -0.5 < 0 < 2.0 = u\), this is an unstable neuron. The ReLU approximation introduces over-approximation, typically resulting in bounds \([0, 2.0]\) with additional generators to model the ReLU constraint.
+This creates a parallelogram that:
+\begin{enumerate}
+    \item Contains the actual ReLU function over \([l, u]\)
+    \item Has vertices at \((l, 0)\), \((l, u(1-\lambda) - \lambda l)\), \((u, u)\), and \((u, 0)\)
+    \item Introduces approximation error in the triangular region between the constraints
+\end{enumerate}
+
+To represent this parallelogram as a zonotope, we transform the input zonotope \((c, G)\) as follows:
+\begin{itemize}
+    \item \textbf{Scale existing generators:} Each generator \(g_i\) becomes \(\lambda g_i\)
+    \item \textbf{Transform center:} \(c' = \lambda c + \frac{u(1-\lambda)}{2}\)
+    \item \textbf{Add new generator:} \(g_{new} = \frac{u(1-\lambda)}{2}\) to capture the approximation error
+\end{itemize}
+
+The final zonotope after ReLU transformation becomes \((c', G')\) where:
+
+\textbf{Final center:}
+\[
+c' = \lambda c + \frac{u(1-\lambda)}{2}
+\]
+
+\textbf{Final generator matrix:}
+\[
+G' = [\lambda g_1, \lambda g_2, \ldots, \lambda g_m, g_{new}]
+\]
+where the original generators \(g_1, g_2, \ldots, g_m\) are scaled by \(\lambda\), and a new generator \(g_{new} = \frac{u(1-\lambda)}{2}\) is appended.
+
+The new generator is essential because the ReLU over-approximation creates a triangular error region between the actual ReLU function and our linear bounds. However, zonotopes can only represent parallelograms formed by linear combinations of generators. To capture this triangular error within the zonotope framework, we must ``rectangularize'' the triangle by introducing a new generator that spans the height of the approximation error.
+
+
+\begin{example}[ReLU on zonotope]\label{ex:zonotope_relu_example}
+Continuing from the previous example, applying ReLU to the zonotope output \((0.75, [-0.25, 1.0])\). 
+
+First, we compute the concrete bounds from this zonotope representation:
+\begin{align}
+l &= c - |g_1| - |g_2| = 0.75 - |-0.25| - |1.0| = 0.75 - 0.25 - 1.0 = -0.5 \\
+u &= c + |g_1| + |g_2| = 0.75 + |-0.25| + |1.0| = 0.75 + 0.25 + 1.0 = 2.0
+\end{align}
+
+So the input to ReLU has bounds \([-0.5, 2.0]\). Since \(l = -0.5 < 0 < 2.0 = u\), this is an unstable neuron requiring over-approximation.
+
+\textbf{Step 1: Slope approximation}
+We use slope \(\lambda = \frac{u}{u-l} = \frac{2.0}{2.0-(-0.5)} = \frac{2.0}{2.5} = 0.8\).
+
+\textbf{Step 2: Transform zonotope}
+The new center becomes:
+\[
+c' = \lambda c + \frac{u(1-\lambda)}{2} = 0.8 \cdot 0.75 + \frac{2.0 \cdot 0.2}{2} = 0.6 + 0.2 = 0.8
+\]
+
+Existing generators are scaled by \(\lambda\):
+\begin{align*}
+g'_1 &= \lambda g_1 = 0.8 \cdot (-0.25) = -0.2, \\
+g'_2 &= \lambda g_2 = 0.8 \cdot 1.0 = 0.8  
+\end{align*}
+
+\textbf{Step 3: New generator for approximation error}
+A new generator is introduced to capture the ReLU approximation error:
+\[
+g'_3 = \frac{u(1-\lambda)}{2} = \frac{2.0 \cdot 0.2}{2} = 0.2
+\]
+
+\textbf{Result:} The output zonotope is \((0.8, [-0.2, 0.8, 0.2])\) with concrete bounds:
+\begin{align*}
+l' &= 0.8 - 0.2 - 0.8 - 0.2 = -0.4 \rightarrow 0 \text{ (clamp negative values)}\\
+u' &= 0.8 + 0.2 + 0.8 + 0.2 = 2.0
+\end{align*}
+Final bounds: \([0, 2.0]\).
+
 \end{example}
 
 
