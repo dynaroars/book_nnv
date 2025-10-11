@@ -2119,7 +2119,9 @@ Note that constraints are linear and involve both continuous variable $\hat{z}$ 
 
 
 
-\paragraph{Importance upper and lower bounds} These bounds are critical not only for making the MILP encoding tight, but also for ensuring that the binary indicator $a$ can only take on values that are valid given the possible range of $z$. For example, if $u < 0$, then $z$ can never be non-negative, so the active phase ($a=1$) is infeasible (the constraints are not satisfiable) and should be ruled out by the MILP encodin.  Similarly, if $l \geq 0$, only the active phase is possible. Being able to eliminate infeasible cases is crucial for the efficiency of the MILP solver, as it significantly reduces the search space. 
+\subsection{Computing bounds}\label{sec:pre-relu-bounds} 
+
+The mentioned lower and upper bounds (\autoref{sec:relu-encoding}) are critical not only for making the MILP encoding tight, but also for ensuring that the binary indicator $a$ can only take on values that are valid given the possible range of $z$. For example, if $u < 0$, then $z$ can never be non-negative, so the active phase ($a=1$) is infeasible (the constraints are not satisfiable) and should be ruled out by the MILP encodin.  Similarly, if $l \geq 0$, only the active phase is possible. Being able to eliminate infeasible cases is crucial for the efficiency of the MILP solver, as it significantly reduces the search space. 
 
 In general, the tightness of the bounds $l$ and $u$ is crucial for the efficiency of the MILP solver and a major focus of DNN reasoning is developing techniques to capture these bounds more precisely (\autoref{chap:abstractions}).
 
@@ -2202,7 +2204,6 @@ Deactivating a neuron, $a_j^{(i)} = 0$, simplifies the first of the (e) constrai
 \begin{example}[Full example]\label{ex:milp-dnn}
 
 
-
     We use MILP to formulate and check if the DNN in~\autoref{fig:dnn-c} satisfies the property $x_5 > 0$ for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$. We do this by checking the feasibility of the MILP constraints encoding $\alpha \land \phi_{in} \land \neg \phi_{out}$, where $\alpha$ is the MILP encoding of the DNN, $\phi_{in}$ is the precondition on the inputs, and $\phi_{out}$ is the postcondition on the outputs.  We do this in several steps:
 
 
@@ -2275,6 +2276,26 @@ Since $x_5 = -3.5 \le 0$, this assignment satisfies our search for $x_5 \le 0$ a
 \end{example}
 
 
+\begin{problem}\label{prob:milp-dnn}
+\begin{figure}
+\centering
+\mydnntwo{1.2}
+\caption{\label{fig:dnn-d}A simple DNN (similar to~\autoref{fig:mydnntwo}).}
+\end{figure} 
+
+
+Use MILP encoding and solving to check if the network in~\autoref{fig:dnn-d} satisfy the property $\phi$ that the output $x_5 \ge x_6$ for any inputs $x_1 \in [-1,1], x_2\in[-1,1]$. Specificaly, do the following steps:
+\begin{enumerate}
+    \item Write down the precondition $\phi_{in}$ and postcondition $\phi_{out}$ representing the property $\phi$.
+    \item Write down the MILP encoding of the DNN.
+    \item Compute the upper and lower bounds of the pre-activation values of the neurons in the hidden layer.
+    \item Substitute the bounds into the MILP encoding.
+    \item Write down the final MILP encoding of $\alpha \land \phi_{in}$.
+    \item Use an MILP solver, e.g., Z3 or any other,
+    to check the feasibility of the MILP encoding and report the result.
+\end{enumerate}
+\end{problem}
+
 % \tvn{So far we talk about bounds for pre-ReLU values, right? is that the same as post-ReLU?  In other words, when we talk about abstraction for ReLU, are we talking about these pre-ReLU bounds, which currently use intervals?  or the abstraction for ReLU refer to something else and not these pre-ReLU bounds?}
 % \hd{no, we are referring to post-ReLU bounds. For example, a pre-ReLU interval is  $z_3 \in [-0.5, 2.5]$ --- indicating an unstable neuron, and we will abstraction to compute bounds for the post-ReLU e.g., $\hat{z}_3$.}\tvn{I am still confused, see example~\autoref{ex:relu_milp} .. I am computing the upper and lower bounds of $x_3$, not $\hat{x}_3$. The bounds of $\hat{x}_3$ is always $[0, u_3]$.}
 
@@ -2282,7 +2303,7 @@ Since $x_5 = -3.5 \le 0$, this assignment satisfies our search for $x_5 \le 0$ a
 
 
 \begin{itemize}
-    \item \textbf{Scalability:} While MILP is more efficient than SMT solving\tvn{is it? due to what?}, it still cannot be applied directly to real-world DNNs due to the exponential growth of the search space. Each ReLU introduces a binary variable, leading to $2^n$ possible branches, and realistic DNNs can have millions of ReLUs, making the search space intractable.
+    \item \textbf{Scalability:} While MILP focuses on linear constraints and is generally more efficient than general SMT solving, it still cannot be applied directly to real-world DNNs due to the exponential growth of the search space. Each ReLU introduces a binary variable (\autoref{sec:relu-encoding}), leading to $2^n$ possible branches, and real-world DNNs can have millions of ReLUs, making the search space intractable.
 
     \item \textbf{Limited exploitation of network structure and modern hardware} General MILP solvers are designed for arbitrary MILP problems and do not exploit DNN-specific structures such as\tvn{Hai, like what? mention those that DNN verification tools exploit}. 
     
@@ -2296,7 +2317,7 @@ Since $x_5 = -3.5 \le 0$, this assignment satisfies our search for $x_5 \le 0$ a
 \end{itemize}
 
 
-\tvn{Hai, above you mention MILP also employs BaB algorithm, could you write a paragraph or so about how MILP solvers use BaB and briefly show how that would apply to example 4.2.2 (just briefly, no need a full step by step demonstration). Is this BaB algorithm used by MILP very similar to the one used by DNN verification tools (minus the DNN specific optimizations and heuristics)? like the BaB algorithm described in~\autoref{alg:bab} }
+%\tvn{Hai, above you mention MILP also employs BaB algorithm, could you write a paragraph or so about how MILP solvers use BaB and briefly show how that would apply to example 4.2.2 (just briefly, no need a full step by step demonstration). Is this BaB algorithm used by MILP very similar to the one used by DNN verification tools (minus the DNN specific optimizations and heuristics)? like the BaB algorithm described in~\autoref{alg:bab} }
 % ---
 
 % Let me know if you want this condensed further or expanded into sub-items for even more clarity!
@@ -2324,11 +2345,12 @@ Since $x_5 = -3.5 \le 0$, this assignment satisfies our search for $x_5 \le 0$ a
 \chapter{Abstractions}\label{chap:abstractions}
 
 
-As mentioned in~\autoref{sec:using-milp}, and DNN verification in general, we need to compute the bounds of the neurons. However, computing these bounds precisely is often infeasible due to the complexity of the DNN structure and non-linear activation functions such as ReLU. To address this, modern DNN verifiers use \emph{abstraction} techniques to approximate the set of possible values that a post-ReLU neuron can have. 
+As mentioned in~\autoref{sec:relu-encoding} we need to compute the bounds of the neurons to reduce the search space. Modern DNN verifiers use \emph{abstraction} techniques to compute these bounds more precisely while balancing computational efficiency.
+This chapter discusses several \emph{abstraction domains} used in DNN verification, including interval, zonotope, and polytope abstractions.
 
 \section{Overview of Abstractions for ReLU} 
 
-We will focus on ReLU (\autoref{sec:relu}) activation functions, which are the most common in DNNs. The goal is to compute the bounds of a post-ReLU neuron $\hat{z}$ given the bounds of its pre-ReLU value $z$ over the input region. For example, for a ReLU neuron $y = \max(0, x)$, we want to compute the bounds $[l_y(x), u_y(x)]$ of $y$ given the bounds $[l_x, u_x]$ on $x$.
+We will focus on ReLU (\autoref{sec:relu}) activation functions, which are the most common in DNNs. The goal is to compute the bounds of a post-ReLU neuron $\hat{z}$ given the bounds of its pre-ReLU value $z$ over the input region. For example, for a ReLU neuron $y = \max(0, x)$, we want to compute the bounds $[l_y(x), u_y(x)]$ of $y$ given the bounds $[l_x, u_x]$ on $x$.\tvn{is the pre-Relu bounds always computed like what was described in~\autoref{sec:pre-relu-bounds}? Is that computation considered interval too? Can that bound computation be obtained using other abstractions?}
 
 We want to compute the bounds to be as tight as possible, i.e., they should be the largest lower and lowest upper values that $\hat{z}$ can take given the bounds on $z$. This computation is called \emph{abstraction} and is crucial for DNN verification, as it allows us to reason about the behavior of the network without having to enumerate all possible values of the neurons. There are several abstraction techniques that can be used to compute these bounds, each with its own trade-offs in terms of precision and computational complexity.
 
@@ -2811,7 +2833,8 @@ However, the cost of efficiency is precision. Intervals approximate each variabl
 
 \begin{example}
 
-Suppose we have $v_1 \in [0, 1]$, $v_2 = -v_1$, and $z = v_1 + v_2$\tvn{Hai, do we have these kinds of correlation in DNN verification?}\hd{No, we don't.}. The concrete value of $z$ is always 0, but the interval abstraction gives $z \in [-1, 1]$, which is a very loose over-approximation. 
+Suppose we have $v_1 \in [0, 1]$, $v_2 = -v_1$, and $z = v_1 + v_2$.%\tvn{Hai, do we have these kinds of correlation in DNN verification?}\hd{No, we don't.}. 
+The concrete value of $z$ is always 0, but interval abstraction gives $z \in [-1, 1]$, which is a very loose over-approximation. 
 
 Moreover, if we apply ReLU, then the true output is $\myrelu(z) = \myrelu(0) = 0$, but the interval abstraction gives $\myrelu^a([-1, 1]) = [0, 1]$, which is again a loose over-approximation.
 \end{example}
@@ -3228,7 +3251,7 @@ Here we can see that by using Interval abstraction, the property \(x_{11}\ \geq\
 \part{DNN Verification Algorithms}\label{part:algorithms}
 \chapter{The Branch and Bound Search Algorithm}\label{chap:bab}
 
-As we have seen in~\autoref{sec:constraint-solving}, the NNV verification problem can be formulated as a satisfiability problem, solvable using constraint solving.  However, constraint solvers, e.g., SMT and MILP solvers, often struggle to scale to large DNNs due to the complexity of the underlying problem. Thus, modern DNN verification techniques reframe the problem to search for \emph{activation patterns} that satisfy the constraints, and use the Branch-and-Bound (BaB) algorithm to explore the space of possible activation patterns.
+As shown in~\autoref{chap:constraint-solving}, the NNV verification problem can be formulated as a satisfiability problem, solvable using a constraint solver.  However, constraint solvers, e.g., SMT and MILP solvers, do not scale to large DNNs due to the complexity of the underlying formulae. Thus, modern DNN verification techniques reframe the problem to search for \emph{activation patterns} that satisfy the constraints, and use the \emph{Branch-and-Bound} algorithm to explore the space of possible activation patterns.
 
 %These activation patterns fix the activation status (active/inactive) of each neuron, allowing us to simplify involved constraints to linear constraints that are easier to solve. 
 
@@ -3319,7 +3342,7 @@ Suppose we have a DNN with $m=10$ ReLU neurons. Consider a partial pattern $p'$ 
 \begin{enumerate}
   \item How many complete patterns extend $p'$?
   \item Suppose we restrict $p'$ further by adding 2 more neuron assignments. How many extensions now?
-  \item Generalize: If $p'$ fixes $k$ neurons out of $m$, how many complete patterns extend it?
+  \item Generalize: If $p'$ fixes $k$ neurons out of $m$, how many complete patterns are there?
 \end{enumerate}
 
 \begin{solution}
@@ -3329,7 +3352,7 @@ Suppose we have a DNN with $m=10$ ReLU neurons. Consider a partial pattern $p'$ 
 \end{solution}
 \end{problem}
 
-\subsubsection{Activation Patterns and LP Constraints}
+\subsection{State Space Reduction}
 Once having an activation pattern $p$, we can simplify the formula $\alpha$ representing the DNN by replacing each ReLU function with a linear constraint according to the activation status specified in $p$. For example, if $p$ specifies that neuron $n_i$ is active, we replace $\relu{z_i}$ with $z_i$ and add the constraint $z_i \ge 0$; if $n_i$ is inactive, we replace $\relu{z_i}$ with $0$ and add the constraint $z_i < 0$.
 This gives us the formula $\alpha_p$ corresponding to the linear region defined by $p$.
 
@@ -6070,7 +6093,7 @@ In each specification, the inputs (condition distance and latent variables) are 
 %\renewcommand{\appendixname}{Assignment}
 \appendix
 \chapter{Schedule and Assignments}
-\begin{enumerate}
+\begin{itemize}
     \item Week 1 (Aug 27): Introduction (videos of neural networks, basic terminologies and concepts).
     \item Week 2 (Sept 3):
     \begin{itemize}
@@ -6091,9 +6114,9 @@ In each specification, the inputs (condition distance and latent variables) are 
         \item Quiz:~\autoref{problem:drone}
     \end{itemize}
     \item Week 5 (Sept 24): No class this week (prof not available). No quiz or HW due. 
-    \begin{itemize}
-        \item Programming Assignment 1 (PA1): Symbolic Execution of Neural Networks~\autoref{sec:pa1}. Due date \alert{Monday October 6, 2024 11:59pm}.
-    \end{itemize}
+
+    \item Programming Assignment 1 (PA1): Symbolic Execution of Neural Networks~\autoref{sec:pa1}. Due date \alert{Monday October 6, 2025 11:59pm}.
+
     \item Week 6 (Oct 1):
     \begin{itemize}
         \item HW due:~\autoref{ex:negation-trick},~\autoref{problem:z3-dnn}, and~\autoref{problem:pattern-enumeration}. %, and ~\autoref{problem:nnv-pattern}
@@ -6102,20 +6125,25 @@ In each specification, the inputs (condition distance and latent variables) are 
     \end{itemize}
     \item Week 7 (Oct 8):
     \begin{itemize}
-        \item No HW due because of PA1.
+        \item No HW because of PA1 due date
+        \item Topics: MILP Enncoding of DNNs (\autoref{sec:using-milp})
+        \item Quiz: (Re)Do~\autoref{ex:milp-dnn} by hand
     \end{itemize}
-
+    \item Programming Assignment 2 (PA2): Abstraction~\autoref{sec:pa2}. Due date \alert{Wednesday October 29, 2025 11:59pm}
     \item Week 8 (Oct 15):
+    \begin{itemize}
+        \item HW: Do~\autoref{prob:milp-dnn}
+    \end{itemize}
     \item Week 9 (Oct 22):
     \item Week 10 (Oct 29):
-\end{enumerate}    
+\end{itemize}    
 
 \chapter{Programming Assignments}\label{chap:pa}
 
 \input{pa/pa1.tex}
 \input{pa/pa2.tex}
 
-\section*{Grading Rubric}
+\section*{Grading Rubric \color{red}{(not yet updated for PA2)}}
 
 \subsection*{Grading (out of 30 points):}
 
