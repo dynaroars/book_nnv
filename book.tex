@@ -2102,7 +2102,7 @@ We define
     \item $z$: the pre-activation value, i.e., the value that goes into ReLU
     \item $\hat{z}$: the post-activation value, i.e., the output of ReLU
     \item $a \in \{0,1\}$: a binary indicator variable encoding whether the neuron is active ($z \ge 0$) or inactive ($z < 0$)
-    \item $l, u$: lower and upper bounds on $z$ ($l \leq z \leq u$) over the input region 
+    \item $l, u$: lower and upper bounds on $z$ ($l \leq z \leq u$). 
 \end{itemize}
 
 The MILP encoding of $\hat{z} = \max(z, 0)$ is then (\autoref{ex:relu_milp} shows a simpler example that does not involve bounds):
@@ -2119,11 +2119,15 @@ Note that constraints are linear and involve both continuous variable $\hat{z}$ 
 
 
 
-\subsection{Computing bounds}\label{sec:pre-relu-bounds} 
+\subsection{Computing Concrete Bounds}\label{sec:pre-relu-bounds} 
 
-The mentioned lower and upper bounds (\autoref{sec:relu-encoding}) are critical not only for making the MILP encoding tight, but also for ensuring that the binary indicator $a$ can only take on values that are valid given the possible range of $z$. For example, if $u < 0$, then $z$ can never be non-negative, so the active phase ($a=1$) is infeasible (the constraints are not satisfiable) and should be ruled out by the MILP encodin.  Similarly, if $l \geq 0$, only the active phase is possible. Being able to eliminate infeasible cases is crucial for the efficiency of the MILP solver, as it significantly reduces the search space. 
+The mentioned lower and upper bounds (\autoref{sec:relu-encoding})---\emph{concrete} values $l$ and $u$ such that $l \leq z \leq u$ over the input $z$ to ReLU--- are critical for ensuring that the binary indicator $a$ can only take on values that are \emph{valid} given the possible range of $z$. For example, if $u < 0$, then $z$ is always negative, so the active phase ($a=1$) is infeasible, and thus can be eliminated.  Similarly, if $l \geq 0$, then $z$ is always active.
 
-In general, the tightness of the bounds $l$ and $u$ is crucial for the efficiency of the MILP solver and a major focus of DNN reasoning is developing techniques to capture these bounds more precisely (\autoref{chap:abstractions}).
+
+Either of these cases indicates the neuron is \emph{stable}---always active or always inactive---and thus significantly simplifies the MILP problem because ReLU can be replaced with a linear function (identity or constant 0). Of course, if $l < 0 < u$, then both active and inactive phases are possible, and the MILP solver has to consider both cases. \autoref{chap:abstractions} discusses abstraction techniques to approximate ReLU outputs.
+
+
+%In general, the tightness of the bounds $l$ and $u$ is crucial for the efficiency of the MILP solver and a major focus of DNN reasoning is developing techniques to capture these bounds more precisely (\autoref{chap:abstractions}).
 
 \paragraph{Computing Bounds $l \le e \le u$}  Given a linear expression $e$
 \[
@@ -2174,7 +2178,7 @@ With the computed bounds, we encode the ReLU output of $x_3$:
     &a_3 \in \{0,1\}
 \end{align*}
 
-Note that because $l_3 = -0.5$ and $u_3 = 2.5$, $a_3$ can be either 0 or 1, depending on the value of $x_3$. This is actually a worst-case scenario for the MILP solver, as it has to consider both cases. If we had different bounds, e.g., $l_3 = 0.1$, then $a_3$ would be forced to be 1, as $x_3$ can never be less than 0.1, and the MILP solver would only have to consider the active case.
+Note that because $l_3 = -0.5$ and $u_3 = 2.5$, $a_3$ can be either 0 or 1, depending on the value of $x_3$. If we had different bounds, e.g., $l_3 = 0.1$, then $a_3$ would be forced to be 1, as $x_3$ can never be less than 0.1 (i.e., $x_3$ is a stable neuron because it is always active). Stable neurons replaces ReLU with either 0 or identity function, which significantly simplifies the problem.
 \end{example}
 
 
