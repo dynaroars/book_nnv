@@ -2294,9 +2294,8 @@ Use MILP encoding and solving to check if the network in~\autoref{fig:dnn-d} sat
     \item Write down the MILP encoding of the DNN.
     \item Compute the upper and lower bounds of the pre-activation values of the neurons in the hidden layer.
     \item Substitute the bounds into the MILP encoding.
-    \item Write down the final MILP encoding of $\alpha \land \phi_{in}$.
-    \item Use an MILP solver, e.g., Z3 or any other,
-    to check the feasibility of the MILP encoding and report the result.
+    \item Write down the final MILP encoding of $\alpha \land \phi_{in} \land \neg{\phi_{out}}$.
+    \item Check the feasibility of the MILP encoding (e.g., using Z3) and report the result.
 \end{enumerate}
 \end{problem}
 
