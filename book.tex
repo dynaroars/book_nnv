@@ -2186,11 +2186,11 @@ Note that because $l_3 = -0.5$ and $u_3 = 2.5$, $a_3$ can be either 0 or 1, depe
 
 \begin{equation}\label{eq:mip}
     \begin{aligned}
-        &\mbox{(a)}\quad z^{(i)} = W^{(i)} \hat{z}^{(i-i)} + b^{(i)}; \\
-        &\mbox{(b)}\quad y = z^{(L)};  x = \hat{z}^{(0)}; \\
-        &\mbox{(c)}\quad \hat{z}_j^{(i)} \ge {z}_j^{(i)}; \hat{z}_j^{(i)} \ge 0; \\
-        &\mbox{(d)}\quad a_j^{(i)} \in \{ 0, 1\} ;\\
-        &\mbox{(e)}\quad \hat{z}_j^{(i)} \le {a}_j^{(i)} {u}_j^{(i)}; \hat{z}_j^{(i)} \le {z}_j^{(i)} - {l}_j^{(i)}(1 - {a}_j^{(i)}); \\
+        &\text{(a)}\quad z^{(i)} = W^{(i)} \hat{z}^{(i-i)} + b^{(i)}; \\
+        &\text{(b)}\quad y = z^{(L)};  x = \hat{z}^{(0)}; \\
+        &\text{(c)}\quad \hat{z}_j^{(i)} \ge {z}_j^{(i)}; \hat{z}_j^{(i)} \ge 0; \\
+        &\text{(d)}\quad a_j^{(i)} \in \{ 0, 1\} ;\\
+        &\text{(e)}\quad \hat{z}_j^{(i)} \le {a}_j^{(i)} {u}_j^{(i)}; \hat{z}_j^{(i)} \le {z}_j^{(i)} - {l}_j^{(i)}(1 - {a}_j^{(i)}); \\
     \end{aligned}
 \end{equation}
 where $x$ is input, $y$ is output, and $z^{(i)}$, $\hat{z}^{(i)}$, $W^{(i)}$, and $b^{(i)}$ are the pre-activation, post-activation, weight, and bias vectors for layer $i$. 
@@ -2940,7 +2940,8 @@ The output zonotope for \(x_3\) is \((0.75, [-0.25, 1.0])\), thus the concrete b
 
 \subsubsection{ReLU Transformer}
 
-Activation functions like ReLU are non-affine and do not preserve zonotope structure. For the ReLU function \(\text{ReLU}(x) = \max(0, x)\), we must use conservative approximations. Given an input zonotope, we first compute its interval bounds \([l, u]\) (\autoref{sec:interval-affine-transformer}), then consider three cases:
+Activation functions like ReLU are non-affine and do not preserve zonotope structure\tvn{what is it? can we draw it}. For the ReLU function \(\text{ReLU}(x) = \max(0, x)\), we must use conservative approximations. Given an input zonotope\tvn{why not just interval?}, we first compute its interval bounds \([l, u]\) (\tvn{like what we just computed in 5.2.2.1?}), then consider three cases:
+
 
 \begin{itemize}
     \item \textbf{Active case} (\(l \geq 0\)): All values are non-negative, so \(\text{ReLU}^a(x) = x\) (identity).
@@ -3023,7 +3024,8 @@ g'_3 = \frac{u(1-\lambda)}{2} = \frac{2.0 \cdot 0.2}{2} = 0.2
 l' &= 0.8 - 0.2 - 0.8 - 0.2 = -0.4 \rightarrow 0 \text{ (clamp negative values)}\\
 u' &= 0.8 + 0.2 + 0.8 + 0.2 = 2.0
 \end{align*}
-Final bounds: \([0, 2.0]\).
+
+Thus, the final bounds after ReLU are \([0, 2.0]\).
 
 \end{example}
 
@@ -4068,7 +4070,7 @@ Stabilization involves the solution of a mixed integer linear program (MILP) sys
         &\mbox{(d)}\quad a_j^{(i)} \in \{ 0, 1\} ;\\
         &\mbox{(e)}\quad \hat{z}_j^{(i)} \le {a}_j^{(i)} {u}_j^{(i)}; \hat{z}_j^{(i)} \le {z}_j^{(i)} - {l}_j^{(i)}(1 - {a}_j^{(i)}); \\
     \end{aligned}
-    \label{eq:mip}
+    \label{eq:mip1}
 \end{equation}
 where $x$ is input, $y$ is output, and $z^{(i)}$, $\hat{z}^{(i)}$, $W^{(i)}$, and $b^{(i)}$ are the pre-activation, post-activation, weight, and bias vectors for layer $i$.
 The equations encode the semantics of a DNN as follows:
@@ -4094,7 +4096,7 @@ Deactivating a neuron, $a_j^{(i)} = 0$, simplifies the first of the (e) constrai
     \BlankLine
 
     % \tcp{create an MILP solver based on ~\autoref{eq:mip}}
-    $\model \leftarrow \MIP(\alpha, \phi_{in}, \phi_{out}, \sigma)$ \tcp{create model (~\autoref{eq:mip}) with  current assignment}
+    $\model \leftarrow \MIP(\alpha, \phi_{in}, \phi_{out}, \sigma)$ \tcp{create model (~\autoref{eq:mip1}) with  current assignment}
 
     $[v_1, ..., v_m] \leftarrow \GetUnassignedVariable(\sigma)$ \tcp{get all $m$ current unassigned variables} \label{line:find}
 
@@ -4127,7 +4129,7 @@ Deactivating a neuron, $a_j^{(i)} = 0$, simplifies the first of the (e) constrai
 
 
 \autoref{fig:stabilize} describes Stabilize solves this equation system.
-First,  a MILP problem is created from the current assignment, the DNN, and the property of interest using formulation in ~\autoref{eq:mip}.
+First,  a MILP problem is created from the current assignment, the DNN, and the property of interest using formulation in ~\autoref{eq:mip1}.
 Note that the neuron lower (${l}_j^{(i)}$) and upper bounds (${u}_j^{(i)}$) can be quickly computed by polytope abstraction.
 
 Next, it collects a list of all unassigned variables which are candidates being stabilized (line~\ref{line:find}).
@@ -4150,7 +4152,7 @@ These optimization processes, i.e., \functiontextformat{Maximize} (line~\ref{lin
 
 
 \begin{example}
-  \tvn{Need a concrete example here.  Use the DNN in~\autoref{fig:dnn} and create the MILP system in ~\autoref{eq:mip}.}
+  \tvn{Need a concrete example here.  Use the DNN in~\autoref{fig:dnn} and create the MILP system in ~\autoref{eq:mip1}.}
 \end{example}
 
 \subsubsection{Parallel Search}\label{sec:parallel-search}
@@ -4866,7 +4868,7 @@ with the constraints in~\autoref{eq:nnv2} representing the input ranges and the 
         &\mbox{(d)}\quad a_j^{(i)} \in \{ 0, 1\} ;\\
         &\mbox{(e)}\quad \hat{z}_j^{(i)} \le {a}_j^{(i)} {u}_j^{(i)}; \hat{z}_j^{(i)} \le {z}_j^{(i)} - {l}_j^{(i)}(1 - {a}_j^{(i)}); \\
     \end{aligned}
-    \label{eq:mip}
+    \label{eq:mip2}
 \end{equation}
 
 \noindent where $x$ is input, $y$ is output, and $z^{(i)}$, $\hat{z}^{(i)}$, $W^{(i)}$, and $b^{(i)}$ are the pre-activation, post-activation, weight, and bias vectors for layer $i$, respectively. 
@@ -4907,11 +4909,11 @@ While the core \proofcheck{} algorithm in~\autoref{fig:algorithm} is minimal, it
     \tcp{Add MILP constraints for each layer of network}
     \For{$\layer ~\In ~\mathcal{N}$}{
         \If{$\isPiecewiseLinear(\layer)$}{
-            \tcp{add constraints~\autoref{eq:mip} (c), (d), (e)} 
+            \tcp{add constraints~\autoref{eq:mip2} (c), (d), (e)} 
             $\model \leftarrow \PiecewiseLinearMILP(\layer, \phi_{in}, \phi_{out})$ \\ \label{line:create_pwl_layer}
         }
         \Else(\tcp*[h]{this layer is linear}){
-            \tcp{add constraints~\autoref{eq:mip} (a), (b)} 
+            \tcp{add constraints~\autoref{eq:mip2} (a), (b)} 
             $\model \leftarrow \LinearMILP(\layer, \phi_{in}, \phi_{out})$ \\ \label{line:create_linear_layer}
 
             \tcp{estimate upper and lower bounds} 
@@ -6926,14 +6928,15 @@ Encode the disjunction $x \geq 5 \lor x \leq 3$ in MILP.
 \begin{example}[Encoding ReLU in MILP]\label{ex:relu_milp}
 
 To encode the ReLU (\autoref{sec:relu}) activation function $y = \max(0, x)$, use
-\[
+\begin{equation}\label{eq:relu-milp}
 \begin{aligned}
 & y \geq x, \\
 & y \geq 0, \\
 & y \leq x + M(1-z), \\
-& y \leq Mz, \quad z \in \{0,1\}.
+& y \leq Mz,\\
+& z \in \{0,1\}.\\
 \end{aligned}
-\]
+\end{equation}
 
 This works because 
 
