@@ -2,11 +2,11 @@
 
 In this PA you will implement an neural network (NN) verifier using symbolic execution (SE) as described in~\autoref{sec:se-smt}. You can consider NNs as a specific type of programs and thus can ``execute'' it.  SE runs the NN on symbolic inputs and returns symbolic outputs, i.e., a constraint representation.  You will represent the symbolic outputs as a logical formula and use a constraint solver to check \emph{assertions}, i.e., properties about the DNN. This PA has two parts: (1) implement SE on a given DNN, and (2) evaluate the scalability of your SE on various DNNs.
 
-You will use Python and the Z3 SMT solver (\autoref{sec:z3}) for this assignment. \textbf{Do not} use external libraries or any extra tools (other than \texttt{z3-solver}).
+You will use Python and the Z3 SMT solver (\autoref{sec:z3}) for this assignment. \textbf{Do not} use external libraries or any extra tools.
 
 \subsection{Part1: Symbolic Execution}
 
-Consider the following fully-connected DNN with 2 inputs, 2 hidden layers, and 2 outputs.
+Consider the following fully-connected network with 2 inputs, 2 hidden layers, and 2 outputs.
 
 \begin{center}
 \includegraphics[width=0.8\textwidth]{figure/dnn1.png}
@@ -128,7 +128,7 @@ z3.prove(z3.Implies(symbolic_states, g))
 \subsection{TIPS}
 
 \begin{enumerate}[label=\arabic*.]
-\item It is strongly recommend that you do symbolic execution on this DNN example \textbf{by hand} first before attempt any coding.  This example is small enough that you can work out step by step.  For example, you can do these two steps
+\item You should apply symbolic execution on this DNN example \textbf{by hand} first before attempt any coding.  This example is small enough that you can work out step by step.  For example, you can do these two steps
     \begin{enumerate}[label=(\alph*)]
     \item First, obtain the symbolic states by hand (e.g., on a paper) for the given DNN
     \item Then, put what you have in code but also for the given DNN. Use Z3 format (e.g.,  you would declare the inputs as symbolic values \texttt{i0 = z3.Real("i0")}, then compute the neurons and outputs, etc)
@@ -242,7 +242,7 @@ model.add(Dense(units=2,
 \end{lstlisting}
 \end{enumerate}
 
-\subsection{Part:2: Evaluation}
+\subsection{Part 2: Evaluation}
 In this part you will show that symbolic execution \emph{does not} scale on large DNNs.
 
 \begin{enumerate}
