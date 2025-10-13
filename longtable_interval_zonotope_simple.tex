@@ -1,0 +1,238 @@
+\newcommand{\myintervalinput}{
+    \makecell[lt]{
+        $\boxed{x_1 \in [-2, 2]}$ \\
+        $\boxed{x_2 \in [-1, 3]}$ \\
+    }
+}
+
+\newcommand{\myzonotopeinput}{
+    \makecell[lt]{
+        $c_1 = \frac{l_{x_1} + u_{x_1}}{2} = \frac{-2 + 2}{2} = 0$ \\
+        $c_2 = \frac{l_{x_2} + u_{x_2}}{2} = \frac{-1 + 3}{2} = 1$ \\
+        $\boxed{c = \begin{bmatrix} c_1 \\ c_2 \end{bmatrix} = \begin{bmatrix} 0 \\ 1 \end{bmatrix}}$ \\
+        $g_1 = \frac{u_{x_1} - l_{x_1}}{2} = \frac{2 - (-2)}{2} = 2$ \\
+        $g_2 = \frac{u_{x_2} - l_{x_2}}{2} = \frac{3 - (-1)}{2} = 2$ \\
+        $\boxed{G = \text{diag}([g_1, g_2]) = \begin{bmatrix} 2 & 0 \\ 0 & 2 \end{bmatrix}}$ \\
+    }
+}
+
+\newcommand{\myintervalprerelu}[2]{
+    \ifnum#1=1
+        \ifnum#2=1
+            \makecell[lt]{
+                $\boxed{f(x_1, x_2) = -0.5 \cdot x_1 + 0.5 \cdot x_2 + 1}$ \\
+                $\begin{aligned}
+                    l_3 &= f_L([-2,2], [-1,3]) \\
+                        &= 1 + \min(-0.5 \cdot (-2), -0.5 \cdot 2) \\ 
+                        &\quad\quad+ \min(0.5 \cdot (-1), 0.5 \cdot 3)\\
+                        &= 1 + (-1.0) + (-0.5) = -0.5
+                \end{aligned}$\\
+                $\begin{aligned}
+                    u_3 &= f_U([-2,2], [-1,3]) \\
+                        &= 1 + \max(-0.5 \cdot (-2), -0.5 \cdot 2) \\ 
+                        &\quad\quad+ \max(0.5 \cdot (-1), 0.5 \cdot 3)\\
+                        &= 1 + 1.0 + 1.5 = 3.5
+                \end{aligned}$ \\
+                $\boxed{x_3 \in [-0.5, 3.5]}$
+            }
+        
+        \else
+            \makecell[lt]{
+                $\boxed{f(x_1, x_2) = 0.5 \cdot x_1 - 0.5 \cdot x_2 -1}$ \\
+                $\begin{aligned}
+                    l_4 &= f_L([-2,2], [-1,3]) \\
+                        &= -1 + \min(0.5 \cdot (-2), 0.5 \cdot 2) \\ 
+                        &\quad\quad+ \min(-0.5 \cdot (-1), -0.5 \cdot 3)\\
+                        &= -1 + (-1.0) + (-1.5) = -3.5
+                \end{aligned}$\\
+                $\begin{aligned}
+                    u_4 &= f_U([-2,2], [-1,3]) \\
+                        &= -1 + \max(0.5 \cdot (-2), 0.5 \cdot 2) \\ 
+                        &\quad\quad+ \max(-0.5 \cdot (-1), -0.5 \cdot 3)\\
+                        &= -1 + 1.0 + 0.5 = 0.5
+                \end{aligned}$ \\
+                $\boxed{x_4 \in [-3.5, 0.5]}$
+            }
+        \fi
+    \else
+        \ifnum#2=1
+            \makecell[lt]{
+                $\boxed{f(x'_3, x'_4) = -1 \cdot x'_3 + 1 \cdot x'_4 + (-1)}$\\
+                $\begin{aligned}
+                    l_5 &= f_L([0, 3.5], [0, 0.5]) \\
+                        &= -1 + \min(-1 \cdot 0, -1 \cdot 3.5) \\
+                        &\quad\quad+ \min(1 \cdot 0, 1 \cdot 0.5)\\
+                        &= -1 + (-3.5) + 0 = -4.5
+                \end{aligned}$\\
+                $\begin{aligned}
+                    u_5 &= f_U([0, 3.5], [0, 0.5]) \\
+                        &= -1 + \max(-1 \cdot 0, -1 \cdot 3.5) \\
+                        &\quad\quad + \max(1 \cdot 0, 1 \cdot 0.5)\\
+                        &= -1 + 0 + 0.5 = -0.5
+                \end{aligned}$\\
+                $\boxed{x_5 \in [-4.5, -0.5]}$
+            }
+        \fi
+    \fi
+}
+
+\newcommand{\myintervalpostrelu}[2]{
+    \ifnum#1=1
+        \ifnum#2=1
+            \makecell[lt]{
+                $\begin{aligned}
+                x'_3 &= \myrelu(x_3) \\
+                     &= \myrelu([-0.5, 3.5]) \\
+                     &= [\max(0, -0.5), \max(0, 3.5)]
+            \end{aligned}$\\
+            $\boxed{x'_3 \in [0, 3.5]}$
+            }
+        \else
+            \makecell[lt]{
+                $\begin{aligned}
+                x'_4 &= \myrelu(x_4) \\
+                     &= \myrelu([-3.5, 0.5]) \\
+                     &= [\max(0, -3.5), \max(0, 0.5)]
+            \end{aligned}$ \\
+            $\boxed{x'_4 \in [0, 0.5]}$
+            }
+        \fi
+    \fi
+}
+
+
+\newcommand{\myzonotopeprerelu}[2]{
+    \ifnum#1=1
+        \ifnum#2=1
+            \makecell[lt]{
+                $\boxed{f(x_1, x_2) = -0.5 \cdot x_1 + 0.5 \cdot x_2 + 1}$ \\
+                $\begin{aligned}
+                    c_3 &= Wc + b \\ 
+                    &= \begin{bmatrix} -0.5 & 0.5 \end{bmatrix} \begin{bmatrix} 0 \\ 1 \end{bmatrix} + 1  = 1.5\\
+                \end{aligned}$\\
+                $\begin{aligned}
+                    G_3 &= WG \\
+                    &= \begin{bmatrix} -0.5 & 0.5 \end{bmatrix} \begin{bmatrix} 2 & 0 \\ 0 & 2 \end{bmatrix} = \begin{bmatrix} -1 & 1 \end{bmatrix}
+                \end{aligned}$\\
+                $e_3 = |G_3| = |-1| + |1| = 2$ \\
+                $l_3 = c_3 - e_3 = 1.5 - 2 = -0.5 $ \\
+                $u_3 = c_3 + e_3 = 1.5 + 2 = 3.5$ \\
+                $\boxed{x_3 \in [-0.5, 3.5]}$
+            }
+        
+        \else
+            \makecell[lt]{
+                $\boxed{f(x_1, x_2) = 0.5 \cdot x_1 - 0.5 \cdot x_2 -1}$ \\
+                $\begin{aligned}
+                    c_4 &= Wc + b \\
+                    &= \begin{bmatrix} 0.5 & -0.5 \end{bmatrix} \begin{bmatrix} 0 \\ 1 \end{bmatrix} + (-1) = -1.5 \\
+                \end{aligned}$\\
+                $\begin{aligned}
+                    G_4 &= WG \\
+                    &= \begin{bmatrix} 0.5 & -0.5 \end{bmatrix} \begin{bmatrix} 2 & 0 \\ 0 & 2 \end{bmatrix} = \begin{bmatrix} 1 & -1 \end{bmatrix}
+                \end{aligned}$\\
+                $e_4 = |G_4| = |1| + |-1| = 2$ \\
+                $l_4 = c_4 - e_4 = -1.5 - 2 = -3.5 $ \\
+                $u_4 = c_4 + e_4 = -1.5 + 2 = 0.5$ \\
+                $\boxed{x_4 \in [-3.5, 0.5]}$
+            }
+        \fi
+    \else
+        \ifnum#2=1
+            \makecell[lt]{
+                $\boxed{f(x'_3, x'_4) = -1 \cdot x'_3 + 1 \cdot x'_4 + (-1)}$\\
+                $c'_5 = \begin{bmatrix} c'_3 \\ c'_4 \end{bmatrix} = \begin{bmatrix} 1.53125 \\ 0.03125 \end{bmatrix}$ \\
+                $G'_5 = \begin{bmatrix} G'_3 \\ G'_4 \end{bmatrix} = \begin{bmatrix} -0.875 & 0.875 & 0.21875 \\ 0.125 & -0.125 & 0.21875 \end{bmatrix}$ \\
+                $\begin{aligned}
+                    c_5 &= W c'_5 + b \\
+                    &= \begin{bmatrix} -1 & 1 \end{bmatrix} \begin{bmatrix} 1.53125 \\ 0.03125 \end{bmatrix} + (-1) = -2.5 \\
+                \end{aligned}$ \\
+                $\begin{aligned}
+                    G_5 &= W G'_5 \\
+                    &= \begin{bmatrix} -1 & 1 \end{bmatrix} \begin{bmatrix} -0.875 & 0.875 & 0.21875 \\ 0.125 & -0.125 & 0.21875 \end{bmatrix} \\
+                    &= \begin{bmatrix} 1.0 & -1.0 & 0.0 \end{bmatrix}
+                \end{aligned}$ \\
+                $e_5 = |G_5| = |1.0| + |-1.0| + |0.0| = 2.0$ \\
+                $l_5 = c_5 - e_5 = -2.5 - 2 = -4.5$ \\
+                $u_5 = c_5 + e_5 = -2.5 + 2 = -0.5$ \\
+                $\boxed{x_5 \in [-4.5, -0.5]}$
+            }
+        \fi
+    \fi
+}
+
+
+\newcommand{\myzonotopepostrelu}[2]{
+    \ifnum#1=1
+        \ifnum#2=1
+            \makecell[lt]{
+                $\begin{aligned}
+                    \lambda_3 &= \frac{u_3}{u_3 - l_3} = \frac{3.5}{3.5 - (-0.5)} = 0.875\\
+                    g_{3} &= \frac{(1 - \lambda_3)}{2} \cdot u_3 = \frac{(1 - 0.875)}{2} \cdot 3.5 = 0.21875
+                \end{aligned}$ \\
+                $\begin{aligned}
+                c_3' &= \lambda_3 \cdot c_3 + g_{3} \\
+                     &= 0.875 \cdot 1.5 + 0.21875 = 1.53125
+                \end{aligned}$ \\
+                $\begin{aligned}
+                    G_3' &= \begin{bmatrix} \lambda_3 \cdot G_3 & g_{3} \end{bmatrix} \\
+                         &= \begin{bmatrix} -0.875 & 0.875 & 0.21875 \end{bmatrix}
+                \end{aligned}$ \\
+                $\begin{aligned}
+                    e_3' &= |G_3'| = |-0.875| + |0.875| + |0.21875| \\
+                         &= 1.96875
+                \end{aligned}$ \\
+                $l_3' = c_3' - e_3' = 1.53125 - 1.96875 = -0.4375$ \\
+                $u_3' = c_3' + e_3' = 1.53125 + 1.96875 = 3.5$ \\
+                $\boxed{x_3' \in [-0.4375, 3.5]}$
+                % $\boxed{x_3' \in [1.53125, 1.75]}$
+            }
+        \else
+            \makecell[lt]{
+                $\begin{aligned}
+                    \lambda_4 &= \frac{u_4}{u_4 - l_4} = \frac{0.5}{0.5 - (-3.5)} = 0.125\\
+                    g_{4} &= \frac{(1 - \lambda_4)}{2} \cdot u_4 = \frac{(1 - 0.125)}{2} \cdot 0.5 = 0.21875
+                \end{aligned}$ \\
+                $\begin{aligned}
+                    c_4' &= \lambda_4 \cdot c_4 + g_{4} \\
+                    &= 0.125 \cdot (-1.5) + 0.21875 = 0.03125
+                \end{aligned}$ \\
+                $\begin{aligned}
+                    G_4' &= \begin{bmatrix} \lambda_4 \cdot G_4 & g_{4} \end{bmatrix} \\
+                         &= \begin{bmatrix} 0.125 & -0.125 & 0.21875 \end{bmatrix}
+                \end{aligned}$ \\
+                $\begin{aligned}
+                    e_4' &= |G_4'| = |0.125| + |-0.125| + |0.21875| \\
+                    &= 0.46875
+                \end{aligned}$ \\
+                $l_4' = c_4' - e_4' = 0.03125 - 0.46875 = -0.4375$ \\
+                $u_4' = c_4' + e_4' = 0.03125 + 0.46875 = 0.5$ \\
+                $\boxed{x_4' \in [-0.4375, 0.5]}$
+            }
+        \fi
+    \fi
+}
+
+\begin{example}[End-to-end Example]
+
+Consider the DNN in~\autoref{fig:dnn-abs} with inputs $x_1 \in [-2, 2]$ and $x_2 \in [-1, 3]$ using the network weights from the implementation
+
+% Set longtable to fit text width
+\LTleft=0pt
+\LTright=0pt
+\footnotesize  % Use smaller font to help fit content
+\begin{longtable}{@{\extracolsep{\fill}}p{1cm}|p{5cm}|p{7cm}@{}}
+\caption{Interval vs Zonotope Analysis Comparison} \label{tab:simple_interval_vs_zonotope} \\
+\toprule
+\textbf{Layer} & \textbf{Interval} & \textbf{Zonotope} \\ \midrule
+\multirow{10}{*}{Input} & \myintervalinput             & \myzonotopeinput         \\ \midrule
+\multirow{22}{*}{Linear} & \myintervalprerelu{1}{1}     & \myzonotopeprerelu{1}{1} \\ \cmidrule(lr){2-3}
+                         & \myintervalprerelu{1}{2}     & \myzonotopeprerelu{1}{2} \\ \midrule
+\multirow{5}{*}{ReLU}    & \myintervalpostrelu{1}{1}    & \myzonotopepostrelu{1}{1} \\ \cmidrule(lr){2-3}
+                         & \myintervalpostrelu{1}{2}    & \myzonotopepostrelu{1}{2} \\ \midrule
+\multirow{11}{*}{Linear} & \myintervalprerelu{2}{1}     & \myzonotopeprerelu{2}{1} \\ 
+\bottomrule
+\end{longtable}
+\normalsize  % Reset font size
+
+\end{example}
