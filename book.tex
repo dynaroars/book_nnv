@@ -2357,6 +2357,13 @@ This chapter discusses several \emph{abstraction domains} used in DNN verificati
 \section{Overview of Abstractions for ReLU} 
 
 We will focus on ReLU (\autoref{sec:relu}) activation functions, which are the most common in DNNs. The goal is to compute the bounds of a post-ReLU neuron $\hat{z}$ given the bounds of its pre-ReLU value $z$ over the input region. For example, for a ReLU neuron $y = \max(0, x)$, we want to compute the bounds $[l_y(x), u_y(x)]$ of $y$ given the bounds $[l_x, u_x]$ on $x$.\tvn{is the pre-Relu bounds always computed like what was described in~\autoref{sec:pre-relu-bounds}? Is that computation considered interval too? Can that bound computation be obtained using other abstractions?}
+\hd{yes, concrete bounds will always be computed like what was described in~\autoref{sec:pre-relu-bounds} IF the bounds of a neurons are presented as linear equations. In other words, abstractions differ in the way they construct the linear equations, concretization step will be the same.}
+
+\hd{Zonotope uses a different approach to represent the abstraction, using center and generators, so concretization step will be different. But if we construct the lower and upper equations for a zonotope, the concretization step will be the same.}
+
+\hd{Note that, the equations of a neuron are not $e = f(x_1, ..., x_n)$, but 
+\[f_L(x_1, ..., x_n) \le e \le f_U(x_1, ..., x_n)\] 
+So to compute the concrete bounds, $e_L = min(f_L(x_1, ..., x_n))$ and $e_U = max(f_U(x_1, ..., x_n))$, where $min(f_L(x_1, ..., x_n))$ and $max(f_U(x_1, ..., x_n))$ are the concretization steps.}
 
 We want to compute the bounds to be as tight as possible, i.e., they should be the largest lower and lowest upper values that $\hat{z}$ can take given the bounds on $z$. This computation is called \emph{abstraction} and is crucial for DNN verification, as it allows us to reason about the behavior of the network without having to enumerate all possible values of the neurons. There are several abstraction techniques that can be used to compute these bounds, each with its own trade-offs in terms of precision and computational complexity.
 
