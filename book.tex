@@ -2791,7 +2791,7 @@ f^{a}([l_1, u_1],..., [l_n, u_n]) = [f^a_L, f^a_U] =
 \caption{\label{fig:dnn-abs}A simple DNN (similar to~\autoref{fig:dnn}).}
 \end{figure}    
 
-Consider the DNN in~\autoref{fig:dnn-abs} with inputs \(x_1 \in [1, 2]\) and \(x_2 \in [-1, 3]\). The affine function for the neuron \(x_3\) is given by:
+Consider the DNN in~\autoref{fig:dnn-abs} with inputs \(x_1 \in [1, 2]\) and \(x_2 \in [-1, 3]\). The affine function for the neuron \(x_3\) is:
 \[
 f(x_1,x_2) = -0.5\,x_1 + 0.5\,x_2 + 1.0
 \]
@@ -2823,7 +2823,7 @@ This is equivalent to three cases:
 \end{enumerate}
 
 \begin{example}
-For~\autoref{ex:transformer-affine1}, applying ReLU to the output bounds of neuron $x^3$ gives:
+For~\autoref{ex:transformer-affine1}, applying ReLU$^a$ to neuron $x^3$ gives:
 
 \[
 \myrelu^a([-0.5, 2.0]) = [\myrelu(-0.5), \myrelu(2.0)] 
@@ -2841,16 +2841,191 @@ However, the cost of efficiency is precision. Intervals approximate each variabl
 
 Suppose we have $v_1 \in [0, 1]$, $v_2 = -v_1$, and $z = v_1 + v_2$. 
 The concrete value of $z$ would be always 0, but interval abstraction gives $z \in [-1, 1]$, which is a very loose over-approximation. 
-
 Moreover, if we apply ReLU, then the output would be $\myrelu(z) = \myrelu(0) = 0$, but the interval abstraction gives $\myrelu^a([-1, 1]) = [0, 1]$, which is again a loose over-approximation.
 \end{example}
 
-This overapproximation grows quickly as we propagate through many layers of a large network, i.e., it keeps ``inflating'' the bounds, leading to a very loose approximation of the output and becomes useless for verification tasks. For example, $z \leq 0$ is valid for~\autoref{ex:interval-overapproximation}, but the interval abstractions gives $z \in [0,1]$, which is not tight (precise) enough to verify this property.
+Interval overapproximation grows quickly as we propagate through many layers of a large network, i.e., it keeps ``inflating'' the bounds, leading to a very loose approximation of the output and becomes useless for verification tasks. For example, $z \leq 0$ is valid for~\autoref{ex:interval-overapproximation}, but the interval abstractions gives $z \in [0,1]$, which is not tight (precise) enough to verify this property.
 
 Nonetheless, interval-based methods remain popular due to their simplicity and efficiency. In some cases, despite being too coarse, they can still successfully verify properties of neural networks, e.g., if we want to verify that $z \le 2$, then the interval $z\in [0, 1]$ would suffice.
 
 \subsection{Zonotope}\label{sec:zonotope-abstraction}
 
+
+
+
+% \begin{figure}
+% \centering
+% \begin{tikzpicture}[scale=1.2,>=stealth]
+
+% % Axes
+% \draw[->, thick] (-1.5,0) -- (2.8,0) node[right] {$x$};
+% \draw[->, thick] (0,-0.5) -- (0,2.8) node[above] {$y=\text{ReLU}(x)$};
+
+% % ReLU curve
+% \draw[thick, black, domain=-1.2:0] plot (\x,0);
+% \draw[thick, black, domain=0:2.5] plot (\x,\x);
+
+% % Points
+% \fill (0,0) circle (1.5pt) node[below left] {\small $0$};
+% \fill (2,2) circle (1.5pt) node[right] {\small $(u,u)$};
+% \fill (-1,0) circle (1.5pt) node[left] {\small $(l,0)$};
+
+% % Parallelogram region
+% \fill[orange!20, opacity=0.6] (-1,0) -- (-1,0.8) -- (2,2) -- (2,0) -- cycle;
+
+% % Linear bounds
+% \draw[orange!80!black, thick, dashed] (-1,0) -- (2,2); % upper bound
+% \draw[orange!80!black, thick, dashed] (-1,0.8) -- (2,2); % lower bound
+
+% % Labels
+% \node[orange!60!black] at (1.2,1.8) {\small upper bound};
+% \node[orange!60!black] at (0.3,0.6) {\small lower bound};
+% \node at (1.6,-0.3) {\small unstable zone};
+
+% \end{tikzpicture}
+% \caption{ReLU function (black) and its zonotope over-approximation (orange parallelogram) for an input interval crossing zero.}
+% \label{fig:relu-parallelogram}
+% \end{figure}
+
+
+
+An interval abstraction (\autoref{sec:interval-abstraction}) treats each variable independently. For example, if \(x_1 \in [1,2]\) and \(x_2 \in [3,4]\), intervals assume any combination of \(x_1\) and \(x_2\) is possible. But in many real systems, variables move together: when \(x_1\) increases, \(x_2\) might also increase.  
+%A \emph{zonotope} captures this correlation by encoding both variables as linear combinations of a few shared ``uncertainty sources’’ (\(\epsilon_i\)’s).  
+In geometric terms, as shown in \autoref{fig:zonotope-vs-box}, while intervals form axis-aligned boxes, zonotopes form \emph{tilted boxes} (parallelograms or higher-dimensional analogues), preserving the direction of dependency between variables.
+
+Thus, zonotopes extend intervals by introducing \emph{generators}, which are vectors that define directions of variability and allow the zonotope to tilt and stretch in directions that capture correlations between variables. This allows zonotopes to capture correlations between variables, leading to more precise approximations compared to intervals.
+
+
+\begin{figure}
+\centering
+\begin{tikzpicture}[scale=1.3,>=stealth]
+
+% Axes
+\draw[->, thick] (-0.5,0) -- (3.5,0) node[right] {$x_1$};
+\draw[->, thick] (0,-0.5) -- (3.5,3.5) node[above] {$x_2$};
+
+% Interval box
+\fill[blue!10] (0.5,0.5) rectangle (2.5,2.5);
+\draw[blue, thick] (0.5,0.5) rectangle (2.5,2.5);
+\node[blue!60!black] at (1.5,2.7) {\small Interval (Box)};
+
+% Zonotope parallelogram
+\fill[orange!15, rotate around={20:(2,1)}] (1,0.5) rectangle (3,2.5);
+\draw[orange, thick, rotate around={20:(2,1)}] (1,0.5) rectangle (3,2.5);
+\node[orange!70!black] at (3.3,2.1) {\small Zonotope (Tilted Box)};
+
+% Legend arrows
+\draw[blue,->] (2.6,2.0) to[bend left] (3.3,2.0);
+\draw[orange,->] (1.8,0.8) to[bend right] (0.6,0.8);
+
+\end{tikzpicture}
+\caption{Intervals produce axis-aligned boxes (blue), while zonotopes can tilt to fit correlated variables (orange).}
+\label{fig:zonotope-vs-box}
+\end{figure}
+
+
+\paragraph{Definition}
+A \textbf{zonotope} \(\mathcal{Z}\) in \(\mathbb{R}^n\) is defined as:
+\[
+\mathcal{Z} = \left\{c + \sum_{i=1}^{m} \epsilon_i g_i \mid \epsilon_i \in [-1, 1]\right\}
+\]
+where :
+\begin{itemize}
+\item \(c \in \mathbb{R}^n\) is the \textit{center} (like the midpoint of intervals), 
+\item \(g_i \in \mathbb{R}^n\) are \textit{generator vectors} (directions of variability), and 
+\item \(\epsilon_i\) are independent coefficients in \([-1, 1]\). 
+\end{itemize}
+
+% \paragraph{A simpler geometric example.}
+% In 2D, let \(c = (0,0)\), \(g_1 = (1,0)\), and \(g_2 = (1,1)\).  
+% Then
+% \[
+% \mathcal{Z} = \{ (0,0) + \epsilon_1(1,0) + \epsilon_2(1,1) \mid \epsilon_i \in [-1,1]\}
+% \]
+% This produces a parallelogram, not a square — since both \(x\) and \(y\) depend on \(\epsilon_2\), movement in \(x\) is correlated with movement in \(y\).  
+% That “tilt’’ captures dependency that intervals cannot.
+
+\begin{example}[Interval is a special case of zonotope]
+     An interval \([l, u]\) can be represented as a zonotope with center \(c = \frac{l+u}{2}\) and a single generator \(g = \frac{u-l}{2}\), i.e., 
+
+     \[\mathcal{Z} = \left\{ c + \epsilon g \mid \epsilon \in [-1, 1] \right\} = \left\{ \frac{l+u}{2} + \epsilon \frac{u-l}{2} \mid \epsilon \in [-1, 1] \right\} = [l, u]\]    
+
+     Thus, zonotopes generalize intervals by allowing multiple generators to capture more complex dependencies.
+\end{example}
+
+\subsubsection{Affine Transformer} 
+
+A key benefit of zonotopes is that affine operations preserve their structure exactly: no approximation needed.  
+Imagine a tilted box in space, then an affine transformation just stretches, rotates, and shifts it---the result is still a tilted box.
+
+For the affine function \(f\) in~\autoref{sec:affine}
+\[
+f(x) = Wx + b
+\]
+where \(W\) is a weight matrix and \(b\) is a bias vector. Given an input zonotope \(\mathcal{Z} = (c, G)\) where \(G = [g_1, g_2, \ldots, g_m]\) is the generator matrix, the abstract transformer \(f^a\) for zonotopes is:
+\[
+f^a(\mathcal{Z}) = (Wc + b, WG)
+\]
+The new center becomes \(Wc + b\) and the new generator matrix becomes \(WG\). Since affine transformations preserve zonotope structure, this transformation is exact with no over-approximation.
+
+
+
+\subsubsection{ReLU Transformer}
+
+Activation functions like ReLU are non-affine and do not preserve zonotope structure\tvn{what is it? can we draw it}.  
+
+\paragraph{Intuition first.}
+The ReLU function “clips’’ all negative values to 0 and keeps positives unchanged:
+\[
+\text{ReLU}(x) = \max(0, x)
+\]
+Graphically, it looks like a straight line \(y=x\) for \(x>0\) and flat at 0 for \(x<0\).  
+If your input range \([l,u]\) is entirely above 0, everything passes through unchanged.  
+If it’s entirely below 0, everything becomes 0.  
+The hard case is when the range crosses 0 — the function bends sharply there, so a straight-line (affine) abstraction can’t capture it exactly.
+
+% \begin{center}
+% \includegraphics[width=0.55\textwidth]{figures/relu_parallelogram.pdf}
+% \end{center}
+% \textit{Figure: The ReLU curve (black) and its zonotope over-approximation (shaded parallelogram).}
+
+\paragraph{Why not just use intervals?}
+Intervals can easily over-approximate ReLU, but they lose dependencies — if two neurons share the same uncertainty source, intervals can’t remember that after the nonlinearity. Zonotopes can, thanks to their shared generators.  
+This makes zonotopes much tighter when you propagate through several layers.
+
+---
+
+Given an input zonotope, we first compute its interval bounds \([l,u]\) (\tvn{like what we just computed in 5.2.2.1?}), then consider three cases:
+...
+
+(add rest of your existing technical section unchanged)
+
+---
+
+\paragraph{Geometric picture.}
+When \([l,u]\) crosses zero, we replace the “kink’’ of ReLU with a tilted parallelogram bounded by two lines:
+- one that under-approximates (the lower slope \(\lambda x\)),
+- one that over-approximates (the upper line \(\lambda x + u(1-\lambda)\)).
+
+This parallelogram fully contains the real ReLU curve, and by converting it into a zonotope, we get a linear representation that can still be propagated.
+
+\paragraph{Key insight.}
+Each ReLU that crosses zero introduces one new generator — representing the uncertainty of whether that neuron is active or inactive.  
+As a network gets deeper, the number of generators grows, each tracking different combinations of “maybe-active’’ neurons.  
+This is what allows zonotope-based verifiers to remain precise even after many nonlinear layers.
+
+\begin{example}[ReLU on zonotope]\label{ex:zonotope_relu_example}
+...
+\end{example}
+
+\paragraph{Summary intuition.}
+Intervals treat each neuron’s uncertainty separately → boxes.  
+Zonotopes tie them together → tilted boxes (parallelograms).  
+Through affine layers, zonotopes move exactly; through ReLUs, they get conservatively widened by adding one extra generator per uncertain neuron.  
+Over multiple layers, this tradeoff between precision and complexity makes zonotopes one of the most widely used abstractions in neural network verification.
+
+
+%%%% 
 Zonotopes extend intervals (\autoref{sec:interval-abstraction}) by introducing \emph{generators} that represent linear dependencies between variables. This allows zonotopes to capture correlations between variables, leading to more precise approximations compared to intervals.
 
 
@@ -2865,33 +3040,6 @@ where :
 \item \(\epsilon_i\) are independent coefficients in \([-1, 1]\). 
 \end{itemize}
 
-% \paragraph{Intervals as Special Cases} Intervals are a special case of zonotopes where all generator vectors are axis-aligned. This means that each generator vector \(g_i\) has non-zero entries only in one dimension, corresponding to the width of the interval in that dimension.
-
-
-% Suppose $v_i \in [l_i, u_i]$, the center is the midpoint \(c_i = \frac{l_i + u_i}{2}\) and the generator vector is \(g_i = e_i\frac{u_i - l_i}{2}\), where $e_i$ is the unit vector in the $i$-th dimension. Then the zonotope representation becomes:
-% \[
-% \mathcal{Z} = \left\{c + \sum_{i=1}^{m} \epsilon_i g_i \mid \epsilon_i \in [-1, 1]\right\}
-% \]
-% where \(c = \begin{bmatrix}c_1 \\ c_2 \\ \vdots \\ c_m\end{bmatrix}\) and \(G = \begin{bmatrix}g_1 & g_2 & \cdots & g_m\end{bmatrix}\).
-
-
-% \begin{example}
-% Take $v_1 \in [1,2], v_2 \in [-1,3]$.  The interval representation is \([1, 2] \times [-1, 3]\), which is a rectangle with corners at \((1, -1)\), \((1, 3)\), \((2, -1)\), and \((2, 3)\).
-
-
-% For zonotope we have \(c = \begin{bmatrix}c_1 \\ c_2\end{bmatrix} = \begin{bmatrix}1.5 \\ 1.0\end{bmatrix}\) and \(G = \begin{bmatrix}g_1 & g_2\end{bmatrix} = \begin{bmatrix}0.5 & 0 \\ 0 & 2.0\end{bmatrix}\). Thus the zonotope representation is:
-% \[
-% \begin{aligned}
-% \mathcal{Z} = &\left\{c + \sum_{i=1}^{m} \epsilon_i g_i \mid \epsilon_i \in [-1, 1]\right\}\\
-% = &\left\{\begin{bmatrix}1.5 \\ 1.0\end{bmatrix} + \sum_{i=1}^{2} \epsilon_i \begin{bmatrix}0.5 \\ 0\end{bmatrix} \mid \epsilon_i \in [-1, 1]\right\}\\
-% = &\left\{\begin{bmatrix}1.5 + 0.5\epsilon_1 \\ 1.0 + 2.0\epsilon_2\end{bmatrix} \mid \epsilon_1, \epsilon_2 \in [-1, 1]\right\}
-% \end{aligned}
-% \]
-
-% This is the same as the rectangular representation above\tvn{why?}.
-
-% \end{example}
-
 
 \subsubsection{Affine Transformer} For the affine function \(f\) in~\autoref{sec:affine}
 \[f(x) = Wx + b\]
@@ -2902,7 +3050,7 @@ f^a(\mathcal{Z}) = (Wc + b, WG)
 The new center becomes \(Wc + b\) and the new generator matrix becomes \(WG\). Since affine transformations preserve zonotope structure, this transformation is exact with no over-approximation.
 
 \begin{example}\label{ex:zonotope_linear_example}
-Consider the DNN in~\autoref{fig:dnn-abs} with inputs \(x_1 \in [1, 2]\) and \(x_2 \in [-1, 3]\). The affine function for neuron \(x_3\) is given by:
+Consider the DNN in~\autoref{fig:dnn-abs} with inputs \(x_1 \in [1, 2]\) and \(x_2 \in [-1, 3]\). The affine function for neuron \(x_3\) is:
 \[
 f(x_1,x_2) = -0.5\,x_1 + 0.5\,x_2 + 1.0
 \]
