@@ -3187,7 +3187,7 @@ The upper line touches the ReLU at the right endpoint \((u, u)\).
 The region between them covers all possible outputs.
 
 
-This creates a parallelogram that:
+This creates a parallelogram, shown in~\autoref{fig:relu-parallelogram} that:
 \begin{enumerate}
     \item Contains the actual ReLU function over \([l, u]\)
     \item Has vertices at \((l, 0)\), \((l, u(1-\lambda) - \lambda l)\), \((u, u)\), and \((u, 0)\)
@@ -3223,12 +3223,11 @@ G' = [\lambda g_1, \lambda g_2, \ldots, \lambda g_m, g_{new}]
 
 where the original generators \(g_1, g_2, \ldots, g_m\) are scaled by \(\lambda\), and a new generator \(g_{new} = \frac{u(1-\lambda)}{2}\) is appended.
 
-\vspace{0.5em}
-\noindent
-\textbf{Intuition:}  
-- The scaling by \(\lambda\) compresses the zonotope in the $x$ direction, matching the slope of the ReLU’s linear bounds.  
-- The offset $\frac{u(1-\lambda)}{2}$ shifts the center upward, so it lies in the middle of the parallelogram.  
-- The new generator \(g_{new}\) adds a small “vertical wiggle” that represents the uncertainty caused by the triangular error area we replaced with a rectangle.
+
+% \textbf{Intuition:}  
+% - The scaling by \(\lambda\) compresses the zonotope in the $x$ direction, matching the slope of the ReLU’s linear bounds.  
+% - The offset $\frac{u(1-\lambda)}{2}$ shifts the center upward, so it lies in the middle of the parallelogram.  
+% - The new generator \(g_{new}\) adds a small “vertical wiggle” that represents the uncertainty caused by the triangular error area we replaced with a rectangle.
 
 \begin{figure}[h!]
 \centering
