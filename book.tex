@@ -2311,7 +2311,7 @@ Use MILP encoding and solving to check if the network in~\autoref{fig:dnn-d} sat
 \begin{itemize}
     \item \textbf{Scalability:} While MILP focuses on linear constraints and is generally more efficient than general SMT solving, it still cannot be applied directly to real-world DNNs due to the exponential growth of the search space. Each ReLU introduces a binary variable (\autoref{sec:relu-encoding}), leading to $2^n$ possible branches, and real-world DNNs can have millions of ReLUs, making the search space intractable.
 
-    \item \textbf{Limited exploitation of network structure and modern hardware} Off-the-shelf MILP solvers are designed for arbitrary MILP problems and do not exploit DNN-specific structures such as\tvn{Hai, fill int}
+    \item \textbf{Limited exploitation of network structure and modern hardware} Off-the-shelf MILP solvers are designed for arbitrary MILP problems and do not exploit DNN-specific structures such as\tvn{Hai, fill int}\hd{FNNs, CNNs, ResNets, etc.}
     
     Moreover, MILP solvers, even industrial-strength ones such as Gurobi~\cite{gurobi}, are primarily CPU-based and does not leverage the massive parallelism provided by modern GPUs.
 
@@ -3156,7 +3156,7 @@ Over multiple layers, this tradeoff between precision and complexity makes zonot
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{ReLU Transformer}
 
-Activation functions like ReLU are non-affine and do not preserve zonotope structure\tvn{what is it? can we draw it}. For the ReLU function \(\text{ReLU}(x) = \max(0, x)\), we must use conservative approximations. Given an input zonotope\tvn{why not just interval?}, we first compute its interval bounds \([l, u]\) (\tvn{like what we just computed in 5.2.2.1?}), then consider three cases:
+Activation functions like ReLU are non-affine and do not preserve zonotope structure\tvn{what is it? can we draw it}. For the ReLU function \(\text{ReLU}(x) = \max(0, x)\), we must use conservative approximations. Given an input zonotope\tvn{why not just interval?}\hd{no intervals here. Only propagate zonotopes, intervals only are computed to decide which neurons are stable or unstable}, we first compute its interval bounds \([l, u]\) (\tvn{like what we just computed in 5.2.2.1?})\hd{no, zonotope uses centers and generators, so computing like~\autoref{ex:zonotope_linear_example}}, then consider three cases:
 
 
 \begin{itemize}
