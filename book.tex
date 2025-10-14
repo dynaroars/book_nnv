@@ -3103,6 +3103,19 @@ Given an input zonotope, we first compute its interval bounds \([l,u]\) (\tvn{li
 \draw[->, thick] (-1.5,0) -- (2.8,0) node[right] {$x$};
 \draw[->, thick] (0,-0.5) -- (0,2.8) node[above] {$y=\text{ReLU}(x)$};
 
+
+% Parallelogram region
+\fill[orange!20, opacity=0.6] (-1,0) -- (2,2) -- (2,1.3) -- (-1,-0.7) -- cycle;
+
+% Linear bounds
+\draw[orange!80!black, thick, dashed] (-1,0) -- (2,2); % upper bound
+\draw[orange!80!black, thick, dashed] (-1,-0.68) -- (2,1.32); % lower bound
+
+% Labels
+\node[orange!60!black] at (0.7,1.8) {\small upper bound};
+\node[orange!60!black] at (2.0,0.6) {\small lower bound};
+% \node at (1.6,-0.3) {\small unstable zone};
+
 % ReLU curve
 \draw[very thick, black, domain=-2.0:0] plot (\x,0);
 \draw[very thick, black, domain=0:2.5] plot (\x,\x);
@@ -3111,18 +3124,6 @@ Given an input zonotope, we first compute its interval bounds \([l,u]\) (\tvn{li
 \fill (0,0) circle (1.5pt) node[below left] {\small $0$};
 \fill (2,2) circle (1.5pt) node[right] {\small $(u,u)$};
 \fill (-1,0) circle (1.5pt) node[below] {\small $(l,0)$};
-
-% Parallelogram region
-\fill[orange!20, opacity=0.6] (-1,0) -- (2,2) -- (2,1.3) -- (-1,-0.7) -- cycle;
-
-% Linear bounds
-\draw[orange!80!black, thick, dashed] (-1,0) -- (2,2); % upper bound
-\draw[orange!80!black, thick, dashed] (-1,-0.7) -- (2,1.3); % lower bound
-
-% Labels
-\node[orange!60!black] at (0.7,1.8) {\small upper bound};
-\node[orange!60!black] at (2.0,0.6) {\small lower bound};
-% \node at (1.6,-0.3) {\small unstable zone};
 
 \end{tikzpicture}
 \caption{ReLU function (black) and its zonotope over-approximation (orange parallelogram) for an input interval crossing zero.}
