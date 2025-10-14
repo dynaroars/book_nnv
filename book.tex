@@ -2879,13 +2879,12 @@ Nonetheless, interval-based methods remain popular due to their simplicity and e
 \end{figure}
 
 
-An interval abstraction (\autoref{sec:interval-abstraction}) treats each variable independently. For example, if \(x_1 \in [1,2]\) and \(x_2 \in [3,4]\), intervals assume any combination of \(x_1\) and \(x_2\) is possible. But in many real systems, variables move together: when \(x_1\) increases, \(x_2\) might also increase.  
+An interval abstraction (\autoref{sec:interval-abstraction}) treats each variable independently. For example, if \(x_1 \in [1,2]\) and \(x_2 \in [3,4]\), intervals assume any combination of \(x_1\) and \(x_2\) is possible. But in many real systems, variables correlate: when \(x_1\) increases, \(x_2\) also increase.  Thus, zonotopes, which can capture such correlations, provide a tighter abstraction.
+
+
 %A \emph{zonotope} captures this correlation by encoding both variables as linear combinations of a few shared ``uncertainty sources’’ (\(\epsilon_i\)’s).  
 In geometric terms, as shown in \autoref{fig:zonotope-vs-box}, while intervals form axis-aligned boxes, zonotopes form \emph{tilted boxes} (parallelograms or higher-dimensional analogues) that can stretch, rotate, and capture relationships between variables (like ``when $x_1$ goes up, $x_2$ also goes up'').
-
-Thus, zonotopes extend intervals by introducing \emph{generators}, which are vectors that define directions of variability and allow the zonotope to tilt and stretch in directions that capture correlations between variables. 
-
-
+More specifically, zonotopes extend intervals by introducing \emph{generators}, which are vectors that define directions of variability and allow the zonotope to tilt and stretch in directions that capture correlations between variables. 
 
 
 
@@ -2915,6 +2914,10 @@ where :
 
 
 \begin{example}[Interval is a special case of zonotope]
+
+
+
+
      An interval \([l, u]\) can be represented as a zonotope with center \(c = \frac{l+u}{2}\) and a single generator \(g = \frac{u-l}{2}\), i.e., 
 
      \[\mathcal{Z} = \left\{ c + \epsilon g \mid \epsilon \in [-1, 1] \right\} = \left\{ \frac{l+u}{2} + \epsilon \frac{u-l}{2} \mid \epsilon \in [-1, 1] \right\} = [l, u]\]    
@@ -2925,36 +2928,6 @@ where :
 
 
 \begin{example}
-Consider the interval:
-\[
-x \in [-2, 3].
-\]
-We can express this interval as a zonotope with one generator as shown in \autoref{fig:interval-zonotope}. 
-\begin{equation}
-\begin{aligned}
-c = \frac{-2 + 3}{2} = 0.5, & \quad\text{the midpoint of the interval}\\
-\quad g = \frac{3 - (-2)}{2} = 2.5, &  \quad\text{the half-width (distance from the center to each end}\\
-\epsilon \in [-1, 1], & \quad\text{acts as a knob to move along the generator}
-\end{aligned}
-\end{equation}
-
-Thus, any point \(x\) in this interval can be written as:
-\[
-x = c + \epsilon g \text{ or } x = 0.5 + \epsilon \cdot 2.5,
-\quad \text{where} \quad \epsilon \in [-1, 1].
-\]
-
-For example:
-\[
-\epsilon = -1 \Rightarrow x = -2, 
-\quad
-\epsilon = 0 \Rightarrow x = 0.5, 
-\quad
-\epsilon = +1 \Rightarrow x = 3.
-\]
-
-As \(\epsilon\) varies between \(-1\) and \(+1\), we cover the entire interval \([-2, 3]\).  
-
 
 \begin{figure}
 \centering
@@ -2984,40 +2957,43 @@ As \(\epsilon\) varies between \(-1\) and \(+1\), we cover the entire interval \
 \label{fig:interval-zonotope}
 \end{figure}
 
+Consider the interval:
+\[
+x \in [-2, 3].
+\]
+We can express this interval as a zonotope with one generator as shown in \autoref{fig:interval-zonotope}. 
+\begin{equation}
+\begin{aligned}
+c = \frac{-2 + 3}{2} = 0.5, & \quad\text{the midpoint of the interval}\\
+\quad g = \frac{3 - (-2)}{2} = 2.5, &  \quad\text{the half-width (distance from the center to each end)}\\
+\epsilon \in [-1, 1], & \quad\text{acts as a knob to move along the generator}
+\end{aligned}
+\end{equation}
+
+Thus, any point \(x\) in this interval can be written as:
+\[
+x = c + \epsilon g \text{ or } x = 0.5 + \epsilon \cdot 2.5,
+\quad \text{where} \quad \epsilon \in [-1, 1].
+\]
+
+
+For example:
+\[
+\epsilon = -1 \Rightarrow x = -2, 
+\quad
+\epsilon = 0 \Rightarrow x = 0.5, 
+\quad
+\epsilon = +1 \Rightarrow x = 3.
+\]
+
+As \(\epsilon\) varies between \(-1\) and \(+1\), we cover the entire interval \([-2, 3]\).  
+
+
+
+
 \end{example}
 
 
-\begin{figure}[h!]
-\centering
-\begin{tikzpicture}[scale=1.2,>=stealth]
-
-% axes
-\draw[->, thick] (-0.5,0) -- (3.5,0) node[right] {$x_1$};
-\draw[->, thick] (0,-0.5) -- (0,3.0) node[above] {$x_2$};
-
-% center point
-\filldraw[blue!60!black] (1.5,1.0) circle (1.5pt) node[below left] {$c$};
-
-% generator vectors
-\draw[->, thick, blue!70!black] (1.5,1.0) -- (2.7,1.0) node[right] {$g_1$};
-\draw[->, thick, blue!70!black] (1.5,1.0) -- (1.8,2.2) node[above] {$g_2$};
-
-% parallelogram (zonotope region)
-\fill[orange!20] (0.3,0.0) -- (2.7,0.0) -- (3.0,2.2) -- (0.6,2.2) -- cycle;
-\draw[orange!70!black, thick] (0.3,0.0) -- (2.7,0.0) -- (3.0,2.2) -- (0.6,2.2) -- cycle;
-
-\node[orange!70!black] at (2.1,1.6) {\small all $\epsilon_1,\epsilon_2$ combinations};
-
-% example dots
-\fill[orange!70!black] (0.3,0.0) circle (1pt);
-\fill[orange!70!black] (2.7,0.0) circle (1pt);
-\fill[orange!70!black] (0.6,2.2) circle (1pt);
-\fill[orange!70!black] (3.0,2.2) circle (1pt);
-
-\end{tikzpicture}
-\caption{With two generators $g_1$ and $g_2$, varying $\epsilon_1,\epsilon_2\in[-1,1]$ independently fills a 2D region (a parallelogram). The four corners correspond to the extreme combinations $(\epsilon_1,\epsilon_2)\in\{-1,+1\}^2$.}
-\label{fig:zonotope-e1e2}
-\end{figure}
 
 
 \subsubsection{Affine Transformer} 
