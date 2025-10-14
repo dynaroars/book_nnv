@@ -3141,22 +3141,6 @@ We can distinguish three possible cases of ReLU depending on the interval bounds
 % \node at (1.6,-0.3) {\small unstable zone};
 
 % ReLU curve
-<<<<<<< HEAD
-\draw[thick, black] (-1.2,0) -- (0,0);
-\draw[thick, black] (0,0) -- (2.4,2.4);
-
-% bounding parallelogram
-\fill[orange!20, opacity=0.6] (-1.0,0.0) -- (-1.0,0.8) -- (2.0,2.0) -- (2.0,0.0) -- cycle;
-\draw[orange!70!black, dashed, thick] (-1.0,0.0) -- (2.0,2.0);
-\draw[orange!70!black, dashed, thick] (-1.0,0.8) -- (2.0,2.0);
-
-% labels
-\node[orange!80!black] at (1.0,1.3) {\small parallelogram approximation};
-\node[black] at (-1.2,-0.3) {\small $l$};
-\node[black] at (2.2,-0.3) {\small $u$};
-\fill (0,0) circle (1.5pt);
-\node[below right] at (0,0) {\small $(0,0)$};
-=======
 \draw[very thick, black, domain=-2.0:0] plot (\x,0);
 \draw[very thick, black, domain=0:2.5] plot (\x,\x);
 
@@ -3164,7 +3148,6 @@ We can distinguish three possible cases of ReLU depending on the interval bounds
 \fill (0,0) circle (1.5pt) node[below left] {\small $0$};
 \fill (2,2) circle (1.5pt) node[right] {\small $(u,u)$};
 \fill (-1,0) circle (1.5pt) node[below] {\small $(l,0)$};
->>>>>>> 0b0487c019295f0aa302aa8adbbfad4a3f4a93d5
 
 \end{tikzpicture}
 \caption{Two linear constraints (orange) form an upper and lower bound enclosing the true ReLU (black) over $[l,u]$. The shaded parallelogram is the region we use for zonotope over-approximation.}
