@@ -2006,7 +2006,7 @@ ReLU-based NNV is \NP{}-complete as shown in~\cite{katz2017reluplex,salzer2023re
 
 \section{Symbolic Execution and SMT Solving}\label{sec:se-smt}
 
-As described in~\autoref{sec:satisfiability-and-activation-pattern-search} the Neural Network Verification (NNV) problem can be represented as a satisfiability problem. Specifically, we encode the network as a logical formula, and use a constraint solver to check that formula satisfies the property of interest.
+As described in~\autoref{sec:satisfiability-and-activation-pattern-search} the Neural Network Verification (NNV) problem can be formulated as a satisfiability problem. Specifically, we encode the network as a logical formula, and use a constraint solver to check that formula satisfies the property of interest.
 
 A straightforward and automated way to do this encoding is using \emph{symbolic execution} (SE)~\cite{baldoni2018survey,king1976symbolic}, a well-known software testing technique for finding bugs.  SE executes a program on symbolic inputs, i.e., inputs represented as symbols rather than concrete values, and tracks the reachability of program state as symbolic expressions, i.e., logical formulae over symbolic inputs. The satisfiability of these formulae is then checked using an SMT solver, and satisfying assignments represent inputs leading to the undesirable (buggy) program state.
 
@@ -2311,7 +2311,7 @@ Use MILP encoding and solving to check if the network in~\autoref{fig:dnn-d} sat
 \begin{itemize}
     \item \textbf{Scalability:} While MILP focuses on linear constraints and is generally more efficient than general SMT solving, it still cannot be applied directly to real-world DNNs due to the exponential growth of the search space. Each ReLU introduces a binary variable (\autoref{sec:relu-encoding}), leading to $2^n$ possible branches, and real-world DNNs can have millions of ReLUs, making the search space intractable.
 
-    \item \textbf{Limited exploitation of network structure and modern hardware} General MILP solvers are designed for arbitrary MILP problems and do not exploit DNN-specific structures such as\tvn{Hai, like what? mention those that DNN verification tools exploit}. 
+    \item \textbf{Limited exploitation of network structure and modern hardware} Off-the-shelf MILP solvers are designed for arbitrary MILP problems and do not exploit DNN-specific structures such as\tvn{Hai, fill int}
     
     Moreover, MILP solvers, even industrial-strength ones such as Gurobi~\cite{gurobi}, are primarily CPU-based and does not leverage the massive parallelism provided by modern GPUs.
 
@@ -2851,51 +2851,6 @@ Nonetheless, interval-based methods remain popular due to their simplicity and e
 \subsection{Zonotope}\label{sec:zonotope-abstraction}
 
 
-
-
-% \begin{figure}
-% \centering
-% \begin{tikzpicture}[scale=1.2,>=stealth]
-
-% % Axes
-% \draw[->, thick] (-1.5,0) -- (2.8,0) node[right] {$x$};
-% \draw[->, thick] (0,-0.5) -- (0,2.8) node[above] {$y=\text{ReLU}(x)$};
-
-% % ReLU curve
-% \draw[thick, black, domain=-1.2:0] plot (\x,0);
-% \draw[thick, black, domain=0:2.5] plot (\x,\x);
-
-% % Points
-% \fill (0,0) circle (1.5pt) node[below left] {\small $0$};
-% \fill (2,2) circle (1.5pt) node[right] {\small $(u,u)$};
-% \fill (-1,0) circle (1.5pt) node[left] {\small $(l,0)$};
-
-% % Parallelogram region
-% \fill[orange!20, opacity=0.6] (-1,0) -- (-1,0.8) -- (2,2) -- (2,0) -- cycle;
-
-% % Linear bounds
-% \draw[orange!80!black, thick, dashed] (-1,0) -- (2,2); % upper bound
-% \draw[orange!80!black, thick, dashed] (-1,0.8) -- (2,2); % lower bound
-
-% % Labels
-% \node[orange!60!black] at (1.2,1.8) {\small upper bound};
-% \node[orange!60!black] at (0.3,0.6) {\small lower bound};
-% \node at (1.6,-0.3) {\small unstable zone};
-
-% \end{tikzpicture}
-% \caption{ReLU function (black) and its zonotope over-approximation (orange parallelogram) for an input interval crossing zero.}
-% \label{fig:relu-parallelogram}
-% \end{figure}
-
-
-
-An interval abstraction (\autoref{sec:interval-abstraction}) treats each variable independently. For example, if \(x_1 \in [1,2]\) and \(x_2 \in [3,4]\), intervals assume any combination of \(x_1\) and \(x_2\) is possible. But in many real systems, variables move together: when \(x_1\) increases, \(x_2\) might also increase.  
-%A \emph{zonotope} captures this correlation by encoding both variables as linear combinations of a few shared ``uncertainty sources’’ (\(\epsilon_i\)’s).  
-In geometric terms, as shown in \autoref{fig:zonotope-vs-box}, while intervals form axis-aligned boxes, zonotopes form \emph{tilted boxes} (parallelograms or higher-dimensional analogues), preserving the direction of dependency between variables.
-
-Thus, zonotopes extend intervals by introducing \emph{generators}, which are vectors that define directions of variability and allow the zonotope to tilt and stretch in directions that capture correlations between variables. This allows zonotopes to capture correlations between variables, leading to more precise approximations compared to intervals.
-
-
 \begin{figure}
 \centering
 \begin{tikzpicture}[scale=1.3,>=stealth]
@@ -2924,8 +2879,19 @@ Thus, zonotopes extend intervals by introducing \emph{generators}, which are vec
 \end{figure}
 
 
+An interval abstraction (\autoref{sec:interval-abstraction}) treats each variable independently. For example, if \(x_1 \in [1,2]\) and \(x_2 \in [3,4]\), intervals assume any combination of \(x_1\) and \(x_2\) is possible. But in many real systems, variables move together: when \(x_1\) increases, \(x_2\) might also increase.  
+%A \emph{zonotope} captures this correlation by encoding both variables as linear combinations of a few shared ``uncertainty sources’’ (\(\epsilon_i\)’s).  
+In geometric terms, as shown in \autoref{fig:zonotope-vs-box}, while intervals form axis-aligned boxes, zonotopes form \emph{tilted boxes} (parallelograms or higher-dimensional analogues) that can stretch, rotate, and capture relationships between variables (like ``when $x_1$ goes up, $x_2$ also goes up'').
+
+Thus, zonotopes extend intervals by introducing \emph{generators}, which are vectors that define directions of variability and allow the zonotope to tilt and stretch in directions that capture correlations between variables. 
+
+
+
+
+
+
 \paragraph{Definition}
-A \textbf{zonotope} \(\mathcal{Z}\) in \(\mathbb{R}^n\) is defined as:
+    A zonotope is built by taking a ``center point'' and adding several small ``generator'' directions that can each vary a bit in both directions. More specifically, a \textbf{zonotope} \(\mathcal{Z}\) in \(\mathbb{R}^n\) is defined as:
 \[
 \mathcal{Z} = \left\{c + \sum_{i=1}^{m} \epsilon_i g_i \mid \epsilon_i \in [-1, 1]\right\}
 \]
@@ -2933,7 +2899,7 @@ where :
 \begin{itemize}
 \item \(c \in \mathbb{R}^n\) is the \textit{center} (like the midpoint of intervals), 
 \item \(g_i \in \mathbb{R}^n\) are \textit{generator vectors} (directions of variability), and 
-\item \(\epsilon_i\) are independent coefficients in \([-1, 1]\). 
+\item \(\epsilon_i\) are independent coefficients in \([-1, 1]\) that determine how much we move along each generator direction. E.g., -1 means moving in the negative direction of the generator, 0 means no movement, and +1 means moving in the positive direction. 
 \end{itemize}
 
 % \paragraph{A simpler geometric example.}
@@ -2945,6 +2911,9 @@ where :
 % This produces a parallelogram, not a square — since both \(x\) and \(y\) depend on \(\epsilon_2\), movement in \(x\) is correlated with movement in \(y\).  
 % That “tilt’’ captures dependency that intervals cannot.
 
+
+
+
 \begin{example}[Interval is a special case of zonotope]
      An interval \([l, u]\) can be represented as a zonotope with center \(c = \frac{l+u}{2}\) and a single generator \(g = \frac{u-l}{2}\), i.e., 
 
@@ -2953,10 +2922,107 @@ where :
      Thus, zonotopes generalize intervals by allowing multiple generators to capture more complex dependencies.
 \end{example}
 
+
+
+\begin{example}
+Consider the interval:
+\[
+x \in [-2, 3].
+\]
+We can express this interval as a zonotope with one generator as shown in \autoref{fig:interval-zonotope}. 
+\begin{equation}
+\begin{aligned}
+c = \frac{-2 + 3}{2} = 0.5, & \quad\text{the midpoint of the interval}\\
+\quad g = \frac{3 - (-2)}{2} = 2.5, &  \quad\text{the half-width (distance from the center to each end}\\
+\epsilon \in [-1, 1], & \quad\text{acts as a knob to move along the generator}
+\end{aligned}
+\end{equation}
+
+Thus, any point \(x\) in this interval can be written as:
+\[
+x = c + \epsilon g \text{ or } x = 0.5 + \epsilon \cdot 2.5,
+\quad \text{where} \quad \epsilon \in [-1, 1].
+\]
+
+For example:
+\[
+\epsilon = -1 \Rightarrow x = -2, 
+\quad
+\epsilon = 0 \Rightarrow x = 0.5, 
+\quad
+\epsilon = +1 \Rightarrow x = 3.
+\]
+
+As \(\epsilon\) varies between \(-1\) and \(+1\), we cover the entire interval \([-2, 3]\).  
+
+
+\begin{figure}
+\centering
+\begin{tikzpicture}[scale=1.2,>=stealth]
+
+% number line
+\draw[->, thick] (-3.0,0) -- (3.5,0) node[right] {$x$};
+
+% interval region
+\fill[orange!20] (-2,0) rectangle (3,0.25);
+\draw[orange!70!black, thick] (-2,0) -- (3,0);
+
+% center point
+\filldraw[blue!70!black] (0.5,0.12) circle (1.5pt) node[above] {$c=0.5$};
+
+% labels
+\draw[dashed] (-2,0) -- (-2,0.5) node[above, black] {$-2$};
+\draw[dashed] (3,0) -- (3,0.5) node[above, black] {$3$};
+\node at (0.5,-0.4) {\small $x = c + \epsilon g$};
+
+% epsilon arrows
+\draw[<->, orange!80!black, thick] (-2,0.25) -- (3,0.25);
+\node[orange!70!black] at (0.5,0.7) {\small $\epsilon \in [-1,1]$ moves along $g=2.5$};
+
+\end{tikzpicture}
+\caption{An interval $[-2,3]$ is a 1D zonotope with center $c=0.5$, generator $g=2.5$, and parameter $\epsilon\in[-1,1]$. Varying $\epsilon$ covers the entire interval.}
+\label{fig:interval-zonotope}
+\end{figure}
+
+\end{example}
+
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[scale=1.2,>=stealth]
+
+% axes
+\draw[->, thick] (-0.5,0) -- (3.5,0) node[right] {$x_1$};
+\draw[->, thick] (0,-0.5) -- (0,3.0) node[above] {$x_2$};
+
+% center point
+\filldraw[blue!60!black] (1.5,1.0) circle (1.5pt) node[below left] {$c$};
+
+% generator vectors
+\draw[->, thick, blue!70!black] (1.5,1.0) -- (2.7,1.0) node[right] {$g_1$};
+\draw[->, thick, blue!70!black] (1.5,1.0) -- (1.8,2.2) node[above] {$g_2$};
+
+% parallelogram (zonotope region)
+\fill[orange!20] (0.3,0.0) -- (2.7,0.0) -- (3.0,2.2) -- (0.6,2.2) -- cycle;
+\draw[orange!70!black, thick] (0.3,0.0) -- (2.7,0.0) -- (3.0,2.2) -- (0.6,2.2) -- cycle;
+
+\node[orange!70!black] at (2.1,1.6) {\small all $\epsilon_1,\epsilon_2$ combinations};
+
+% example dots
+\fill[orange!70!black] (0.3,0.0) circle (1pt);
+\fill[orange!70!black] (2.7,0.0) circle (1pt);
+\fill[orange!70!black] (0.6,2.2) circle (1pt);
+\fill[orange!70!black] (3.0,2.2) circle (1pt);
+
+\end{tikzpicture}
+\caption{With two generators $g_1$ and $g_2$, varying $\epsilon_1,\epsilon_2\in[-1,1]$ independently fills a 2D region (a parallelogram). The four corners correspond to the extreme combinations $(\epsilon_1,\epsilon_2)\in\{-1,+1\}^2$.}
+\label{fig:zonotope-e1e2}
+\end{figure}
+
+
 \subsubsection{Affine Transformer} 
 
-A key benefit of zonotopes is that affine operations preserve their structure exactly: no approximation needed.  
-Imagine a tilted box in space, then an affine transformation just stretches, rotates, and shifts it---the result is still a tilted box.
+
 
 For the affine function \(f\) in~\autoref{sec:affine}
 \[
@@ -2966,88 +3032,11 @@ where \(W\) is a weight matrix and \(b\) is a bias vector. Given an input zonoto
 \[
 f^a(\mathcal{Z}) = (Wc + b, WG)
 \]
-The new center becomes \(Wc + b\) and the new generator matrix becomes \(WG\). Since affine transformations preserve zonotope structure, this transformation is exact with no over-approximation.
+The new center becomes \(Wc + b\) and the new generator matrix becomes \(WG\). 
 
+A key benefit of zonotopes is that affine operations preserve their structure exactly: no approximation needed.  
+Imagine a tilted box in space, then an affine transformation just stretches, rotates, and shifts it---the result is still a tilted box.
 
-
-\subsubsection{ReLU Transformer}
-
-Activation functions like ReLU are non-affine and do not preserve zonotope structure\tvn{what is it? can we draw it}.  
-
-\paragraph{Intuition first.}
-The ReLU function “clips’’ all negative values to 0 and keeps positives unchanged:
-\[
-\text{ReLU}(x) = \max(0, x)
-\]
-Graphically, it looks like a straight line \(y=x\) for \(x>0\) and flat at 0 for \(x<0\).  
-If your input range \([l,u]\) is entirely above 0, everything passes through unchanged.  
-If it’s entirely below 0, everything becomes 0.  
-The hard case is when the range crosses 0 — the function bends sharply there, so a straight-line (affine) abstraction can’t capture it exactly.
-
-% \begin{center}
-% \includegraphics[width=0.55\textwidth]{figures/relu_parallelogram.pdf}
-% \end{center}
-% \textit{Figure: The ReLU curve (black) and its zonotope over-approximation (shaded parallelogram).}
-
-\paragraph{Why not just use intervals?}
-Intervals can easily over-approximate ReLU, but they lose dependencies — if two neurons share the same uncertainty source, intervals can’t remember that after the nonlinearity. Zonotopes can, thanks to their shared generators.  
-This makes zonotopes much tighter when you propagate through several layers.
-
----
-
-Given an input zonotope, we first compute its interval bounds \([l,u]\) (\tvn{like what we just computed in 5.2.2.1?}), then consider three cases:
-...
-
-(add rest of your existing technical section unchanged)
-
----
-
-\paragraph{Geometric picture.}
-When \([l,u]\) crosses zero, we replace the “kink’’ of ReLU with a tilted parallelogram bounded by two lines:
-- one that under-approximates (the lower slope \(\lambda x\)),
-- one that over-approximates (the upper line \(\lambda x + u(1-\lambda)\)).
-
-This parallelogram fully contains the real ReLU curve, and by converting it into a zonotope, we get a linear representation that can still be propagated.
-
-\paragraph{Key insight.}
-Each ReLU that crosses zero introduces one new generator — representing the uncertainty of whether that neuron is active or inactive.  
-As a network gets deeper, the number of generators grows, each tracking different combinations of “maybe-active’’ neurons.  
-This is what allows zonotope-based verifiers to remain precise even after many nonlinear layers.
-
-\begin{example}[ReLU on zonotope]\label{ex:zonotope_relu_example}
-...
-\end{example}
-
-\paragraph{Summary intuition.}
-Intervals treat each neuron’s uncertainty separately → boxes.  
-Zonotopes tie them together → tilted boxes (parallelograms).  
-Through affine layers, zonotopes move exactly; through ReLUs, they get conservatively widened by adding one extra generator per uncertain neuron.  
-Over multiple layers, this tradeoff between precision and complexity makes zonotopes one of the most widely used abstractions in neural network verification.
-
-
-%%%% 
-Zonotopes extend intervals (\autoref{sec:interval-abstraction}) by introducing \emph{generators} that represent linear dependencies between variables. This allows zonotopes to capture correlations between variables, leading to more precise approximations compared to intervals.
-
-
-A \textbf{zonotope} \(\mathcal{Z}\) in \(\mathbb{R}^n\) is formally defined as:
-\[
-\mathcal{Z} = \left\{c + \sum_{i=1}^{m} \epsilon_i g_i \mid \epsilon_i \in [-1, 1]\right\}
-\]
-where :
-\begin{itemize}
-\item \(c \in \mathbb{R}^n\) is the \textit{center} (like the midpoint of intervals), 
-\item \(g_i \in \mathbb{R}^n\) are \textit{generator vectors} (directions of variability), and 
-\item \(\epsilon_i\) are independent coefficients in \([-1, 1]\). 
-\end{itemize}
-
-
-\subsubsection{Affine Transformer} For the affine function \(f\) in~\autoref{sec:affine}
-\[f(x) = Wx + b\]
-where \(W\) is a weight matrix and \(b\) is a bias vector. Given an input zonotope \(\mathcal{Z} = (c, G)\) where \(G = [g_1, g_2, \ldots, g_m]\) is the generator matrix, the abstract transformer \(f^a\) for zonotope is:
-\[
-f^a(\mathcal{Z}) = (Wc + b, WG)
-\]
-The new center becomes \(Wc + b\) and the new generator matrix becomes \(WG\). Since affine transformations preserve zonotope structure, this transformation is exact with no over-approximation.
 
 \begin{example}\label{ex:zonotope_linear_example}
 Consider the DNN in~\autoref{fig:dnn-abs} with inputs \(x_1 \in [1, 2]\) and \(x_2 \in [-1, 3]\). The affine function for neuron \(x_3\) is:
@@ -3089,6 +3078,98 @@ The output zonotope for \(x_3\) is \((0.75, [-0.25, 1.0])\), thus the concrete b
     Note that, for this single affine operation over a box input, both interval (\autoref{sec:interval-affine-transformer}) and zonotope abstractions yield identical bounds \([-0.5, 2.0]\). The advantage of zonotopes becomes apparent when propagating through multiple layers, where zonotopes preserve linear correlations that intervals lose.
 \end{example}
 
+\subsubsection{ReLU Transformer}
+
+Activation functions like ReLU are non-affine and do not preserve zonotope structure\tvn{what is it? can we draw it}.  
+
+\paragraph{Intuition first.}
+The ReLU function “clips’’ all negative values to 0 and keeps positives unchanged:
+\[
+\text{ReLU}(x) = \max(0, x)
+\]
+Graphically, it looks like a straight line \(y=x\) for \(x>0\) and flat at 0 for \(x<0\).  
+If your input range \([l,u]\) is entirely above 0, everything passes through unchanged.  
+If it’s entirely below 0, everything becomes 0.  
+The hard case is when the range crosses 0 — the function bends sharply there, so a straight-line (affine) abstraction can’t capture it exactly.
+
+% \begin{center}
+% \includegraphics[width=0.55\textwidth]{figures/relu_parallelogram.pdf}
+% \end{center}
+% \textit{Figure: The ReLU curve (black) and its zonotope over-approximation (shaded parallelogram).}
+
+\paragraph{Why not just use intervals?}
+Intervals can easily over-approximate ReLU, but they lose dependencies — if two neurons share the same uncertainty source, intervals can’t remember that after the nonlinearity. Zonotopes can, thanks to their shared generators.  
+This makes zonotopes much tighter when you propagate through several layers.
+
+---
+
+Given an input zonotope, we first compute its interval bounds \([l,u]\) (\tvn{like what we just computed in 5.2.2.1?}), then consider three cases:
+...
+
+(add rest of your existing technical section unchanged)
+
+---
+
+
+
+\begin{figure}
+\centering
+\begin{tikzpicture}[scale=1.2,>=stealth]
+
+% Axes
+\draw[->, thick] (-1.5,0) -- (2.8,0) node[right] {$x$};
+\draw[->, thick] (0,-0.5) -- (0,2.8) node[above] {$y=\text{ReLU}(x)$};
+
+% ReLU curve
+\draw[thick, black, domain=-1.2:0] plot (\x,0);
+\draw[thick, black, domain=0:2.5] plot (\x,\x);
+
+% Points
+\fill (0,0) circle (1.5pt) node[below left] {\small $0$};
+\fill (2,2) circle (1.5pt) node[right] {\small $(u,u)$};
+\fill (-1,0) circle (1.5pt) node[left] {\small $(l,0)$};
+
+% Parallelogram region
+\fill[orange!20, opacity=0.6] (-1,0) -- (-1,0.8) -- (2,2) -- (2,0) -- cycle;
+
+% Linear bounds
+\draw[orange!80!black, thick, dashed] (-1,0) -- (2,2); % upper bound
+\draw[orange!80!black, thick, dashed] (-1,0.8) -- (2,2); % lower bound
+
+% Labels
+\node[orange!60!black] at (1.2,1.8) {\small upper bound};
+\node[orange!60!black] at (0.3,0.6) {\small lower bound};
+\node at (1.6,-0.3) {\small unstable zone};
+
+\end{tikzpicture}
+\caption{ReLU function (black) and its zonotope over-approximation (orange parallelogram) for an input interval crossing zero.}
+\label{fig:relu-parallelogram}
+\end{figure}
+
+\paragraph{Geometric picture.}
+When \([l,u]\) crosses zero, we replace the “kink’’ of ReLU with a tilted parallelogram bounded by two lines:
+- one that under-approximates (the lower slope \(\lambda x\)),
+- one that over-approximates (the upper line \(\lambda x + u(1-\lambda)\)).
+
+This parallelogram fully contains the real ReLU curve, and by converting it into a zonotope, we get a linear representation that can still be propagated.
+
+\paragraph{Key insight.}
+Each ReLU that crosses zero introduces one new generator — representing the uncertainty of whether that neuron is active or inactive.  
+As a network gets deeper, the number of generators grows, each tracking different combinations of “maybe-active’’ neurons.  
+This is what allows zonotope-based verifiers to remain precise even after many nonlinear layers.
+
+\begin{example}[ReLU on zonotope]\label{ex:zonotope_relu_example}
+...
+\end{example}
+
+\paragraph{Summary intuition.}
+Intervals treat each neuron’s uncertainty separately → boxes.  
+Zonotopes tie them together → tilted boxes (parallelograms).  
+Through affine layers, zonotopes move exactly; through ReLUs, they get conservatively widened by adding one extra generator per uncertain neuron.  
+Over multiple layers, this tradeoff between precision and complexity makes zonotopes one of the most widely used abstractions in neural network verification.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{ReLU Transformer}
 
 Activation functions like ReLU are non-affine and do not preserve zonotope structure\tvn{what is it? can we draw it}. For the ReLU function \(\text{ReLU}(x) = \max(0, x)\), we must use conservative approximations. Given an input zonotope\tvn{why not just interval?}, we first compute its interval bounds \([l, u]\) (\tvn{like what we just computed in 5.2.2.1?}), then consider three cases:
