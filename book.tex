@@ -3066,8 +3066,7 @@ The output zonotope for \(x_3\) is \((0.75, [-0.25, 1.0])\), thus the concrete b
 \end{example}
 
 \subsubsection{ReLU Transformer}
-<<<<<<< HEAD
-\label{sec:zonotope-relu-transformer}
+
 Activation functions like ReLU are non-affine and do not preserve zonotope structure.  
 For the ReLU function \(\text{ReLU}(x) = \max(0, x)\), the shape of the input region changes at \(x = 0\).  
 When a zonotope crosses this point, its smooth tilted-box form becomes bent:  
@@ -3261,59 +3260,7 @@ where the original generators \(g_1, g_2, \ldots, g_m\) are scaled by \(\lambda\
 % Over multiple layers, these generators accumulate—but the result is always a convex, compact shape that soundly over-approximates the DNN’s behavior.
 
 
-\subsubsection{ReLU Transformer}
-<<<<<<< HEAD
-\label{sec:zonotope-relu-transformer}
-Unlike affine transformations, nonlinear activations like ReLU do not preserve the zonotope structure.
-For an input zonotope with lower and upper bounds \([l, u]\), we consider three cases of ReLU$^a$:
-=======
-
-Activation functions like ReLU are non-affine and do not preserve zonotope structure\tvn{what is it? can we draw it}. For the ReLU function \(\text{ReLU}(x) = \max(0, x)\), we must use conservative approximations. Given an input zonotope\tvn{why not just interval?}\hd{no intervals here. Only propagate zonotopes, intervals only are computed to decide which neurons are stable or unstable}, we first compute its interval bounds \([l, u]\) (\tvn{like what we just computed in 5.2.2.1?})\hd{no, zonotope uses centers and generators, so computing like~\autoref{ex:zonotope_linear_example}}, then consider three cases:
->>>>>>> 0b0487c019295f0aa302aa8adbbfad4a3f4a93d5
-
-
-\begin{itemize}
-    \item \textbf{Active case} (\(l \geq 0\)): All values are non-negative, so \(\text{ReLU}^a(x) = x\) (identity function), i.e., the output zonotope is the same as the input zonotope.
-    \item \textbf{Inactive case} (\(u \leq 0\)): All values are negative, so \(\text{ReLU}^a(x) = \{0\}\), i.e., the output zonotope is a single point at zero.
-    \item \textbf{Unstable case} (\(l < 0 < u\)): The range crosses zero, requiring over-approximation using a parallelogram that bounds ReLU over \([l, u]\) as described below.
-\end{itemize}
-
-For the unstable case, we need to over-approximate the ReLU function \(y = \max(0, x)\) over the interval \([l, u]\) where \(l < 0 < u\). Since the ReLU function is non-convex (it has a corner at \(x = 0\)), we cannot represent it exactly with a zonotope. Instead, we construct a parallelogram that contains all possible ReLU outputs.
-
-The zonotope approximation uses two linear constraints to bound the ReLU:
-\begin{itemize}
-    \item \textbf{Lower bound constraint:} \(y \geq \lambda x\), where \(\lambda = \frac{u}{u-l}\) is the slope of the line connecting points \((l, 0)\) and \((u, u)\).
-    \item \textbf{Upper bound constraint:} \(y \leq \lambda x + u(1-\lambda)\), which is the line with slope \(\lambda\) passing through \((u, u)\).
-\end{itemize}
-
-This creates a parallelogram that:
-\begin{enumerate}
-    \item Contains the actual ReLU function over \([l, u]\)
-    \item Has vertices at \((l, 0)\), \((l, u(1-\lambda) - \lambda l)\), \((u, u)\), and \((u, 0)\)
-    \item Introduces approximation error in the triangular region between the constraints
-\end{enumerate}
-
-To represent this parallelogram as a zonotope, we transform the input zonotope \((c, G)\) as follows:
-\begin{itemize}
-    \item \textbf{Scale existing generators:} Each generator \(g_i\) becomes \(\lambda g_i\)
-    \item \textbf{Transform center:} \(c' = \lambda c + \frac{u(1-\lambda)}{2}\)
-    \item \textbf{Add new generator:} \(g_{new} = \frac{u(1-\lambda)}{2}\) to capture the approximation error
-\end{itemize}
-
-The final zonotope after ReLU transformation becomes \((c', G')\) where:
-
-\textbf{Final center:}
-\[
-c' = \lambda c + \frac{u(1-\lambda)}{2}
-\]
-
-\textbf{Final generator matrix:}
-\[
-G' = [\lambda g_1, \lambda g_2, \ldots, \lambda g_m, g_{new}]
-\]
-where the original generators \(g_1, g_2, \ldots, g_m\) are scaled by \(\lambda\), and a new generator \(g_{new} = \frac{u(1-\lambda)}{2}\) is appended.
-
-The new generator is essential because the ReLU over-approximation creates a triangular error region between the actual ReLU function and our linear bounds. However, zonotopes can only represent parallelograms formed by linear combinations of generators. To capture this triangular error within the zonotope framework, we must ``rectangularize'' the triangle by introducing a new generator that spans the height of the approximation error.
+%The new generator is essential because the ReLU over-approximation creates a triangular error region between the actual ReLU function and our linear bounds. However, zonotopes can only represent parallelograms formed by linear combinations of generators. To capture this triangular error within the zonotope framework, we must ``rectangularize'' the triangle by introducing a new generator that spans the height of the approximation error.
 
 
 \begin{example}[ReLU on zonotope]\label{ex:zonotope_relu_example}
