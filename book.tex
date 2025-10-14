@@ -2890,7 +2890,8 @@ More specifically, zonotopes extend intervals by introducing \emph{generators}, 
 
 
 \paragraph{Definition}
-    A zonotope is built by taking a ``center point'' and adding several small ``generator'' directions that can each vary a bit in both directions. More specifically, a \textbf{zonotope} \(\mathcal{Z}\) in \(\mathbb{R}^n\) is defined as:
+    A zonotope is built by taking a ``center point'' and adding several small ``generator'' directions that can each vary a bit in both directions (positive and negative). In addition, each variation is controlled by a coefficient \(\epsilon_i\) serving as a ``knob'' to adjust how much we move along each generator direction.
+    More specifically, a \textbf{zonotope} \(\mathcal{Z}\) in \(\mathbb{R}^n\) is defined as:
 \[
 \mathcal{Z} = \left\{c + \sum_{i=1}^{m} \epsilon_i g_i \mid \epsilon_i \in [-1, 1]\right\}
 \]
@@ -2929,6 +2930,13 @@ where :
 
 \begin{example}
 
+Consider the interval:
+\[
+x \in [-2, 3].
+\]
+We can express this interval as a zonotope with one generator as shown in \autoref{fig:interval-zonotope}. 
+
+
 \begin{figure}
 \centering
 \begin{tikzpicture}[scale=1.2,>=stealth]
@@ -2957,11 +2965,7 @@ where :
 \label{fig:interval-zonotope}
 \end{figure}
 
-Consider the interval:
-\[
-x \in [-2, 3].
-\]
-We can express this interval as a zonotope with one generator as shown in \autoref{fig:interval-zonotope}. 
+
 \begin{equation}
 \begin{aligned}
 c = \frac{-2 + 3}{2} = 0.5, & \quad\text{the midpoint of the interval}\\
@@ -3010,7 +3014,7 @@ f^a(\mathcal{Z}) = (Wc + b, WG)
 \]
 The new center becomes \(Wc + b\) and the new generator matrix becomes \(WG\). 
 
-A key benefit of zonotopes is that affine operations preserve their structure exactly: no approximation needed.  
+Affine operations preserve the structure of zonotopes exactly: no approximation needed.  
 Imagine a tilted box in space, then an affine transformation just stretches, rotates, and shifts it---the result is still a tilted box.
 
 
@@ -3032,7 +3036,7 @@ Thus, the input box can be encoded as a zonotope with center and generator matri
 \[
 c = \begin{bmatrix}1.5 \\ 1.0\end{bmatrix}, \quad G = \begin{bmatrix}0.5 & 0 \\ 0 & 2.0\end{bmatrix}
 \]
-For the weight \(w = [-0.5, 0.5]^\top\) and bias \(b = 1.0\), applying the zonotope transformer:
+For the weight \(w = [-0.5, 0.5]^\top\) and bias \(b = 1.0\), applying the affine transformer:
 \begin{equation}
 \begin{aligned}
 c' &= w^\top c + b = [-0.5, 0.5] \begin{bmatrix}1.5 \\ 1.0\end{bmatrix} + 1.0 = -0.75 + 0.5 + 1.0 = 0.75 \\
@@ -3051,109 +3055,190 @@ The output zonotope for \(x_3\) is \((0.75, [-0.25, 1.0])\), thus the concrete b
 \end{aligned}
 \end{equation}
 
-    Note that, for this single affine operation over a box input, both interval (\autoref{sec:interval-affine-transformer}) and zonotope abstractions yield identical bounds \([-0.5, 2.0]\). The advantage of zonotopes becomes apparent when propagating through multiple layers, where zonotopes preserve linear correlations that intervals lose.
+    Note that for this affine operation over a box input, both interval (\autoref{sec:interval-affine-transformer}) and zonotope abstractions yield identical bounds \([-0.5, 2.0]\). The advantage of zonotopes becomes apparent when propagating through multiple layers, where zonotopes preserve linear correlations that intervals lose.
 \end{example}
 
 \subsubsection{ReLU Transformer}
-
-Activation functions like ReLU are non-affine and do not preserve zonotope structure\tvn{what is it? can we draw it}.  
-
-\paragraph{Intuition first.}
-The ReLU function “clips’’ all negative values to 0 and keeps positives unchanged:
-\[
-\text{ReLU}(x) = \max(0, x)
-\]
-Graphically, it looks like a straight line \(y=x\) for \(x>0\) and flat at 0 for \(x<0\).  
-If your input range \([l,u]\) is entirely above 0, everything passes through unchanged.  
-If it’s entirely below 0, everything becomes 0.  
-The hard case is when the range crosses 0 — the function bends sharply there, so a straight-line (affine) abstraction can’t capture it exactly.
-
-% \begin{center}
-% \includegraphics[width=0.55\textwidth]{figures/relu_parallelogram.pdf}
-% \end{center}
-% \textit{Figure: The ReLU curve (black) and its zonotope over-approximation (shaded parallelogram).}
-
-\paragraph{Why not just use intervals?}
-Intervals can easily over-approximate ReLU, but they lose dependencies — if two neurons share the same uncertainty source, intervals can’t remember that after the nonlinearity. Zonotopes can, thanks to their shared generators.  
-This makes zonotopes much tighter when you propagate through several layers.
-
----
-
-Given an input zonotope, we first compute its interval bounds \([l,u]\) (\tvn{like what we just computed in 5.2.2.1?}), then consider three cases:
-...
-
-(add rest of your existing technical section unchanged)
-
----
+\label{sec:zonotope-relu-transformer}
+Activation functions like ReLU are non-affine and do not preserve zonotope structure.  
+For the ReLU function \(\text{ReLU}(x) = \max(0, x)\), the shape of the input region changes at \(x = 0\).  
+When a zonotope crosses this point, its smooth tilted-box form becomes bent:  
+part of it is flattened (where \(x < 0\)), while the rest stays slanted (where \(x > 0\)).  
+This bending makes the ReLU output no longer a zonotope, so we need an overapproximation that captures all possible outputs.
 
 
+% \begin{figure}[h!]
+% \centering
+% \begin{tikzpicture}[scale=1.0,>=stealth]
+%   % axes
+%   \draw[->, thick] (-1.5,0) -- (2.6,0) node[right] {$x$};
+%   \draw[->, thick] (0,-0.5) -- (0,2.5) node[above] {$y=\mathrm{ReLU}(x)$};
 
-\begin{figure}
+%   % ReLU curve
+%   \draw[thick, black] (-1.2,0) -- (0,0);
+%   \draw[thick, black] (0,0) -- (2.4,2.4);
+
+%   % input zonotope band
+%   \fill[blue!10, opacity=0.6] (-1.0,-0.4) -- (2.0,1.6) -- (2.0,2.0) -- (-1.0,0.0) -- cycle;
+%   \draw[blue!60!black, thick] (-1.0,-0.4) -- (2.0,1.6);
+%   \draw[blue!60!black, thick] (-1.0,0.0) -- (2.0,2.0);
+
+%   % output bent region
+%   \fill[orange!20, opacity=0.6] (-1.0,0.0) -- (0,0.0) -- (2.0,2.0) -- (2.0,1.6) -- (0,0.0) -- cycle;
+
+%   % labels
+%   \node[blue!60!black] at (-0.7,1.2) {\small input};
+%   \node[orange!80!black] at (1.4,1.7) {\small after ReLU (bent)};
+%   \fill (0,0) circle (1.5pt) node[below right] {\small $(0,0)$};
+% \end{tikzpicture}
+% \caption{When a zonotope crosses zero, the ReLU “bends” its shape: the negative part collapses to $0$, while the positive part remains slanted.}
+% \label{fig:relu-bend}
+% \end{figure}
+
+% ---
+
+
+We can distinguish three possible cases of ReLU depending on the interval bounds $[l,r]$ of the input zonotope.
+
+\begin{itemize}
+    \item \textbf{Active case} (\(l \geq 0\)):  
+    All values are non-negative, so \(\text{ReLU}^a(x) = x\) (identity function), i.e., the output zonotope is the same as the input zonotope.  
+    
+
+    \item \textbf{Inactive case} (\(u \leq 0\)):  
+    All values are negative, so \(\text{ReLU}^a(x) = \{0\}\), i.e., the output zonotope is a single point at zero.  
+    
+
+    \item \textbf{Unstable case} (\(l < 0 < u\)):  
+    The range crosses zero, requiring over-approximation using a parallelogram that bounds ReLU over \([l, u]\) as described below.
+\end{itemize}
+
+\begin{figure}[h!]
 \centering
-\begin{tikzpicture}[scale=1.2,>=stealth]
-
-% Axes
-\draw[->, thick] (-1.5,0) -- (2.8,0) node[right] {$x$};
-\draw[->, thick] (0,-0.5) -- (0,2.8) node[above] {$y=\text{ReLU}(x)$};
+\begin{tikzpicture}[scale=1.0,>=stealth]
+% axes
+\draw[->, thick] (-1.5,0) -- (2.6,0) node[right] {$x$};
+\draw[->, thick] (0,-0.5) -- (0,2.5) node[above] {$y=\mathrm{ReLU}(x)$};
 
 % ReLU curve
-\draw[thick, black, domain=-1.2:0] plot (\x,0);
-\draw[thick, black, domain=0:2.5] plot (\x,\x);
+\draw[thick, black] (-1.2,0) -- (0,0);
+\draw[thick, black] (0,0) -- (2.4,2.4);
 
-% Points
-\fill (0,0) circle (1.5pt) node[below left] {\small $0$};
-\fill (2,2) circle (1.5pt) node[right] {\small $(u,u)$};
-\fill (-1,0) circle (1.5pt) node[left] {\small $(l,0)$};
+% bounding parallelogram
+\fill[orange!20, opacity=0.6] (-1.0,0.0) -- (-1.0,0.8) -- (2.0,2.0) -- (2.0,0.0) -- cycle;
+\draw[orange!70!black, dashed, thick] (-1.0,0.0) -- (2.0,2.0);
+\draw[orange!70!black, dashed, thick] (-1.0,0.8) -- (2.0,2.0);
 
-% Parallelogram region
-\fill[orange!20, opacity=0.6] (-1,0) -- (-1,0.8) -- (2,2) -- (2,0) -- cycle;
-
-% Linear bounds
-\draw[orange!80!black, thick, dashed] (-1,0) -- (2,2); % upper bound
-\draw[orange!80!black, thick, dashed] (-1,0.8) -- (2,2); % lower bound
-
-% Labels
-\node[orange!60!black] at (1.2,1.8) {\small upper bound};
-\node[orange!60!black] at (0.3,0.6) {\small lower bound};
-\node at (1.6,-0.3) {\small unstable zone};
+% labels
+\node[orange!80!black] at (1.0,1.3) {\small parallelogram approximation};
+\node[black] at (-1.2,-0.3) {\small $l$};
+\node[black] at (2.2,-0.3) {\small $u$};
+\fill (0,0) circle (1.5pt);
+\node[below right] at (0,0) {\small $(0,0)$};
 
 \end{tikzpicture}
-\caption{ReLU function (black) and its zonotope over-approximation (orange parallelogram) for an input interval crossing zero.}
+\caption{Two linear constraints (orange) form an upper and lower bound enclosing the true ReLU (black) over $[l,u]$. The shaded parallelogram is the region we use for zonotope over-approximation.}
 \label{fig:relu-parallelogram}
 \end{figure}
 
-\paragraph{Geometric picture.}
-When \([l,u]\) crosses zero, we replace the “kink’’ of ReLU with a tilted parallelogram bounded by two lines:
-- one that under-approximates (the lower slope \(\lambda x\)),
-- one that over-approximates (the upper line \(\lambda x + u(1-\lambda)\)).
+For the unstable case, we need to over-approximate the ReLU function \(y = \max(0, x)\) over the interval \([l, u]\) where \(l < 0 < u\).  
+Since the ReLU function is non-convex (it has a corner at \(x = 0\)), we cannot represent it exactly with a zonotope.  
+Instead, we construct a \emph{parallelogram} that contains all possible ReLU outputs.
 
-This parallelogram fully contains the real ReLU curve, and by converting it into a zonotope, we get a linear representation that can still be propagated.
+The zonotope approximation uses two linear constraints to bound the ReLU:
+\begin{itemize}
+    \item \textbf{Lower bound constraint:} \(y \geq \lambda x\), where \(\lambda = \frac{u}{u-l}\) is the slope of the line connecting points \((l, 0)\) and \((u, u)\).
+    \item \textbf{Upper bound constraint:} \(y \leq \lambda x + u(1-\lambda)\), which is the line with slope \(\lambda\) passing through \((u, u)\).
+\end{itemize}
 
-\paragraph{Key insight.}
-Each ReLU that crosses zero introduces one new generator — representing the uncertainty of whether that neuron is active or inactive.  
-As a network gets deeper, the number of generators grows, each tracking different combinations of “maybe-active’’ neurons.  
-This is what allows zonotope-based verifiers to remain precise even after many nonlinear layers.
-
-\begin{example}[ReLU on zonotope]\label{ex:zonotope_relu_example}
-...
-\end{example}
-
-\paragraph{Summary intuition.}
-Intervals treat each neuron’s uncertainty separately → boxes.  
-Zonotopes tie them together → tilted boxes (parallelograms).  
-Through affine layers, zonotopes move exactly; through ReLUs, they get conservatively widened by adding one extra generator per uncertain neuron.  
-Over multiple layers, this tradeoff between precision and complexity makes zonotopes one of the most widely used abstractions in neural network verification.
+These two lines form the upper and lower edges of the parallelogram.  
+Geometrically, the lower line starts from the left corner of the ReLU (where \(x=l\)) and tilts upward with slope \(\lambda\).  
+The upper line touches the ReLU at the right endpoint \((u, u)\).  
+The region between them covers all possible outputs.
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+This creates a parallelogram that:
+\begin{enumerate}
+    \item Contains the actual ReLU function over \([l, u]\)
+    \item Has vertices at \((l, 0)\), \((l, u(1-\lambda) - \lambda l)\), \((u, u)\), and \((u, 0)\)
+    \item Introduces approximation error in the small triangular gap between the linear bounds and the true curve
+\end{enumerate}
+
+
+% \textbf{Intuition:}  
+% The parallelogram acts like a “tilted wrapper” around the ReLU’s bent region.  
+% Its slope \(\lambda\) makes the shape narrower when the interval \([l,u]\) is large (more uncertainty) and steeper when the input is mostly positive (less uncertainty).  
+% By ensuring the real ReLU curve is always inside this parallelogram, we guarantee the output is safely over-approximated.
+
+
+
+To represent this parallelogram as a zonotope, we transform the input zonotope \((c, G)\) as follows:
+\begin{itemize}
+    \item \textbf{Scale existing generators:} Each generator \(g_i\) becomes \(\lambda g_i\)
+    \item \textbf{Transform center:} \(c' = \lambda c + \frac{u(1-\lambda)}{2}\)
+    \item \textbf{Add new generator:} \(g_{new} = \frac{u(1-\lambda)}{2}\) to capture the approximation error
+\end{itemize}
+
+The final zonotope after ReLU transformation becomes \((c', G')\) where:
+
+\textbf{Final center:}
+\[
+c' = \lambda c + \frac{u(1-\lambda)}{2}
+\]
+
+\textbf{Final generator matrix:}
+\[
+G' = [\lambda g_1, \lambda g_2, \ldots, \lambda g_m, g_{new}]
+\]
+
+where the original generators \(g_1, g_2, \ldots, g_m\) are scaled by \(\lambda\), and a new generator \(g_{new} = \frac{u(1-\lambda)}{2}\) is appended.
+
+\vspace{0.5em}
+\noindent
+\textbf{Intuition:}  
+- The scaling by \(\lambda\) compresses the zonotope in the $x$ direction, matching the slope of the ReLU’s linear bounds.  
+- The offset $\frac{u(1-\lambda)}{2}$ shifts the center upward, so it lies in the middle of the parallelogram.  
+- The new generator \(g_{new}\) adds a small “vertical wiggle” that represents the uncertainty caused by the triangular error area we replaced with a rectangle.
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[scale=1.1,>=stealth]
+  % Axes
+  \draw[->, thick] (-1.5,0) -- (2.8,0) node[right] {$x$};
+  \draw[->, thick] (0,-0.5) -- (0,2.5) node[above] {$y$};
+
+  % Parallelogram (final zonotope)
+  \fill[orange!20] (-1.0,0.0) -- (-1.0,0.8) -- (2.0,2.0) -- (2.0,0.0) -- cycle;
+  \draw[orange!80!black, thick] (-1.0,0.0) -- (2.0,2.0);
+  \draw[orange!80!black, thick] (-1.0,0.8) -- (2.0,2.0);
+
+  % center line
+  \draw[dashed, blue!60!black] (-1.0,0.4) -- (2.0,1.8);
+  \filldraw[blue!60!black] (0.5,1.1) circle (1.5pt);
+  \node[blue!60!black] at (0.6,1.4) {\small new center $c'$};
+  \node[orange!80!black] at (1.5,0.4) {\small new generator $g_{new}$};
+\end{tikzpicture}
+\caption{After approximation, the bent ReLU region is represented by a new zonotope (orange parallelogram). The center $c'$ is shifted, old generators are scaled, and one new generator $g_{new}$ is added to capture the approximation error.}
+\label{fig:relu-zonotope-final}
+\end{figure}
+
+% \vspace{0.5em}
+% \noindent
+% \textbf{Takeaway:}  
+% Zonotopes handle affine transformations exactly but approximate nonlinear ones like ReLU by safely wrapping them in linear envelopes.  
+% Each time a neuron crosses zero (the unstable case), a new generator is added to capture that small uncertainty.  
+% Over multiple layers, these generators accumulate—but the result is always a convex, compact shape that soundly over-approximates the DNN’s behavior.
+
+
 \subsubsection{ReLU Transformer}
-
-Activation functions like ReLU are non-affine and do not preserve zonotope structure\tvn{what is it? can we draw it}. For the ReLU function \(\text{ReLU}(x) = \max(0, x)\), we must use conservative approximations. Given an input zonotope\tvn{why not just interval?}, we first compute its interval bounds \([l, u]\) (\tvn{like what we just computed in 5.2.2.1?}), then consider three cases:
+\label{sec:zonotope-relu-transformer}
+Unlike affine transformations, nonlinear activations like ReLU do not preserve the zonotope structure.
+For an input zonotope with lower and upper bounds \([l, u]\), we consider three cases of ReLU$^a$:
 
 
 \begin{itemize}
-    \item \textbf{Active case} (\(l \geq 0\)): All values are non-negative, so \(\text{ReLU}^a(x) = x\) (identity).
-    \item \textbf{Inactive case} (\(u \leq 0\)): All values are negative, so \(\text{ReLU}^a(x) = \{0\}\) (zero zonotope).
+    \item \textbf{Active case} (\(l \geq 0\)): All values are non-negative, so \(\text{ReLU}^a(x) = x\) (identity function), i.e., the output zonotope is the same as the input zonotope.
+    \item \textbf{Inactive case} (\(u \leq 0\)): All values are negative, so \(\text{ReLU}^a(x) = \{0\}\), i.e., the output zonotope is a single point at zero.
     \item \textbf{Unstable case} (\(l < 0 < u\)): The range crosses zero, requiring over-approximation using a parallelogram that bounds ReLU over \([l, u]\) as described below.
 \end{itemize}
 
