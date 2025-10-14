@@ -2311,7 +2311,7 @@ Use MILP encoding and solving to check if the network in~\autoref{fig:dnn-d} sat
 \begin{itemize}
     \item \textbf{Scalability:} While MILP focuses on linear constraints and is generally more efficient than general SMT solving, it still cannot be applied directly to real-world DNNs due to the exponential growth of the search space. Each ReLU introduces a binary variable (\autoref{sec:relu-encoding}), leading to $2^n$ possible branches, and real-world DNNs can have millions of ReLUs, making the search space intractable.
 
-    \item \textbf{Limited exploitation of network structure and modern hardware} Off-the-shelf MILP solvers are designed for arbitrary MILP problems and do not exploit DNN-specific structures such as\tvn{Hai, fill int}
+    \item \textbf{Limited exploitation of network structure and modern hardware} Off-the-shelf MILP solvers are designed for arbitrary MILP problems and do not exploit DNN-specific structures such as\tvn{Hai, fill int}\hd{FNNs, CNNs, ResNets, etc.}
     
     Moreover, MILP solvers, even industrial-strength ones such as Gurobi~\cite{gurobi}, are primarily CPU-based and does not leverage the massive parallelism provided by modern GPUs.
 
@@ -2357,6 +2357,13 @@ This chapter discusses several \emph{abstraction domains} used in DNN verificati
 \section{Overview of Abstractions for ReLU} 
 
 We will focus on ReLU (\autoref{sec:relu}) activation functions, which are the most common in DNNs. The goal is to compute the bounds of a post-ReLU neuron $\hat{z}$ given the bounds of its pre-ReLU value $z$ over the input region. For example, for a ReLU neuron $y = \max(0, x)$, we want to compute the bounds $[l_y(x), u_y(x)]$ of $y$ given the bounds $[l_x, u_x]$ on $x$.\tvn{is the pre-Relu bounds always computed like what was described in~\autoref{sec:pre-relu-bounds}? Is that computation considered interval too? Can that bound computation be obtained using other abstractions?}
+\hd{yes, concrete bounds will always be computed like what was described in~\autoref{sec:pre-relu-bounds} IF the bounds of a neurons are presented as linear equations. In other words, abstractions differ in the way they construct the linear equations, concretization step will be the same.}
+
+\hd{Zonotope uses a different approach to represent the abstraction, using center and generators, so concretization step will be different. But if we construct the lower and upper equations for a zonotope, the concretization step will be the same.}
+
+\hd{Note that, the equations of a neuron are not $e = f(x_1, ..., x_n)$, but 
+\[f_L(x_1, ..., x_n) \le e \le f_U(x_1, ..., x_n)\] 
+So to compute the concrete bounds, $e_L = min(f_L(x_1, ..., x_n))$ and $e_U = max(f_U(x_1, ..., x_n))$, where $min(f_L(x_1, ..., x_n))$ and $max(f_U(x_1, ..., x_n))$ are the concretization steps.}
 
 We want to compute the bounds to be as tight as possible, i.e., they should be the largest lower and lowest upper values that $\hat{z}$ can take given the bounds on $z$. This computation is called \emph{abstraction} and is crucial for DNN verification, as it allows us to reason about the behavior of the network without having to enumerate all possible values of the neurons. There are several abstraction techniques that can be used to compute these bounds, each with its own trade-offs in terms of precision and computational complexity.
 
@@ -3059,6 +3066,7 @@ The output zonotope for \(x_3\) is \((0.75, [-0.25, 1.0])\), thus the concrete b
 \end{example}
 
 \subsubsection{ReLU Transformer}
+<<<<<<< HEAD
 \label{sec:zonotope-relu-transformer}
 Activation functions like ReLU are non-affine and do not preserve zonotope structure.  
 For the ReLU function \(\text{ReLU}(x) = \max(0, x)\), the shape of the input region changes at \(x = 0\).  
@@ -3120,7 +3128,21 @@ We can distinguish three possible cases of ReLU depending on the interval bounds
 \draw[->, thick] (-1.5,0) -- (2.6,0) node[right] {$x$};
 \draw[->, thick] (0,-0.5) -- (0,2.5) node[above] {$y=\mathrm{ReLU}(x)$};
 
+
+% Parallelogram region
+\fill[orange!20, opacity=0.6] (-1,0) -- (2,2) -- (2,1.3) -- (-1,-0.7) -- cycle;
+
+% Linear bounds
+\draw[orange!80!black, thick, dashed] (-1,0) -- (2,2); % upper bound
+\draw[orange!80!black, thick, dashed] (-1,-0.68) -- (2,1.32); % lower bound
+
+% Labels
+\node[orange!60!black] at (0.7,1.8) {\small upper bound};
+\node[orange!60!black] at (2.0,0.6) {\small lower bound};
+% \node at (1.6,-0.3) {\small unstable zone};
+
 % ReLU curve
+<<<<<<< HEAD
 \draw[thick, black] (-1.2,0) -- (0,0);
 \draw[thick, black] (0,0) -- (2.4,2.4);
 
@@ -3135,6 +3157,15 @@ We can distinguish three possible cases of ReLU depending on the interval bounds
 \node[black] at (2.2,-0.3) {\small $u$};
 \fill (0,0) circle (1.5pt);
 \node[below right] at (0,0) {\small $(0,0)$};
+=======
+\draw[very thick, black, domain=-2.0:0] plot (\x,0);
+\draw[very thick, black, domain=0:2.5] plot (\x,\x);
+
+% Points
+\fill (0,0) circle (1.5pt) node[below left] {\small $0$};
+\fill (2,2) circle (1.5pt) node[right] {\small $(u,u)$};
+\fill (-1,0) circle (1.5pt) node[below] {\small $(l,0)$};
+>>>>>>> 0b0487c019295f0aa302aa8adbbfad4a3f4a93d5
 
 \end{tikzpicture}
 \caption{Two linear constraints (orange) form an upper and lower bound enclosing the true ReLU (black) over $[l,u]$. The shaded parallelogram is the region we use for zonotope over-approximation.}
@@ -3231,9 +3262,14 @@ where the original generators \(g_1, g_2, \ldots, g_m\) are scaled by \(\lambda\
 
 
 \subsubsection{ReLU Transformer}
+<<<<<<< HEAD
 \label{sec:zonotope-relu-transformer}
 Unlike affine transformations, nonlinear activations like ReLU do not preserve the zonotope structure.
 For an input zonotope with lower and upper bounds \([l, u]\), we consider three cases of ReLU$^a$:
+=======
+
+Activation functions like ReLU are non-affine and do not preserve zonotope structure\tvn{what is it? can we draw it}. For the ReLU function \(\text{ReLU}(x) = \max(0, x)\), we must use conservative approximations. Given an input zonotope\tvn{why not just interval?}\hd{no intervals here. Only propagate zonotopes, intervals only are computed to decide which neurons are stable or unstable}, we first compute its interval bounds \([l, u]\) (\tvn{like what we just computed in 5.2.2.1?})\hd{no, zonotope uses centers and generators, so computing like~\autoref{ex:zonotope_linear_example}}, then consider three cases:
+>>>>>>> 0b0487c019295f0aa302aa8adbbfad4a3f4a93d5
 
 
 \begin{itemize}
