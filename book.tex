@@ -3086,7 +3086,7 @@ This makes zonotopes much tighter when you propagate through several layers.
 
 ---
 
-Given an input zonotope, we first compute its interval bounds \([l,u]\) (\tvn{like what we just computed in 5.2.2.1?}), then consider three cases:
+Given an input zonotope, we first compute its interval bounds \([l,u]\) (\tvn{like what we just computed in 5.2.2.1?})\hd{no, zonotope uses centers and generators, so computing like~\autoref{ex:zonotope_linear_example}}, then consider three cases:
 ...
 
 (add rest of your existing technical section unchanged)
@@ -3110,19 +3110,19 @@ Given an input zonotope, we first compute its interval bounds \([l,u]\) (\tvn{li
 % Points
 \fill (0,0) circle (1.5pt) node[below left] {\small $0$};
 \fill (2,2) circle (1.5pt) node[right] {\small $(u,u)$};
-\fill (-1,0) circle (1.5pt) node[left] {\small $(l,0)$};
+\fill (-1,0) circle (1.5pt) node[below] {\small $(l,0)$};
 
 % Parallelogram region
-\fill[orange!20, opacity=0.6] (-1,0) -- (-1,0.8) -- (2,2) -- (2,0) -- cycle;
+\fill[orange!20, opacity=0.6] (-1,0) -- (2,2) -- (2,1.3) -- (-1,-0.7) -- cycle;
 
 % Linear bounds
 \draw[orange!80!black, thick, dashed] (-1,0) -- (2,2); % upper bound
-\draw[orange!80!black, thick, dashed] (-1,0.8) -- (2,2); % lower bound
+\draw[orange!80!black, thick, dashed] (-1,-0.7) -- (2,1.3); % lower bound
 
 % Labels
-\node[orange!60!black] at (1.2,1.8) {\small upper bound};
-\node[orange!60!black] at (0.3,0.6) {\small lower bound};
-\node at (1.6,-0.3) {\small unstable zone};
+\node[orange!60!black] at (0.7,1.8) {\small upper bound};
+\node[orange!60!black] at (2.0,0.6) {\small lower bound};
+% \node at (1.6,-0.3) {\small unstable zone};
 
 \end{tikzpicture}
 \caption{ReLU function (black) and its zonotope over-approximation (orange parallelogram) for an input interval crossing zero.}
