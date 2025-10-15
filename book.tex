@@ -2150,7 +2150,7 @@ This guarantees that the extreme values of $e$ are achieved at some corner of th
 
 
 
-\begin{example}\label{ex:relu_milp}
+\begin{example}\label{ex:relu_milp1}
 
 \begin{figure}
 \centering
@@ -2301,10 +2301,10 @@ Use MILP encoding and solving to check if the network in~\autoref{fig:dnn-d} sat
 \end{problem}
 
 \begin{problem}
-As shown in~\autoref{ex:relu_milp}, the upper and lowerbounds of $x_3$ are $u_3 = 2.5$ and $l_3 = -0.5$. 
+As shown in~\autoref{ex:relu_milp1}, the upper and lower bounds of neuron $x_3$ of the DNN in~\autoref{fig:dnn-c} are $u_3 = 2.5$ and $l_3 = -0.5$. 
 \begin{itemize}
 \item Compute the upper and lower bounds of $x_4$ in the same example.
-\item Change the weights and/or biases of the DNN in~\autoref{fig:dnn-c} such that $x_3$ becomes a stable neuron (always active or always inactive).  Show the new weights and/or biases, and compute the new upper and lower bounds of $x_3$.
+\item Change the weights and/or biases of the network in~\autoref{fig:dnn-c}, but keep the input ranges $-1 \le x_1 \le 1$ and $-2 \le x_2 \le 2$, such that $x_3$ becomes a stable neuron (always active or always inactive).  Show the new weights and/or biases, and compute the new upper and lower bounds of $x_3$.
 \end{itemize}
 \end{problem}
 
@@ -2315,14 +2315,14 @@ As shown in~\autoref{ex:relu_milp}, the upper and lowerbounds of $x_3$ are $u_3 
 
 
 \begin{itemize}
-    \item \textbf{Scalability:} While MILP focuses on linear constraints and is generally more efficient than SMT solving, it still cannot be applied directly to real-world DNNs due to the exponential growth of the search space. Each ReLU introduces a binary variable (\autoref{sec:relu-encoding}), leading to $2^n$ possible branches, and real-world DNNs can have millions of ReLUs, making the search space intractable.
+    \item \textbf{Scalability:} While MILP is efficient in dealing with linear constraints, it still cannot be applied directly to real-world DNNs due to the large search space. Each ReLU application to an unstable neuron introduces a binary variable (\autoref{sec:relu-encoding}), leading to exponential number of possible branches, and real-world DNNs can have millions of such ReLUs, making the search space intractable.
 
     \item \textbf{Limited exploitation of network structure and modern hardware} Off-the-shelf MILP solvers are designed for arbitrary MILP problems and do not exploit DNN-specific structures and concepts such as activation patterns (\autoref{sec:activation-patterns}) to prune the search space.
-    Moreover, MILP solvers, even industrial-strength ones such as Gurobi~\cite{gurobi}, are primarily CPU-based and does not leverage the massive parallelism provided by modern GPUs.
+    Moreover, MILP solvers, even industrial-strength ones such as Gurobi~\cite{gurobi}, are primarily CPU-based and does not leverage the massive parallelism provided by modern GPUs to speed up computation.
 
     %\item \textbf{Generic branch-and-bound algorithms:} While MILP solvers employ branch-and-bound (BaB) algorithms, these are generic and not tailored to DNNs. In contrast, specialized DNN verification algorithms leverage DNN-specific BaB strategies, such as layer-wise branching, abstract domain propagation, and neuron-specific heuristics, enabling greater efficiency.
 
-    \item \textbf{Advanced Abstraction and Heuristics} Interval analysis is efficient and commonly used for computing neuron bounds, but cannot capture dependencies between neurons, leading to precision loss in deeper networks. SOTA DNN verification tools (and in general program analyses) employ more advanced abstract domains such as zonotopes  and polytopes to improve precision (\autoref{chap:abstractions}).
+    \item \textbf{Advanced Abstraction and Heuristics} Interval analysis is efficient and commonly used for computing neuron bounds, but cannot capture dependencies between neurons, leading to precision loss in deeper networks. SOTA DNN verification tools use more advanced abstract domains such as zonotopes  and polytopes to improve precision (\autoref{chap:abstractions}).
 
     Modern DNN verification tools also employ heuristics to decide which neurons to branch on and to determine stable neurons to avoid unnecessary branching. These heuristics are not available in general MILP solvers.
 \end{itemize}
@@ -8303,29 +8303,3 @@ So, the PGD attack finds a counterexample at $(x_1 = -1,\ x_2 = 0.75)$.
 
 
 \end{document}
-
-
-when a = 0, 
-
-z^ >= z
-z^ <= 0 ,  z^ >=0   =>     z^  = 0
-z^ <= z - l    -1 - -5     z^ <= 4 
-
-
-
-
-when a = 1
-z^ <= u
-z^ <= z  ,  z^ >=z  => z^ = z 
-
-
-
-x1 = [-1,1]
-x2 = [-2,2]
-
-
-
-x3 = -0.5x1 + 0.5x2 + 1
-
-u  = x3 =  -0.5(-1) + 0.5(2) + 1  =  2.5 
-l = x3 = -0.5(1) + 0.5(-2) + 1  =  -0.5
