@@ -2210,7 +2210,6 @@ Deactivating a neuron, $a_j^{(i)} = 0$, simplifies the first of the (e) constrai
 
 \begin{example}[Full example]\label{ex:milp-dnn}
 
-
     We use MILP to formulate and check if the DNN in~\autoref{fig:dnn-c} satisfies the property $x_5 > 0$ for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$. We do this by checking the feasibility of the MILP constraints encoding $\alpha \land \phi_{in} \land \neg \phi_{out}$, where $\alpha$ is the MILP encoding of the DNN, $\phi_{in}$ is the precondition on the inputs, and $\phi_{out}$ is the postcondition on the outputs.  We do this in several steps:
 
 
@@ -2290,7 +2289,6 @@ Since $x_5 = -3.5 \le 0$, this assignment satisfies our search for $x_5 \le 0$ a
 \caption{\label{fig:dnn-d}A simple DNN (similar to~\autoref{fig:mydnntwo}).}
 \end{figure} 
 
-
 Use MILP encoding and solving to check if the network in~\autoref{fig:dnn-d} satisfies the property $\phi$ that the output $x_5 \ge x_6$ for any inputs $x_1 \in [-1,1], x_2\in[-1,1]$. Specificaly, do the following steps:
 \begin{enumerate}
     \item Write down the precondition $\phi_{in}$ and postcondition $\phi_{out}$ representing the property $\phi$.
@@ -2300,6 +2298,14 @@ Use MILP encoding and solving to check if the network in~\autoref{fig:dnn-d} sat
     \item Write down the final MILP encoding of $\alpha \land \phi_{in} \land \neg{\phi_{out}}$.
     \item Check the feasibility of the MILP encoding (e.g., using Z3) and report the result.
 \end{enumerate}
+\end{problem}
+
+\begin{problem}
+As shown in~\autoref{ex:relu_milp}, the upper and lowerbounds of $x_3$ are $u_3 = 2.5$ and $l_3 = -0.5$. 
+\begin{itemize}
+\item Compute the upper and lower bounds of $x_4$ in the same example.
+\item Change the weights and/or biases of the DNN in~\autoref{fig:dnn-c} such that $x_3$ becomes a stable neuron (always active or always inactive).  Show the new weights and/or biases, and compute the new upper and lower bounds of $x_3$.
+\end{itemize}
 \end{problem}
 
 % \tvn{So far we talk about bounds for pre-ReLU values, right? is that the same as post-ReLU?  In other words, when we talk about abstraction for ReLU, are we talking about these pre-ReLU bounds, which currently use intervals?  or the abstraction for ReLU refer to something else and not these pre-ReLU bounds?}
