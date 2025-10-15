@@ -3161,20 +3161,21 @@ The zonotope approximation uses two linear constraints to bound the ReLU:
 \end{itemize}
 
 Merging the two lower and upper constraints, we get the following equation:
-\begin{equation}
-    y = \lambda x - \alpha \lambda l, \quad \alpha \in [0, 1]
-\end{equation}
+\begin{align*}
+    \lambda x \leq \quad &y \quad \leq \lambda x - \lambda l \\
+    \Leftrightarrow \quad &y = \lambda x - \alpha \lambda l, \quad \alpha \in [0, 1]
+\end{align*}
 However, the form of zonotope requires the $\epsilon_i \in [-1,1]$, so we define $\alpha$ as:
 \[
 \alpha = \frac{1 + \epsilon_{new}}{2}, \quad \epsilon_{new} \in [-1, 1]
 \]
 % where $\epsilon_{new}$ is the new generator for the approximation error. 
 The output zonotope is then:
-\begin{align}
+\begin{align*}
     y &= \lambda x - \frac{1 + \epsilon_{new}}{2} \lambda l \\
       &= \lambda \underbrace{\left(c + \sum_{i=1}^m \epsilon_i g_i\right)}_{x} - \epsilon_{new} \frac{\lambda l }{2} - \frac{\lambda l }{2}  \\
       &= \underbrace{\left(\lambda c -  \frac{\lambda l }{2}\right)}_{\text{new center}} +  \underbrace{\sum_{i=1}^m \epsilon_i (\lambda g_i) - \epsilon_{new} \frac{\lambda l }{2}}_{\text{new generator}}
-\end{align}
+\end{align*}
 
 
 The final zonotope after ReLU transformation becomes \((c', G')\) where:
