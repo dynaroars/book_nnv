@@ -2291,7 +2291,7 @@ Since $x_5 = -3.5 \le 0$, this assignment satisfies our search for $x_5 \le 0$ a
 \end{figure} 
 
 
-Use MILP encoding and solving to check if the network in~\autoref{fig:dnn-d} satisfy the property $\phi$ that the output $x_5 \ge x_6$ for any inputs $x_1 \in [-1,1], x_2\in[-1,1]$. Specificaly, do the following steps:
+Use MILP encoding and solving to check if the network in~\autoref{fig:dnn-d} satisfies the property $\phi$ that the output $x_5 \ge x_6$ for any inputs $x_1 \in [-1,1], x_2\in[-1,1]$. Specificaly, do the following steps:
 \begin{enumerate}
     \item Write down the precondition $\phi_{in}$ and postcondition $\phi_{out}$ representing the property $\phi$.
     \item Write down the MILP encoding of the DNN.
@@ -2309,15 +2309,14 @@ Use MILP encoding and solving to check if the network in~\autoref{fig:dnn-d} sat
 
 
 \begin{itemize}
-    \item \textbf{Scalability:} While MILP focuses on linear constraints and is generally more efficient than general SMT solving, it still cannot be applied directly to real-world DNNs due to the exponential growth of the search space. Each ReLU introduces a binary variable (\autoref{sec:relu-encoding}), leading to $2^n$ possible branches, and real-world DNNs can have millions of ReLUs, making the search space intractable.
+    \item \textbf{Scalability:} While MILP focuses on linear constraints and is generally more efficient than SMT solving, it still cannot be applied directly to real-world DNNs due to the exponential growth of the search space. Each ReLU introduces a binary variable (\autoref{sec:relu-encoding}), leading to $2^n$ possible branches, and real-world DNNs can have millions of ReLUs, making the search space intractable.
 
-    \item \textbf{Limited exploitation of network structure and modern hardware} Off-the-shelf MILP solvers are designed for arbitrary MILP problems and do not exploit DNN-specific structures such as\tvn{Hai, fill int}\hd{FNNs, CNNs, ResNets, etc.}
-    
+    \item \textbf{Limited exploitation of network structure and modern hardware} Off-the-shelf MILP solvers are designed for arbitrary MILP problems and do not exploit DNN-specific structures and concepts such as activation patterns (\autoref{sec:activation-patterns}) to prune the search space.
     Moreover, MILP solvers, even industrial-strength ones such as Gurobi~\cite{gurobi}, are primarily CPU-based and does not leverage the massive parallelism provided by modern GPUs.
 
     %\item \textbf{Generic branch-and-bound algorithms:} While MILP solvers employ branch-and-bound (BaB) algorithms, these are generic and not tailored to DNNs. In contrast, specialized DNN verification algorithms leverage DNN-specific BaB strategies, such as layer-wise branching, abstract domain propagation, and neuron-specific heuristics, enabling greater efficiency.
 
-    \item \textbf{Advanced Abstraction and Heuristics} Interval analysis is efficient and commonly used for computing neuron bounds, but cannot capture dependencies between neurons, leading to precision loss in deeper networks. SOTA DNN verification tools (and in general program analyses) employ more advanced abstract domains such as zonotopes (which capture linear relationships) and polytopes (which represent arbitrary linear constraints) to improve precision.
+    \item \textbf{Advanced Abstraction and Heuristics} Interval analysis is efficient and commonly used for computing neuron bounds, but cannot capture dependencies between neurons, leading to precision loss in deeper networks. SOTA DNN verification tools (and in general program analyses) employ more advanced abstract domains such as zonotopes  and polytopes to improve precision (\autoref{chap:abstractions}).
 
     Modern DNN verification tools also employ heuristics to decide which neurons to branch on and to determine stable neurons to avoid unnecessary branching. These heuristics are not available in general MILP solvers.
 \end{itemize}
