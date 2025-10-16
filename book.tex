@@ -2300,7 +2300,7 @@ Use MILP encoding and solving to check if the network in~\autoref{fig:dnn-d} sat
 \end{enumerate}
 \end{problem}
 
-\begin{problem}
+\begin{problem}\label{prob:stable-neuron}
 As shown in~\autoref{ex:relu_milp1}, the upper and lower bounds of neuron $x_3$ of the DNN in~\autoref{fig:dnn-c} are $u_3 = 2.5$ and $l_3 = -0.5$. 
 \begin{itemize}
 \item Compute the upper and lower bounds of $x_4$ in the same example.
@@ -2835,7 +2835,7 @@ This is equivalent to three cases:
 \end{enumerate}
 
 \begin{example}
-For~\autoref{ex:transformer-affine1}, applying ReLU$^a$ to neuron $x^3$ gives:
+For~\autoref{ex:transformer-affine1}, applying ReLU$^a$ to neuron $x_3$ gives:
 
 \[
 \myrelu^a([-0.5, 2.0]) = [\myrelu(-0.5), \myrelu(2.0)] 
@@ -2843,6 +2843,10 @@ For~\autoref{ex:transformer-affine1}, applying ReLU$^a$ to neuron $x^3$ gives:
 \]
 \end{example}
 
+
+\begin{problem}\label{prob:int-abs}
+  Apply interval abstraction to the DNN in~\autoref{fig:dnn-abs} with inputs \(x_1 \in [1, 2]\) and \(x_2 \in [-1, 3]\). Compute the bounds for all neurons.  Clearly indicate the steps (e.g., results after affine and ReLU transformers).
+\end{problem}
 
 \subsubsection{Efficiency and Precision}
 
@@ -6369,7 +6373,7 @@ In each specification, the inputs (condition distance and latent variables) are 
 
 
 
-
+\part{Appendices\label{part:appendices}}
 %\renewcommand{\appendixname}{Assignment}
 \appendix
 \chapter{Schedule and Assignments}
@@ -6412,9 +6416,16 @@ In each specification, the inputs (condition distance and latent variables) are 
     \item Programming Assignment 2 (PA2): Abstraction~\autoref{sec:pa2}. Due date \alert{Wednesday October 29, 2025 11:59pm}
     \item Week 8 (Oct 15):
     \begin{itemize}
-        \item HW: Do~\autoref{prob:milp-dnn}
+      \item HW: Do~\autoref{prob:milp-dnn}
+       \item Topics: Abstraction (\autoref{chap:abstractions}), Interval and Zonotope (\autoref{sec:interval-abstraction},~\autoref{sec:zonotope-abstraction})
+       \item Quiz:~\autoref{prob:stable-neuron}
     \end{itemize}
-    \item Week 9 (Oct 22):
+  \item Week 9 (Oct 22):
+        \begin{itemize}
+          \item Topics: Abstraction (\autoref{chap:abstractions}), Interval and Zonotope (\autoref{sec:interval-abstraction},~\autoref{sec:zonotope-abstraction})                
+          \item HW: Do~\autoref{prob:int-abs}
+          \item Quiz: TBD      
+        \end{itemize}
     \item Week 10 (Oct 29):
 \end{itemize}    
 
