@@ -2350,27 +2350,25 @@ As shown in~\autoref{ex:relu_milp1}, the upper and lower bounds of neuron $x_3$ 
 % More advanced abstractions like zonotopes can capture linear relationships between variables, while polytopes can represent arbitrary linear constraints. 
 
 
-
-
-
 \chapter{Abstractions}\label{chap:abstractions}
 
 
-As mentioned in~\autoref{sec:relu-encoding} we need to compute the bounds of the neurons to reduce the search space. Modern DNN verifiers use \emph{abstraction} techniques to compute these bounds more precisely while balancing computational efficiency.
-This chapter discusses several \emph{abstraction domains} used in DNN verification, including interval, zonotope, and polytope abstractions.
+As mentioned in~\autoref{sec:relu-encoding} the computation of upper and lower bounds of the neuron values is crucial for DNN verification. These bounds help determine neuron stability and therefore can significantly reduce the search space. Modern DNN verifiers explore different \emph{abstraction} techniques to compute these bounds more precisely while balancing computational efficiency.
+ 
+This chapter discusses the interval, zonotope, and polytope abstract domains commonly used in verification. Each domain provides a different way to represent and compute the bounds of neurons, with its own trade-offs in terms of precision and computational complexity.
 
-\section{Overview of Abstractions for ReLU} 
+\section{Overview and Background} 
 
-We will focus on ReLU (\autoref{sec:relu}) activation functions, which are the most common in DNNs. The goal is to compute the bounds of a post-ReLU neuron $\hat{z}$ given the bounds of its pre-ReLU value $z$ over the input region. For example, for a ReLU neuron $y = \max(0, x)$, we want to compute the bounds $[l_y(x), u_y(x)]$ of $y$ given the bounds $[l_x, u_x]$ on $x$.\tvn{is the pre-Relu bounds always computed like what was described in~\autoref{sec:pre-relu-bounds}? Is that computation considered interval too? Can that bound computation be obtained using other abstractions?}
-\hd{yes, concrete bounds will always be computed like what was described in~\autoref{sec:pre-relu-bounds} IF the bounds of a neurons are presented as linear equations. In other words, abstractions differ in the way they construct the linear equations, concretization step will be the same.}
+%We will focus on ReLU (\autoref{sec:relu}) activation functions, which are the most common in DNNs. The goal is to compute the bounds of a post-ReLU neuron $\hat{z}$ given the bounds of its pre-ReLU value $z$ over the input region. For example, for a ReLU neuron $y = \max(0, x)$, we want to compute the bounds $[l_y(x), u_y(x)]$ of $y$ given the bounds $[l_x, u_x]$ on $x$.\tvn{is the pre-Relu bounds always computed like what was described in~\autoref{sec:pre-relu-bounds}? Is that computation considered interval too? Can that bound computation be obtained using other abstractions?}
+%\hd{yes, concrete bounds will always be computed like what was described in~\autoref{sec:pre-relu-bounds} IF the bounds of a neurons are presented as linear equations. In other words, abstractions differ in the way they construct the linear equations, concretization step will be the same.}
 
-\hd{Zonotope uses a different approach to represent the abstraction, using center and generators, so concretization step will be different. But if we construct the lower and upper equations for a zonotope, the concretization step will be the same.}
+%\hd{Zonotope uses a different approach to represent the abstraction, using center and generators, so concretization step will be different. But if we construct the lower and upper equations for a zonotope, the concretization step will be the same.}
 
-\hd{Note that, the equations of a neuron are not $e = f(x_1, ..., x_n)$, but 
+%\hd{Note that, the equations of a neuron are not $e = f(x_1, ..., x_n)$, but 
 \[f_L(x_1, ..., x_n) \le e \le f_U(x_1, ..., x_n)\] 
-So to compute the concrete bounds, $e_L = min(f_L(x_1, ..., x_n))$ and $e_U = max(f_U(x_1, ..., x_n))$, where $min(f_L(x_1, ..., x_n))$ and $max(f_U(x_1, ..., x_n))$ are the concretization steps.}
+%So to compute the concrete bounds, $e_L = min(f_L(x_1, ..., x_n))$ and $e_U = max(f_U(x_1, ..., x_n))$, where $min(f_L(x_1, ..., x_n))$ and $max(f_U(x_1, ..., x_n))$ are the concretization steps.}
 
-We want to compute the bounds to be as tight as possible, i.e., they should be the largest lower and lowest upper values that $\hat{z}$ can take given the bounds on $z$. This computation is called \emph{abstraction} and is crucial for DNN verification, as it allows us to reason about the behavior of the network without having to enumerate all possible values of the neurons. There are several abstraction techniques that can be used to compute these bounds, each with its own trade-offs in terms of precision and computational complexity.
+%We want to compute the bounds to be as tight as possible, i.e., they should be the largest lower and lowest upper values that $\hat{z}$ can take given the bounds on $z$. This computation is called \emph{abstraction} and is crucial for DNN verification, as it allows us to reason about the behavior of the network without having to enumerate all possible values of the neurons. There are several abstraction techniques that can be used to compute these bounds, each with its own trade-offs in terms of precision and computational complexity.
 
 \newcommand{\intervalabstraction}[1]{
     \begin{tikzpicture}[scale=#1]
@@ -2472,18 +2470,20 @@ We want to compute the bounds to be as tight as possible, i.e., they should be t
     \label{fig:relu-all-abstractions}
 \end{figure}
 
-\subsection{Common Abstractions for ReLU}
+\paragraph{Common Abstractions for ReLU}
+We use ReLU as a running example to illustrate different abstractions.
+Our goal is to compute the bounds of a post-ReLU neuron $\hat{z}$ given the bounds of its pre-ReLU value $z$ (as shown in~\autoref{sec:pre-relu-bounds}). For example, for a ReLU neuron $y = \max(0, x)$, we want to compute the bounds $[l_y(x), u_y(x)]$ of $y$ given the bounds $[l_x, u_x]$ on $x$.
+
 \autoref{fig:relu-all-abstractions} illustrates common abstractions (or \emph{over-approximations}) for the ReLU function $y = \max(0, x)$, where $x \in [l_x, u_x]$ and $y \in [l_y(x), u_y(x)]$. The values of ReLU are shown as points on the \colorbox{myred}{red line}, which is non-convex and consists of two linear segments: one for $x < 0$ (where $y = 0$) and another for $x \geq 0$ (where $y = x$).
 To compute the bounds $l_y(x)$ and $u_y(x)$, we can use different abstractions: 
 
 \begin{itemize}
-    \item \textbf{Interval Abstraction:} Interval represents the output of the post-ReLU neuron as intervals $[l_y(x), u_y(x)]$ where $l_y(x) = 0$ and $u_y(x) = u_x$. It does not capture the relationship between the input and output of ReLU, and simply assumes that the output can take any value between 0 and the upper bound of the input. Interval is a simple and efficient abstraction, but it can be \emph{too imprecise} for many cases.
+    \item \textbf{Interval Abstraction:} Interval represents the output of the post-ReLU neuron as intervals $[l_y(x), u_y(x)]$ where $l_y(x) = 0$ and $u_y(x) = u_x$. It does not capture the relationship between the input and output of ReLU, and simply assumes that the output can take any value between 0 and the upper bound of the input. Interval is a simple and efficient abstraction, but it can be \emph{imprecise} for many cases.
 
-    In~\autoref{fig:relu-interval-abstraction}, the \colorbox{yellowfill}{yellow rectangle} represents the interval $[0, u_x]$.  As can be seen, this interval region is too large of an over-approximation (too coarse or loose), as it includes many points that are not achievable by ReLU, e.g., the point $(0.5, 0.0)$ is not on the red line.
-
-    \item \textbf{Zonotope Abstraction:} Zonotopes can capture linear relationships between variables more effectively. We can represent ReLU as a zonotope that includes the linear segments.  The lower bound $l_y(x)$ is $y = \lambda x$ and the upper bound $u_y(x)$ is $y = \lambda x + u_x(1 - \lambda)$ for some slope $\lambda \in [0, \frac{u_x}{u_x - l_x}]$. If we set $\lambda = 0$, the zonotope is a rectangle, which is the same as the interval abstraction. If we set $\lambda = \frac{u_x}{u_x - l_x}$, the zonotope's is upper bound is the same as polytope's upper bound in~\autoref{fig:relu-polytope-abstraction}.
+    In~\autoref{fig:relu-interval-abstraction}, the \colorbox{yellowfill}{yellow rectangle} (box) represents the interval abstraction in the 2D space of $(x, y)$. As can be seen, this box is too large of an over-approximation (too coarse or loose), as it includes many points that are not achievable by ReLU, e.g., the point $(0.5, 0.0)$ is not on the red line.
     
-    In~\autoref{fig:relu-zonotope-abstraction}, the zonotope, depicted as a \colorbox{yellowfill}{a parallelogram}, is arguably tighter than the interval in~\autoref{fig:relu-interval-abstraction}.  It captures the linear relationship between $x$ and $y$ and excludes points that are not achievable by ReLU, e.g., the point $(0.5, 0.0)$ that was included in the interval abstraction is not included in the zonotope. However, it still includes non-ReLU points and is also not strictly better than interval, e.g., the point $(0.5, -0.5)$ is included in the zonotope but not in the interval abstraction (or ReLU). 
+    \item \textbf{Zonotope Abstraction:} Zonotopes, commonly represented using center and generators, can capture linear relationships between variables more effectively. %We can represent ReLU as a zonotope that includes the linear segments.  The lower bound $l_y(x)$ is $y = \lambda x$ and the upper bound $u_y(x)$ is $y = \lambda x + u_x(1 - \lambda)$ for some slope $\lambda \in [0, \frac{u_x}{u_x - l_x}]$. If we set $\lambda = 0$, the zonotope is a rectangle, which is the same as the interval abstraction. If we set $\lambda = \frac{u_x}{u_x - l_x}$, the zonotope's is upper bound is the same as polytope's upper bound in~\autoref{fig:relu-polytope-abstraction}.
+    In~\autoref{fig:relu-zonotope-abstraction}, the \colorbox{yellowfill}{a parallelogram}---a zonotope in 2D---is arguably tighter than the interval in~\autoref{fig:relu-interval-abstraction}.  It captures the linear relationship between $x$ and $y$ and excludes points that are not achievable by ReLU, e.g., the point $(0.5, 0.0)$ that was included in the interval abstraction is not included in the zonotope. However, it still includes non-ReLU points and is also not strictly better than interval, e.g., the point $(0.5, -0.5)$ is included in the zonotope but not in the interval abstraction (or ReLU). 
     
     %too technical here
     
@@ -2698,6 +2698,143 @@ To compute the bounds $l_y(x)$ and $u_y(x)$, we can use different abstractions:
 
 % \tvn{Hai, create concrete examples with numbers to show how the abstractions work, e.g., for interval, zonotope, polytope, etc. We want to use one example to show the differences in the approximation,  not multiple examples which would be less effective.}
 
+\subsection{Geometric Representations} 
+Because our abstract domains are geometric shapes in high-dimensional spaces (i.e., multiple variables), it is useful to understand how these shapes can be represented. There are two common ways to describe a geometric shape (like rectangle, parallelograms, or higher-dimensional polyhedra):
+
+\begin{itemize}
+  \item \textbf{Corner-based representation:} Define the shape by listing all of its corner points (vertices). For example, a rectangle in 2D is defined by its four corners, and a box in 3D is defined by its eight corners. This representation is intuitive and directly shows the boundaries of the shape.
+        
+  \item \textbf{Generator-based representation:} Define the shape using a \emph{center point} and several direction vectors (\emph{generators}) that define how the shape can stretch or tilt. Instead of listing all corners, it specifies how to reach any point in the shape by starting from the center and moving along the generators within certain limits.  This representation is often more compact, especially for higher-dimensional shapes.
+\end{itemize}
+
+\autoref{fig:interval-rectangle-two-views} uses corner-based and generator-based representations to represent a 2D rectangle, which is an interval abstraction over two variables.  The left side shows the corner-based view, where the rectangle is defined by its 4 corners.  The right side shows the generator-based view, where the rectangle is represented as a zonotope with a center point \(c\) and two orthogonal generators \(g_1\) and \(g_2\).
+
+\begin{figure}
+\centering
+\begin{tikzpicture}[scale=1.1,>=stealth]
+
+% === LEFT: corner-based rectangle ===
+\begin{scope}[shift={(-3.8,0)}]
+  % rectangle
+  \fill[blue!10] (0,0) rectangle (2,1.4);
+  \draw[blue!70!black, thick] (0,0) rectangle (2,1.4);
+
+  % corner points
+  \foreach \x/\y in {0/0,2/0,0/1.4,2/1.4}{
+    \fill[blue!70!black] (\x,\y) circle (1.5pt);
+  }
+
+  % labels
+  \node[blue!70!black] at (1.0,1.8) {\small Corner-based view};
+  \node at (1.0,-0.4) {\small Defined by vertices};
+\end{scope}
+
+
+% === RIGHT: Generator-based rectangle (interval abstraction) ===
+\begin{scope}[shift={(3.8,0)}]
+  % rectangle (same shape)
+  \fill[orange!15] (0,0) rectangle (2,1.4);
+  \draw[orange!80!black, thick] (0,0) rectangle (2,1.4);
+
+  % center
+  \coordinate (c) at (1.0,0.7);
+  \filldraw[blue!80!black] (c) circle (1.5pt) node[below left] {\small $c$};
+
+  % generator arrows
+  \draw[->,blue!70!black,thick] (c) -- ++(1.0,0) node[right] {\small $g_1$};
+  \draw[->,blue!70!black,thick] (c) -- ++(0,0.7) node[above] {\small $g_2$};
+
+  % labels
+  \node[orange!80!black] at (1.0,1.8) {\small Generator-based view};
+  \node at (1.0,-0.4) {\small Built from $c+\epsilon_1g_1+\epsilon_2g_2$};
+\end{scope}
+
+% center arrow
+\node at (0,0.7) {\Large $\Longleftrightarrow$};
+
+\end{tikzpicture}
+\caption{Two equivalent descriptions of a 2D interval abstraction (a rectangle).  
+Left: defined by its four corners (independent variable bounds).  
+Right: represented as a zonotope with center $c$ and orthogonal generators $g_1$, $g_2$.}
+\label{fig:interval-rectangle-two-views}
+\end{figure}
+
+
+
+\begin{example}
+  An interval for a single variable is simply a line segment defined by its \emph{two} endpoints (corners)---the lower and upper bounds. Equivalently, it can be represented using a center point and a single generator vector that points in both directions (left and right) from the center:
+  \[
+    [l, u] = \{ c + \epsilon g \mid \epsilon \in [-1, 1] \}
+  \]
+    where \(c = \frac{l + u}{2}\) is the center, \(g = \frac{u - l}{2}\) is the generator, and \(\epsilon\) controls how far we move along the generator.
+\end{example}
+
+\begin{example}
+
+    Consider the interval:
+    \[
+    x \in [-2, 3].
+    \]
+    We can express this interval using one generator as shown in~\autoref{fig:interval-zonotope}. 
+
+    \begin{figure}
+    \centering
+    \begin{tikzpicture}[scale=1.2,>=stealth]
+
+    % number line
+    \draw[->, thick] (-3.0,0) -- (3.5,0) node[right] {$x$};
+
+    % interval region
+    \fill[orange!20] (-2,0) rectangle (3,0.25);
+    \draw[orange!70!black, thick] (-2,0) -- (3,0);
+
+    % center point
+    \filldraw[blue!70!black] (0.5,0.12) circle (1.5pt) node[above] {$c=0.5$};
+
+    % labels
+    \draw[dashed] (-2,0) -- (-2,0.5) node[above, black] {$-2$};
+    \draw[dashed] (3,0) -- (3,0.5) node[above, black] {$3$};
+    \node at (0.5,-0.4) {\small $x = c + \epsilon g$};
+
+    % epsilon arrows
+    \draw[<->, orange!80!black, thick] (-2,0.25) -- (3,0.25);
+    \node[orange!70!black] at (0.5,0.7) {\small $\epsilon \in [-1,1]$ moves along $g=2.5$};
+
+    \end{tikzpicture}
+    \caption{An interval $[-2,3]$ is a 1D zonotope with center $c=0.5$, generator $g=2.5$, and parameter $\epsilon\in[-1,1]$. Varying $\epsilon$ covers the entire interval.}
+    \label{fig:interval-zonotope}
+    \end{figure}
+
+
+    \begin{equation}
+    \begin{aligned}
+    c = \frac{-2 + 3}{2} = 0.5, & \quad\text{the midpoint of the interval}\\
+    \quad g = \frac{3 - (-2)}{2} = 2.5, &  \quad\text{the half-width (distance from the center to each end)}\\
+    \epsilon \in [-1, 1], & \quad\text{acts as a knob to move along the generator}
+    \end{aligned}
+    \end{equation}
+
+    Thus, any point \(x\) in this interval can be written as:
+    \[
+    x = c + \epsilon g \text{ or } x = 0.5 + \epsilon \cdot 2.5,
+    \quad \text{where} \quad \epsilon \in [-1, 1].
+    \]
+
+
+    For example:
+    \[
+    \epsilon = -1 \Rightarrow x = -2, 
+    \quad
+    \epsilon = 0 \Rightarrow x = 0.5, 
+    \quad
+    \epsilon = +1 \Rightarrow x = 3.
+    \]
+
+    As \(\epsilon\) varies between \(-1\) and \(+1\), we cover the entire interval \([-2, 3]\).  
+
+\end{example}
+
+
 
 \subsection{Transformer Functions}
 
@@ -2867,176 +3004,11 @@ Nonetheless, interval-based methods remain popular due to their simplicity and e
 
 
 
-% \begin{figure}
-% \centering
-% \begin{tikzpicture}[scale=1.3,>=stealth]
-
-% % Axes
-% \draw[->, thick] (-0.5,0) -- (3.5,0) node[right] {$x_1$};
-% \draw[->, thick] (0,-0.5) -- (3.5,3.5) node[above] {$x_2$};
-
-% % Interval box
-% \fill[blue!10] (0.5,0.5) rectangle (2.5,2.5);
-% \draw[blue, thick] (0.5,0.5) rectangle (2.5,2.5);
-% \node[blue!60!black] at (1.5,2.7) {\small Interval (Box)};
-
-% % Zonotope parallelogram
-% \fill[orange!15, rotate around={20:(2,1)}] (1,0.5) rectangle (3,2.5);
-% \draw[orange, thick, rotate around={20:(2,1)}] (1,0.5) rectangle (3,2.5);
-% \node[orange!70!black] at (3.3,2.1) {\small Zonotope (Tilted Box)};
-
-% % Legend arrows
-% \draw[blue,->] (2.6,2.0) to[bend left] (3.3,2.0);
-% \draw[orange,->] (1.8,0.8) to[bend right] (0.6,0.8);
-
-% \end{tikzpicture}
-% \caption{Intervals produce axis-aligned boxes (blue), while zonotopes can tilt to fit correlated variables (orange).}
-% \label{fig:zonotope-vs-box}
-% \end{figure}
-
 
 An interval abstraction (\autoref{sec:interval-abstraction}) treats each variable independently. For example, if \(x_1 \in [1,2]\) and \(x_2 \in [3,4]\), intervals assume any combination of \(x_1\) and \(x_2\) is possible. But variables can correlate: when \(x_1\) increases, \(x_2\) also increase.  Thus, zonotopes, which can capture such correlations, can provide a tighter abstraction.
 % A \emph{zonotope} captures this correlation by encoding both variables as linear combinations of a few shared ``uncertainty sources’’ (\(\epsilon_i\)’s).  
-In geometric terms, as shown in \autoref{fig:zonotope-vs-box}, while intervals form axis-aligned boxes, zonotopes form \emph{tilted boxes} (parallelograms or higher-dimensional analogues) that can stretch, rotate, and capture relationships between variables (like ``when $x_1$ goes up, $x_2$ also goes up'').
+In geometric terms while intervals form axis-aligned boxes, zonotopes form \emph{tilted boxes} (parallelograms or higher-dimensional analogues) that can stretch, rotate, and capture relationships between variables (like ``when $x_1$ goes up, $x_2$ also goes up'').
 
-
-\paragraph{The generator-based representation} There are two common ways to describe a geometric shape (like rectangle, parallelograms, or higher-dimensional polyhedra):
-\begin{itemize}
-  \item \textbf{Vertex-based representation:} Define the shape by listing all of its corner points (vertices). For example, a rectangle in 2D is defined by its four corners, and a box in 3D is defined by its eight corners. This representation is intuitive and directly shows the boundaries of the shape.
-        
-  \item \textbf{Generator-based representation:} Define the shape using a \emph{center point} and several direction vectors (\emph{generators}) that define how the shape can stretch or tilt. Instead of listing all corners, it specifies how to reach any point in the shape by starting from the center and moving along the generators within certain limits ($\epsilon$).  This representation is often more compact, especially for higher-dimensional shapes.
-\end{itemize}
-
-\autoref{fig:interval-rectangle-two-views} uses vertex-based and generator-based representations to represent a 2D rectangle (an interval abstraction for two variables). 
-
-\begin{figure}
-\centering
-\begin{tikzpicture}[scale=1.1,>=stealth]
-
-% === LEFT: Corner-based rectangle ===
-\begin{scope}[shift={(-3.8,0)}]
-  % rectangle
-  \fill[blue!10] (0,0) rectangle (2,1.4);
-  \draw[blue!70!black, thick] (0,0) rectangle (2,1.4);
-
-  % corner points
-  \foreach \x/\y in {0/0,2/0,0/1.4,2/1.4}{
-    \fill[blue!70!black] (\x,\y) circle (1.5pt);
-  }
-
-  % labels
-  \node[blue!70!black] at (1.0,1.8) {\small Corner-based view};
-  \node at (1.0,-0.4) {\small Defined by vertices};
-\end{scope}
-
-
-% === RIGHT: Generator-based rectangle (interval abstraction) ===
-\begin{scope}[shift={(3.8,0)}]
-  % rectangle (same shape)
-  \fill[orange!15] (0,0) rectangle (2,1.4);
-  \draw[orange!80!black, thick] (0,0) rectangle (2,1.4);
-
-  % center
-  \coordinate (c) at (1.0,0.7);
-  \filldraw[blue!80!black] (c) circle (1.5pt) node[below left] {\small $c$};
-
-  % generator arrows
-  \draw[->,blue!70!black,thick] (c) -- ++(1.0,0) node[right] {\small $g_1$};
-  \draw[->,blue!70!black,thick] (c) -- ++(0,0.7) node[above] {\small $g_2$};
-
-  % labels
-  \node[orange!80!black] at (1.0,1.8) {\small Generator-based view};
-  \node at (1.0,-0.4) {\small Built from $c+\epsilon_1g_1+\epsilon_2g_2$};
-\end{scope}
-
-% center arrow
-\node at (0,0.7) {\Large $\Longleftrightarrow$};
-
-\end{tikzpicture}
-\caption{Two equivalent descriptions of a 2D interval abstraction (a rectangle).  
-Left: defined by its four corners (independent variable bounds).  
-Right: represented as a zonotope with center $c$ and orthogonal generators $g_1$, $g_2$.}
-\label{fig:interval-rectangle-two-views}
-\end{figure}
-
-
-
-\begin{example}
-  An interval for a single variable is simply a line segment defined by its \emph{two} endpoints (corners)---the lower and upper bounds. Equivalently, it can be represented using a center point and a single generator vector that points in both directions (left and right) from the center:
-  \[
-    [l, u] = \{ c + \epsilon g \mid \epsilon \in [-1, 1] \}
-  \]
-    where \(c = \frac{l + u}{2}\) is the center, \(g = \frac{u - l}{2}\) is the generator, and \(\epsilon\) controls how far we move along the generator.
-\end{example}
-
-\begin{example}
-
-    Consider the interval:
-    \[
-    x \in [-2, 3].
-    \]
-    We can express this interval as a zonotope with one generator as shown in \autoref{fig:interval-zonotope}. 
-
-
-    \begin{figure}
-    \centering
-    \begin{tikzpicture}[scale=1.2,>=stealth]
-
-    % number line
-    \draw[->, thick] (-3.0,0) -- (3.5,0) node[right] {$x$};
-
-    % interval region
-    \fill[orange!20] (-2,0) rectangle (3,0.25);
-    \draw[orange!70!black, thick] (-2,0) -- (3,0);
-
-    % center point
-    \filldraw[blue!70!black] (0.5,0.12) circle (1.5pt) node[above] {$c=0.5$};
-
-    % labels
-    \draw[dashed] (-2,0) -- (-2,0.5) node[above, black] {$-2$};
-    \draw[dashed] (3,0) -- (3,0.5) node[above, black] {$3$};
-    \node at (0.5,-0.4) {\small $x = c + \epsilon g$};
-
-    % epsilon arrows
-    \draw[<->, orange!80!black, thick] (-2,0.25) -- (3,0.25);
-    \node[orange!70!black] at (0.5,0.7) {\small $\epsilon \in [-1,1]$ moves along $g=2.5$};
-
-    \end{tikzpicture}
-    \caption{An interval $[-2,3]$ is a 1D zonotope with center $c=0.5$, generator $g=2.5$, and parameter $\epsilon\in[-1,1]$. Varying $\epsilon$ covers the entire interval.}
-    \label{fig:interval-zonotope}
-    \end{figure}
-
-
-    \begin{equation}
-    \begin{aligned}
-    c = \frac{-2 + 3}{2} = 0.5, & \quad\text{the midpoint of the interval}\\
-    \quad g = \frac{3 - (-2)}{2} = 2.5, &  \quad\text{the half-width (distance from the center to each end)}\\
-    \epsilon \in [-1, 1], & \quad\text{acts as a knob to move along the generator}
-    \end{aligned}
-    \end{equation}
-
-    Thus, any point \(x\) in this interval can be written as:
-    \[
-    x = c + \epsilon g \text{ or } x = 0.5 + \epsilon \cdot 2.5,
-    \quad \text{where} \quad \epsilon \in [-1, 1].
-    \]
-
-
-    For example:
-    \[
-    \epsilon = -1 \Rightarrow x = -2, 
-    \quad
-    \epsilon = 0 \Rightarrow x = 0.5, 
-    \quad
-    \epsilon = +1 \Rightarrow x = 3.
-    \]
-
-    As \(\epsilon\) varies between \(-1\) and \(+1\), we cover the entire interval \([-2, 3]\).  
-
-
-
-
-\end{example}
 
 
 
@@ -3045,7 +3017,7 @@ Right: represented as a zonotope with center $c$ and orthogonal generators $g_1$
 
 \paragraph{Definition of Zonotope}
 
-A zonotope is a geometric object that generalizes the idea of an interval to multiple dimensions.
+A zonotope is a geometric object that generalizes the idea of an interval, which is a zonotope in 1D (\autoref{fig:interval-zonotope}), to multiple dimensions.
 A zonotope is built by starting from a center point and then stretching along several directions (generators).
 Each generator can move forward or backward within a certain range, and together these movements sweep out the entire shape.
 
@@ -3062,7 +3034,7 @@ For example, \(\epsilon_i = -1\) moves in the negative direction, \(\epsilon_i =
 \end{itemize}
 
 \begin{example}[2D Zonotope]
-  A parallelogra is zonotope in 2D as shown in~\autoref{fig:zonotope-two-views}. It can be defined by its center point and two generator vectors that define its sides. For instance, if the center is at \(c = (1, 1)\) and the generators are \(g_1 = (2, 0)\) and \(g_2 = (0, 1.5)\), then the zonotope represents all points that can be reached by moving along these generators within the range \([-1, 1]\):
+  A parallelogram is zonotope in 2D as shown in~\autoref{fig:zonotope-two-views}. It can be defined by its center point and two generator vectors that define its sides. For instance, if the center is at \(c = (1, 1)\) and the generators are \(g_1 = (2, 0)\) and \(g_2 = (0, 1.5)\), then the zonotope represents all points that can be reached by moving along these generators within the range \([-1, 1]\):
   \[
     \mathcal{Z} = \left\{ (1, 1) + \epsilon_1 (2, 0) + \epsilon_2 (0, 1.5) \mid \epsilon_1, \epsilon_2 \in [-1, 1] \right\}
   \]
@@ -3080,7 +3052,7 @@ For example, \(\epsilon_i = -1\) moves in the negative direction, \(\epsilon_i =
 \centering
 \begin{tikzpicture}[scale=1.1,>=stealth]
 
-% === LEFT: Corner-based ===
+% === LEFT: Vertex-based ===
 \begin{scope}[shift={(-3.8,0)}]
   % Parallelogram (same shape as right)
   \fill[blue!10] (0,0) -- (2,0.4) -- (2.4,1.6) -- (0.4,1.2) -- cycle;
@@ -3092,7 +3064,7 @@ For example, \(\epsilon_i = -1\) moves in the negative direction, \(\epsilon_i =
   }
 
   % Labels
-  \node[blue!70!black] at (1.2,1.8) {\small Corner-based view};
+  \node[blue!70!black] at (1.2,1.8) {\small corner-based view};
   \node at (1.2,-0.4) {\small Defined by vertices};
 \end{scope}
 
@@ -3123,6 +3095,40 @@ For example, \(\epsilon_i = -1\) moves in the negative direction, \(\epsilon_i =
 \label{fig:zonotope-two-views}
 \end{figure}
 \end{example}
+
+
+\paragraph{Zonotope vs Box (Interval)}
+
+~\autoref{fig:zonotope-vs-box} illustrates the difference between zonotopes and boxes (intervals) in 2D. 
+The blue box represents an interval abstraction, which is axis-aligned and cannot capture correlations between variables. 
+The orange parallelogram represents a zonotope, which can tilt and better fit the shape of correlated variables. 
+
+\begin{figure}
+\centering
+\begin{tikzpicture}[scale=1.3,>=stealth]
+
+% Axes
+\draw[->, thick] (-0.5,0) -- (3.5,0) node[right] {$x_1$};
+\draw[->, thick] (0,-0.5) -- (3.5,3.5) node[above] {$x_2$};
+
+% Interval box
+\fill[blue!10] (0.5,0.5) rectangle (2.5,2.5);
+\draw[blue, thick] (0.5,0.5) rectangle (2.5,2.5);
+\node[blue!60!black] at (1.5,2.7) {\small Interval (Box)};
+
+% Zonotope parallelogram
+\fill[orange!15, rotate around={20:(2,1)}] (1,0.5) rectangle (3,2.5);
+\draw[orange, thick, rotate around={20:(2,1)}] (1,0.5) rectangle (3,2.5);
+\node[orange!70!black] at (3.3,2.1) {\small Zonotope (Tilted Box)};
+
+% Legend arrows
+\draw[blue,->] (2.6,2.0) to[bend left] (3.3,2.0);
+\draw[orange,->] (1.8,0.8) to[bend right] (0.6,0.8);
+
+\end{tikzpicture}
+\caption{Intervals produce axis-aligned boxes (blue), while zonotopes can tilt to fit correlated variables (orange).}
+\label{fig:zonotope-vs-box}
+\end{figure}
 
 \subsubsection{Affine Transformer} 
 
