@@ -226,11 +226,11 @@ Consider the DNN in~\autoref{fig:dnn-abs} with inputs $x_1 \in [-2, 2]$ and $x_2
 \toprule
 \textbf{Layer} & \textbf{Interval} & \textbf{Zonotope} \\ \midrule
 \multirow{10}{*}{Input} & \myintervalinput             & \myzonotopeinput         \\ \midrule
-\multirow{22}{*}{Linear} & \myintervalprerelu{1}{1}     & \myzonotopeprerelu{1}{1} \\ \cmidrule(lr){2-3}
+\multirow{22}{*}{Affine} & \myintervalprerelu{1}{1}     & \myzonotopeprerelu{1}{1} \\ \cmidrule(lr){2-3}
                          & \myintervalprerelu{1}{2}     & \myzonotopeprerelu{1}{2} \\ \midrule
 \multirow{5}{*}{ReLU}    & \myintervalpostrelu{1}{1}    & \myzonotopepostrelu{1}{1} \\ \cmidrule(lr){2-3}
                          & \myintervalpostrelu{1}{2}    & \myzonotopepostrelu{1}{2} \\ \midrule
-\multirow{11}{*}{Linear} & \myintervalprerelu{2}{1}     & \myzonotopeprerelu{2}{1} \\ 
+\multirow{11}{*}{Affine} & \myintervalprerelu{2}{1}     & \myzonotopeprerelu{2}{1} \\ 
 \bottomrule
 \end{longtable}
 \normalsize  % Reset font size

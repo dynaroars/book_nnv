@@ -2353,7 +2353,7 @@ As shown in~\autoref{ex:relu_milp1}, the upper and lower bounds of neuron $x_3$ 
 \chapter{Abstractions}\label{chap:abstractions}
 
 
-As mentioned in~\autoref{sec:relu-encoding} the computation of upper and lower bounds of the neuron values is crucial for DNN verification. These bounds help determine neuron stability and therefore can significantly reduce the search space. Modern DNN verifiers explore different \emph{abstraction} techniques to compute these bounds more precisely while balancing computational efficiency.
+As mentioned in~\autoref{sec:relu-encoding} the computation of upper and lower bounds of the neuron values help determine neuron stability and therefore can significantly reduce the complexity of verification. Modern DNN verifiers explore different \emph{abstraction} techniques to compute these bounds more precisely while balancing computational efficiency.
  
 This chapter discusses the interval, zonotope, and polytope abstract domains commonly used in verification. Each domain provides a different way to represent and compute the bounds of neurons, with its own trade-offs in terms of precision and computational complexity.
 
@@ -2365,7 +2365,7 @@ This chapter discusses the interval, zonotope, and polytope abstract domains com
 %\hd{Zonotope uses a different approach to represent the abstraction, using center and generators, so concretization step will be different. But if we construct the lower and upper equations for a zonotope, the concretization step will be the same.}
 
 %\hd{Note that, the equations of a neuron are not $e = f(x_1, ..., x_n)$, but 
-\[f_L(x_1, ..., x_n) \le e \le f_U(x_1, ..., x_n)\] 
+%\[f_L(x_1, ..., x_n) \le e \le f_U(x_1, ..., x_n)\] 
 %So to compute the concrete bounds, $e_L = min(f_L(x_1, ..., x_n))$ and $e_U = max(f_U(x_1, ..., x_n))$, where $min(f_L(x_1, ..., x_n))$ and $max(f_U(x_1, ..., x_n))$ are the concretization steps.}
 
 %We want to compute the bounds to be as tight as possible, i.e., they should be the largest lower and lowest upper values that $\hat{z}$ can take given the bounds on $z$. This computation is called \emph{abstraction} and is crucial for DNN verification, as it allows us to reason about the behavior of the network without having to enumerate all possible values of the neurons. There are several abstraction techniques that can be used to compute these bounds, each with its own trade-offs in terms of precision and computational complexity.
@@ -2466,7 +2466,7 @@ This chapter discusses the interval, zonotope, and polytope abstract domains com
         \caption{Polytope (lower flat)}
         \label{fig:relu-polytope-abstraction}
     \end{subfigure}
-    \caption{Abstractions of $\myrelu(x) = \max(0,x)$ over $x \in [l_x, u_x]$: (a) interval, (b) zonotope, (c-–d) polytope abstractions with different lower bounds.}
+    \caption{Abstractions of $\myrelu(x) = \max(0,x)$ over $x \in [l_x, u_x]$ using (a) interval, (b) zonotope, (c) polytope abstractions.}
     \label{fig:relu-all-abstractions}
 \end{figure}
 
@@ -2478,7 +2478,7 @@ Our goal is to compute the bounds of a post-ReLU neuron $\hat{z}$ given the boun
 To compute the bounds $l_y(x)$ and $u_y(x)$, we can use different abstractions: 
 
 \begin{itemize}
-    \item \textbf{Interval Abstraction:} Interval represents the output of the post-ReLU neuron as intervals $[l_y(x), u_y(x)]$ where $l_y(x) = 0$ and $u_y(x) = u_x$. It does not capture the relationship between the input and output of ReLU, and simply assumes that the output can take any value between 0 and the upper bound of the input. Interval is a simple and efficient abstraction, but it can be \emph{imprecise} for many cases.
+    \item \textbf{Interval Abstraction:} Interval represents the output of the post-ReLU neuron as intervals $[l_y(x), u_y(x)]$ where $l_y(x) = 0$ and $u_y(x) = u_x$. Interval is a simple and efficient abstraction, but it can be \emph{imprecise}.  It does not capture the relationship between the input and output of ReLU, and simply assumes that the output can take any value between 0 and the upper bound of the input. 
 
     In~\autoref{fig:relu-interval-abstraction}, the \colorbox{yellowfill}{yellow rectangle} (box) represents the interval abstraction in the 2D space of $(x, y)$. As can be seen, this box is too large of an over-approximation (too coarse or loose), as it includes many points that are not achievable by ReLU, e.g., the point $(0.5, 0.0)$ is not on the red line.
     
@@ -2996,7 +2996,7 @@ Moreover, if we apply ReLU, then the output would be $\myrelu(z) = \myrelu(0) = 
 
 Interval overapproximation grows quickly as we propagate through many layers of a large network, i.e., it keeps ``inflating'' the bounds, leading to a loose approximation of the output. For example, $z \leq 0$ is a valid problem for~\autoref{ex:interval-overapproximation}, but the interval abstractions gives $z \in [0,1]$, which is not tight (precise) enough to show this property. 
 
-Nonetheless, interval-based methods remain popular due to their simplicity and efficiency. In some cases, despite being too coarse, they can still successfully verify properties of neural networks, e.g., if we want to verify that $z \le 2$, then the interval $z\in [0, 1]$ would suffice.
+Nonetheless, interval-based methods remain popular due to their simplicity and efficiency. In some cases, despite being too coarse, they can still successfully verify properties of neural networks, e.g., for~\autoref{ex:interval-overapproximation}if we want to verify that $z \le 2$, then the interval $z\in [0, 1]$ would suffice.
 
 
 \subsection{Zonotope}\label{sec:zonotope-abstraction}
@@ -3101,38 +3101,38 @@ For example, \(\epsilon_i = -1\) moves in the negative direction, \(\epsilon_i =
 \end{example}
 
 
-\paragraph{Zonotope vs Box (Interval)}
+% \paragraph{Zonotope vs Box (Interval)}
 
-~\autoref{fig:zonotope-vs-box} illustrates the difference between zonotopes and boxes (intervals) in 2D. 
-The blue box represents an interval abstraction, which is axis-aligned and cannot capture correlations between variables. 
-The orange parallelogram represents a zonotope, which can tilt and better fit the shape of correlated variables. 
+% \autoref{fig:zonotope-vs-box} illustrates the difference between zonotopes and boxes (intervals) in 2D. 
+% The blue box represents an interval abstraction, which is axis-aligned and cannot capture correlations between variables. 
+% The orange parallelogram represents a zonotope, which can tilt and better fit the shape of correlated variables. 
 
-\begin{figure}
-\centering
-\begin{tikzpicture}[scale=1.3,>=stealth]
+% \begin{figure}
+% \centering
+% \begin{tikzpicture}[scale=1.3,>=stealth]
 
-% Axes
-\draw[->, thick] (-0.5,0) -- (3.5,0) node[right] {$x_1$};
-\draw[->, thick] (0,-0.5) -- (3.5,3.5) node[above] {$x_2$};
+% % Axes
+% \draw[->, thick] (-0.5,0) -- (3.5,0) node[right] {$x_1$};
+% \draw[->, thick] (0,-0.5) -- (3.5,3.5) node[above] {$x_2$};
 
-% Interval box
-\fill[blue!10] (0.5,0.5) rectangle (2.5,2.5);
-\draw[blue, thick] (0.5,0.5) rectangle (2.5,2.5);
-\node[blue!60!black] at (1.5,2.7) {\small Interval (Box)};
+% % Interval box
+% \fill[blue!10] (0.5,0.5) rectangle (2.5,2.5);
+% \draw[blue, thick] (0.5,0.5) rectangle (2.5,2.5);
+% \node[blue!60!black] at (1.5,2.7) {\small Interval (Box)};
 
-% Zonotope parallelogram
-\fill[orange!15, rotate around={20:(2,1)}] (1,0.5) rectangle (3,2.5);
-\draw[orange, thick, rotate around={20:(2,1)}] (1,0.5) rectangle (3,2.5);
-\node[orange!70!black] at (3.3,2.1) {\small Zonotope (Tilted Box)};
+% % Zonotope parallelogram
+% \fill[orange!15, rotate around={20:(2,1)}] (1,0.5) rectangle (3,2.5);
+% \draw[orange, thick, rotate around={20:(2,1)}] (1,0.5) rectangle (3,2.5);
+% \node[orange!70!black] at (3.3,2.1) {\small Zonotope (Tilted Box)};
 
-% Legend arrows
-\draw[blue,->] (2.6,2.0) to[bend left] (3.3,2.0);
-\draw[orange,->] (1.8,0.8) to[bend right] (0.6,0.8);
+% % Legend arrows
+% \draw[blue,->] (2.6,2.0) to[bend left] (3.3,2.0);
+% \draw[orange,->] (1.8,0.8) to[bend right] (0.6,0.8);
 
-\end{tikzpicture}
-\caption{Intervals produce axis-aligned boxes (blue), while zonotopes can tilt to fit correlated variables (orange).}
-\label{fig:zonotope-vs-box}
-\end{figure}
+% \end{tikzpicture}
+% \caption{Intervals produce axis-aligned boxes (blue), while zonotopes can tilt to fit correlated variables (orange).}
+% \label{fig:zonotope-vs-box}
+% \end{figure}
 
 \subsubsection{Affine Transformer} 
 
@@ -3148,41 +3148,54 @@ f^a(\mathcal{Z}) = (Wc + b, WG)
 \]
 The new center becomes \(Wc + b\) and the new generator matrix becomes \(WG\). 
 
-Affine operations preserve the structure of zonotopes exactly: no approximation needed.  
+Affine operations \emph{preserve} the structure of zonotopes exactly: no approximation needed.  
 Imagine a tilted box in space, then an affine transformation just stretches, rotates, and shifts it---the result is still a tilted box.
 
 
 \begin{example}\label{ex:zonotope_linear_example}
 Consider the DNN in~\autoref{fig:dnn-abs} with inputs \(x_1 \in [1, 2]\) and \(x_2 \in [-1, 3]\). The affine function for neuron \(x_3\) is:
 \[
-f(x_1,x_2) = -0.5\,x_1 + 0.5\,x_2 + 1.0
+f(x_1,x_2) = -0.5\,x_1 + 0.5\,x_2 + 1.0.
 \]
+\noindent We want to compute the bounds for \(x_3\) using zonotope abstraction.
+
+First, we need to represent the bounds of \(x_1\) and \(x_2\) as a zonotope.
 The center \(c\) represents the midpoint of each input interval:
+{\small
 \[
 c_1 = \frac{1+2}{2} = 1.5, \quad c_2 = \frac{(-1)+3}{2} = 1.0
 \]
+}
 The generator matrix \(G\) captures the half-widths of each interval as diagonal entries:
+{\small
 \[
 G_{11} = \frac{2-1}{2} = 0.5, \quad G_{22} = \frac{3-(-1)}{2} = 2.0
 \]
-This construction ensures the zonotope exactly represents the input box: \(x_1 \in [1.5-0.5, 1.5+0.5] = [1,2]\) and \(x_2 \in [1.0-2.0, 1.0+2.0] = [-1,3]\).
-Thus, the input box can be encoded as a zonotope with center and generator matrix:
+}
+This construction creates the zonotope 
+{\small
 \[
-c = \begin{bmatrix}1.5 \\ 1.0\end{bmatrix}, \quad G = \begin{bmatrix}0.5 & 0 \\ 0 & 2.0\end{bmatrix}
+c = \begin{bmatrix}1.5 \\ 1.0\end{bmatrix}, \quad G = \begin{bmatrix}0.5 & 0 \\ 0 & 2.0\end{bmatrix},
 \]
-For the weight \(w = [-0.5, 0.5]^\top\) and bias \(b = 1.0\), applying the affine transformer:
+}
+\noindent which represents exactly the input box: \(x_1 \in [1.5-0.5, 1.5+0.5] = [1,2]\) and \(x_2 \in [1.0-2.0, 1.0+2.0] = [-1,3]\).
+
+
+Now we can apply the affine transformation to the input zonotope.  For the weight \(w = [-0.5, 0.5]^\top\) and bias \(b = 1.0\), applying the affine transformer:
 \begin{equation}
+    \small
 \begin{aligned}
 c' &= w^\top c + b = [-0.5, 0.5] \begin{bmatrix}1.5 \\ 1.0\end{bmatrix} + 1.0 = -0.75 + 0.5 + 1.0 = 0.75 \\
 g'_1 &= w^\top g_1 = [-0.5, 0.5] \begin{bmatrix}0.5 \\ 0\end{bmatrix} = -0.25 \\
 g'_2 &= w^\top g_2 = [-0.5, 0.5] \begin{bmatrix}0 \\ 2.0\end{bmatrix} = 1.0 \\
 \end{aligned}
 \end{equation}
-The output zonotope for \(x_3\) is \((0.75, [-0.25, 1.0])\), thus the concrete bounds are:
-% \[
-% x_3 \in [c' - |g'_1| - |g'_2|, c' + |g'_1| + |g'_2|] = [0.75 - 0.25 - 1.0, 0.75 + 0.25 + 1.0] = [-0.5, 2.0]
-% \]
+This produces the output zonotope \((0.75, [-0.25, 1.0])\) for \(x_3\).
+
+Finally, we compute the bounds of \(x_3\) from the zonotope representation:
+
 \begin{equation}
+    \small
 \begin{aligned}
     f^a_L &= c' - |g'_1| - |g'_2| = 0.75 - 0.25 - 1.0 = -0.5 \\
     f^a_U &= c' + |g'_1| + |g'_2| = 0.75 + 0.25 + 1.0 = 2.0
