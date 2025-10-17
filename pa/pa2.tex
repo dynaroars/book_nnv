@@ -148,9 +148,10 @@ For a concrete example, consider~\autoref{ex:zonotope_linear_example}.
 def zonotope(lb, ub):
     """
     Computes zonotope from interval bounds [l, u].
+    TODO: 
+    - compute center from bounds
+    - generator from bounds
     """
-    center = (lb + ub) / 2
-    generator = (ub - lb) / 2
     return center, generator
 \end{lstlisting}
 
@@ -282,3 +283,46 @@ class ReluTransformer(nn.Module):
     # output_lower=tensor([0.1667])
     # output_upper=tensor([6.1667])
 \end{lstlisting}
+
+
+
+\subsection{Evaluation}
+
+\begin{itemize}
+    \item Run your abstract domains on DNNs in PA1 (\autoref{sec:pa1}).
+    \item Compare the precision and scalability trade-offs between interval/zonotope abstraction with Symbolic Execution.
+    \item How to improve the precision of your abstract domains?
+\end{itemize}
+
+\subsection{Grading Rubric (out of 30 points)}
+
+\begin{itemize}
+\item 10 points — for complete interval abstraction implementation
+    \begin{itemize}
+    \item 4 points for \texttt{LinearTransformer} implementation
+    \item 4 points for \texttt{ReluTransformer} implementation
+    \item 2 points for \texttt{IntervalAbstraction} class integration
+    \end{itemize}
+\item 15 points — for complete zonotope abstraction implementation
+    \begin{itemize}
+    \item 3 points for zonotope representation functions (\texttt{zonotope} and \texttt{concrete})
+    \item 5 points for \texttt{LinearTransformer} implementation
+    \item 5 points for \texttt{ReluTransformer} implementation
+    \item 2 points for \texttt{ZonotopeAbstraction} class integration
+    \end{itemize}
+\item 5 points — for evaluation and analysis
+    \begin{itemize}
+    \item 3 points for precision and scalability comparison between interval/zonotope/symbolic execution
+    \item 2 points for discussion on improving abstract domain precision
+    \end{itemize}
+\item 5 points — for implementation quality and documentation
+    \begin{itemize}
+    \item 3 points for clean, well-documented code with clear variable names
+    \item 2 points for testing on additional example
+    \end{itemize}
+\item \textbf{BONUS} (up to 5 extra points) — for novel improvements to abstract domains
+    \begin{itemize}
+    \item 3 points for implementing improvements
+    \item 2 points for thorough analysis and comparison of the improvements
+    \end{itemize}
+\end{itemize}
