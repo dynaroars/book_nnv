@@ -2761,8 +2761,8 @@ Right: represented as a zonotope with center $c$ and orthogonal generators $g_1$
 
 
 
-\begin{example}
-  An interval for a single variable is simply a line segment defined by its \emph{two} endpoints (corners)---the lower and upper bounds. Equivalently, it can be represented using a center point and a single generator vector that points in both directions (left and right) from the center:
+\begin{example}\label{ex:interval-zonotope}
+  An interval for a single variable is simply a line segment defined by its \emph{two} endpoints (corners)---the lower and upper bounds. Equivalently, it can be represented using a zonotope with a center point and a single generator vector that points in both directions (left and right) from the center:
   \[
     [l, u] = \{ c + \epsilon g \mid \epsilon \in [-1, 1] \}
   \]
@@ -2836,7 +2836,7 @@ Right: represented as a zonotope with center $c$ and orthogonal generators $g_1$
 
 
 
-\subsection{Transformer Functions}
+\subsection{Transformer Functions}\label{sec:transformer-functions}
 
 The concept of computing abstractions is central to program analysis, e.g., through \emph{abstract interpretation} techniques. 
 It allows us reason about the behavior of a program without evaluating it on all concrete inputs---which may be infinite. Instead, we use an \emph{abstract domain}, such as interval, to summarize sets of concrete values, enabling sound and scalable approximation.
@@ -2892,12 +2892,16 @@ f^a([a, b]) = [a+1, b+1]
 
  \end{itemize}
 
+ Notice that the input and output of the abstract transformer $f^a$ are both in the abstract domain $D^a$ (e.g., odd/even, sign, or interval).
 \end{example}
+
 
 
 \section{Abstract Domains}\label{sec:abstract-domains}
 
-We now introduce several abstract domains that are commonly used in DNN verification. Each domain has its own abstract transformer functions to compute the bounds of neurons.
+We now introduce several abstract domains that are commonly used in DNN verification. Each domain has its own abstract transformer functions  to compute the bounds of neurons. 
+
+Note that the input to the transformer functions (\autoref{sec:transformer-functions}) are the abstract values and the output is also an abstract value.  For example, for interval transformers, the input is an interval $[l, u]$ and the output is also an interval $[l', u']$. Similarly for zonotope transformers, the input is a zonotope defined by center and generators, and the output is also a zonotope.
 
 \subsection{Interval}\label{sec:interval-abstraction}
 
@@ -2985,7 +2989,7 @@ For~\autoref{ex:transformer-affine1}, applying ReLU$^a$ to neuron $x_3$ gives:
 \subsubsection{Efficiency and Precision}
 
 Intervals is very efficient and scales  well to large networks. The affine transformer only requires a linear number of multiplications and min/max operations, and ReLU reduces to only three matching cases.
-However, the cost of efficiency is precision. Intervals approximate each variable independently, which can lead to over-approximation errors when variables are correlated. 
+However, the cost of efficiency is precision.
 
 \begin{example}\label{ex:interval-overapproximation}
 
@@ -2994,9 +2998,9 @@ The concrete value of $z$ would be always 0, but interval abstraction gives $z \
 Moreover, if we apply ReLU, then the output would be $\myrelu(z) = \myrelu(0) = 0$, but the interval gives $\myrelu^a([-1, 1]) = [0, 1]$, which is again a loose over-approximation.
 \end{example}
 
-Interval overapproximation grows quickly as we propagate through many layers of a large network, i.e., it keeps ``inflating'' the bounds, leading to a loose approximation of the output. For example, $z \leq 0$ is a valid problem for~\autoref{ex:interval-overapproximation}, but the interval abstractions gives $z \in [0,1]$, which is not tight (precise) enough to show this property. 
+Interval overapproximation grows quickly as we propagate through many layers of a large network, i.e., it keeps ``inflating'' the bounds, leading to a loose approximation of the output and becoming unable to verify valid properties.  For example, $z \leq 0$ is a valid property for~\autoref{ex:interval-overapproximation}, but the interval abstractions gives $z \in [0,1]$, which is not tight (precise) enough to show this property. 
 
-Nonetheless, interval-based methods remain popular due to their simplicity and efficiency. In some cases, despite being too coarse, they can still successfully verify properties of neural networks, e.g., for~\autoref{ex:interval-overapproximation}if we want to verify that $z \le 2$, then the interval $z\in [0, 1]$ would suffice.
+Nonetheless, interval domain remains popular due to its simplicity and efficiency. In some cases, despite being too coarse, it can still successfully verify properties of neural networks, e.g., for~\autoref{ex:interval-overapproximation} if we want to verify that $z \le 2$, then the interval $z\in [0, 1]$ would suffice.
 
 
 \subsection{Zonotope}\label{sec:zonotope-abstraction}
@@ -3005,7 +3009,7 @@ Nonetheless, interval-based methods remain popular due to their simplicity and e
 
 
 
-An interval abstraction (\autoref{sec:interval-abstraction}) treats each variable independently. For example, if \(x_1 \in [1,2]\) and \(x_2 \in [3,4]\), intervals assume any combination of \(x_1\) and \(x_2\) is possible. But variables can correlate: when \(x_1\) increases, \(x_2\) also increase.  Thus, zonotopes, which can capture such correlations, can provide a tighter abstraction.
+An interval abstraction (\autoref{sec:interval-abstraction}) treats each variable independently. For example, if \(x_1 \in [1,2]\) and \(x_2 \in [3,4]\), intervals assume any combination of \(x_1\) and \(x_2\) is possible. But variables can correlate: e.g., when \(x_1\) increases, \(x_2\) also increase.  Thus, zonotopes, which can capture such correlations, can provide a tighter abstraction.
 % A \emph{zonotope} captures this correlation by encoding both variables as linear combinations of a few shared ``uncertainty sources’’ (\(\epsilon_i\)’s).  
 In geometric terms while intervals form axis-aligned boxes, zonotopes form \emph{tilted boxes} (parallelograms or higher-dimensional analogues) that can stretch, rotate, and capture relationships between variables (like ``when $x_1$ goes up, $x_2$ also goes up'').
 
@@ -3015,10 +3019,10 @@ In geometric terms while intervals form axis-aligned boxes, zonotopes form \emph
 
 
 
-\paragraph{Definition of Zonotope}
+\paragraph{Definition}
 
-A zonotope is a geometric object that generalizes the idea of an interval, which is a zonotope in 1D (\autoref{fig:interval-zonotope}), to multiple dimensions.
-A zonotope is built by starting from a center point and then stretching along several directions (generators).
+A zonotope is a geometric object that generalizes the idea of an interval, which is a zonotope in 1D (\autoref{ex:interval-zonotope}), to multiple dimensions.
+A zonotope is represented using a center point and several generator vectors. More specifically, a zonotope is built by starting from a center point and then stretching along several directions (generators).
 Each generator can move forward or backward within a certain range, and together these movements sweep out the entire shape.
 
 Formally, a \textbf{zonotope} \(\mathcal{Z}\) in \(\mathbb{R}^n\) is defined as:
@@ -3033,7 +3037,7 @@ where:
 For example, \(\epsilon_i = -1\) moves in the negative direction, \(\epsilon_i = 0\) stays at the center, and \(\epsilon_i = +1\) moves in the positive direction.
 \end{itemize}
 
-\begin{example}[2D Zonotope]
+\begin{example}
   A parallelogram is zonotope in 2D as shown in~\autoref{fig:zonotope-two-views}. It can be defined by its center point and two generator vectors that define its sides. For instance, if the center is at \(c = (1, 1)\) and the generators are \(g_1 = (2, 0)\) and \(g_2 = (0, 1.5)\), then the zonotope represents all points that can be reached by moving along these generators within the range \([-1, 1]\):
   \[
     \mathcal{Z} = \left\{ (1, 1) + \epsilon_1 (2, 0) + \epsilon_2 (0, 1.5) \mid \epsilon_1, \epsilon_2 \in [-1, 1] \right\}
@@ -3136,28 +3140,49 @@ For example, \(\epsilon_i = -1\) moves in the negative direction, \(\epsilon_i =
 
 \subsubsection{Affine Transformer} 
 
-
-
-For the affine function \(f\) in~\autoref{sec:affine}
+For the affine function \(f\) in~\autoref{sec:affine}  
 \[
-f(x) = Wx + b
+f(v_1, v_2, \ldots, v_n) = \sum_{i=1}^{n} w_i v_i + b
 \]
-where \(W\) is a weight matrix and \(b\) is a bias vector. Given an input zonotope \(\mathcal{Z} = (c, G)\) where \(G = [g_1, g_2, \ldots, g_m]\) is the generator matrix, the abstract transformer \(f^a\) for zonotopes is:
-\[
-f^a(\mathcal{Z}) = (Wc + b, WG)
-\]
-The new center becomes \(Wc + b\) and the new generator matrix becomes \(WG\). 
+where \(w_i\) is the weight associated with input \(v_i\), \(n\) is the number of inputs, and \(b\) is the bias term.  
 
-Affine operations \emph{preserve} the structure of zonotopes exactly: no approximation needed.  
-Imagine a tilted box in space, then an affine transformation just stretches, rotates, and shifts it---the result is still a tilted box.
+Given a zonotope  
+\[
+\mathcal{Z} = \left\{ c + \sum_{j=1}^{m} \epsilon_j g_j \mid \epsilon_j \in [-1, 1] \right\}
+\]
+where \(g_j\) are the generator vectors,  
+the abstract transformer \(f^a\) for the affine function is:
+\[
+f^a(\mathcal{Z}) = \left\{ f(c) + \sum_{j=1}^{m} \epsilon_j f(g_j) \mid \epsilon_j \in [-1, 1] \right\}
+\]
+
+That is, the new zonotope has:
+\begin{itemize}
+  \item \textbf{center:} \(f(c) = \sum_{i=1}^{n} w_i c_i + b\)
+  \item \textbf{generators:} each \(f(g_j) = \sum_{i=1}^{n} w_i (g_j)_i\)
+\end{itemize}
+
+Applying an affine transformation to a zonotope transforms its center by the same affine rule (weights and bias) and transforms each generator by the linear part (weights only).
+In other words, affine operations \emph{preserve} the structure of zonotopes exactly: no approximation needed.  Imagine a tilted box in space, then an affine transformation just stretches, rotates, and shifts it---the result is still a tilted box.
+
+
+
+% For the affine function \(f\) in~\autoref{sec:affine}
+% \[
+% f(x) = Wx + b
+% \]
+% where \(W\) is a weight matrix and \(b\) is a bias vector. Given an input zonotope \(\mathcal{Z} = (c, G)\) where \(G = [g_1, g_2, \ldots, g_m]\) is the generator matrix, the abstract transformer \(f^a\) for zonotopes is:
+% \[
+% f^a(\mathcal{Z}) = (Wc + b, WG)
+% \]
+% The new center becomes \(Wc + b\) and the new generator matrix becomes \(WG\). 
+
+% Affine operations \emph{preserve} the structure of zonotopes exactly: no approximation needed.  
+% Imagine a tilted box in space, then an affine transformation just stretches, rotates, and shifts it---the result is still a tilted box.
 
 
 \begin{example}\label{ex:zonotope_linear_example}
-Consider the DNN in~\autoref{fig:dnn-abs} with inputs \(x_1 \in [1, 2]\) and \(x_2 \in [-1, 3]\). The affine function for neuron \(x_3\) is:
-\[
-f(x_1,x_2) = -0.5\,x_1 + 0.5\,x_2 + 1.0.
-\]
-\noindent We want to compute the bounds for \(x_3\) using zonotope abstraction.
+Consider the DNN in~\autoref{fig:dnn-abs} with inputs \(x_1 \in [1, 2]\) and \(x_2 \in [-1, 3]\). The affine function for neuron \(x_3\) is $f(x_1,x_2) = -0.5\,x_1 + 0.5\,x_2 + 1.0$. We want to compute the bounds for \(x_3\) using zonotope abstraction.
 
 First, we need to represent the bounds of \(x_1\) and \(x_2\) as a zonotope.
 The center \(c\) represents the midpoint of each input interval:
