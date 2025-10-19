@@ -3000,24 +3000,13 @@ Moreover, if we apply ReLU, then the output would be $\myrelu(z) = \myrelu(0) = 
 
 Interval overapproximation grows quickly as we propagate through many layers of a large network, i.e., it keeps ``inflating'' the bounds, leading to a loose approximation of the output and becoming unable to verify valid properties.  For example, $z \leq 0$ is a valid property for~\autoref{ex:interval-overapproximation}, but the interval abstractions gives $z \in [0,1]$, which is not tight (precise) enough to show this property. 
 
-Nonetheless, interval domain remains popular due to its simplicity and efficiency. In some cases, despite being too coarse, it can still successfully verify properties of neural networks, e.g., for~\autoref{ex:interval-overapproximation} if we want to verify that $z \le 2$, then the interval $z\in [0, 1]$ would suffice.
-
+Nonetheless, interval domain remains popular due to its simplicity and efficiency. In some cases, despite being imprecise, it can still successfully verify properties of neural networks, e.g., for~\autoref{ex:interval-overapproximation} if we want to verify that $z \le 2$, then the interval $z\in [0, 1]$ would suffice.
 
 \subsection{Zonotope}\label{sec:zonotope-abstraction}
-
-
-
-
 
 An interval abstraction (\autoref{sec:interval-abstraction}) treats each variable independently. For example, if \(x_1 \in [1,2]\) and \(x_2 \in [3,4]\), intervals assume any combination of \(x_1\) and \(x_2\) is possible. But variables can correlate: e.g., when \(x_1\) increases, \(x_2\) also increase.  Thus, zonotopes, which can capture such correlations, can provide a tighter abstraction.
 % A \emph{zonotope} captures this correlation by encoding both variables as linear combinations of a few shared ``uncertainty sources’’ (\(\epsilon_i\)’s).  
 In geometric terms while intervals form axis-aligned boxes, zonotopes form \emph{tilted boxes} (parallelograms or higher-dimensional analogues) that can stretch, rotate, and capture relationships between variables (like ``when $x_1$ goes up, $x_2$ also goes up'').
-
-
-
-
-
-
 
 \paragraph{Definition}
 
@@ -3180,55 +3169,113 @@ In other words, affine operations \emph{preserve} the structure of zonotopes exa
 % Affine operations \emph{preserve} the structure of zonotopes exactly: no approximation needed.  
 % Imagine a tilted box in space, then an affine transformation just stretches, rotates, and shifts it---the result is still a tilted box.
 
-
 \begin{example}\label{ex:zonotope_linear_example}
-Consider the DNN in~\autoref{fig:dnn-abs} with inputs \(x_1 \in [1, 2]\) and \(x_2 \in [-1, 3]\). The affine function for neuron \(x_3\) is $f(x_1,x_2) = -0.5\,x_1 + 0.5\,x_2 + 1.0$. We want to compute the bounds for \(x_3\) using zonotope abstraction.
-
-First, we need to represent the bounds of \(x_1\) and \(x_2\) as a zonotope.
-The center \(c\) represents the midpoint of each input interval:
-{\small
+Consider the DNN in~\autoref{fig:dnn-abs} with inputs \(x_1 \in [1, 2]\) and \(x_2 \in [-1, 3]\).  
+The affine function for neuron \(x_3\) is:
 \[
-c_1 = \frac{1+2}{2} = 1.5, \quad c_2 = \frac{(-1)+3}{2} = 1.0
+f(x_1, x_2) = -0.5\,x_1 + 0.5\,x_2 + 1.0
 \]
-}
-The generator matrix \(G\) captures the half-widths of each interval as diagonal entries:
-{\small
+We want to compute the bounds for \(x_3\) using zonotope abstraction.
+%\mathcal{Z} = \left\{ c + \sum_{i=1}^{m} \epsilon_i g_i \mid \epsilon_i \in [-1, 1] \right\}
+\paragraph{Step 1: Represent the input as a zonotope.}  
+We represent the input intervals as a zonotope $\{ c + \sum_{i=1}^{m} \epsilon_i g_i \mid \epsilon_i \in [-1,1] \}$.
+
+The center $c_i$ represents the midpoint of each input interval:
 \[
-G_{11} = \frac{2-1}{2} = 0.5, \quad G_{22} = \frac{3-(-1)}{2} = 2.0
+c_1 = \frac{1 + 2}{2} = 1.5, \quad c_2 = \frac{-1 + 3}{2} = 1.0, 
 \]
-}
-This construction creates the zonotope 
-{\small
+and the generator \(g_i\) captures the half-width of each interval:
 \[
-c = \begin{bmatrix}1.5 \\ 1.0\end{bmatrix}, \quad G = \begin{bmatrix}0.5 & 0 \\ 0 & 2.0\end{bmatrix},
+g_1 = \frac{2 - 1}{2} = 0.5, \quad g_2 = \frac{3 - (-1)}{2} = 2.0
 \]
-}
-\noindent which represents exactly the input box: \(x_1 \in [1.5-0.5, 1.5+0.5] = [1,2]\) and \(x_2 \in [1.0-2.0, 1.0+2.0] = [-1,3]\).
 
 
-Now we can apply the affine transformation to the input zonotope.  For the weight \(w = [-0.5, 0.5]^\top\) and bias \(b = 1.0\), applying the affine transformer:
-\begin{equation}
-    \small
-\begin{aligned}
-c' &= w^\top c + b = [-0.5, 0.5] \begin{bmatrix}1.5 \\ 1.0\end{bmatrix} + 1.0 = -0.75 + 0.5 + 1.0 = 0.75 \\
-g'_1 &= w^\top g_1 = [-0.5, 0.5] \begin{bmatrix}0.5 \\ 0\end{bmatrix} = -0.25 \\
-g'_2 &= w^\top g_2 = [-0.5, 0.5] \begin{bmatrix}0 \\ 2.0\end{bmatrix} = 1.0 \\
-\end{aligned}
-\end{equation}
-This produces the output zonotope \((0.75, [-0.25, 1.0])\) for \(x_3\).
+Thus, the input zonotope is
+\[
+\mathcal{Z} = \{ (1.5, 1.0) + \epsilon_1(0.5, 0) + \epsilon_2(0, 2.0), \quad \epsilon_1, \epsilon_2 \in [-1,1]\}.
+\]
 
-Finally, we compute the bounds of \(x_3\) from the zonotope representation:
+\paragraph{Step 2: Apply the affine transformation.}  
+Using the affine function \(f(x_1, x_2) = -0.5\,x_1 + 0.5\,x_2 + 1.0\),  
+we apply it to $\mathcal{Z}$:
 
 \begin{equation}
     \small
 \begin{aligned}
-    f^a_L &= c' - |g'_1| - |g'_2| = 0.75 - 0.25 - 1.0 = -0.5 \\
-    f^a_U &= c' + |g'_1| + |g'_2| = 0.75 + 0.25 + 1.0 = 2.0
+f^a(\mathcal{Z})
+  &= f(c_1, c_2) + \epsilon_1 f(g_1) + \epsilon_2 f(g_2) \\
+  &= [-0.5(1.5) + 0.5(1.0) + 1.0] + \epsilon_1[-0.5(0.5) + 0.5(0)] + \epsilon_2[-0.5(0) + 0.5(2.0)]\\
+    &= 0.75 + \epsilon_1(-0.25) + \epsilon_2(1.0).\\
 \end{aligned}
 \end{equation}
+Hence, the output zonotope for \(x_3\) is
+\[
+x_3 = 0.75 + \epsilon_1(-0.25) + \epsilon_2(1.0), \quad \epsilon_1, \epsilon_2 \in [-1,1].
+\]
 
-    Note that for this affine operation over a box input, both interval (\autoref{sec:interval-affine-transformer}) and zonotope abstractions yield identical bounds \([-0.5, 2.0]\). The advantage of zonotopes becomes apparent when propagating through multiple layers, where zonotopes preserve linear correlations that intervals lose.
+\paragraph{Step 3: Compute the output bounds.}  
+The lower and upper bounds are obtained by subtracting and adding the absolute values of the generator coefficients:
+\[
+\begin{aligned}
+f^a_L &= c' - |g'_1| - |g'_2| = 0.75 - 0.25 - 1.0 = -0.5, \\
+f^a_U &= c' + |g'_1| + |g'_2| = 0.75 + 0.25 + 1.0 = 2.0.
+\end{aligned}
+\]
+Thus, the output range is \(x_3 \in [-0.5, 2.0]\).
+
+Note that for this simpl example, both interval (\autoref{sec:interval-affine-transformer}) and zonotope abstractions yield identical bounds \([-0.5, 2.0]\).  
+The benefit of zonotopes becomes clear in deeper layers, where they preserve linear correlations that interval abstractions lose.
 \end{example}
+
+
+% \begin{example}\label{ex:zonotope_linear_example}
+% Consider the DNN in~\autoref{fig:dnn-abs} with inputs \(x_1 \in [1, 2]\) and \(x_2 \in [-1, 3]\). The affine function for neuron \(x_3\) is $f(x_1,x_2) = -0.5\,x_1 + 0.5\,x_2 + 1.0$. We want to compute the bounds for \(x_3\) using zonotope abstraction.
+
+% First, we need to represent the bounds of \(x_1\) and \(x_2\) as a zonotope.
+% The center \(c\) represents the midpoint of each input interval:
+% {\small
+% \[
+% c_1 = \frac{1+2}{2} = 1.5, \quad c_2 = \frac{(-1)+3}{2} = 1.0
+% \]
+% }
+% The generator matrix \(G\) captures the half-widths of each interval as diagonal entries:
+% {\small
+% \[
+% G_{11} = \frac{2-1}{2} = 0.5, \quad G_{22} = \frac{3-(-1)}{2} = 2.0
+% \]
+% }
+% This construction creates the zonotope 
+% {\small
+% \[
+% c = \begin{bmatrix}1.5 \\ 1.0\end{bmatrix}, \quad G = \begin{bmatrix}0.5 & 0 \\ 0 & 2.0\end{bmatrix},
+% \]
+% }
+% \noindent which represents exactly the input box: \(x_1 \in [1.5-0.5, 1.5+0.5] = [1,2]\) and \(x_2 \in [1.0-2.0, 1.0+2.0] = [-1,3]\).
+
+
+% Now we can apply the affine transformation to the input zonotope.  For the weight \(w = [-0.5, 0.5]^\top\) and bias \(b = 1.0\), applying the affine transformer:
+% \begin{equation}
+%     \small
+% \begin{aligned}
+% c' &= w^\top c + b = [-0.5, 0.5] \begin{bmatrix}1.5 \\ 1.0\end{bmatrix} + 1.0 = -0.75 + 0.5 + 1.0 = 0.75 \\
+% g'_1 &= w^\top g_1 = [-0.5, 0.5] \begin{bmatrix}0.5 \\ 0\end{bmatrix} = -0.25 \\
+% g'_2 &= w^\top g_2 = [-0.5, 0.5] \begin{bmatrix}0 \\ 2.0\end{bmatrix} = 1.0 \\
+% \end{aligned}
+% \end{equation}
+% This produces the output zonotope \((0.75, [-0.25, 1.0])\) for \(x_3\).
+
+% Finally, we compute the bounds of \(x_3\) from the zonotope representation:
+
+% \begin{equation}
+%     \small
+% \begin{aligned}
+%     f^a_L &= c' - |g'_1| - |g'_2| = 0.75 - 0.25 - 1.0 = -0.5 \\
+%     f^a_U &= c' + |g'_1| + |g'_2| = 0.75 + 0.25 + 1.0 = 2.0
+% \end{aligned}
+% \end{equation}
+
+%     Note that for this affine operation over a box input, both interval (\autoref{sec:interval-affine-transformer}) and zonotope abstractions yield identical bounds \([-0.5, 2.0]\). The advantage of zonotopes becomes apparent when propagating through multiple layers, where zonotopes preserve linear correlations that intervals lose.
+% \end{example}
 
 \subsubsection{ReLU Transformer}
 
@@ -4998,21 +5045,40 @@ Consider the DNN in~\autoref{fig:reluplex} and the property in~\autoref{eq:prop1
 %Advances in DNN verification have made it possible to reason about the safety and robustness of complex DNNs. 
 As DNN tools become more complex (e.g., SOTA tools have 20K LoCs), they are more prone to bugs. VNN-COMP'23~\cite{brix2023fourth} showed that 3 of the top 7 participants produced unsound results by claiming unsafe DNNs are safe, i.e., they produce \unsat{} on problems that are actually \sat{}. This is a serious issue, as it can lead to unsafe DNNs being deployed in safety-critical applications, such as autonomous driving and medical diagnosis.
 
-While checking counterexamples is relatively straightforward (we can just evaluate the DNN on the input), checking \unsat{} results---proving no counterexample exists---is far more challenging. This would require verifiers to track their decision steps, which are often complex and large. %Moreover, there are many verification approaches (e.g., branch and bound, conflict-driven learning, abstraction and refinement), making it difficult to standardize and compare results across different tools.
+While checking counterexamples is relatively straightforward (we can just evaluate the DNN on the input), checking \unsat{} results---proving no counterexample exists---is far more challenging. This would require verifiers to track their decision steps, which are often complex and large. 
+In this chapter, we discuss work~\cite{duong2025generating} on generating and checking proofs of \unsat{} results for DNN verification.
+
+
+%Moreover, there are many verification approaches (e.g., branch and bound, conflict-driven learning, abstraction and refinement), making it difficult to standardize and compare results across different tools.
 %This is unlike SAT solving, where most tools adopt the standard DPLL framework and thus allows for unified techniques in proof generation and checking (e.g., the DRAT family of algorithms for UNSAT proofs).
 
-\section{Proof Generation}\label{sec:proofgen}
+%\section{Proof Generation}\label{sec:proofgen}
 
 % To successfully deploy DNN verification tools in safety-critical applications, it is essential to provide guarantees that the verification results are correct, i.e., it won't claim an unsafe DNN as safe. One way to achieve this is to generate proofs of the verification results, i.e., a sequence of logical steps that demonstrates the validity of the verification result.
 % Ideally, the proof generation process should be automated and integrated into the verification tool, so that the proof can be generated and checked automatically. The challenge is that there are many different DNN verification techniques, each with its own decision-making process, making it difficult to standardize proof generation across different tools. 
 
 
+%A proof of satisfiability (sat) is an input that violates the property, i.e., a counterexample.  We can easily  check such a counterexample $c$ by evaluating $\phi(c,N(c))$ (i.e., running the DNN on the counterexample).
+%In fact, VNN-COMPs already requires competing DNN verification tools to return counterexamples demonstrating satisfiability.  
 
-A proof of satisfiability (sat) is an input that violates the property, i.e., a counterexample.  We can easily  check such a counterexample $c$ by evaluating $\phi(c,N(c))$ (i.e., running the DNN on the counterexample).
-In fact, VNN-COMPs already requires competing DNN verification tools to return counterexamples demonstrating satisfiability.  
+%In contrast, the proof of an unsatisfiability result---which explains why \emph{no possible inputs} can violate %the property---is inherently more complex to generate (\autoref{sec:proofgen}), requires a more sophisticated encoding (\autoref{sec:prooflang}), and an efficient checking algorithm (\autoref{sec:proofchecking}). We are mainly interested in \unsat{} proofs.
 
-In contrast, the proof of an unsatisfiability result (which explains why \emph{no possible inputs} can violate the property) is inherently more complex to generate (\autoref{sec:proofgen}), requires a more sophisticated encoding (\autoref{sec:prooflang}), and an efficient checking algorithm (\autoref{sec:proofchecking}). We are mainly interested in \unsat{} proofs.
 
+
+
+
+%\emph{Branch-and-bound} (BaB) is a common approach to DNN verification and used by major DNN verification tools including~\cite{bunel2020branch,wang2021beta,ferrari2022complete,duong2024harnessing,duong2023dpllt,ovalbab}.
+%In BaB algorithms, ``branch'' means splitting the problem into smaller subproblems (like a search tree), and ``bound'' means computing the upper and lower bounds, using abstraction, of the problem to prune the search space. 
+
+
+
+%Among modern DNN verification techniques, only the simplex-based approach attempts to generate proofs~\cite{desmartin2023towards,barbosa2023generating}. However, generating a proof for simplex-based approaches is non-trivial and incurs a significant overhead during the verification process~\cite{desmartin2023towards,barbosa2023generating}.
+
+%Recently, an approach based on the DPLL(T) algorithm in SAT/SMT solving has shown much promise~\cite{duong2023dpllt}. For example, in its debut year, the DPLL(T)-based \neuralsat{} DNN verifier~\cite{duong2023dpllt} won the New Comer Award at VNN-COMP'23~\cite{brix2023fourth} and outperformed other state-of-the-art DNN verification tools, especially for very large networks~\cite{duong2024harnessing}. More importantly, DPLL(T) approach maintains \emph{implication graph}, an internal data structure to keep track of assignments, which essentially represent a  proof of the verification result. In other words, proofs are a built-in feature of DPLL(T) approach, and thus can be generated with minimal (in fact, \emph{zero}) overhead.
+
+\section{Proof Generation for Branch and Bound Algorithms}\label{sec:proofgen}
+
+As described in~\autoref{chap:bab}, major DNN verification techniques share the common ``branch and bound'' (BaB) search algorithm. The BaB structure, shown in~~\autoref{alg:bab}, splits the problem into smaller subproblems and use abstraction to compute bounds to prune the search space. This commonality allows us to bring proof generation capabilities with minimal overhead to existing DNN verification tools.
 
 \begin{algorithm}[t]
     \footnotesize
@@ -5052,19 +5118,6 @@ In contrast, the proof of an unsatisfiability result (which explains why \emph{n
 \end{algorithm}
 
 
-
-%\emph{Branch-and-bound} (BaB) is a common approach to DNN verification and used by major DNN verification tools including~\cite{bunel2020branch,wang2021beta,ferrari2022complete,duong2024harnessing,duong2023dpllt,ovalbab}.
-%In BaB algorithms, ``branch'' means splitting the problem into smaller subproblems (like a search tree), and ``bound'' means computing the upper and lower bounds, using abstraction, of the problem to prune the search space. 
-
-
-
-%Among modern DNN verification techniques, only the simplex-based approach attempts to generate proofs~\cite{desmartin2023towards,barbosa2023generating}. However, generating a proof for simplex-based approaches is non-trivial and incurs a significant overhead during the verification process~\cite{desmartin2023towards,barbosa2023generating}.
-
-%Recently, an approach based on the DPLL(T) algorithm in SAT/SMT solving has shown much promise~\cite{duong2023dpllt}. For example, in its debut year, the DPLL(T)-based \neuralsat{} DNN verifier~\cite{duong2023dpllt} won the New Comer Award at VNN-COMP'23~\cite{brix2023fourth} and outperformed other state-of-the-art DNN verification tools, especially for very large networks~\cite{duong2024harnessing}. More importantly, DPLL(T) approach maintains \emph{implication graph}, an internal data structure to keep track of assignments, which essentially represent a  proof of the verification result. In other words, proofs are a built-in feature of DPLL(T) approach, and thus can be generated with minimal (in fact, \emph{zero}) overhead.
-
-\subsection{Proof Generation for Branch and Bound (BaB) Algorithms}\label{sec:proogen}
-
-As mentioned in~\autoref{chap:bab}, major DNN verification techniques share the common ``branch and bound'' (BaB) search algorithm. The BaB structure, shown in~~\autoref{alg:bab}, splits the problem into smaller subproblems and use abstraction to compute bounds to prune the search space. This commonality allows us to bring proof generation capabilities with minimal overhead to existing DNN verification tools.
 
 \autoref{alg:bab-proof} extends~\autoref{alg:bab} to show \proofgen, a BaB-based DNN verification algorithm with proof generation capability. The key idea is to introduce a proof tree (\autoref{line:prooftree}) and recording the branching decisions to the proof tree (\autoref{line:record_proof}).
 The proof tree is a binary tree structure, where each node represents a neuron and its left and right edges represent its activation decision (active or inactive).
@@ -5127,7 +5180,8 @@ Finally, \proofgen{} has an empty \texttt{ActPatterns}, stops the search, and re
 }
 
 \begin{figure}
-{\small
+\begin{minipage}[b]{0.54\textwidth}
+    \scriptsize
 \begin{align*}
     \lra{proof}         &::= \lra{declarations} \ \lra{assertions} \\
     \lra{declarations}  &::= \lra{declaration} \ | \ \lra{declaration} \ \lra{declarations} \\
@@ -5153,27 +5207,11 @@ Finally, \proofgen{} has an empty \texttt{ActPatterns}, stops the search, and re
     \lra{hidden-var}    &::= ~\text{N\_}\lra{constant} \\
     \lra{constant}      &::= ~\textbf{Int} \ | \ \textbf{Real}
 \end{align*}
-}
 \caption{The \prooflang{} proof language.}\label{fig:grammar}
-\end{figure}
-
-In~\autoref{sec:proofgen} we have shown that the BaB class of DNN verification techniques  can generate a binary tree that represents a proof of unsatisfiability.
-Rather than record such proofs in an verifier-specific format, it is more desirable to have a standard format
-that is human-readable, is compact, can be efficiently generated by verification tools, and can
-be efficiently and independently processed by proof checkers.  
-
-To meet this goal, we introduce \prooflang{}, a proof language to specify DNN proofs.
-This language is inspired by the SMTLIB format~\cite{barrett2010smt} used for SMT solving, which has also been adopted by the  VNNLIB language~\cite{vnnlib} to specify DNNs and their properties for  verification.
-
-%accepted by our proof check algorithm (\autoref{sec:proof-checker}
-
-\autoref{fig:grammar} outlines the \prooflang{} syntax and grammar, represented as production rules. 
-A proof is composed of \textit{declarations} and \textit{assertions}. Declarations define the variables and their types within the proof. Specifically, \textit{input variables} (prefixed with \functiontextformat{X}) and \textit{output variables} (prefixed with \functiontextformat{Y}) are declared as real numbers, representing the inputs and outputs of the neural network, respectively. Additionally, \textit{hidden variables} are declared with specific piece-wise linear (PWL) activation functions, such as ReLU or Leaky ReLU. These hidden variables correspond to the internal nodes of the neural network that process the input data through various activation functions.
-
-Assertions are logical statements that specify the conditions or properties that must hold within the proof. Assertions over input variables are \emph{preconditions} and those over output variables are \emph{post-conditions}. Each assertion is composed of a \textit{formula}, which can involve terms and logical operators. Formulas include simple comparisons between terms (e.g., less than, greater than) or more complex logical combinations using \functiontextformat{and} and \functiontextformat{or} operators. The terms used in these formulas can be input variables, output variables, hidden variables, or constants.
-
-\begin{figure}
-\begin{lstlisting}[style=SMTLIB-style, language=SMTLIB, basicstyle=\ttfamily\scriptsize]
+\end{minipage}
+\hfill
+\begin{minipage}[b]{0.45\textwidth}
+\begin{lstlisting}[style=SMTLIB-style, language=SMTLIB, basicstyle=\ttfamily\scriptsize,numbers=none]
 ; Declare variables
 (declare-const X_0 X_1 Real)
 (declare-const Y_0 Y_1 Real)
@@ -5191,15 +5229,39 @@ Assertions are logical statements that specify the conditions or properties that
 ; Hidden constraints
 (assert (or 
     (and (<  N_4 0))
-    (and (<  N_2 0) (>= N_4 0))
-    (and (>= N_2 0) (>= N_1 0) (>= N_4 0))
-    (and (>= N_2 0) (<  N_1 0) (>= N_4 0))))
+    (and (<  N_2 0) 
+        (>= N_4 0))
+    (and (>= N_2 0) 
+        (>= N_1 0) 
+        (>= N_4 0))
+    (and (>= N_2 0) 
+        (<  N_1 0) 
+        (>= N_4 0)
+    )))
 \end{lstlisting}
-\caption{\prooflang{} example format of the proof tree in~\autoref{fig:example}b. 
-%\tvn{seems to take too much space. Could we put multiple statements in a line?}\hd{is it compact enough?}\tvn{yep. thanks}
+\caption{\prooflang{} example format of the proof tree in~\autoref{fig:example}b.
 }
 \label{fig:proof_example}
+\end{minipage}
 \end{figure}
+
+In~\autoref{sec:proofgen} we have shown that the BaB class of DNN verification techniques  can generate a binary tree that represents a proof of unsatisfiability.
+Rather than record such proofs in an verifier-specific format, it is more desirable to have a standard format
+that is human-readable, is compact, can be efficiently generated by verification tools, and can
+be efficiently and independently processed by proof checkers.  
+
+To meet this goal, we introduce \prooflang{}, a proof language to specify DNN proofs.
+This language is inspired by the SMTLIB format~\cite{barrett2010smt} used for SMT solving, which has also been adopted by the  VNNLIB language~\cite{vnnlib} to specify DNNs and their properties for  verification.
+
+%accepted by our proof check algorithm (\autoref{sec:proof-checker}
+
+\autoref{fig:grammar} outlines the \prooflang{} syntax and grammar, represented as production rules. 
+A proof is composed of \textit{declarations} and \textit{assertions}. Declarations define the variables and their types within the proof. Specifically, \textit{input variables} (prefixed with \functiontextformat{X}) and \textit{output variables} (prefixed with \functiontextformat{Y}) are declared as real numbers, representing the inputs and outputs of the neural network, respectively. Additionally, \textit{hidden variables} are declared with specific piece-wise linear (PWL) activation functions, such as ReLU or Leaky ReLU. These hidden variables correspond to the internal nodes of the neural network that process the input data through various activation functions.
+
+Assertions are logical statements that specify the conditions or properties that must hold within the proof. Assertions over input variables are \emph{preconditions} and those over output variables are \emph{post-conditions}. Each assertion is composed of a \textit{formula}, which can involve terms and logical operators. Formulas include simple comparisons between terms (e.g., less than, greater than) or more complex logical combinations using \functiontextformat{and} and \functiontextformat{or} operators. The terms used in these formulas can be input variables, output variables, hidden variables, or constants.
+
+%\begin{figure}
+%\end{figure}
 
 %\autoref{fig:proof_example} shows an example of a proof in \prooflang{} using the network in~\autoref{fig:example}a. 
 
