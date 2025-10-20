@@ -3135,12 +3135,15 @@ f(v_1, v_2, \ldots, v_n) = \sum_{i=1}^{n} w_i v_i + b
 \]
 where \(w_i\) is the weight associated with input \(v_i\), \(n\) is the number of inputs, and \(b\) is the bias term.  
 
-Given a zonotope  
+Applying an affine transformation to a zonotope transforms its center by the same affine rule (weights and bias) and transforms each generator by the linear part (weights only).
+In other words, affine operations \emph{preserve} the structure of zonotopes exactly: no approximation needed.  Imagine a %tilted box in space, then an affine transformation just stretches, rotates, and shifts it---the result is still a tilted box.
+
+
+More formally, given a zonotope  
 \[
 \mathcal{Z} = \left\{ c + \sum_{j=1}^{m} \epsilon_j g_j \mid \epsilon_j \in [-1, 1] \right\}
 \]
-where \(g_j\) are the generator vectors,  
-the abstract transformer \(f^a\) for the affine function is:
+where \(g_j\) are generator, the abstract transformer \(f^a\) for the affine function is:
 \[
 f^a(\mathcal{Z}) = \left\{ f(c) + \sum_{j=1}^{m} \epsilon_j f(g_j) \mid \epsilon_j \in [-1, 1] \right\}
 \]
@@ -3150,11 +3153,6 @@ That is, the new zonotope has:
   \item \textbf{center:} \(f(c) = \sum_{i=1}^{n} w_i c_i + b\)
   \item \textbf{generators:} each \(f(g_j) = \sum_{i=1}^{n} w_i (g_j)_i\)
 \end{itemize}
-
-Applying an affine transformation to a zonotope transforms its center by the same affine rule (weights and bias) and transforms each generator by the linear part (weights only).
-In other words, affine operations \emph{preserve} the structure of zonotopes exactly: no approximation needed.  Imagine a tilted box in space, then an affine transformation just stretches, rotates, and shifts it---the result is still a tilted box.
-
-
 
 % For the affine function \(f\) in~\autoref{sec:affine}
 % \[
@@ -3195,8 +3193,7 @@ Thus, the input zonotope is
 \mathcal{Z} = \{ (1.5, 1.0) + \epsilon_1(0.5, 0) + \epsilon_2(0, 2.0), \quad \epsilon_1, \epsilon_2 \in [-1,1]\}.
 \]
 
-\paragraph{Step 2: Apply the affine transformation.}  
-Using the affine function \(f(x_1, x_2) = -0.5\,x_1 + 0.5\,x_2 + 1.0\),  
+\paragraph{Step 2: Apply the affine transformation.} Using the affine function \(f(x_1, x_2) = -0.5\,x_1 + 0.5\,x_2 + 1.0\),  
 we apply it to $\mathcal{Z}$:
 
 \begin{equation}
@@ -3226,7 +3223,6 @@ Thus, the output range is \(x_3 \in [-0.5, 2.0]\).
 Note that for this simpl example, both interval (\autoref{sec:interval-affine-transformer}) and zonotope abstractions yield identical bounds \([-0.5, 2.0]\).  
 The benefit of zonotopes becomes clear in deeper layers, where they preserve linear correlations that interval abstractions lose.
 \end{example}
-
 
 % \begin{example}\label{ex:zonotope_linear_example}
 % Consider the DNN in~\autoref{fig:dnn-abs} with inputs \(x_1 \in [1, 2]\) and \(x_2 \in [-1, 3]\). The affine function for neuron \(x_3\) is $f(x_1,x_2) = -0.5\,x_1 + 0.5\,x_2 + 1.0$. We want to compute the bounds for \(x_3\) using zonotope abstraction.
@@ -3528,7 +3524,7 @@ Thus, the final bounds after ReLU are \([0, 2.0]\).
 
 
 \section{Polytope}
-
+\tvn{not yet done, skip}
 In the previous section, we have seen the abstract domain of zonotopes, which is more expressive than the interval domain. Specifically, instead of approximating functions using a hyper-rectangle, the zonotope domain allows us to approximate functions using a zonotope, e.g., a parallelogram, capturing relations between different dimensions. In this section, we look at an even more expressive abstract domain, the polyhedron (or polytope) domain. 
 
 Unlike the zonotope domain, the polyhedron domain allows us to approximate functions using arbitrary convex polyhedra. A polyhedron in \(\mathbb{R}^n\) is a region made of straight (as opposed to curved) faces; a convex shape is one where the line between any two points in the shape is completely contained in the shape. Convex polyhedra can be specified as a set of linear inequalities of the form:
@@ -3752,7 +3748,7 @@ Here we can see that by using Interval abstraction, the property \(x_{11}\ \geq\
 \part{DNN Verification Algorithms}\label{part:algorithms}
 \chapter{The Branch and Bound Search Algorithm}\label{chap:bab}
 
-As shown in~\autoref{chap:constraint-solving}, the NNV verification problem can be formulated as a satisfiability problem, solvable using a constraint solver.  However, constraint solvers, e.g., SMT and MILP solvers, do not scale to large DNNs due to the complexity of the underlying formulae. Thus, modern DNN verification techniques reframe the problem to search for \emph{activation patterns} that satisfy the constraints, and use the \emph{Branch-and-Bound} algorithm to explore the space of possible activation patterns.
+As shown in~\autoref{chap:constraint-solving}, the NNV verification problem can be formulated as a satisfiability problem, solvable using a constraint solver,  e.g., SMT and MILP solvers.  However, such solvers not scale to large DNNs due to the complexity of the underlying formulae. Thus, modern DNN verification techniques reframe the problem to search for \emph{activation patterns} that satisfy the constraints, and use the \emph{Branch-and-Bound} algorithm to explore the space of possible activation patterns.
 
 %These activation patterns fix the activation status (active/inactive) of each neuron, allowing us to simplify involved constraints to linear constraints that are easier to solve. 
 
@@ -3967,7 +3963,7 @@ p=\{\mathsf{true}, \mathsf{true}\}.
 
 \section{Branch and Bound}\label{sec:bab-alg}
 
-Modern DNN verifiers typically adopt the Branch-and-Bound (BaB) approach to explore the space of possible neuron activation patterns. The BaB algorithm systematically splits (\emph{branch}) the verification problem into smaller subproblems by deciding the activation status (active/inactive) of neurons, and uses abstraction (bound) techniques to compute upper and lower bounds on the output values for these subproblems. If a subproblem's bounds indicate that it cannot contain a counterexample, it is pruned from the search space. This process continues until either a counterexample is found or all subproblems are exhausted, proving the property holds.
+Modern DNN verifiers typically adopt the Branch-and-Bound (BaB) approach to explore the space of possible neuron activation patterns (\autoref{sec:activation-patterns}). The BaB algorithm systematically splits (\emph{branch}) the verification problem into smaller subproblems by deciding the activation status (active/inactive) of neurons, and uses abstraction (bound) techniques to compute upper and lower bounds on the output values for these subproblems. If a subproblem's bounds, computed using abstraction (\autoref{chap:abstractions}), indicate that it cannot contain a counterexample, it is pruned from the search space. This process continues until either a counterexample is found or all subproblems are exhausted, proving the property holds.
 
 \SetKwData{nextlayer}{layer$_{i+1}$}
 \SetKwData{status}{status}
