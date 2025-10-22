@@ -3141,9 +3141,9 @@ In other words, affine operations \emph{preserve} the structure of zonotopes exa
 
 More formally, given a zonotope  
 \[
-\mathcal{Z} = \left\{ c + \sum_{j=1}^{m} \epsilon_j g_j \mid \epsilon_j \in [-1, 1] \right\}
+\mathcal{Z} = \left\{ c + \sum_{j=1}^{m} \epsilon_j g_j \mid \epsilon_j \in [-1, 1] \right\},
 \]
-where \(g_j\) are generator, the abstract transformer \(f^a\) for the affine function is:
+the abstract transformer \(f^a\) for the affine function computes the new zonotope as:
 \[
 f^a(\mathcal{Z}) = \left\{ f(c) + \sum_{j=1}^{m} \epsilon_j f(g_j) \mid \epsilon_j \in [-1, 1] \right\}
 \]
@@ -3175,7 +3175,7 @@ f(x_1, x_2) = -0.5\,x_1 + 0.5\,x_2 + 1.0
 \]
 We want to compute the bounds for \(x_3\) using zonotope abstraction.
 %\mathcal{Z} = \left\{ c + \sum_{i=1}^{m} \epsilon_i g_i \mid \epsilon_i \in [-1, 1] \right\}
-\paragraph{Step 1: Represent the input as a zonotope.}  
+\paragraph{Step 1: Represent the input as a zonotope}  
 We represent the input intervals as a zonotope $\{ c + \sum_{i=1}^{m} \epsilon_i g_i \mid \epsilon_i \in [-1,1] \}$.
 
 The center $c_i$ represents the midpoint of each input interval:
@@ -3189,11 +3189,13 @@ g_1 = \frac{2 - 1}{2} = 0.5, \quad g_2 = \frac{3 - (-1)}{2} = 2.0
 
 
 Thus, the input zonotope is
+{\small
 \[
 \mathcal{Z} = \{ (1.5, 1.0) + \epsilon_1(0.5, 0) + \epsilon_2(0, 2.0), \quad \epsilon_1, \epsilon_2 \in [-1,1]\}.
 \]
+}
 
-\paragraph{Step 2: Apply the affine transformation.} Using the affine function \(f(x_1, x_2) = -0.5\,x_1 + 0.5\,x_2 + 1.0\),  
+\paragraph{Step 2: Apply the affine transformation} Using the affine function \(f(x_1, x_2) = -0.5\,x_1 + 0.5\,x_2 + 1.0\),  
 we apply it to $\mathcal{Z}$:
 
 \begin{equation}
@@ -3206,21 +3208,23 @@ f^a(\mathcal{Z})
 \end{aligned}
 \end{equation}
 Hence, the output zonotope for \(x_3\) is
+{\small
 \[
 x_3 = 0.75 + \epsilon_1(-0.25) + \epsilon_2(1.0), \quad \epsilon_1, \epsilon_2 \in [-1,1].
 \]
+}
+\paragraph{Step 3: Compute output bounds} From the output zonotope, we can compute the lower and upperbounds for \(x_3\) by subtracting and adding the absolute values of the generator coefficients:
 
-\paragraph{Step 3: Compute the output bounds.}  
-The lower and upper bounds are obtained by subtracting and adding the absolute values of the generator coefficients:
-\[
+\begin{equation}
+    \small
 \begin{aligned}
 f^a_L &= c' - |g'_1| - |g'_2| = 0.75 - 0.25 - 1.0 = -0.5, \\
 f^a_U &= c' + |g'_1| + |g'_2| = 0.75 + 0.25 + 1.0 = 2.0.
 \end{aligned}
-\]
+\end{equation}
 Thus, the output range is \(x_3 \in [-0.5, 2.0]\).
 
-Note that for this simpl example, both interval (\autoref{sec:interval-affine-transformer}) and zonotope abstractions yield identical bounds \([-0.5, 2.0]\).  
+Note that for this simple example, both interval (\autoref{sec:interval-affine-transformer}) and zonotope abstractions yield identical bounds \([-0.5, 2.0]\).  
 The benefit of zonotopes becomes clear in deeper layers, where they preserve linear correlations that interval abstractions lose.
 \end{example}
 
@@ -3276,7 +3280,7 @@ The benefit of zonotopes becomes clear in deeper layers, where they preserve lin
 \subsubsection{ReLU Transformer}
 
 Activation functions like ReLU are non-affine and do not preserve zonotope structure.  
-For the ReLU function \(\text{ReLU}(x) = \max(0, x)\), the shape of the input region changes at \(x = 0\).  
+For \(\text{ReLU}(x) = \max(0, x)\), the shape of the input region changes at \(x = 0\).  
 When a zonotope crosses this point, its smooth tilted-box form becomes bent:  
 part of it is flattened (where \(x < 0\)), while the rest stays slanted (where \(x > 0\)).  
 This bending makes the ReLU output no longer a zonotope, so we need an overapproximation that captures all possible outputs.
@@ -3313,7 +3317,7 @@ This bending makes the ReLU output no longer a zonotope, so we need an overappro
 % ---
 
 
-We can distinguish three possible cases of ReLU depending on the interval bounds $[l,r]$ of the input zonotope.
+We can distinguish three possible cases of ReLU depending on the bounds $[l,r]$ of the input zonotope.
 
 \begin{itemize}
     \item \textbf{Active case} (\(l \geq 0\)):  
@@ -3478,20 +3482,23 @@ G' = \left[\lambda g_1, \lambda g_2, \ldots, \lambda g_m, -\frac{\lambda l }{2}\
 
 
 \begin{example}[ReLU on zonotope]\label{ex:zonotope_relu_example}
-Continuing from the previous example, applying ReLU to the zonotope output \((0.75, [-0.25, 1.0])\). 
+Continuing from~\autoref{ex:zonotope_linear_example}, applying ReLU to the zonotope output
 
-First, we compute the concrete bounds from this zonotope representation:
-\begin{align}
-l &= c - |g_1| - |g_2| = 0.75 - |-0.25| - |1.0| = 0.75 - 0.25 - 1.0 = -0.5 \\
-u &= c + |g_1| + |g_2| = 0.75 + |-0.25| + |1.0| = 0.75 + 0.25 + 1.0 = 2.0
-\end{align}
+\[
+x_3 = 0.75 + \epsilon_1(-0.25) + \epsilon_2(1.0), \quad \epsilon_1, \epsilon_2 \in [-1,1].
+\]
 
-So the input to ReLU has bounds \([-0.5, 2.0]\). Since \(l = -0.5 < 0 < 2.0 = u\), this is an unstable neuron requiring over-approximation.
 
-\textbf{Step 1: Slope approximation}
-We use slope \(\lambda = \frac{u}{u-l} = \frac{2.0}{2.0-(-0.5)} = \frac{2.0}{2.5} = 0.8\).
+\textbf{Step 1: Determine the bounds of the input zonotope} As shown in~\autoref{ex:zonotope_linear_example}, the output zonotope (before ReLU) has bounds \([-0.5, 2.0]\).   So the input zonotope to ReLU has bounds \([-0.5, 2.0]\). Since \(l = -0.5 < 0 < 2.0 = u\), this is an unstable neuron requiring over-approximation.
 
-\textbf{Step 2: Transform zonotope}
+\textbf{Step 2: Slope approximation}
+We use slope 
+
+\[
+\lambda = \frac{u}{u-l} = \frac{2.0}{2.0-(-0.5)} = \frac{2.0}{2.5} = 0.8.
+\]
+
+\textbf{Step 3: Transform zonotope}
 The new center becomes:
 \[
 c' = \lambda c - \frac{\lambda l }{2} = 0.8 \cdot 0.75 - \frac{0.8 \cdot (-0.5) }{2} = 0.6 + 0.2 = 0.8
@@ -3503,13 +3510,19 @@ g'_1 &= \lambda g_1 = 0.8 \cdot (-0.25) = -0.2, \\
 g'_2 &= \lambda g_2 = 0.8 \cdot 1.0 = 0.8  
 \end{align*}
 
-\textbf{Step 3: New generator for approximation error}
+\textbf{Step 4: New generator for approximation error}
 A new generator is introduced to capture the ReLU approximation error:
 \[
 g'_3 = -\frac{\lambda l }{2} = -\frac{0.8 \cdot (-0.5) }{2} = 0.2
 \]
 
-\textbf{Result:} The output zonotope is \((0.8, [-0.2, 0.8, 0.2])\) with concrete bounds:
+\textbf{Result:} The output zonotope is 
+
+\[
+0.8 + \epsilon_1(-0.2) + \epsilon_2(0.8) + \epsilon_3(0.2), \quad \epsilon_i \in [-1,1].
+\]
+with concrete bounds:
+%\((0.8, [-0.2, 0.8, 0.2])\) with concrete bounds:
 \begin{align*}
 l' &= 0.8 - 0.2 - 0.8 - 0.2 = -0.4 \rightarrow 0 \text{ (clamp negative values)}\\
 u' &= 0.8 + 0.2 + 0.8 + 0.2 = 2.0
@@ -3700,7 +3713,7 @@ Therefore, DeepPoly achieves a balance, combining the expressiveness of polyhedr
 
 \section{Abstractions for Other Activation Functions}
 
-\section{problems}
+\section{Problems}
 \subsection{Interval Abstraction}
 
 \begin{example}[Full Example of Interval Abstraction]\label{ex:interval-abstraction-full}
@@ -3796,6 +3809,16 @@ q = \langle b_1, b_2, *, b_4, *, \dots, b_m \rangle \in \{\texttt{true},\texttt{
 \]
 where $*$ means ``undetermined'' or ``don't care''. Each partial activation pattern represents multiple complete activation patterns.
 \end{definition}
+
+
+\begin{definition}[Empty Activation Pattern]\label{def:empty-pattern}
+An \emph{empty} activation pattern assigns \emph{no} activation statuses to any neurons:
+\[
+p = \langle *, *, \dots, * \rangle \in \{\texttt{true},\texttt{false},*\}^m .
+\]
+In other words, it represents \emph{all} possible complete activation patterns.
+\end{definition}
+
 
 
 \begin{example}  
@@ -4074,7 +4097,7 @@ Modern DNN verifiers typically adopt the Branch-and-Bound (BaB) approach to expl
 
 \SetKwData{problems}{ActPatterns}
 \begin{algorithm}[t]
-    \footnotesize
+    \small
     \Input{DNN $\mathcal{N}$, property $\phi_{in} \Rightarrow \phi_{out}$}
     \Output{$\myunsat$ if property is valid, otherwise ($\mysat, \counterexample$)}
     \BlankLine
@@ -4581,7 +4604,7 @@ Deactivating a neuron, $a_j^{(i)} = 0$, simplifies the first of the (e) constrai
 \SetKwFunction{Sort}{Sort}
 
 \begin{algorithm}[t]
-    \footnotesize
+    \small
 
     \Input{DNN $\alpha$, property $\phi_{in} \Rightarrow \phi_{out}$, current assignment $\sigma$, number of neurons for stabilization $k$}
     \Output{Tighten bounds for variables \textbf{not} in $\sigma$ (unassigned variables)}
@@ -5077,7 +5100,7 @@ In this chapter, we discuss work~\cite{duong2025generating} on generating and ch
 As described in~\autoref{chap:bab}, major DNN verification techniques share the common ``branch and bound'' (BaB) search algorithm. The BaB structure, shown in~~\autoref{alg:bab}, splits the problem into smaller subproblems and use abstraction to compute bounds to prune the search space. This commonality allows us to bring proof generation capabilities with minimal overhead to existing DNN verification tools.
 
 \begin{algorithm}[t]
-    \footnotesize
+    \small
   
     \Input{DNN $\mathcal{N}$, property $\phi_{in} \Rightarrow \phi_{out}$}
     \Output{($\unsat, \prooftree$) if property is valid, otherwise ($\sat, \counterexample$)}
@@ -5288,7 +5311,7 @@ The goal of \proofcheck{} is to verify that the \prooflang{} tree generated by a
 \proofcheck{} thus must verify that the constraint represented by each \emph{leaf} node in the proof tree is unsatisfiable. To check each node, \proofcheck{} forms an MILP problem (\autoref{sec:using-milp}) consisting of the constraint in~\autoref{eq:nnv2} (the DNN, the input condition, and the negation of the output) with the constraints representing the activation pattern encoded by the tree path to the leaf node. \proofcheck{} then invokes an LP solver to check that the MILP problem is infeasible, which indicates unsatisfiability of the leaf node. 
 
 \begin{algorithm}[t]
-    \footnotesize
+    \small
 
     \Input{DNN $\mathcal{N}$, property $\phi_{in} \Rightarrow \phi_{out}$, $\prooftree$}
     \Output{\certified if proof is valid, otherwise \uncertified}
@@ -5404,7 +5427,7 @@ While the core \proofcheck{} algorithm in~\autoref{fig:algorithm} is minimal, it
 \subsubsection{Neuron Stabilization}\label{sec:neuron-stabelization} 
 
 \begin{algorithm}[t]
-    \footnotesize
+    \small
 
     \Input{DNN $\mathcal{N}$, property $\phi_{in} \Rightarrow \phi_{out}$, parallel factor $k$}
     \Output{MILP $\model$}
