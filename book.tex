@@ -3005,13 +3005,13 @@ Nonetheless, interval domain remains popular due to its simplicity and efficienc
 \begin{problem}
     Suppose $y$ can take values from 0 to 3. Student A computes an interval abstraction $y \in [-2,4]$, while student B computes $y \in [1,2]$. 
     \begin{enumerate}
-        \item Which student's abstraction is correct?  Explain your answer. If both are correct, which is more precise?
+        \item Which student's abstraction is correct?  If both are correct, which is more precise? Explain your answer.
         \item Using the correct abstraction (if both are correct, use the more precise one), can we use it verify the property $y \leq 3$? How about $y \le 5$? Explain your answers.
     \end{enumerate}
 \end{problem}
 \subsection{Zonotope}\label{sec:zonotope-abstraction}
 
-An interval abstraction (\autoref{sec:interval-abstraction}) treats each variable independently. For example, if \(x_1 \in [1,2]\) and \(x_2 \in [3,4]\), intervals assume any combination of \(x_1\) and \(x_2\) is possible. But variables can correlate: e.g., when \(x_1\) increases, \(x_2\) also increase.  Thus, zonotopes, which can capture such correlations using their generators, can provide a tighter abstraction.
+Interval abstraction (\autoref{sec:interval-abstraction}) treats each variable independently. For example, if \(x_1 \in [1,2]\) and \(x_2 \in [3,4]\), interval assumes any combination of \(x_1\) and \(x_2\) is possible. But variables can correlate: e.g., when \(x_1\) increases, \(x_2\) also increases.  Zonotopes can capture such correlations and therefore  provide a tighter abstraction.
 % A \emph{zonotope} captures this correlation by encoding both variables as linear combinations of a few shared ``uncertainty sources’’ (\(\epsilon_i\)’s).  
 %In geometric terms while intervals form axis-aligned boxes, zonotopes form \emph{tilted boxes} (parallelograms or higher-dimensional analogues) that can stretch, rotate, and capture relationships between variables (like ``when $x_1$ goes up, $x_2$ also goes up'').
 
@@ -3123,9 +3123,9 @@ An interval abstraction (\autoref{sec:interval-abstraction}) treats each variabl
 
 \paragraph{Definition}
 
-A zonotope is a geometric object that generalizes the idea of an interval, which is a zonotope in 1D (\autoref{ex:interval-zonotope}), to multiple dimensions.
-A zonotope is represented using a center point and several generator vectors. More specifically, a zonotope is built by starting from a center point and then stretching along several directions (generators).
+A zonotope is built by starting from a center point and then stretching along several directions defined by generator vectors.
 Each generator can move forward or backward within a certain range, and together these movements sweep out the entire shape.
+Zonotope generalizes the idea of an interval, which itself is a zonotope (e.g., see \autoref{ex:interval-zonotope}).
 
 Formally, a \textbf{zonotope} \(\mathcal{Z}\) in \(\mathbb{R}^n\) is defined as:
 \[
