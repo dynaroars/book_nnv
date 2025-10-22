@@ -3003,10 +3003,10 @@ Interval overapproximation grows quickly as we propagate through many layers of 
 Nonetheless, interval domain remains popular due to its simplicity and efficiency. In some cases, despite being imprecise, it can still successfully verify properties of neural networks, e.g., for~\autoref{ex:interval-overapproximation} if we want to verify that $z \le 2$, then the interval $z\in [0, 1]$ would suffice.
 
 \begin{problem}
-    Suppose $y$ can take values from 0 to 3. Student A computes an interval abstraction for $y$ as $y \in [-2,4]$, while Student B computes the interval abstraction as $y \in [1,2]$. 
+    Suppose $y$ can take values from 0 to 3. Student A computes an interval abstraction $y \in [-2,4]$, while student B computes the interval abstraction  $y \in [1,2]$. 
     \begin{enumerate}
-        \item Which student's abstraction is correct?  Explain your answer. If both are correct, which are more precise?
-        \item Using the correct abstraction (if both are correct, use the more precise one), can we verify the property $y \leq 3$? How about $y \le 5$? Explain your answers.
+        \item Which student's abstraction is correct?  Explain your answer. If both are correct, which is more precise?
+        \item Using the correct abstraction (if both are correct, use the more precise one), can we use it verify the property $y \leq 3$? How about $y \le 5$? Explain your answers.
     \end{enumerate}
 \end{problem}
 \subsection{Zonotope}\label{sec:zonotope-abstraction}
