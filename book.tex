@@ -2698,8 +2698,8 @@ To compute the bounds $l_y(x)$ and $u_y(x)$, we can use different abstractions:
 
 % \tvn{Hai, create concrete examples with numbers to show how the abstractions work, e.g., for interval, zonotope, polytope, etc. We want to use one example to show the differences in the approximation,  not multiple examples which would be less effective.}
 
-\subsection{Geometric Representations} 
-Because our abstract domains are geometric shapes in high-dimensional spaces (i.e., multiple variables), it is useful to understand how these shapes can be represented. There are two common ways to describe a geometric shape (like rectangle, parallelograms, or higher-dimensional polyhedra):
+\subsection{Geometric Representations}\label{sec:geometric-representations} 
+Because our abstract domains are geometric shapes (e.g., interval, zonotope, and polytopes), it is useful to understand how these shapes can be represented. There are two common ways to describe a geometric shape:
 
 \begin{itemize}
   \item \textbf{Corner-based representation:} Define the shape by listing all of its corner points (vertices). For example, a rectangle in 2D is defined by its four corners, and a box in 3D is defined by its eight corners. This representation is intuitive and directly shows the boundaries of the shape.
@@ -2775,7 +2775,7 @@ Right: represented as a zonotope with center $c$ and orthogonal generators $g_1$
     \[
     x \in [-2, 3].
     \]
-    We can express this interval using one generator as shown in~\autoref{fig:interval-zonotope}. 
+    We can express this interval using a single generator as shown in~\autoref{fig:interval-zonotope}. 
 
     \begin{figure}
     \centering
@@ -3123,7 +3123,8 @@ Interval abstraction (\autoref{sec:interval-abstraction}) treats each variable i
 
 \paragraph{Definition}
 
-A zonotope is built by starting from a center point and then stretching along several directions defined by generator vectors.
+A zonotope is often represented using a generator-based representation as illustrated in~\autoref{sec:geometric-representations}.
+It is built by starting from a center point and then stretching along several directions defined by generator vectors.
 Each generator can move forward or backward within a certain range, and together these movements sweep out the entire shape.
 Zonotope generalizes the idea of an interval, which itself is a zonotope (e.g., see \autoref{ex:interval-zonotope}).
 
@@ -3139,8 +3140,7 @@ where:
 For example, \(\epsilon_i = -1\) moves in the negative direction, \(\epsilon_i = 0\) stays at the center, and \(\epsilon_i = +1\) moves in the positive direction.
 \end{itemize}
 
-
-\begin{figure}[h!]
+\begin{figure}
 \centering
 \begin{tikzpicture}[scale=1.0,>=stealth]
 
@@ -3167,78 +3167,84 @@ For example, \(\epsilon_i = -1\) moves in the negative direction, \(\epsilon_i =
 \end{scope}
 
 \end{tikzpicture}
-\caption{Why a zonotope can become a parallelogram.  
+\caption{
 Left: independent generators produce an axis-aligned rectangle (interval abstraction).  
-Right: correlated generators tilt the shape into a parallelogram, capturing dependency between $x_1$ and $x_2$.}
+Right: correlated generators tilt the shape into a parallelogram, capturing dependency between $x_1$ and $x_2$.}\label{fig:zonotope-correlated-generators}
 \end{figure}
 
 
 \begin{example}
-  A parallelogram is zonotope in 2D as shown in~\autoref{fig:zonotope-two-views}. It can be defined by its center point and two generator vectors that define its sides. For instance, if the center is at \(c = (1, 1)\) and the generators are \(g_1 = (2, 0)\) and \(g_2 = (0, 1.5)\), then the zonotope represents all points that can be reached by moving along these generators within the range \([-1, 1]\):
+    A common zonotope in 2D is a parallelogram. It can be defined by its center point and two generator vectors that define its sides. For instance, parallelogram on the left side of~\autoref{fig:zonotope-correlated-generators} has the center \(c = (1, 1)\) and the generators \(g_1 = (1, 0.25)\) and \(g_2 = (0.5, 1)\). This zonotope represents all points that can be reached by moving along these generators within the range \([-1, 1]\):
   \[
-    \mathcal{Z} = \left\{ (1, 1) + \epsilon_1 (2, 0) + \epsilon_2 (0, 1.5) \mid \epsilon_1, \epsilon_2 \in [-1, 1] \right\}
+    \mathcal{Z} = \left\{ (1, 1) + \epsilon_1 (1, 0.25) + \epsilon_2 (0.5, 1) \mid \epsilon_1, \epsilon_2 \in [-1, 1] \right\}
   \]
   This zonotope includes points like:
     \[
-      (1, 1) + (-1)(2, 0) + (1)(0, 1.5) = (-1, 2.5)
+      (1, 1) + (-1)(1, 0.25) + (1)(0.5, 1) = (-1, 2.5)
     \]
     \[
-      (1, 1) + (1)(2, 0) + (-1
-      )(0, 1.5) = (3, -0.5)
+      (1, 1) + (1)(1, 0.25) + (-1)(0.5, 1) = (3, -0.5)
     \]
-
-
-\begin{figure}
-\centering
-\begin{tikzpicture}[scale=1.1,>=stealth]
-
-% === LEFT: Vertex-based ===
-\begin{scope}[shift={(-3.8,0)}]
-  % Parallelogram (same shape as right)
-  \fill[blue!10] (0,0) -- (2,0.4) -- (2.4,1.6) -- (0.4,1.2) -- cycle;
-  \draw[blue!70!black, thick] (0,0) -- (2,0.4) -- (2.4,1.6) -- (0.4,1.2) -- cycle;
-  
-  % Corner dots
-  \foreach \x/\y in {0/0, 2/0.4, 2.4/1.6, 0.4/1.2} {
-    \fill[blue!70!black] (\x,\y) circle (1.5pt);
-  }
-
-  % Labels
-%<<<<<<< HEAD
-%  \node[blue!70!black] at (1.2,1.8) {\small corner-based view};
-%=======
-  \node[blue!70!black] at (1.2,2.0) {\small Corner-based view};
-%>>>>>>> 2cfddab7333b5cd686921149b6294ce8261c1eb7
-  \node at (1.2,-0.4) {\small Defined by vertices};
-\end{scope}
-
-% === RIGHT: Generator-based ===
-\begin{scope}[shift={(3.8,0)}]
-  % Parallelogram (same shape)
-  \fill[orange!15] (0,0) -- (2,0.4) -- (2.4,1.6) -- (0.4,1.2) -- cycle;
-  \draw[orange!80!black, thick] (0,0) -- (2,0.4) -- (2.4,1.6) -- (0.4,1.2) -- cycle;
-
-  % Center
-  \coordinate (c) at (1.2,0.8);
-  \filldraw[blue!80!black] (c) circle (1.5pt) node[below left] {\small $c$};
-
-  % Generators
-  \draw[->,blue!70!black,thick] (c) -- ++(1.0,0.2) node[right] {\small $g_1$};
-  \draw[->,blue!70!black,thick] (c) -- ++(0.2,0.6) node[above right] {\small $g_2$};
-
-  % Labels
-  \node[orange!80!black] at (1.4,2.0) {\small Generator-based view};
-  \node at (1.2,-0.4) {\small Built from $c+\epsilon_1g_1+\epsilon_2g_2$};
-\end{scope}
-
-% Connecting text
-\node at (1.5,0.8) {\Large $\Longleftrightarrow$};
-
-\end{tikzpicture}
-\caption{Two equivalent descriptions of a 2D zonotope (a parallelogram).}
-\label{fig:zonotope-two-views}
-\end{figure}
 \end{example}
+
+
+\begin{example}
+\autoref{fig:zonotope-correlated-generators} shows how zonotopes can capture correlations between variables. The parallelogram zonotope on the right captures   points with correlated \(x_1\) and \(x_2\) values. For example, increasing \(x_1\) by moving along \(g_1\) also increases \(x_2\) due to the non-zero second component of \(g_1\). 
+In contrast, the rectangle zonotope on the left, which represents an interval abstraction, has independent generators, i.e., changing \(x_1\) does not affect \(x_2\), and therefore cannot capture such correlations.
+\end{example}
+
+
+
+% \begin{figure}
+% \centering
+% \begin{tikzpicture}[scale=1.1,>=stealth]
+
+% % === LEFT: Vertex-based ===
+% \begin{scope}[shift={(-3.8,0)}]
+%   % Parallelogram (same shape as right)
+%   \fill[blue!10] (0,0) -- (2,0.4) -- (2.4,1.6) -- (0.4,1.2) -- cycle;
+%   \draw[blue!70!black, thick] (0,0) -- (2,0.4) -- (2.4,1.6) -- (0.4,1.2) -- cycle;
+  
+%   % Corner dots
+%   \foreach \x/\y in {0/0, 2/0.4, 2.4/1.6, 0.4/1.2} {
+%     \fill[blue!70!black] (\x,\y) circle (1.5pt);
+%   }
+
+%   % Labels
+% %<<<<<<< HEAD
+% %  \node[blue!70!black] at (1.2,1.8) {\small corner-based view};
+% %=======
+%   \node[blue!70!black] at (1.2,2.0) {\small Corner-based view};
+% %>>>>>>> 2cfddab7333b5cd686921149b6294ce8261c1eb7
+%   \node at (1.2,-0.4) {\small Defined by vertices};
+% \end{scope}
+
+% % === RIGHT: Generator-based ===
+% \begin{scope}[shift={(3.8,0)}]
+%   % Parallelogram (same shape)
+%   \fill[orange!15] (0,0) -- (2,0.4) -- (2.4,1.6) -- (0.4,1.2) -- cycle;
+%   \draw[orange!80!black, thick] (0,0) -- (2,0.4) -- (2.4,1.6) -- (0.4,1.2) -- cycle;
+
+%   % Center
+%   \coordinate (c) at (1.2,0.8);
+%   \filldraw[blue!80!black] (c) circle (1.5pt) node[below left] {\small $c$};
+
+%   % Generators
+%   \draw[->,blue!70!black,thick] (c) -- ++(1.0,0.2) node[right] {\small $g_1$};
+%   \draw[->,blue!70!black,thick] (c) -- ++(0.2,0.6) node[above right] {\small $g_2$};
+
+%   % Labels
+%   \node[orange!80!black] at (1.4,2.0) {\small Generator-based view};
+%   \node at (1.2,-0.4) {\small Built from $c+\epsilon_1g_1+\epsilon_2g_2$};
+% \end{scope}
+
+% % Connecting text
+% \node at (1.5,0.8) {\Large $\Longleftrightarrow$};
+
+% \end{tikzpicture}
+% \caption{Two equivalent descriptions of a 2D zonotope (a parallelogram).}
+% \label{fig:zonotope-two-views}
+% \end{figure}
 
 
 % \paragraph{Zonotope vs Box (Interval)}
