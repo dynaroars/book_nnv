@@ -2947,17 +2947,17 @@ f(x_1,x_2) = -0.5\,x_1 + 0.5\,x_2 + 1.0
 \]
 
 Then the interval for \(x_3\) can be computed as:
+\small{
 \[
 \begin{aligned}
-f^a([1,2],[-1,3]) = \Bigg[ &1 + \min(-0.5 \cdot 1,~ -0.5 \cdot 2) + \min(0.5 \cdot -1,~ 0.5 \cdot 3),\\
-& 1 + \max(-0.5 \cdot 1,~ -0.5 \cdot 2) + \max(0.5 \cdot -1,~ 0.5 \cdot 3)\Bigg]\\
+f^a([1,2],[-1,3]) = & \Bigg[ 1 + \min(-0.5 \cdot 1,~ -0.5 \cdot 2) + \min(0.5 \cdot -1,~ 0.5 \cdot 3),\\
+& ~~1 + \max(-0.5 \cdot 1,~ -0.5 \cdot 2) + \max(0.5 \cdot -1,~ 0.5 \cdot 3)\Bigg]\\
 = & [1 - 1.0 - 0.5,~ 1 - 0.5 + 1.5]\\
 = & [-0.5,~ 2.0]
 \end{aligned}
 \]
-
+}
 \end{example}
-
 \subsubsection{ReLU Transformer}
 For \(\myrelu(x) = \max(0, x)\), the abstract transformer is defined as:
 
@@ -3190,7 +3190,7 @@ Right: correlated generators tilt the shape into a parallelogram, capturing depe
 
 
 \begin{example}
-\autoref{fig:zonotope-correlated-generators} shows how zonotopes can capture correlations between variables. The parallelogram zonotope on the right captures   points with correlated \(x_1\) and \(x_2\) values. For example, increasing \(x_1\) by moving along \(g_1\) also increases \(x_2\) due to the non-zero second component of \(g_1\). 
+The parallelogram zonotope on the right captures   points with correlated \(x_1\) and \(x_2\) values, e.g., increasing \(x_1\) by moving along \(g_1\) also increases \(x_2\) due to the non-zero second component of \(g_1\). 
 In contrast, the rectangle zonotope on the left, which represents an interval abstraction, has independent generators, i.e., changing \(x_1\) does not affect \(x_2\), and therefore cannot capture such correlations.
 \end{example}
 
@@ -3425,7 +3425,7 @@ Thus, the output range is \(x_3 \in [-0.5, 2.0]\).
 % \caption{(a) Independent input intervals; (b) combined as a 2-D input zonotope; (c) 1-D output zonotope after affine transformation $f(x_1,x_2)=-0.5x_1+0.5x_2+1$.}
 % \end{figure}
 
-
+The reason for computing the bounds from the zonotope representation is to determine stable neurons as described in~\autoref{sec:pre-relu-bounds}. If the lower bound is non-negative, ReLU will be active; if the upper bound is non-positive,  ReLU will be inactive. In these cases, ReLU can be simplified to either the identity function or zero, respectively, which helps reduce overapproximation in subsequent layers.
 
 Note that for this simple example, both interval (\autoref{sec:interval-affine-transformer}) and zonotope abstractions yield identical bounds \([-0.5, 2.0]\).  
 The benefit of zonotopes becomes clear in deeper layers, where they preserve linear correlations that interval abstractions lose.
