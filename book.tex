@@ -2949,9 +2949,10 @@ f(x_1,x_2) = -0.5\,x_1 + 0.5\,x_2 + 1.0
 Then the interval for \(x_3\) can be computed as:
 \[
 \begin{aligned}
-f^a([1,2],[-1,3]) = \Bigg[ &1 + \min(-0.5 \cdot 1, 0.5 \cdot 2) + \min(-0.5 \cdot -1, 0.5 \cdot 3),\\
-& 1 + \max(-0.5 \cdot 1, 0.5 \cdot 2) + \max(-0.5 \cdot -1, 0.5 \cdot 3)\Bigg]\\
-= & [-0.5, 2.0]
+f^a([1,2],[-1,3]) = \Bigg[ &1 + \min(-0.5 \cdot 1,~ -0.5 \cdot 2) + \min(0.5 \cdot -1,~ 0.5 \cdot 3),\\
+& 1 + \max(-0.5 \cdot 1,~ -0.5 \cdot 2) + \max(0.5 \cdot -1,~ 0.5 \cdot 3)\Bigg]\\
+= & [1 - 1.0 - 0.5,~ 1 - 0.5 + 1.5]\\
+= & [-0.5,~ 2.0]
 \end{aligned}
 \]
 
