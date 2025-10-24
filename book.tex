@@ -2965,13 +2965,94 @@ For \(\myrelu(x) = \max(0, x)\), the abstract transformer is defined as:
 \myrelu^a([l, u]) = [ \myrelu(l), \myrelu(u)] = [\max(0, l), \max(0, u)]
 \]
 
-This is equivalent to three cases: 
+This is equivalent to three cases shown in \autoref{fig:relu-interval-cases}: 
 \begin{enumerate}
 \item If $u < 0$, then $\myrelu^a([l, u]) = [0, 0]$.  If inputs are negative, the output is also negative.
 \item If $l \ge 0$, then $\myrelu^a([l, u]) = [l, u]$. If inputs are positive, the output is exactly the same.
 \item If $l < 0 < u$, then $\myrelu^a([l, u]) = [0, u]$. If inputs are mixed, the output is approximated to $[0, u]$
 
 \end{enumerate}
+\begin{figure}
+\centering
+\begin{tikzpicture}[scale=1.2,>=stealth]
+
+% Common settings
+\tikzstyle{axis}=[->, thick]
+\tikzstyle{relu}=[very thick, black]
+\tikzstyle{rangebox}=[fill=blue!15, draw=blue!70!black, thick]
+\tikzstyle{outputbox}=[fill=orange!20, draw=orange!70!black, thick]
+
+%% --- (1) Inactive case: [l,u] below 0 ---
+\begin{scope}[shift={(-4,0)}]
+  \draw[axis] (-1.5,0) -- (2.0,0) node[right] {$x$};
+  \draw[axis] (0,-0.3) -- (0,1.5) node[above] {$y$};
+
+  % ReLU curve
+  \draw[relu] (-1.5,0) -- (0,0) -- (1.8,1.3);
+
+  % Interval below zero
+  \fill[blue!10] (-1.0,0) rectangle (-0.3,0.2);
+  \draw[blue!80!black,thick] (-1.0,0) rectangle (-0.3,0.2);
+  \node[blue!80!black] at (-0.65,-0.3) {\scriptsize input $[l,u]$};
+
+  % Output collapsed to zero
+  \fill[orange!20] (1.0,0.0) rectangle (1.7,0.2);
+  \draw[orange!70!black,thick] (1.0,0.0) rectangle (1.7,0.2);
+  \node[orange!70!black] at (1.35,-0.3) {\scriptsize output $[0,0]$};
+
+  
+\end{scope}
+
+
+%% --- (2) Active case: [l,u] above 0 ---
+\begin{scope}
+  \draw[axis] (-1.5,0) -- (2.0,0) node[right] {$x$};
+  \draw[axis] (0,-0.3) -- (0,1.5) node[above] {$y$};
+  \draw[relu] (-1.5,0) -- (0,0) -- (1.8,1.3);
+
+  % Input interval (above zero)
+  \fill[blue!10] (0.5,0.0) rectangle (1.5,0.2);
+  \draw[blue!80!black,thick] (0.5,0.0) rectangle (1.5,0.2);
+  \node[blue!80!black] at (1.0,-0.3) {\scriptsize input $[l,u]$};
+
+  % Output interval (same)
+  \fill[orange!20] (0.5,0.5) rectangle (1.5,0.7);
+  \draw[orange!70!black,thick] (0.5,0.5) rectangle (1.5,0.7);
+  \node[orange!70!black] at (1.0,0.9) {\scriptsize output $[l,u]$};
+
+
+\end{scope}
+
+
+%% --- (3) Unstable case: [l,u] crosses 0 ---
+\begin{scope}[shift={(4,0)}]
+  \draw[axis] (-1.5,0) -- (2.0,0) node[right] {$x$};
+  \draw[axis] (0,-0.3) -- (0,1.5) node[above] {$y$};
+  \draw[relu] (-1.5,0) -- (0,0) -- (1.8,1.3);
+
+  % Input interval crossing zero
+  \fill[blue!10] (-0.8,0.0) rectangle (0.8,0.2);
+  \draw[blue!80!black,thick] (-0.8,0.0) rectangle (0.8,0.2);
+  \node[blue!80!black] at (0,-0.3) {\scriptsize input $[l,u]$};
+
+  % Output interval [0,u]
+  \fill[orange!20] (0,0.0) rectangle (0.8,0.7);
+  \draw[orange!70!black,thick] (0,0.0) rectangle (0.8,0.7);
+  \node[orange!70!black] at (0.4,0.9) {\scriptsize output $[0,u]$};
+
+\end{scope}
+
+\end{tikzpicture}
+\caption{
+ReLU transformer for intervals.  
+Left: all inputs negative $\Rightarrow [0,0]$.  
+Middle: all inputs positive $\Rightarrow$ unchanged.  
+Right: interval crosses zero $\Rightarrow [0,u]$.  
+The ReLU function clamps negative parts to zero while preserving positive regions.
+}
+\label{fig:relu-interval-transformer}
+\end{figure}
+
 
 \begin{example}
 For~\autoref{ex:transformer-affine1}, applying ReLU$^a$ to neuron $x_3$ gives:
@@ -3003,7 +3084,7 @@ Interval overapproximation grows quickly as we propagate through many layers of 
 
 Nonetheless, interval domain remains popular due to its simplicity and efficiency. In some cases, despite being imprecise, it can still successfully verify properties of neural networks, e.g., for~\autoref{ex:interval-overapproximation} if we want to verify that $z \le 2$, then the interval $z\in [0, 1]$ would suffice.
 
-\begin{problem}
+\begin{problem}\label{prob:correct-abs}
     Suppose $y$ can take values from 0 to 3. Student A computes an interval abstraction $y \in [-2,4]$, while student B computes $y \in [1,2]$. 
     \begin{enumerate}
         \item Which student's abstraction is correct?  If both are correct, which is more precise? Explain your answer.
@@ -3489,35 +3570,7 @@ part of it is flattened (where \(x < 0\)), while the rest stays slanted (where \
 This bending makes the ReLU output no longer a zonotope, so we need an overapproximation that captures all possible outputs.
 
 
-% \begin{figure}[h!]
-% \centering
-% \begin{tikzpicture}[scale=1.0,>=stealth]
-%   % axes
-%   \draw[->, thick] (-1.5,0) -- (2.6,0) node[right] {$x$};
-%   \draw[->, thick] (0,-0.5) -- (0,2.5) node[above] {$y=\mathrm{ReLU}(x)$};
 
-%   % ReLU curve
-%   \draw[thick, black] (-1.2,0) -- (0,0);
-%   \draw[thick, black] (0,0) -- (2.4,2.4);
-
-%   % input zonotope band
-%   \fill[blue!10, opacity=0.6] (-1.0,-0.4) -- (2.0,1.6) -- (2.0,2.0) -- (-1.0,0.0) -- cycle;
-%   \draw[blue!60!black, thick] (-1.0,-0.4) -- (2.0,1.6);
-%   \draw[blue!60!black, thick] (-1.0,0.0) -- (2.0,2.0);
-
-%   % output bent region
-%   \fill[orange!20, opacity=0.6] (-1.0,0.0) -- (0,0.0) -- (2.0,2.0) -- (2.0,1.6) -- (0,0.0) -- cycle;
-
-%   % labels
-%   \node[blue!60!black] at (-0.7,1.2) {\small input};
-%   \node[orange!80!black] at (1.4,1.7) {\small after ReLU (bent)};
-%   \fill (0,0) circle (1.5pt) node[below right] {\small $(0,0)$};
-% \end{tikzpicture}
-% \caption{When a zonotope crosses zero, the ReLU “bends” its shape: the negative part collapses to $0$, while the positive part remains slanted.}
-% \label{fig:relu-bend}
-% \end{figure}
-
-% ---
 
 
 We can distinguish three possible cases of ReLU depending on the bounds $[l,r]$ of the input zonotope.
@@ -6825,8 +6878,6 @@ In each specification, the inputs (condition distance and latent variables) are 
 
 \chapter{Conclusion}
 
-
-
 \part{Appendices\label{part:appendices}}
 %\renewcommand{\appendixname}{Assignment}
 \appendix
@@ -6853,8 +6904,11 @@ In each specification, the inputs (condition distance and latent variables) are 
     \end{itemize}
     \item Week 5 (Sept 24): No class this week (prof not available). No quiz or HW due. 
 
-    \item Programming Assignment 1 (PA1): Symbolic Execution of Neural Networks~\autoref{sec:pa1}. Due date \alert{Monday October 6, 2025 11:59pm}.
-
+    \item Programming Assignment 1 (PA1)
+    \begin{itemize}
+        \item Symbolic Execution of Neural Networks~\autoref{sec:pa1} 
+        \item Due date \alert{Monday October 6, 2025 11:59pm}
+    \end{itemize}
     \item Week 6 (Oct 1):
     \begin{itemize}
         \item HW due:~\autoref{ex:negation-trick},~\autoref{problem:z3-dnn}, and~\autoref{problem:pattern-enumeration}. %, and ~\autoref{problem:nnv-pattern}
@@ -6867,7 +6921,11 @@ In each specification, the inputs (condition distance and latent variables) are 
         \item Topics: MILP Enncoding of DNNs (\autoref{sec:using-milp})
         \item Quiz: (Re)Do~\autoref{ex:milp-dnn} by hand
     \end{itemize}
-    \item Programming Assignment 2 (PA2): Abstraction~\autoref{sec:pa2}. Due date \alert{Wednesday October 29, 2025 11:59pm}
+    \item Programming Assignment 2 (PA2)
+    \begin{itemize}
+        \item Abstraction~\autoref{sec:pa2}
+        \item Due date \alert{Wednesday October 29, 2025 11:59pm}
+    \end{itemize}
     \item Week 8 (Oct 15):
     \begin{itemize}
       \item HW: Do~\autoref{prob:milp-dnn}
@@ -6878,9 +6936,12 @@ In each specification, the inputs (condition distance and latent variables) are 
         \begin{itemize}
           \item Topics: Abstraction (\autoref{chap:abstractions}), Interval and Zonotope (\autoref{sec:interval-abstraction},~\autoref{sec:zonotope-abstraction})                
           \item HW: Do~\autoref{prob:int-abs}
-          \item Quiz: TBD      
+          \item Quiz:~\autoref{prob:correct-abs}      
         \end{itemize}
     \item Week 10 (Oct 29):
+    \begin{itemize}
+        \item No HW because of PA2 due date
+    \end{itemize}
 \end{itemize}    
 
 \chapter{Programming Assignments}\label{chap:pa}
