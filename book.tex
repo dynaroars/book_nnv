@@ -2471,14 +2471,14 @@ This chapter discusses the interval, zonotope, and polytope abstract domains com
 \end{figure}
 
 \paragraph{Common Abstractions for ReLU}
-We use ReLU as a running example to illustrate different abstractions.
-Our goal is to compute the bounds of a post-ReLU neuron $\hat{z}$ given the bounds of its pre-ReLU value $z$ (as shown in~\autoref{sec:pre-relu-bounds}). For example, for a ReLU neuron $y = \max(0, x)$, we want to compute the bounds $[l_y(x), u_y(x)]$ of $y$ given the bounds $[l_x, u_x]$ on $x$.
+We use ReLU to illustrate different abstractions.
+Our goal is to approximate the bounds of the post-ReLU value of a neuron given the bounds of its pre-ReLU value. For example, for a ReLU neuron $y = \max(0, x)$, we want to compute the bounds $[l_y(x), u_y(x)]$ of $y$ given the bounds $[l_x, u_x]$ on $x$.
 
 \autoref{fig:relu-all-abstractions} illustrates common abstractions (or \emph{over-approximations}) for the ReLU function $y = \max(0, x)$, where $x \in [l_x, u_x]$ and $y \in [l_y(x), u_y(x)]$. The values of ReLU are shown as points on the \colorbox{myred}{red line}, which is non-convex and consists of two linear segments: one for $x < 0$ (where $y = 0$) and another for $x \geq 0$ (where $y = x$).
 To compute the bounds $l_y(x)$ and $u_y(x)$, we can use different abstractions: 
 
 \begin{itemize}
-    \item \textbf{Interval Abstraction:} Interval represents the output of the post-ReLU neuron as intervals $[l_y(x), u_y(x)]$ where $l_y(x) = 0$ and $u_y(x) = u_x$. Interval is a simple and efficient abstraction, but it can be \emph{imprecise}.  It does not capture the relationship between the input and output of ReLU, and simply assumes that the output can take any value between 0 and the upper bound of the input. 
+    \item \textbf{Interval Abstraction:} Interval represents the post-ReLU value as an interval $[l_y(x), u_y(x)]$ where $l_y(x) = 0$ and $u_y(x) = u_x$. Interval is a simple and efficient abstraction, but it can be \emph{imprecise}, e.g., it does not capture the relationship between the input and output of ReLU. %, and simply assumes that the output can take any value between 0 and the upper bound of the input. 
 
     In~\autoref{fig:relu-interval-abstraction}, the \colorbox{yellowfill}{yellow rectangle} (box) represents the interval abstraction in the 2D space of $(x, y)$. As can be seen, this box is too large of an over-approximation (too coarse or loose), as it includes many points that are not achievable by ReLU, e.g., the point $(0.5, 0.0)$ is not on the red line.
     
@@ -2699,7 +2699,7 @@ To compute the bounds $l_y(x)$ and $u_y(x)$, we can use different abstractions:
 % \tvn{Hai, create concrete examples with numbers to show how the abstractions work, e.g., for interval, zonotope, polytope, etc. We want to use one example to show the differences in the approximation,  not multiple examples which would be less effective.}
 
 \subsection{Geometric Representations}\label{sec:geometric-representations} 
-Because our abstract domains are geometric shapes (e.g., interval, zonotope, and polytopes), it is useful to understand how these shapes can be represented. There are two common ways to describe a geometric shape:
+Because our abstract domains are interval, zonotope, and polytopes, it is useful to understand how these shapes can be represented. There are two common ways to describe a geometric shape:
 
 \begin{itemize}
   \item \textbf{Corner-based representation:} Define the shape by listing all of its corner points (vertices). For example, a rectangle in 2D is defined by its four corners, and a box in 3D is defined by its eight corners. This representation is intuitive and directly shows the boundaries of the shape.
@@ -3662,9 +3662,12 @@ Our zonotope requires $\epsilon_i \in [-1,1]$, thus we substitute:
 \alpha = \frac{1 + \epsilon_{new}}{2}, \quad \epsilon_{new} \in [-1, 1]
 \]
 
+For example, when \(\epsilon_{new} = -1\), we have \(\alpha = 0\) (lower bound); when \(\epsilon_{new} = 1\), we have \(\alpha = 1\) (upper bound).
+
 The output zonotope after ReLU transformation is then:
 \begin{align*}
-    y &= \lambda x - \frac{1 + \epsilon_{new}}{2} \lambda l ~(x~\text{is the input zonotope})\\
+    y  & = \lambda x - \alpha \lambda l \\
+    &= \lambda x - \frac{1 + \epsilon_{new}}{2} \lambda l\\
       &= \lambda \underbrace{\left(c + \sum_{i=1}^m \epsilon_i g_i\right)}_{x} - \epsilon_{new} \frac{\lambda l }{2} - \frac{\lambda l }{2}  \\
       &= \underbrace{\left(\lambda c -  \frac{\lambda l }{2}\right)}_{\text{new center}} +  \underbrace{\sum_{i=1}^m \epsilon_i (\lambda g_i) - \epsilon_{new} \frac{\lambda l }{2}}_{\text{new generator}}
 \end{align*}
@@ -3678,14 +3681,13 @@ Continuing from~\autoref{ex:zonotope_linear_example}, applying ReLU to the zonot
 x_3 = 0.75 + \epsilon_1(-0.25) + \epsilon_2(1.0), \quad \epsilon_1, \epsilon_2 \in [-1,1].
 \]
 
-
 \textbf{Step 1: Determine the bounds of the input zonotope} As shown in~\autoref{ex:zonotope_linear_example}, the output zonotope (before ReLU) has bounds \([-0.5, 2.0]\).   So the input zonotope to ReLU has bounds \([-0.5, 2.0]\). Since \(l = -0.5 < 0 < 2.0 = u\), this is an unstable neuron requiring over-approximation.
 
 \textbf{Step 2: Slope approximation}
-We use slope 
+We compute the slope of the upper bound line of the parallelogram (which connects points \((-0.5, 0)\) and \((2.0, 2.0)\)):
 
 \[
-\lambda = \frac{u}{u-l} = \frac{2.0}{2.0-(-0.5)} = \frac{2.0}{2.5} = 0.8.
+\lambda = \frac{u-0}{u-l} = \frac{2.0}{2.0-(-0.5)} = \frac{2.0}{2.5} = 0.8.
 \]
 
 \textbf{Step 3: Transform zonotope}
