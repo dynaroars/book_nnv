@@ -4310,7 +4310,7 @@ Note that because BaB splits ReLU neurons into active/inactive cases, it is also
                 }
                 $v_i \leftarrow \Decide(\mathcal{N}, \sigma_i)$\label{line:babdecide}\\
                 \tcp{create new activation patterns}
-                $\problems \leftarrow \problems \cup \{ \sigma_i \land v_i ~;~ \sigma_i \land \overline{v_i} \}$
+                $\problems \cup \problems \cup \{ \sigma_i \cup \{v_i\} ~;~ \sigma_i \land \{\overline{v_i}\} \}$
             }
             %\Else(\tcp*[h]{detect a conflict}){
                 % $\clauses \leftarrow \clauses \cup \AnalyzeConflict(\igraph_i)$ \\ \label{line:analyze_conflict}
@@ -4376,14 +4376,14 @@ First, \bab{} initializes \functiontextformat{ActPatterns} with an empty activat
 and  calls \functiontextformat{Deduce} to check the feasibility of the problem based $\sigma_i$.
 
 Here, \functiontextformat{Deduce} determines that the problem is feasible, e.g., the bounds of $y_1$ and $y_2$ indicate that $y_1 \le y_2$ can be satisfied. Thus, \bab{} calls \functiontextformat{LP} to check the satisfiability of the problem using an LP solver. The LP solver returns unsatisfiable (or unknown)--meaning no counterexample is found in this activation pattern.  \bab{} then randomly selects a neuron to split (\functiontextformat{Decide}). Assume that it chooses $v_4$ to split, i.e., the problem spawns two independent subproblems: one with $v_4$ active and the other with $v_4$ inactive.
-It does so by conjoining $\{v_4\}$ and $\{\overline{v_4}\}$ to $\sigma_i$and adds both new activation patterns to \functiontextformat{ActPatterns}. Next, \bab{} loops back to process the next activation pattern.
+It does so by unioning $\{v_4\}$ and $\{\overline{v_4}\}$ with $\sigma_i$ and adds both new activation patterns to \functiontextformat{ActPatterns}. Next, \bab{} loops back to process the next activation pattern.
 
 
 In the second iteration, \bab{} has two subproblems. For the subproblem with activation pattern $\{v_4\}$, \functiontextformat{Deduce} decides feasibility but \functiontextformat{LP} returns unsatisfiable (or unknown), 
 so it selects $v_2$ to split by adding $\{v_4, v_2\}$ and $\{v_4, \overline{v_2}\}$ to \texttt{ActPatterns}. 
 For the other subproblem with $\overline{v_4}$ inactive, \functiontextformat{Deduce} determines infeasibility and thus discards this subproblem.
 
-In the third iteration, \bab{} has two subproblems for $v_4 \land v_2$ and $v_4 \land \overline{v_2}$. For the first subproblem, \bab{} selects $v_1$ to split by conjoining $v_1$ and then $\overline{v_1}$ to the current activation pattern $v_4 \land$ and adds them to \functiontextformat{ActPatterns}. For the second subproblem, \functiontextformat{Deduce} determines infeasibility and \bab{} discards this subproblem.
+In the third iteration, \bab{} has two subproblems for $v_4 \land v_2$ and $v_4 \land \overline{v_2}$. For the first subproblem, \bab{} selects $v_1$ to split by unioning $v_1$ and then $\overline{v_1}$ to the current activation pattern $v_4 \land$ and adds them to \functiontextformat{ActPatterns}. For the second subproblem, \functiontextformat{Deduce} determines infeasibility and \bab{} discards this subproblem.
 
 In the fourth iteration, \bab{} has two subproblems: $v_4 \land v_2 \land v_1$ and $v_4 \land v_2 \land \overline{v_1}$, both which are then determined infeasible and discarded.
 
