@@ -4140,6 +4140,8 @@ p=\{\mathsf{true}, \mathsf{true}\}.
 % Thus, region = $\{(x_1,x_2)\mid -0.5x_1+0.5x_2+1 \ge 0,\;0.5x_1-0.5x_2+1 < 0\}$, a convex polyhedron.  
 \end{problem}
 
+%\textbf{Notation}:  e.g.,  {x, notx}  means x is true, not x is false.
+
 
 % \begin{problem}[Satisfiability via Partial Patterns]
 % Let $N$ be a DNN with ReLU neurons $n_1,\dots,n_4$. Suppose we want to verify the property
@@ -4367,18 +4369,19 @@ Otherwise (\functiontextformat{LP} returns unsatisfiable), \bab{} calls \functio
 (x_1, x_2) \in [-2.0, 2.0] \times [-1.0, 1,0] \Rightarrow (y_1 > y_2).
 \] 
 
-In other words, we want to search for a counterexample which are inputs $(x_1,x_2)$ in the given input range such that $y_1 \le y_2$.
-
-First, \bab{} initializes \functiontextformat{ActPatterns} with an empty activation pattern $\emptyset$---no neurons fixed. Then \bab{} enters a loop to search for a satisfying assignment. In the first iteration, \bab{} selects the only available activation pattern $\emptyset \in \functiontextformat{ActPatterns}$. 
-It calls \functiontextformat{Deduce} to check the feasibility of the problem based on the current activation pattern. 
-
-\functiontextformat{Deduce} determines that the problem is feasible, e.g., the bounds of $y_1$ and $y_2$ indicate that $y_1 \le y_2$ can be satisfied. Thus, \bab{} calls \functiontextformat{LP} to check the satisfiability of the problem using an LP solver. The LP solver returns unsatisfiable, indicating that the over-approximation is not precise enough to determine infeasibility.  \bab{} then randomly selects a neuron to split (\functiontextformat{Decide}). Assume that it chooses $v_4$ to split, i.e., the problem spawns two independent subproblems: one with $v_4$ active and the other with $v_4$ inactive.
-It does so by conjoining $\{v_4\}$ and $\{\overline{v_4}\}$ to the current activation pattern and adds both new activation patterns to \functiontextformat{ActPatterns}. Next, \bab{} loops back to process the next activation pattern.
+Equivalently, we want to show that no counterexample exists, i.e., no inputs $(x_1,x_2)$ in the given input range such that $y_1 \le y_2$.
 
 
-In the second iteration, \bab{} has two subproblems. For the first subproblem with activation pattern $\{v_4\}$, \functiontextformat{Deduce} decides feasibility but \functiontextformat{LP} returns unsatisfiable, 
-so it selects $v_2$ to split. It then conjoins $v_4$ with $v_2$ and then with $\overline{v_2}$ and adds both patterns to \texttt{ActPatterns}. 
-For the second subproblem with $\overline{v_4}$ inactive, \functiontextformat{Deduce} determines infeasibility and thus discards this subproblem.
+First, \bab{} initializes \functiontextformat{ActPatterns} with an empty activation pattern $\emptyset$ (i.e., no neurons fixed). Then \bab{} enters its main loop. In the first iteration, \bab{} selects the only available activation pattern $\emptyset$, i.e., $\sigma_i = \emptyset$,
+and  calls \functiontextformat{Deduce} to check the feasibility of the problem based $\sigma_i$.
+
+Here, \functiontextformat{Deduce} determines that the problem is feasible, e.g., the bounds of $y_1$ and $y_2$ indicate that $y_1 \le y_2$ can be satisfied. Thus, \bab{} calls \functiontextformat{LP} to check the satisfiability of the problem using an LP solver. The LP solver returns unsatisfiable (or unknown)--meaning no counterexample is found in this activation pattern.  \bab{} then randomly selects a neuron to split (\functiontextformat{Decide}). Assume that it chooses $v_4$ to split, i.e., the problem spawns two independent subproblems: one with $v_4$ active and the other with $v_4$ inactive.
+It does so by conjoining $\{v_4\}$ and $\{\overline{v_4}\}$ to $\sigma_i$and adds both new activation patterns to \functiontextformat{ActPatterns}. Next, \bab{} loops back to process the next activation pattern.
+
+
+In the second iteration, \bab{} has two subproblems. For the subproblem with activation pattern $\{v_4\}$, \functiontextformat{Deduce} decides feasibility but \functiontextformat{LP} returns unsatisfiable (or unknown), 
+so it selects $v_2$ to split by adding $\{v_4, v_2\}$ and $\{v_4, \overline{v_2}\}$ to \texttt{ActPatterns}. 
+For the other subproblem with $\overline{v_4}$ inactive, \functiontextformat{Deduce} determines infeasibility and thus discards this subproblem.
 
 In the third iteration, \bab{} has two subproblems for $v_4 \land v_2$ and $v_4 \land \overline{v_2}$. For the first subproblem, \bab{} selects $v_1$ to split by conjoining $v_1$ and then $\overline{v_1}$ to the current activation pattern $v_4 \land$ and adds them to \functiontextformat{ActPatterns}. For the second subproblem, \functiontextformat{Deduce} determines infeasibility and \bab{} discards this subproblem.
 
@@ -4395,7 +4398,7 @@ Do~\autoref{ex:bab} again, but come up with concrete values for each step, e.g.,
 
 
 \begin{problem}\label{prob:bab-counterexample}
-Do~\autoref{ex:bab-detailed} but assume the property is invalid and find a counterexample.
+Do~\autoref{prob:bab-detailed} but assume the property is invalid and find a counterexample.
 \end{problem}
 
 
