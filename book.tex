@@ -3730,223 +3730,223 @@ Thus, the final bounds after ReLU are \([0, 2.0]\).
 
 \section{Polytope}
 \tvn{not yet done, skip}
-In the previous section, we have seen the abstract domain of zonotopes, which is more expressive than the interval domain. Specifically, instead of approximating functions using a hyper-rectangle, the zonotope domain allows us to approximate functions using a zonotope, e.g., a parallelogram, capturing relations between different dimensions. In this section, we look at an even more expressive abstract domain, the polyhedron (or polytope) domain. 
+% In the previous section, we have seen the abstract domain of zonotopes, which is more expressive than the interval domain. Specifically, instead of approximating functions using a hyper-rectangle, the zonotope domain allows us to approximate functions using a zonotope, e.g., a parallelogram, capturing relations between different dimensions. In this section, we look at an even more expressive abstract domain, the polyhedron (or polytope) domain. 
 
-Unlike the zonotope domain, the polyhedron domain allows us to approximate functions using arbitrary convex polyhedra. A polyhedron in \(\mathbb{R}^n\) is a region made of straight (as opposed to curved) faces; a convex shape is one where the line between any two points in the shape is completely contained in the shape. Convex polyhedra can be specified as a set of linear inequalities of the form:
+% Unlike the zonotope domain, the polyhedron domain allows us to approximate functions using arbitrary convex polyhedra. A polyhedron in \(\mathbb{R}^n\) is a region made of straight (as opposed to curved) faces; a convex shape is one where the line between any two points in the shape is completely contained in the shape. Convex polyhedra can be specified as a set of linear inequalities of the form:
 
-\[
-Ax \leq b
-\]
+% \[
+% Ax \leq b
+% \]
 
-where \(A \in \mathbb{R}^{m \times n}\) and \(b \in \mathbb{R}^m\) for some \(m\), specifying \(m\) half-spaces whose intersection forms the polyhedron.
+% where \(A \in \mathbb{R}^{m \times n}\) and \(b \in \mathbb{R}^m\) for some \(m\), specifying \(m\) half-spaces whose intersection forms the polyhedron.
 
-Using a set of convex polyhedra, we can more precisely approximate activation functions like ReLU. For instance, to approximate ReLU, we can describe the tightest convex over-approximation by the following constraints:
+% Using a set of convex polyhedra, we can more precisely approximate activation functions like ReLU. For instance, to approximate ReLU, we can describe the tightest convex over-approximation by the following constraints:
 
-\[
-x \leq y, \quad 0 \leq y, \quad y \leq \lambda x + \mu
-\]
+% \[
+% x \leq y, \quad 0 \leq y, \quad y \leq \lambda x + \mu
+% \]
 
-where \(\lambda\) and \(\mu\) are parameters chosen based on the bounds of \(x\).
+% where \(\lambda\) and \(\mu\) are parameters chosen based on the bounds of \(x\).
 
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.5\linewidth]{figure/3-lines-polytope.png}
-    \caption{The tightest Convex Polyhedral Approximation of ReLU.}
-    \label{fig:enter-label}
-\end{figure}
-% \begin{figure}
+% \begin{figure}[h]
 %     \centering
-%     \includegraphics[width=0.5\linewidth]{3-lines-polytope.png}
-%     \caption{Enter Caption}
+%     \includegraphics[width=0.5\linewidth]{figure/3-lines-polytope.png}
+%     \caption{The tightest Convex Polyhedral Approximation of ReLU.}
 %     \label{fig:enter-label}
 % \end{figure}
+% % \begin{figure}
+% %     \centering
+% %     \includegraphics[width=0.5\linewidth]{3-lines-polytope.png}
+% %     \caption{Enter Caption}
+% %     \label{fig:enter-label}
+% % \end{figure}
 
-This is the smallest convex polyhedron that soundly approximates ReLU, and is strictly more precise than the interval and zonotope abstractions, as can be seen visually.
+% This is the smallest convex polyhedron that soundly approximates ReLU, and is strictly more precise than the interval and zonotope abstractions, as can be seen visually.
 
-\subsection{Affine Functions}
+% \subsection{Affine Functions}
 
-Affine transformations map convex polyhedra to convex polyhedra.  
-Given an affine transformation \(f(x) = Wx + b\), where \(W\) is a matrix and \(b\) is a bias vector, we can transform a polyhedron \(\{x \mid A x \leq b\}\) through \(f\) by substitution:
+% Affine transformations map convex polyhedra to convex polyhedra.  
+% Given an affine transformation \(f(x) = Wx + b\), where \(W\) is a matrix and \(b\) is a bias vector, we can transform a polyhedron \(\{x \mid A x \leq b\}\) through \(f\) by substitution:
 
-\[
-\{x \mid A (W^{-1}(x - b)) \leq b\}
-\]
+% \[
+% \{x \mid A (W^{-1}(x - b)) \leq b\}
+% \]
 
-if \(W\) is invertible. More commonly in practice, when applying affine transformations in neural networks (layer-wise), we modify the constraints accordingly by propagating through the weights and biases.
+% if \(W\) is invertible. More commonly in practice, when applying affine transformations in neural networks (layer-wise), we modify the constraints accordingly by propagating through the weights and biases.
 
-Thus, affine layers can be handled exactly under polyhedral abstraction without any need for relaxation or over-approximation.
+% Thus, affine layers can be handled exactly under polyhedral abstraction without any need for relaxation or over-approximation.
 
-\subsection{Activation Functions}
+% \subsection{Activation Functions}
 
-Handling non-linear activation functions, such as ReLU, with polyhedral abstraction is challenging because non-linearities generally map polytopes to non-convex shapes. Therefore, over-approximations are required.
+% Handling non-linear activation functions, such as ReLU, with polyhedral abstraction is challenging because non-linearities generally map polytopes to non-convex shapes. Therefore, over-approximations are required.
 
-The key idea is to approximate the graph of the non-linear function by a convex polyhedron that covers all possible cases. For ReLU, the previously mentioned three constraints:
+% The key idea is to approximate the graph of the non-linear function by a convex polyhedron that covers all possible cases. For ReLU, the previously mentioned three constraints:
 
-\begin{equation}\label{minimum_polyhedron}
-x \leq y, \quad 0 \leq y, \quad y \leq \lambda x + \mu
-\end{equation}
-
-
-construct a tight convex relaxation.
-
-For other activations like sigmoid or tanh, the approximation involves linearizing the curve between the lower and upper bounds of the input variable, but the number of constraints can quickly grow, increasing computational complexity.
-
-\paragraph{DeepPoly.}  
-By containing two lower polyhedra constraints for \(y\), the approximation in \ref{minimum_polyhedron} inherently suffers from a potential blow-up in number of constraints as the analysis proceeds. Due to scalability issues associated with general polyhedral representations, DeepPoly \cite{singh2019abstract} was proposed as a precise and scalable abstract domain. DeepPoly introduces a specialized form of polyhedral abstraction combined with interval bounds. 
-
-More specifically,  DeepPoly only allows for one lower bound in \ref{minimum_polyhedron}, the selection of which lower constraint depends on which constraint provides the tighter approximation.
-
-Returning to our example, the area of the approximation in Fig.~4(b) is given by \( 0.5 \cdot u \cdot (u - l) \), while the area in Fig.~4(c) is given by \( 0.5 \cdot (-l_i) \cdot (u_i - l_i) \). To achieve a tighter relaxation, we select the approximation with the smaller area. Specifically, when \( u \leq -l \), we apply the constraints and bounds derived from \(x \leq y\).
-In addition, each neuron \(x_j\) is bounded above and below by affine expressions of the input neurons:
-
-\[
-l_j(x) \leq x_j \leq u_j(x)
-\]
-
-where \(l_j\) and \(u_j\) are affine functions.
-
-\subsection{DeepPoly Transformers}
-
-The DeepPoly abstract domain defines a scalable and precise framework for verifying deep neural networks by combining interval and polyhedral abstractions. Each neuron is bounded from above and below using affine expressions of the input neurons:
-
-\[
-l_j(x) \leq x_j \leq u_j(x)
-\]
-
-where \(l_j(x)\) and \(u_j(x)\) are affine functions representing lower and upper bounds respectively. DeepPoly then defines **abstract transformers** to propagate these bounds through different types of neural network layers.
-
-\subsubsection{Affine Layer Transformer}
-
-Given an affine transformation:
-\[
-x^{(l+1)} = W x^{(l)} + b
-\]
-
-we define the transformation of the bounds by propagating the affine expressions directly:
-\begin{align*}
-l_j^{(l+1)}(x) &= \sum_i w_{ji}^+ \cdot l_i^{(l)}(x) + w_{ji}^- \cdot u_i^{(l)}(x) + b_j \\
-u_j^{(l+1)}(x) &= \sum_i w_{ji}^+ \cdot u_i^{(l)}(x) + w_{ji}^- \cdot l_i^{(l)}(x) + b_j
-\end{align*}
-
-Here, \(w^+_{ji} = \max(w_{ji}, 0)\), and \(w^-_{ji} = \min(w_{ji}, 0)\), ensuring correct handling of sign-dependent propagation.
-
-\subsubsection{ReLU Transformer}
-
-The ReLU transformer in DeepPoly uses a convex relaxation that is tighter than previous abstractions by selecting only one lower bound constraint depending on the sign and tightness. Suppose \(x_j = \text{ReLU}(x_i)\). Let \([l_i, u_i]\) be the lower and upper bounds for \(x_i\).
-
-\begin{itemize}
-    \item If \(l_i \geq 0\): ReLU is linear, so
-    \[
-    l_j(x) = l_i(x), \quad u_j(x) = u_i(x)
-    \]
-
-    \item If \(u_i \leq 0\): ReLU is constant 0, so
-    \[
-    l_j(x) = u_j(x) = 0
-    \]
-
-    \item If \(l_i < 0 < u_i\): ReLU is approximated with:
-    \[
-    u_j(x) = \frac{u_i}{u_i - l_i} \cdot (x_i - l_i)
-    \]
-    and only one lower bound is selected:
-    \[
-    l_j(x) =
-    \begin{cases}
-        0, & \text{if area under lower 0 line is smaller} \\
-        x_i, & \text{if area under identity line is smaller}
-    \end{cases}
-    \]
-\end{itemize}
-
-The decision is made based on which convex region has smaller area to achieve a tighter abstraction, following the principle:
-\[
-\text{Choose constraint with smaller area:} \quad 0.5 \cdot u_i \cdot (u_i - l_i) \quad \text{vs} \quad 0.5 \cdot (-l_i) \cdot (u_i - l_i)
-\]
+% \begin{equation}\label{minimum_polyhedron}
+% x \leq y, \quad 0 \leq y, \quad y \leq \lambda x + \mu
+% \end{equation}
 
 
-By maintaining only upper and lower affine bounds, DeepPoly avoids the full complexity of manipulating arbitrary polytopes while retaining significantly more precision than intervals or zonotopes. 
+% construct a tight convex relaxation.
 
-...
+% For other activations like sigmoid or tanh, the approximation involves linearizing the curve between the lower and upper bounds of the input variable, but the number of constraints can quickly grow, increasing computational complexity.
 
-Thus, DeepPoly achieves a practical balance between precision and scalability for verifying deep neural networks.
+% \paragraph{DeepPoly.}  
+% By containing two lower polyhedra constraints for \(y\), the approximation in \ref{minimum_polyhedron} inherently suffers from a potential blow-up in number of constraints as the analysis proceeds. Due to scalability issues associated with general polyhedral representations, DeepPoly \cite{singh2019abstract} was proposed as a precise and scalable abstract domain. DeepPoly introduces a specialized form of polyhedral abstraction combined with interval bounds. 
 
-\subsection{Example}
+% More specifically,  DeepPoly only allows for one lower bound in \ref{minimum_polyhedron}, the selection of which lower constraint depends on which constraint provides the tighter approximation.
 
-Consider again the DNN in~\autoref{fig:dnn}. Suppose the input set is defined by box constraints \(x_1 \in [-1,1]\) and \(x_2 \in [-2,2]\). These can be represented initially by 4 inequalities.
+% Returning to our example, the area of the approximation in Fig.~4(b) is given by \( 0.5 \cdot u \cdot (u - l) \), while the area in Fig.~4(c) is given by \( 0.5 \cdot (-l_i) \cdot (u_i - l_i) \). To achieve a tighter relaxation, we select the approximation with the smaller area. Specifically, when \( u \leq -l \), we apply the constraints and bounds derived from \(x \leq y\).
+% In addition, each neuron \(x_j\) is bounded above and below by affine expressions of the input neurons:
 
-Applying the affine transformation for the hidden layer, we obtain a new set of inequalities describing the hidden layer nodes. Upon applying ReLU, we would use the convex polyhedral relaxation as depicted in~\autoref{fig:3_lines_polytope}. The output layer similarly results from affine operations on the polyhedra describing the hidden layer.
+% \[
+% l_j(x) \leq x_j \leq u_j(x)
+% \]
 
-In a DeepPoly setting, instead of carrying full inequalities, we track only the lower and upper affine bounds per neuron, leading to an efficient verification process.
+% where \(l_j\) and \(u_j\) are affine functions.
 
-\subsection{Comparison to Zonotope Abstraction}
+% \subsection{DeepPoly Transformers}
 
-While zonotope abstraction captures dependencies between variables better than intervals, it still assumes symmetrical dependencies around a center point and cannot easily model arbitrary convex shapes.
+% The DeepPoly abstract domain defines a scalable and precise framework for verifying deep neural networks by combining interval and polyhedral abstractions. Each neuron is bounded from above and below using affine expressions of the input neurons:
 
-Polyhedral abstraction, on the other hand, allows representing arbitrary convex shapes precisely, enabling much tighter approximations, especially after ReLU activations.
+% \[
+% l_j(x) \leq x_j \leq u_j(x)
+% \]
 
-However, traditional polyhedral methods suffer from:
-\begin{itemize}
-    \item High computational complexity,
-    \item Rapid growth in the number of constraints,
-    \item Difficulty scaling to large networks.
-\end{itemize}
+% where \(l_j(x)\) and \(u_j(x)\) are affine functions representing lower and upper bounds respectively. DeepPoly then defines **abstract transformers** to propagate these bounds through different types of neural network layers.
 
-DeepPoly addresses these challenges by:
-\begin{itemize}
-    \item Restricting to simple upper and lower affine bounds,
-    \item Maintaining polynomial scalability,
-    \item Achieving higher precision than zonotopes or intervals,
-    \item Providing efficient transformers for common layers in DNNs.
-\end{itemize}
+% \subsubsection{Affine Layer Transformer}
 
-Therefore, DeepPoly achieves a balance, combining the expressiveness of polyhedral domains with the efficiency required for deep network verification.
+% Given an affine transformation:
+% \[
+% x^{(l+1)} = W x^{(l)} + b
+% \]
+
+% we define the transformation of the bounds by propagating the affine expressions directly:
+% \begin{align*}
+% l_j^{(l+1)}(x) &= \sum_i w_{ji}^+ \cdot l_i^{(l)}(x) + w_{ji}^- \cdot u_i^{(l)}(x) + b_j \\
+% u_j^{(l+1)}(x) &= \sum_i w_{ji}^+ \cdot u_i^{(l)}(x) + w_{ji}^- \cdot l_i^{(l)}(x) + b_j
+% \end{align*}
+
+% Here, \(w^+_{ji} = \max(w_{ji}, 0)\), and \(w^-_{ji} = \min(w_{ji}, 0)\), ensuring correct handling of sign-dependent propagation.
+
+% \subsubsection{ReLU Transformer}
+
+% The ReLU transformer in DeepPoly uses a convex relaxation that is tighter than previous abstractions by selecting only one lower bound constraint depending on the sign and tightness. Suppose \(x_j = \text{ReLU}(x_i)\). Let \([l_i, u_i]\) be the lower and upper bounds for \(x_i\).
+
+% \begin{itemize}
+%     \item If \(l_i \geq 0\): ReLU is linear, so
+%     \[
+%     l_j(x) = l_i(x), \quad u_j(x) = u_i(x)
+%     \]
+
+%     \item If \(u_i \leq 0\): ReLU is constant 0, so
+%     \[
+%     l_j(x) = u_j(x) = 0
+%     \]
+
+%     \item If \(l_i < 0 < u_i\): ReLU is approximated with:
+%     \[
+%     u_j(x) = \frac{u_i}{u_i - l_i} \cdot (x_i - l_i)
+%     \]
+%     and only one lower bound is selected:
+%     \[
+%     l_j(x) =
+%     \begin{cases}
+%         0, & \text{if area under lower 0 line is smaller} \\
+%         x_i, & \text{if area under identity line is smaller}
+%     \end{cases}
+%     \]
+% \end{itemize}
+
+% The decision is made based on which convex region has smaller area to achieve a tighter abstraction, following the principle:
+% \[
+% \text{Choose constraint with smaller area:} \quad 0.5 \cdot u_i \cdot (u_i - l_i) \quad \text{vs} \quad 0.5 \cdot (-l_i) \cdot (u_i - l_i)
+% \]
 
 
-\section{Abstractions for Other Activation Functions}
+% By maintaining only upper and lower affine bounds, DeepPoly avoids the full complexity of manipulating arbitrary polytopes while retaining significantly more precision than intervals or zonotopes. 
 
-\section{Problems}
-\subsection{Interval Abstraction}
+% ...
 
-\begin{example}[Full Example of Interval Abstraction]\label{ex:interval-abstraction-full}
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=1.2\linewidth]{figure/2_layers_example.png}
-    \caption{Feed-forward neural network with 6 layers and 2 neurons per layer.}
-    \label{fig:interval-network}
-\end{figure}
-In~\autoref{fig:interval-network}, we aim to verify whether \(x_{11}\ \geq\ x_{12}\) given a bounded input range on \(x_1\) and \(x_2\). To do this using interval abstraction, we propagate intervals layer by layer.
+% Thus, DeepPoly achieves a practical balance between precision and scalability for verifying deep neural networks.
 
-Suppose the inputs \(x_1\) and \(x_2\) satisfy:
-\[
-x_1 \in [-1, 1], \quad x_2 \in [-1, 2]
-\]
+% \subsection{Example}
 
-Let an affine neuron (e.g., \(x_3\)) compute:
-\[
-x_3 = 1 x_1 + 1 x_2 + 2
-\]
+% Consider again the DNN in~\autoref{fig:dnn}. Suppose the input set is defined by box constraints \(x_1 \in [-1,1]\) and \(x_2 \in [-2,2]\). These can be represented initially by 4 inequalities.
 
-Then we apply the affine abstract transformer:
-\begin{equation}
-\begin{aligned}
-  x_3 \in & ~[\min(1\times-1, 1\times1) + \min(1\times-1, 1\times3) + 2, \\
-          & ~\max(1\times-1, 1\times-1) + \max(-1\times-1, -1\times3) + 2] = \\
-          & [0,6]
-\end{aligned}         
-\end{equation}
+% Applying the affine transformation for the hidden layer, we obtain a new set of inequalities describing the hidden layer nodes. Upon applying ReLU, we would use the convex polyhedral relaxation as depicted in~\autoref{fig:3_lines_polytope}. The output layer similarly results from affine operations on the polyhedra describing the hidden layer.
 
-So we over-approximate \(x_3\) as:
-\[
-x_3 \in [0, 6]
-\]
+% In a DeepPoly setting, instead of carrying full inequalities, we track only the lower and upper affine bounds per neuron, leading to an efficient verification process.
 
-This process is repeated for each layer until we reach the output layer.
-Here we can see that by using Interval abstraction, the property \(x_{11}\ \geq\ x_{12}\) or  \(x_{11}\ - x_{12} \geq 0\) is \textit{UNSAT}\hd{seems incorrect} due to
-\[
--2.5 - 0  \leq x_{11}\ -\ x_{12} \leq 12 - 5
-\]
-\end{example}
+% \subsection{Comparison to Zonotope Abstraction}
+
+% While zonotope abstraction captures dependencies between variables better than intervals, it still assumes symmetrical dependencies around a center point and cannot easily model arbitrary convex shapes.
+
+% Polyhedral abstraction, on the other hand, allows representing arbitrary convex shapes precisely, enabling much tighter approximations, especially after ReLU activations.
+
+% However, traditional polyhedral methods suffer from:
+% \begin{itemize}
+%     \item High computational complexity,
+%     \item Rapid growth in the number of constraints,
+%     \item Difficulty scaling to large networks.
+% \end{itemize}
+
+% DeepPoly addresses these challenges by:
+% \begin{itemize}
+%     \item Restricting to simple upper and lower affine bounds,
+%     \item Maintaining polynomial scalability,
+%     \item Achieving higher precision than zonotopes or intervals,
+%     \item Providing efficient transformers for common layers in DNNs.
+% \end{itemize}
+
+% Therefore, DeepPoly achieves a balance, combining the expressiveness of polyhedral domains with the efficiency required for deep network verification.
+
+
+% \section{Abstractions for Other Activation Functions}
+
+% \section{Problems}
+% \subsection{Interval Abstraction}
+
+% \begin{example}[Full Example of Interval Abstraction]\label{ex:interval-abstraction-full}
+% \begin{figure}[h]
+%     \centering
+%     \includegraphics[width=1.2\linewidth]{figure/2_layers_example.png}
+%     \caption{Feed-forward neural network with 6 layers and 2 neurons per layer.}
+%     \label{fig:interval-network}
+% \end{figure}
+% In~\autoref{fig:interval-network}, we aim to verify whether \(x_{11}\ \geq\ x_{12}\) given a bounded input range on \(x_1\) and \(x_2\). To do this using interval abstraction, we propagate intervals layer by layer.
+
+% Suppose the inputs \(x_1\) and \(x_2\) satisfy:
+% \[
+% x_1 \in [-1, 1], \quad x_2 \in [-1, 2]
+% \]
+
+% Let an affine neuron (e.g., \(x_3\)) compute:
+% \[
+% x_3 = 1 x_1 + 1 x_2 + 2
+% \]
+
+% Then we apply the affine abstract transformer:
+% \begin{equation}
+% \begin{aligned}
+%   x_3 \in & ~[\min(1\times-1, 1\times1) + \min(1\times-1, 1\times3) + 2, \\
+%           & ~\max(1\times-1, 1\times-1) + \max(-1\times-1, -1\times3) + 2] = \\
+%           & [0,6]
+% \end{aligned}         
+% \end{equation}
+
+% So we over-approximate \(x_3\) as:
+% \[
+% x_3 \in [0, 6]
+% \]
+
+% This process is repeated for each layer until we reach the output layer.
+% Here we can see that by using Interval abstraction, the property \(x_{11}\ \geq\ x_{12}\) or  \(x_{11}\ - x_{12} \geq 0\) is \textit{UNSAT}\hd{seems incorrect} due to
+% \[
+% -2.5 - 0  \leq x_{11}\ -\ x_{12} \leq 12 - 5
+% \]
+% \end{example}
 
 
 
@@ -4064,7 +4064,7 @@ Suppose we have a DNN with $m=10$ ReLU neurons. Consider a partial pattern $p'$ 
 \end{solution}
 \end{problem}
 
-\subsection{State Space Reduction}
+\subsection{State Space Reduction}\label{sec:pattern-reduction}
 Once having an activation pattern $p$, we can simplify the formula $\alpha$ representing the DNN by replacing each ReLU function with a linear constraint according to the activation status specified in $p$. For example, if $p$ specifies that neuron $n_i$ is active, we replace $\relu{z_i}$ with $z_i$ and add the constraint $z_i \ge 0$; if $n_i$ is inactive, we replace $\relu{z_i}$ with $0$ and add the constraint $z_i < 0$.
 This gives us the formula $\alpha_p$ corresponding to the linear region defined by $p$.
 
@@ -4178,7 +4178,9 @@ p=\{\mathsf{true}, \mathsf{true}\}.
 
 \section{Branch and Bound}\label{sec:bab-alg}
 
-Modern DNN verifiers typically adopt the Branch-and-Bound (BaB) approach to explore the space of possible neuron activation patterns (\autoref{sec:activation-patterns}). The BaB algorithm systematically splits (\emph{branch}) the verification problem into smaller subproblems by deciding the activation status (active/inactive) of neurons, and uses abstraction (bound) techniques to compute upper and lower bounds on the output values for these subproblems. If a subproblem's bounds, computed using abstraction (\autoref{chap:abstractions}), indicate that it cannot contain a counterexample, it is pruned from the search space. This process continues until either a counterexample is found or all subproblems are exhausted, proving the property holds.
+Modern DNN verifiers typically adopt the Branch-and-Bound (BaB) approach to explore the space of possible neuron activation patterns (\autoref{sec:activation-patterns}). BaB splits (\emph{branch}) the verification problem into smaller subproblems by fixing activation statuses of neurons, and uses abstraction (\emph{bound}) techniques to compute upper and lower bounds on the output values for these subproblems. If the bounds, computed using abstraction (\autoref{chap:abstractions}), indicate infeasible (cannot contain a counterexample), the subproblem is pruned from the search space. This process continues until either a counterexample is found or all subproblems are exhausted, proving the property holds. 
+
+Note that because BaB splits ReLU neurons into active/inactive cases, it is also called \emph{``neuron-splitting''}, which contrasts with \emph{``input-splitting''} techniques (\autoref{sec:input-splitting}) that partition the input space.
 
 \SetKwData{nextlayer}{layer$_{i+1}$}
 \SetKwData{status}{status}
@@ -4203,7 +4205,6 @@ Modern DNN verifiers typically adopt the Branch-and-Bound (BaB) approach to expl
 \SetKwFunction{StoppingConditions}{StoppingConditions}
 \SetKwFunction{RepOK}{RepOK}
 \SetKwFunction{RaiseError}{RaiseError}
-
 \SetKwInOut{Input}{input}
 \SetKwInOut{Output}{output}
 \SetKw{Break}{break}
@@ -4247,7 +4248,7 @@ Modern DNN verifiers typically adopt the Branch-and-Bound (BaB) approach to expl
 \SetKwFunction{ActivationStatus}{ActivationStatus}
 \SetKwFunction{Backjump}{Backjump}
 \SetKwFunction{EstimateBounds}{EstimateBounds}
-
+\SetKwFunction{LP}{LP}
 
 \SetKwData{implicationgraph}{igraph}
 \SetKwData{literal}{lit}
@@ -4294,20 +4295,20 @@ Modern DNN verifiers typically adopt the Branch-and-Bound (BaB) approach to expl
     \Output{$\myunsat$ if property is valid, otherwise ($\mysat, \counterexample$)}
     \BlankLine
 
-    $\problems \leftarrow \{ \emptyset \}$ \tcp{initialize verification problems} 
+    $\problems \leftarrow \{ \emptyset \}$ \tcp{initialize verification problems}\label{line:babinit}  
     % $\prooftree \gets \{ ~ \}$ \tcp{initialize proof tree}\label{line:prooftree}
     
-    \While(\tcp*[h]{main loop}){$\problems$}{\label{line:dpllstart}
-        % \tcp{$\sigma_i$ is the activation pattern of problem $i$-th}
-        $\sigma_i \gets \Select(\problems)$ \tcp{process problem $i$-th}
+    \While(\tcp*[h]{main loop}){$\problems$}{\label{line:babstart}
+        $\sigma_i \gets \Select(\problems)$ \tcp{process problem $i$-th}\label{line:babselect}
         % \Parfor(\tcp*[h]{process in parallel}){$\sigma_i ~\In~ \problems$}{ \label{line:parfor}
-            \If{\Deduce{$\mathcal{N}, \phi_{in}, \phi_{out}, \sigma_i$}}{\label{line:deduce}
-                $(\counterexample, v_i) \leftarrow \Decide(\mathcal{N}, \phi_{in}, \phi_{out}, \sigma_i)$ \\ \label{line:decide}
-                \If(\tcp*[h]{found a valid counter-example}){$\counterexample$}{
-                    \Return{$(\mysat, \counterexample)$} 
+            \If{\Deduce{$\mathcal{N}, \phi_{in}, \phi_{out}, \sigma_i$}}{\label{line:babdeduce}
+                $\counterexample \leftarrow \LP(\mathcal{N}, \phi_{in}, \phi_{out}, \sigma_i)$ \tcp{check satisfiability}\label{line:bablp}
+                \If(\tcp*[h]{found a valid cex}){$\counterexample$}{
+                    \Return{$(\mysat, \counterexample)$}\label{line:babsat} 
                 }
+                $v_i \leftarrow \Decide(\mathcal{N}, \sigma_i)$\label{line:babdecide}\\
                 \tcp{create new activation patterns}
-                $\problems \leftarrow \problems \cup \{ \sigma_i \land v_i ~;~ \sigma_i \land \overline{v_i} \}$ \;
+                $\problems \leftarrow \problems \cup \{ \sigma_i \land v_i ~;~ \sigma_i \land \overline{v_i} \}$
             }
             %\Else(\tcp*[h]{detect a conflict}){
                 % $\clauses \leftarrow \clauses \cup \AnalyzeConflict(\igraph_i)$ \\ \label{line:analyze_conflict}
@@ -4317,24 +4318,33 @@ Modern DNN verifiers typically adopt the Branch-and-Bound (BaB) approach to expl
         % \If(\tcp*[h]{no more problems}){$\isEmpty(\problems)$}{
         % }
         
-    }\label{line:dpllend}
-    \Return{\myunsat}
+    }\label{line:babend}
+    \Return{\myunsat}\label{line:babunsat}
     
     \caption{The \bab{} algorithm.}\label{alg:bab}
 \end{algorithm}
 
 
-\autoref{alg:bab} shows \bab{}, a reference BaB architecture~\cite{nakagawa2014consolidating} for modern DNN verifiers. \bab{} takes as input a ReLU-based DNN $\mathcal{N}$ and a formulae $\phi_{in}\Rightarrow \phi_{out}$ representing the property of interest.
-\bab{} maintains a set of activation patterns (\texttt{ActPatterns}) that represent the current activation pattern of the DNN. Initially, \texttt{ActPatterns} is initialized with an empty activation pattern (\autoref{line:activation}).
-In each iteration, \bab{} selects and removes an activation pattern $\sigma_i$ from \texttt{ActPatterns}.  It then calls \functiontextformat{Deduce} to check the feasibility of the problem based on the current activation pattern. (Note that we do this even on the empty activation pattern, which is the initial state of the search, because the problem might be trivially infeasible.)
+\paragraph{Reference Alg} \autoref{alg:bab} shows \bab{}, a reference~\cite{nakagawa2014consolidating} BaB architecture for DNN verification. \bab{} takes as input a ReLU-based DNN $\mathcal{N}$ and a formulae $\phi_{in}\Rightarrow \phi_{out}$ representing the property of interest.
+\bab{} maintains a set of activation patterns (\texttt{ActPatterns}) that represent the current activation pattern of the network. Initially, \texttt{ActPatterns} is initialized with an empty activation pattern (\autoref{line:babinit}).
+In each BaB iteration $i$ (\autoref{line:babstart}), the algorithm selects and removes an activation pattern $\sigma_i$ from \texttt{ActPatterns} (\autoref{line:babselect}).  
 
-If \functiontextformat{Deduce} determines that the problem is feasible (using the current activation pattern $\sigma_i$), it calls \functiontextformat{Decide} to select a neuron $v_i$ to split, which essentially means the problem is split into two independent subproblems: one with $v_i$ (active) and the other with $\overline{v_i}$ (inactive). \bab{} then adds the two new activation patterns $\sigma_i \land v_i$ and $\sigma_i \land \overline{v_i}$ to \texttt{ActPatterns}. \bab{} then loops back to~\autoref{line:dpllstart} to process the next activation pattern.
-\tvn{briefly describe what Decide do? in particular what does it do to determine/create an cex when the activation pattern is partially assigned?}
+It then calls \functiontextformat{Deduce} to determine if the current problem, i.e., the original satisfiability problem with  activation pattern $\sigma_i$,
+is feasible. \functiontextformat{Deduce} compute upper and lower bounds, e.g., using interval abstraction, of the output values using $\sigma_i$, e.g., by replacing ReLU functions according to the activation statuses specified in $\sigma_i$ (\autoref{sec:pattern-reduction}). 
+If the computed bounds indicate that no counterexample can exist, e.g., the lower bound of the output is greater than 0 when checking $y < 0$, then the problem is infeasible. Otherwise, the problem is \emph{potentially} feasible (because the bounds are over-approximations).
+
+(Note that we do this even on the empty activation pattern, which is the initial state of the search, because the problem might be trivially infeasible, in which case we can exit and return \unsat{} immediately (\autoref{line:babunsat}).)
+
+If \functiontextformat{Deduce} determines that the problem is infeasible, \bab{} discards the current processing activation pattern and loops back (to~\autoref{line:babstart}) to process the next activation pattern.
+\bab{} terminates when there are no more activation patterns to process, at which point it returns \unsat{} (\autoref{line:babunsat}), indicating that the property is valid.
 
 
-If \functiontextformat{Deduce} determines that the problem is infeasible, it loops back to~\autoref{line:dpllstart} to process the next activation pattern. \bab{} terminates when there are no more activation patterns to process, at which point it returns \unsat, indicating that the property is valid.
+If \functiontextformat{Deduce} determines that the problem is feasible, it calls \functiontextformat{LP} to check the satisfiability of the problem using a linear programming (LP) solver (\autoref{line:bablp}). If the LP solver finds a satisfying assignment, it returns a counterexample (\autoref{line:babsat}), indicating that the property is invalid.
+Otherwise (\functiontextformat{LP} returns unsatisfiable), \bab{} calls \functiontextformat{Decide} to select a neuron $v_i$ to split, i.e., to fix its activation status as either active or inactive (\autoref{line:babdecide}).  This essentially means the problem is split into two independent subproblems: one with $v_i$ (active) and the other with $\overline{v_i}$ (inactive). \bab{} then adds the two new activation patterns $\sigma_i \land v_i$ and $\sigma_i \land \overline{v_i}$ to \texttt{ActPatterns}. \bab{} then loops back to~\autoref{line:babstart} to process the next activation pattern.
 
-\tvn{shows that \bab{} often does not exhaust all activation patterns, but rather prunes the search space by deducing infeasibility of some activation patterns.  May be use a tree example to illustrate this?}
+
+
+%\tvn{shows that \bab{} often does not exhaust all activation patterns, but rather prunes the search space by deducing infeasibility of some activation patterns.  May be use a tree example to illustrate this?}
 
 %it analyzes the conflict and adds a new clause to the set of clauses (\texttt{clauses}) to prevent the same activation pattern from being selected again.
 %The algorithm continues until there are no more activation patterns to process, at which point it returns \unsat, indicating that the property is valid. If a counterexample is found during the search, it returns \sat along with the counterexample. 
@@ -4351,28 +4361,57 @@ If \functiontextformat{Deduce} determines that the problem is infeasible, it loo
 \end{figure}
 %White nodes correspond to branching nodes where \neuralsat{} makes decisions to split ReLU neurons.
 
-\begin{example} 
-    
-    \tvn{We should change this example to the 5-neuron DNN we have always been using.}\autoref{fig:example1}a illustrates a DNN and how \bab{} verifies that this DNN has the property 
+\begin{example}\label{ex:bab} 
+\autoref{fig:example1}a illustrates a DNN and how \bab{} verifies that this DNN has the property 
 \[
 (x_1, x_2) \in [-2.0, 2.0] \times [-1.0, 1,0] \Rightarrow (y_1 > y_2).
 \] 
 
-First, \bab{} initializes the activation pattern set \functiontextformat{ActPatterns} with an empty activation pattern $\emptyset$ (\autoref{line:activation}). Then \bab{} enters a loop (\autoref{line:dpllstart}--\autoref{line:dpllend}) to search for a satisfying assignment. In the first iteration, \bab{} selects the only available activation pattern $\emptyset \in \functiontextformat{ActPatterns}$. 
-It calls \functiontextformat{Deduce} to check the feasibility of the problem based on the current activation pattern. \functiontextformat{Deduce} uses abstraction to approximate that from the input constraints the output values are feasible for the given network. 
-Since \functiontextformat{Deduce} cannot decide infeasibility, \bab{} randomly selects a neuron to split (\functiontextformat{Decide}). Let us assume that it chooses $v_4$ to split, which essentially means the problem is split into two independent subproblems: one with $v_4$ active and the other with $v_4$ inactive.
-\bab{} then adds $\{v_4\}$ and $\{\overline{v_4}\}$ to \functiontextformat{ActPatterns}.
+In other words, we want to search for a counterexample which are inputs $(x_1,x_2)$ in the given input range such that $y_1 \le y_2$.
 
-In the second iteration, \bab{} has two subproblems (that can be processed in parallel). For the first subproblem with $v_4$, \functiontextformat{Deduce} cannot decide infeasibility, so it selects $v_2$ to split. It then conjoins $v_4$ with $v_2$ and then with $\overline{v_2}$ and adds both conjuncts to \texttt{ActPatterns}. 
-For the second subproblem with $\overline{v_4}$ inactive, \functiontextformat{Deduce} determines that the problem is unsatisfiable.
+First, \bab{} initializes \functiontextformat{ActPatterns} with an empty activation pattern $\emptyset$---no neurons fixed. Then \bab{} enters a loop to search for a satisfying assignment. In the first iteration, \bab{} selects the only available activation pattern $\emptyset \in \functiontextformat{ActPatterns}$. 
+It calls \functiontextformat{Deduce} to check the feasibility of the problem based on the current activation pattern. 
 
-In the third iteration, \bab{} has two subproblems for $v_4 \land v_2$ and $v_4 \land \overline{v_2}$. For the first subproblem, \functiontextformat{Deduce} cannot decide infeasibility, so it selects $v_1$ to split. It then conjoins $v_1$ and then $\overline{v_1}$ to the current activation pattern and adds them to \functiontextformat{ActPatterns}. For the second subproblem, \functiontextformat{Deduce} determines that the problem is unsatisfiable.
+\functiontextformat{Deduce} determines that the problem is feasible, e.g., the bounds of $y_1$ and $y_2$ indicate that $y_1 \le y_2$ can be satisfied. Thus, \bab{} calls \functiontextformat{LP} to check the satisfiability of the problem using an LP solver. The LP solver returns unsatisfiable, indicating that the over-approximation is not precise enough to determine infeasibility.  \bab{} then randomly selects a neuron to split (\functiontextformat{Decide}). Assume that it chooses $v_4$ to split, i.e., the problem spawns two independent subproblems: one with $v_4$ active and the other with $v_4$ inactive.
+It does so by conjoining $\{v_4\}$ and $\{\overline{v_4}\}$ to the current activation pattern and adds both new activation patterns to \functiontextformat{ActPatterns}. Next, \bab{} loops back to process the next activation pattern.
 
-In the fourth iteration, \bab{} has two subproblems for $v_4 \land v_2 \land v_1$ and $v_4 \land v_2 \land \overline{v_1}$. Both subproblems are determined to be unsatisfiable.
+
+In the second iteration, \bab{} has two subproblems. For the first subproblem with activation pattern $\{v_4\}$, \functiontextformat{Deduce} decides feasibility but \functiontextformat{LP} returns unsatisfiable, 
+so it selects $v_2$ to split. It then conjoins $v_4$ with $v_2$ and then with $\overline{v_2}$ and adds both patterns to \texttt{ActPatterns}. 
+For the second subproblem with $\overline{v_4}$ inactive, \functiontextformat{Deduce} determines infeasibility and thus discards this subproblem.
+
+In the third iteration, \bab{} has two subproblems for $v_4 \land v_2$ and $v_4 \land \overline{v_2}$. For the first subproblem, \bab{} selects $v_1$ to split by conjoining $v_1$ and then $\overline{v_1}$ to the current activation pattern $v_4 \land$ and adds them to \functiontextformat{ActPatterns}. For the second subproblem, \functiontextformat{Deduce} determines infeasibility and \bab{} discards this subproblem.
+
+In the fourth iteration, \bab{} has two subproblems: $v_4 \land v_2 \land v_1$ and $v_4 \land v_2 \land \overline{v_1}$, both which are then determined infeasible and discarded.
 
 Finally, \bab{} has an empty \texttt{ActPatterns}, stops the search, and returns \unsat{}---the property is valid.
 
 \end{example}
+
+
+\begin{problem}\label{prob:bab-detailed}
+Do~\autoref{ex:bab} again, but come up with concrete values for each step, e.g., what are the bounds computed by \functiontextformat{Deduce}, what does \functiontextformat{LP} return, etc to illustrate the process in more detail.
+\end{problem}
+
+
+\begin{problem}\label{prob:bab-counterexample}
+Do~\autoref{ex:bab-detailed} but assume the property is invalid and find a counterexample.
+\end{problem}
+
+
+\begin{problem}\label{prob:bab-interval}
+\begin{figure}
+\centering
+\mydnn{1}
+\caption{\label{fig:dnn-bab}A simple DNN (similar to~\autoref{fig:dnn}).}
+\end{figure}
+
+Perform BaB on the DNN in \autoref{fig:dnn-bab} to verify the property $x_5 > 0$ for any inputs $x_1 \in [-1,1], x_2\in[-2,2]$.  Use interval abstraction to compute bounds. For LP solving, you can use any LP solver or solve it manually. Show all stepts, e.g., iterations, activation patterns, bounds computed, LP results, etc.
+
+\end{problem}
+
+
+
 
 \subsection{Beyond the Basic} What described above is the basic and minimal BaB algorithm. However, modern DNN verifiers implement many optimizations and strategies to improve the performance of the search. For example, they apply various engineering tricks to eliminate easy cases or find easy counterexamples (\autoref{chap:common-engineering}) before running the full BaB search. 
 
@@ -4387,7 +4426,8 @@ Even the BaB search itself is optimized to avoid exploring the entire search spa
 
 A full branch and bound (BaB search (\autoref{chap:bab}) is typically expensive and slow. Thus, DNN verifiers often begin by applying a range of optimizations and engineering techniques that aim to quickly eliminate easy cases, such as when the network has a small number of inputs.
 
-\section{Input Splitting} Modern DNN verifiers~\cite{katz2019marabou,katz2022reluplex,bak2021nnenum,duong2025neuralsat} often use a technique called \emph{input splitting} to quickly deal with networks with verification problems involving low-dimensional networks, such as those in the ACAS Xu benchmark~\autoref{sec:acasxu} where the networks have a small number of inputs. Currently many work set the threshold to 50 inputs, i.e., if the network has more than 50 inputs, it is considered large and input splitting is not applied.
+\section{Input Splitting}\label{sec:input-splitting}
+ Modern DNN verifiers~\cite{katz2019marabou,katz2022reluplex,bak2021nnenum,duong2025neuralsat} often use a technique called \emph{input splitting} to quickly deal with networks with verification problems involving low-dimensional networks, such as those in the ACAS Xu benchmark~\autoref{sec:acasxu} where the networks have a small number of inputs. Currently many work set the threshold to 50 inputs, i.e., if the network has more than 50 inputs, it is considered large and input splitting is not applied.
 
 The idea is to split the original verification problem into subproblems, each checking whether the DNN produces the desired output from a smaller input region and returns \unsat{} if all subproblems are verified and \sat{} if a counterexample is found in any subproblem. Input splitting avoids BaB search---also called \emph{neuron splitting} and focuses on individual neurons---and is often used as a fast-path optimization to quickly eliminate easy cases.
 
@@ -4473,7 +4513,6 @@ Note that the formula $-1 \le x_1 \le 1 \land -2 \le x_2 \le 2$ representing the
 %If the subregion causes UNSAT, it will be eliminate immediately.
 %Otherwise, they split that current subregion into multiple instances, and continue at the aforementioned abstraction step.
 %In the other hand, in \tool{}, each CDCL instance takes input of a subregion and run for verifying it with iterations as in~\autoref{fig:alg}.
-
 
 
 
@@ -5299,16 +5338,16 @@ As described in~\autoref{chap:bab}, major DNN verification techniques share the 
     \BlankLine
 
 
-    $\problems \leftarrow \{ \emptyset \}$ \tcp{initialize verification problems}\label{line:activation} 
+    $\problems \leftarrow \{ \emptyset \}$ \tcp{initialize verification problems}
     $\prooftree \gets \{ ~ \}$ \tcp{initialize proof tree}\label{line:prooftree}
     
-    \While(\tcp*[h]{main loop}){$\problems$}{\label{line:dpllstart}
+    \While(\tcp*[h]{main loop}){$\problems$}{
         % \tcp{$\sigma_i$ is the activation pattern of problem $i$-th}
         $\sigma_i \gets \Select(\problems)$ \tcp{process problem $i$-th}
         % \Parfor(\tcp*[h]{process in parallel}){$\sigma_i ~\In~ \problems$}{ \label{line:parfor}
-            \If{\Deduce{$\mathcal{N}, \phi_{in}, \phi_{out}, \sigma_i$}}{\label{line:deduce}
-                $(\counterexample, v_i) \leftarrow \Decide(\mathcal{N}, \phi_{in}, \phi_{out}, \sigma_i)$ \\ \label{line:decide}
-                \If(\tcp*[h]{found a valid counter-example}){$\counterexample$}{
+            \If{\Deduce{$\mathcal{N}, \phi_{in}, \phi_{out}, \sigma_i$}}{
+                $(\counterexample, v_i) \leftarrow \Decide(\mathcal{N}, \phi_{in}, \phi_{out}, \sigma_i)$ \\ 
+                \If(\tcp*[h]{found a valid cex}){$\counterexample$}{
                     \Return{$(\sat, \counterexample)$} 
                 }
                 \tcp{create new activation patterns}
@@ -5322,7 +5361,7 @@ As described in~\autoref{chap:bab}, major DNN verification techniques share the 
         % \If(\tcp*[h]{no more problems}){$\isEmpty(\problems)$}{
         % }
         
-    }\label{line:dpllend}
+    }
     \Return{$(\unsat, \prooftree)$}
     
     \caption{The \proofgen{} DNN verification with proof generation.}\label{alg:bab-proof}
@@ -6875,9 +6914,16 @@ In each specification, the inputs (condition distance and latent variables) are 
           \item Quiz:~\autoref{prob:correct-abs}      
         \end{itemize}
     \item Week 10 (Oct 29):
-    \begin{itemize}
+    \begin{itemize}        
         \item No HW because of PA2 due date
+        \item Topics: Zonotope~\autoref{sec:zonotope-abstraction} and Branch -and-Bound DNN verification~\autoref{chap:bab}
+        \item Quiz: In class
     \end{itemize}
+    \item Week 11 (Nov 5):
+    \begin{itemize}        
+        \item HW: Do~\autoref{prob:bab-detailed},~\autoref{prob:bab-counterexample}, and ~\autoref{prob:bab-interval}
+    \end{itemize}
+
 \end{itemize}    
 
 \chapter{Programming Assignments}\label{chap:pa}
