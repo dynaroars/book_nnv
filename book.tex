@@ -58,8 +58,6 @@
   }%
 }
 
-
-
 % \setsecnumdepth{subsection}
 % \setcounter{tocdepth}{3}
 \usepackage{multirow,multicol}
@@ -3967,16 +3965,15 @@ DNNs with piecewise linear activation functions have a special structure that ca
 For example, each ReLU (\autoref{sec:relu}) function partitions the input space into two regions---active and inactive.
 Within each region, the DNN behavior can be encoded as \emph{a linear constraint}, which can be efficiently analyzed.
 
-Thus, verifying a DNN reduces to checking that none of these linear regions contains a counterexample. More specifically, we can rewrite~\autoref{eq:nnv2} as:
+Thus, verifying a DNN reduces to checking that none of these linear regions contains a counterexample. More specifically, we can rewrite the satisfiability formulation in~\autoref{eq:nnv2} as a disjunction:
 \begin{equation}\label{eq:nnv3}
   \bigvee_{p \in P} \left( \alpha_p \land \phi_{in} \land \neg \phi_{out} \right)
 \end{equation}
-where $P$ is the set of all possible activation patterns---boolean assignments of activation statuses of all neurons--
-of the DNN, and $\alpha_p$ is the formula $\alpha$ restricted to the linear region defined by the activation pattern $p$. This means that $\alpha_p$ includes additional constraints that fix the activation status of each neuron according to $p$. For example, if $p$ specifies that neuron $n_i$ is active, then $\alpha_p$ includes the constraint $z_i \ge 0$, indicating that the pre-activation value $z_i$ of neuron $n_i$ is non-negative. Similarly, if $n_i$ is inactive, then $\alpha_p$ includes $z_i < 0$.
+where $P$ is the set of all possible \emph{activation patterns}---boolean assignments of activation statuses of all neurons-- of the DNN, and $\alpha_p$ is the formula $\alpha$ restricted to the linear region defined by the activation pattern $p$. This means that $\alpha_p$ includes additional constraints that fix the activation status of each neuron according to $p$. For example, if $p$ specifies that neuron $n_i$ is active, then $\alpha_p$ includes the constraint $z_i \ge 0$, indicating that the pre-activation value $z_i$ of neuron $n_i$ is non-negative. Similarly, if $n_i$ is inactive, then $\alpha_p$ includes $z_i < 0$.
 
 As long as one of the disjuncts in~\autoref{eq:nnv3} is satisfiable, i.e., we could find a counterexample in one of the linear regions, the entire formula is satisfiable, indicating that the property is invalid. Conversely, if all disjuncts are unsatisfiable, the property is valid.
 
-This allows us to break down the verification problem into smaller subproblems, each searches for \emph{activation pattern}, or boolean assignment of activation statuses of all neurons, that satisfies the formula in~\autoref{eq:nnv2}.
+This allows us to break down the verification problem into smaller subproblems, each searches for an activation pattern that satisfies the formula in~\autoref{eq:nnv2}.
 Modern DNN verification techniques~\cite{bunel2020branch,wang2021beta,ferrari2022complete,duong2024harnessing,duong2023dpllt,ovalbab,katz2019marabou,bak2021nnenum} all adopt this idea and search for a satisfying activation pattern to find a counterexample.
 
 \subsection{Activation Patterns}
@@ -4003,14 +4000,6 @@ where $*$ means ``undetermined'' or ``don't care''. Each partial activation patt
 \end{definition}
 
 
-\begin{definition}[Empty Activation Pattern]\label{def:empty-pattern}
-An \emph{empty} activation pattern assigns \emph{no} activation statuses to any neurons:
-\[
-p = \langle *, *, \dots, * \rangle \in \{\texttt{true},\texttt{false},*\}^m .
-\]
-In other words, it represents \emph{all} possible complete activation patterns.
-\end{definition}
-
 
 
 \begin{example}  
@@ -4030,6 +4019,19 @@ represents \emph{both} complete patterns
 $\langle \texttt{true}, \texttt{false}, \texttt{true} \rangle$ and  
 $\langle \texttt{true}, \texttt{false}, \texttt{false} \rangle$.  
 \end{example}
+
+
+\begin{definition}[Empty Activation Pattern]\label{def:empty-pattern}
+An \emph{empty} activation pattern is a partial pattern that assigns \emph{no} activation statuses to any neurons:
+\[
+p = \langle *, *, \dots, * \rangle \in \{\texttt{true},\texttt{false},*\}^m .
+\]
+It thus represents all $2^m$ complete activation patterns.
+\end{definition}
+
+
+
+
 
 \begin{problem}[Pattern Enumeration]\label{problem:pattern-enumeration}
 Consider an NN with 3 ReLU neurons:
@@ -4064,6 +4066,21 @@ Suppose we have a DNN with $m=10$ ReLU neurons. Consider a partial pattern $p'$ 
 \end{solution}
 \end{problem}
 
+\subsection{Set Notation of Activation Patterns}\label{sec:pattern-notation} 
+We can use set notation to represent activation patterns more concisely by listing only the neurons whose activation statuses are fixed.
+For example, the activation pattern
+\[p = \langle \texttt{true}, \texttt{false}, *, \texttt{true}, \texttt{false} \rangle\]
+can be represented as
+\[p = \{ n_1 = \texttt{true}, n_2 = \texttt{false}, n_3 = *, n_4 = \texttt{true}, n_5 = \texttt{false} \},\]
+or more compactly
+\[
+p = \{n_1, \overline{n_2}, n_4, \overline{n_5}\},
+\]
+where $n_i$ indicates that neuron $n_i$ is active, $\overline{n_i}$ indicates that it is inactive, and the absence of $n_3$ indicates that its activation status is unspecified.
+
+Thus, given a set of neurons, we can construct an activation pattern by specifying which neurons are active and which are inactive. If the set includes all neurons, it is a complete pattern; otherwise, it is a partial pattern (and if it is an empty set $\emptyset$, it is the empty pattern as shown in~\autoref{def:empty-pattern}).
+
+
 \subsection{State Space Reduction}\label{sec:pattern-reduction}
 Once having an activation pattern $p$, we can simplify the formula $\alpha$ representing the DNN by replacing each ReLU function with a linear constraint according to the activation status specified in $p$. For example, if $p$ specifies that neuron $n_i$ is active, we replace $\relu{z_i}$ with $z_i$ and add the constraint $z_i \ge 0$; if $n_i$ is inactive, we replace $\relu{z_i}$ with $0$ and add the constraint $z_i < 0$.
 This gives us the formula $\alpha_p$ corresponding to the linear region defined by $p$.
@@ -4095,10 +4112,10 @@ Thus, if we fix the activation status of $x_3$ and $x_4$, we can simplify $\alph
   A complete activation pattern specifies the status of both ReLU neurons.  
   For instance,
   \[
-  p = \langle \texttt{true}, \texttt{false} \rangle
+  p = \{x_3, \overline{x_4}\}
   \]
-  means that $\hat{x}_3 \geq 0$ (so $x_3 = \hat{x}_3$) while $\hat{x}_4 < 0$ (so $x_4 = 0$).  
-  In this case, the network reduces to a single linear constraint (region):
+  means that $x_3$ is active while $x_4$ is inactive; that is, $\hat{x}_3 \geq 0$ (so $x_3 = \hat{x}_3$) while $\hat{x}_4 < 0$ (so $x_4 = 0$).  
+  In this case, $\alpha$ reduces to a single linear constraint (region):
   \[
   x_5 = -(-0.5x_1 + 0.5x_2 + 1.0) + 0 - 1.0 = 0.5x_1 - 0.5x_2 - 2.0 .
   \]
@@ -4107,9 +4124,9 @@ Thus, if we fix the activation status of $x_3$ and $x_4$, we can simplify $\alph
   A partial pattern specifies only some activation statuses.  
   For example,
   \[
-  q = \langle \texttt{true}, * \rangle
+  q = \{x_3\}
   \]
-  means $\hat{x}_3 \geq 0$ but places no restriction on $\hat{x}_4$.  Here, the network reduces to
+  means $\hat{x}_3 \geq 0$ but places no restriction on $\hat{x}_4$.  Here, $\alpha$ reduces to
 \[
 \begin{aligned}
 & \hat{x}_4 = 0.5x_1 - 0.5x_2 + 1.0 ~\land\\    
@@ -4118,7 +4135,7 @@ Thus, if we fix the activation status of $x_3$ and $x_4$, we can simplify $\alph
 \end{aligned}
 \]
 
-Because $q$ does not fix the status of $x_4$, we cannot simplify the ReLU for $x_4$. Thus, the formula still contains a ReLU function which splits the input space into two linear regions corresponding to the two possible activation statuses of $x_4$.
+Because $q$ does not fix the status of $x_4$, we cannot simplify the ReLU for $x_4$. Thus, the formula still contains a ReLU function which splits $x_4$ into two linear regions corresponding to the two possible activation statuses of $x_4$.
 \end{itemize}
 \end{example}
 
@@ -4127,7 +4144,7 @@ Because $q$ does not fix the status of $x_4$, we cannot simplify the ReLU for $x
 \begin{problem}\label{problem:nnv-pattern}
 Consider the DNN in \autoref{fig:dnn-b}. Suppose we fix the activation pattern
 \[
-p=\{\mathsf{true}, \mathsf{true}\}.
+p=\{x_3, x_4\}.
 \]
 \begin{enumerate}
   \item Provide the constraints represented by the network induced by $p$.
