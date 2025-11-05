@@ -4197,7 +4197,7 @@ p=\{x_3, x_4\}.
 
 \section{Branch and Bound}\label{sec:bab-alg}
 
-Modern DNN verifiers typically adopt the Branch-and-Bound (BaB) approach to explore the space of possible neuron activation patterns (\autoref{sec:activation-patterns}). BaB splits (\emph{branch}) the verification problem into smaller subproblems by fixing activation statuses of neurons, and uses abstraction (\emph{bound}) techniques to compute upper and lower bounds on the output values for these subproblems. If the bounds, computed using abstraction (\autoref{chap:abstractions}), indicate infeasible (cannot contain a counterexample), the subproblem is pruned from the search space. This process continues until either a counterexample is found or all subproblems are exhausted, proving the property holds. 
+Many modern DNN verifiers adopt the Branch-and-Bound (BaB) approach to explore the space of possible neuron activation patterns (\autoref{sec:activation-patterns}). BaB splits (\emph{branch}) the verification problem into smaller subproblems by fixing activation statuses of neurons, and uses abstraction (\emph{bound}) techniques to compute upper and lower bounds on the output values for these subproblems. If the bounds, computed using abstraction (\autoref{chap:abstractions}), indicate infeasible (cannot contain a counterexample), the subproblem is pruned from the search space. This process continues until either a counterexample is found or all subproblems are exhausted, proving the property holds. 
 
 Note that because BaB splits ReLU neurons into active/inactive cases, it is also called \emph{``neuron-splitting''}, which contrasts with \emph{``input-splitting''} techniques (\autoref{sec:input-splitting}) that partition the input space.
 
@@ -4435,7 +4435,7 @@ Apply BaB on the DNN in \autoref{fig:dnn-bab} to verify the property $x_5 > 0$ f
 
 \subsection{Beyond the Basic} What described above is the basic and minimal BaB algorithm. However, modern DNN verifiers implement many optimizations and strategies to improve the performance of the search. For example, they apply various engineering tricks to eliminate easy cases or find easy counterexamples (\autoref{chap:common-engineering}) before running the full BaB search. 
 
-Even the BaB search itself is optimized to avoid exploring the entire search space. For example, if \functiontextformat{Deduce} step determines infeasibility, a smarter \bab{} variant (e.g., the \neuralsat{} tool described in~\autoref{chap:neuralsat}) can analyze the conflict and add a new clause to the set of clauses (\texttt{clauses}) to prevent the same activation pattern from being selected again. This is similar to conflict-driven clause learning (CDCL) in modern SAT solvers and is implemented in the \neuralsat{} DNN verification tool~\cite{duong2025neuralsat}. In addition, heuristics are also used to select, e.g., which neuron to split next (\functiontextformat{Decide}). We explore these optimizations and strategies in~\autoref{part:optimizations}.
+Even the BaB search itself is optimized to avoid exploring the entire search space. For example, if \functiontextformat{Deduce} step determines infeasibility, a smarter \bab{} variant (e.g., the \neuralsat{} tool described in~\autoref{chap:neuralsat}) can analyze the conflict and add a new clause to the set of clauses (\texttt{clauses}) to prevent the same activation pattern from being selected again. This is similar to conflict-driven clause learning (CDCL) in modern SAT solvers and is implemented in the \neuralsat{} DNN verification tool~\cite{duong2025neuralsat}. In addition, heuristics are also used to select, e.g., which neuron to split next (\functiontextformat{Decide}). %We explore these optimizations and strategies in~\autoref{part:optimizations}.
 
 % \tvn{TODO: this basic BaB is also used to create a proof tree, which is used to generate a proof in the \prooflang{} format. We will discuss this in~\autoref{chapter:proof-gen-check}.}
 
@@ -4444,7 +4444,7 @@ Even the BaB search itself is optimized to avoid exploring the entire search spa
 
 \chapter{Common Engineerings and Optimizations}\label{chap:common-engineering}
 
-A full branch and bound (BaB search (\autoref{chap:bab}) is typically expensive and slow. Thus, DNN verifiers often begin by applying a range of optimizations and engineering techniques that aim to quickly eliminate easy cases, such as when the network has a small number of inputs.
+A full branch and bound (BaB) search (\autoref{chap:bab}) is typically expensive and slow on large networks. Thus, DNN verifiers often begin by applying a range of optimizations and engineering techniques that aim to quickly eliminate easy cases, such as when the network has a small number of inputs.
 
 \section{Input Splitting}\label{sec:input-splitting}
  Modern DNN verifiers~\cite{katz2019marabou,katz2022reluplex,bak2021nnenum,duong2025neuralsat} often use a technique called \emph{input splitting} to quickly deal with networks with verification problems involving low-dimensional networks, such as those in the ACAS Xu benchmark~\autoref{sec:acasxu} where the networks have a small number of inputs. Currently many work set the threshold to 50 inputs, i.e., if the network has more than 50 inputs, it is considered large and input splitting is not applied.
@@ -4456,12 +4456,14 @@ The idea is to split the original verification problem into subproblems, each ch
     
 
     Given $k$ available threads, \tool{} splits the original input region to obtain subproblems as described and and runs DPLL(T) on $k$ subproblems in parallel. % and iteratively splits any subproblem which cannot be solved within pre-defined amount of time, e.g., 2 seconds.
-\tool{} returns \texttt{unsat} if it verifies all subproblems and \texttt{sat} if it found a counterexample in any subproblem. %In the current implementation, \tool{} uses the number of available threads to determine the number of created subproblems.
+\tool{} returns \unsat{} if it verifies all subproblems and \sat{} if it found a counterexample in any subproblem. Modern DNN verification tools such as \neuralsat{} uses the number of available CPU threads to determine the number of created subproblems.
+
 For example, we split the input region $\{x_1 \in [-1,1] , x_2 \in [-2,2]\}$ into four subregions 
 $\{x_1 \in [-1,0] , x_2 \in [-2,0]\}$, 
 $\{x_1 \in [-1,0] , x_2 \in [0,2]\}$ , 
 $\{x_1 \in [0,1] , x_2 \in [-2,0]\}$, and 
 $\{x_1 \in [0,1], x_2 \in [0,2]\}$.  
+
 Note that the formula $-1 \le x_1 \le 1 \land -2 \le x_2 \le 2$ representing the original input region is equivalent to the formula $(-1 \le x_1 \le 0 \lor 0 \le x \le 1) \land (-2 \le x_2 \le 0 \lor 0 \le x_2 \le 2)$ representing the combination of the created subregions.
 \end{example}
 
@@ -4483,12 +4485,12 @@ This heuristic helps input bounds tightening as described in \S\ref{sec:inputbou
 }
 
 
-\section{Adversarial Attacks (\autoref{chap:adversarial-attacks})} Like other DNN verifiers~\cite{ferrari2022complete,zhang2022general}, \tool{} tool implements a fast-path optimization that attempts to disprove or falsify the property before running DPLL(T).
-\tool{} uses two \emph{adversarial attack} algorithms to find counterexamples to falsify properties.
-First, we try a randomized attack approach~\cite{das2021fast}, which is a derivative-free sampling-based optimization~\cite{yu2016derivative}, to generate a potential counterexample.
-If this approach fails, we then use a gradient-based approach~\cite{madry2017towards} to create another potential counterexample.
+\section{Adversarial Attacks (\autoref{chap:adversarial-attacks})} Most DNN verification tools implement \emph{adversarial attack} techniques to find counterexamples before running BaB. These techniques are often efficient and can quickly find counterexamples for invalid properties.
+Examples of such techniques include randomized attacks~\cite{das2021fast} and gradient-based attacks~\cite{madry2017towards}, described in \autoref{chap:adversarial-attacks}.
 
-If either attack algorithm gives a valid counterexample, \tool{} returns \texttt{sat}, indicating that property is invalid. If both algorithms cannot find a counterexample or they exceed a predefined timeout, \tool{} continues with its DPLL(T) search.
+If an attack algorithm gives a valid counterexample, the verifier returns \sat{}, indicating that property is invalid. Otherwise, if all attack algorithms fail to find a counterexample or they exceed a predefined timeout, the verifier proceeds to run the full BaB search.
+
+
 
 
 
@@ -4534,6 +4536,182 @@ Note that the formula $-1 \le x_1 \le 1 \land -2 \le x_2 \le 2$ representing the
 %Otherwise, they split that current subregion into multiple instances, and continue at the aforementioned abstraction step.
 %In the other hand, in \tool{}, each CDCL instance takes input of a subregion and run for verifying it with iterations as in~\autoref{fig:alg}.
 
+\chapter{Adversarial Attacks}\label{chap:adversarial-attacks}
+
+Many DNN verification tools first run an adversarial attack technique to check for obvious counterexamples. If one is found, the property is violated (and the verifier returns \sat). If no counterexample is found, the verifier proceeds to the more expensive search (e.g., \bab{} as shown in~\autoref{chap:bab}).
+
+Thus, modern verification tools have two phases: (i) attempt to \emph{falsify} the property with adversarial attacks, and (ii) if no counterexample is found, attempt to \emph{verify} the property. Of course, during the verification phase, the verifier may also discover counterexamples that the falsify phase misses.
+
+\section{Random Search Attack}
+Random search is a simple method for adversarial attack.  It randomly samples points in the allowed input ranges and checks if any samples violate the property; if so, a counterexample is found.
+
+\begin{example}\label{ex:random-search}
+Suppose the DNN input ranges are:
+\[
+-1 \leq x_1 \leq 1,\quad -2 \leq x_2 \leq 2
+\]
+and the output is:
+\[
+y = 2x_1 - 1.5x_2 + 1.
+\]
+We wish to use random search to find a counterexample to the property $y > 0$; i.e.,  trying random inputs $(x_1, x_2)$ satisfying the given ranges and producing $y \leq 0$.
+
+
+\begin{itemize}
+    \item Try 1: $x_1 = 0.2,\ x_2 = -0.5$
+    \[
+    y = 2 \times 0.2 - 1.5 \times (-0.5) + 1 = 0.4 + 0.75 + 1 = 2.15 > 0
+    \]
+    Not a violation.
+
+    \item Try 2: $x_1 = -1,\ x_2 = 2$
+    \[
+    y = 2 \times (-1) - 1.5 \times 2 + 1 = -2 - 3 + 1 = -4 < 0
+    \]
+    \textbf{Counterexample found}: $(x_1 = -1,\ x_2 = 2)$.
+\end{itemize}
+\end{example}
+
+\section{Projected Gradient Descent (PGD)}
+
+\textbf{PGD} is a powerful and widely used adversarial attack that builds on the idea of \emph{gradient descent}.
+Gradient descent is the procedure of repeatedly moving the input a small amount in the direction that most rapidly \emph{decreases} (or, for an attack, increases the likelihood of) some objective by following the negative (or positive) gradient.
+
+Specifically, at each step PGD computes the gradient of the network output with respect to the input and takes a small gradient-descent step that pushes the input toward a stronger property violation. Next, PGD \emph{projects} (clips) the updated input back into the allowed domain if the step goes outside the input bounds.
+
+We will reuse~\autoref{ex:random-search} to illustrate PGD. Here,  the DNN input ranges are $-1 \leq x_1 \leq 1,~-2 \leq x_2 \leq 2$, and the output is $y = 2x_1 - 1.5x_2 + 1$, and the goal is to find a counterexample that satisfies the input ranges and produces $y \leq 0$.
+
+
+\begin{enumerate}
+    \item \textbf{Initialize.}  
+    Choose a valid starting input, for example:
+    \[
+    (x_1^{(0)}, x_2^{(0)}) = (0, 0)
+    \]
+    This point is within the allowed input ranges, but does not violate the property $y > 0$ since $y(0,0) = 1 > 0$. So we need to continue.
+
+    \item \textbf{Iterative update.}  
+    For each step $t = 0, 1, 2, \ldots$:
+    \begin{enumerate}
+        \item \textbf{Compute the gradient.}  
+        The gradient $\nabla_x y$ tells us how sensitive the output $y$ is to each input dimension:
+        \[
+        \nabla_x y = \left( \frac{\partial y}{\partial x_1}, \frac{\partial y}{\partial x_2} \right)
+        \]
+        It represents the direction of steepest \emph{increase} in $y$.  
+        To move toward a smaller $y$ (to make violation $y \le 0$ more likely), we go in the \emph{opposite} direction, i.e., $-\nabla_x y$.
+
+        For example, if:
+        \[
+        y = 2x_1 - 1.5x_2 + 1,
+        \]
+        then the gradient is:
+        \[
+        \nabla_x y = (2, -1.5)
+        \]
+        This is computed by taking the partial derivatives:
+        \[
+        \frac{\partial y}{\partial x_1} = 2, \qquad
+        \frac{\partial y}{\partial x_2} = -1.5.
+        \]
+
+        This gradient means that increasing $x_1$ by a small amount increases $y$ by about twice that amount, while increasing $x_2$ by a small amount decreases $y$ by about 1.5 times that amount.
+
+         
+         
+        \item \textbf{Gradient update (take a step).}  
+        Move a small distance $\eta$ (called the \emph{step size} or \emph{learning rate}) in the negative gradient direction:
+        \[
+        x_1^{(t+1)} = x_1^{(t)} - \eta \cdot 2, \qquad
+        x_2^{(t+1)} = x_2^{(t)} - \eta \cdot (-1.5)
+        \]
+        This decreases $y$ as quickly as possible.
+
+        For example, if $\eta = 0.5$ and starting from $(x_1^{(0)}, x_2^{(0)}) = (0, 0)$:
+        \[
+        x_1^{(1)} = 0 - 0.5 \times 2 = -1.0, \qquad
+        x_2^{(1)}   = 0 - 0.5 \times (-1.5) = +0.75
+        \]
+        Thus, the candidate input after one step is $(-1.0, +0.75)$.
+
+        \item \textbf{Project (Clip) to valid input range.}  
+        If the new values go outside the legal range, bring them back to the closest valid boundary:
+        \[
+        x_1^{(t+1)} = \max(-1, \min(x_1^{(t+1)}, 1)), \qquad
+        x_2^{(t+1)} = \max(-2, \min(x_2^{(t+1)}, 2))
+        \]
+        This ensures every step stays within $[-1, 1] \times [-2, 2]$.
+
+        Our candidate input $(-1.0, +0.75)$ is already within the valid ranges, so no clipping is needed.    
+
+        \item \textbf{Check for violation.}  
+        Compute the output at the new input.  
+        If $y(x^{(t+1)}) \le 0$, then a counterexample has been found, and the attack succeeds.
+
+        In our example, compute:
+        \[
+        y = 2(-1) - 1.5(0.75) + 1 = -2 - 1.125 + 1 = -2.125 <   0
+        \]
+        Thus, PGD finds a counterexample at $(x_1, x_2) = (-1, 0.75)$.
+
+    \end{enumerate}
+\end{enumerate}
+
+
+\begin{example}[PGD with Clipping]
+Now let the step size be larger, $\eta = 1.0$, starting again from $(x_1^{(0)}, x_2^{(0)}) = (0, 0)$:
+\[
+\begin{aligned}
+x_1^{(1)} &= 0 - 1.0 \times 2 = -2.0 \\
+x_2^{(1)} &= 0 - 1.0 \times (-1.5) = +1.5
+\end{aligned}
+\]
+Here, $x_1^{(1)} = -2.0$ is outside the allowed range $[-1, 1]$, so we must \emph{clip} it:
+\[
+x_1^{(1)} = -1 \quad (\text{projected to boundary})
+\]
+Meanwhile, $x_2^{(1)} = 1.5$ is within $[-2, 2]$, so it remains unchanged.
+
+After projection:
+\[
+(x_1^{(1)}, x_2^{(1)}) = (-1, 1.5)
+\]
+
+Compute:
+\[
+y = 2(-1) - 1.5(1.5) + 1 = -2 - 2.25 + 1 = -3.25 < 0
+\]
+PGD again finds a counterexample—this time, the projection step ensured we stayed within bounds.
+
+\end{example}
+
+
+\begin{example}[Computing the Gradient]
+Consider
+\[
+y = x_1^2 + 3x_2.
+\]
+The gradient of $y$ with respect to $(x_1, x_2)$ is
+\[
+\nabla_x y = \left( \frac{\partial y}{\partial x_1}, \frac{\partial y}{\partial x_2} \right).
+\]
+Compute each partial derivative:
+
+\[
+\frac{\partial y}{\partial x_1} = 2x_1, \qquad
+\frac{\partial y}{\partial x_2} = 3.
+\]
+Therefore,
+\[
+\nabla_x y = (2x_1,\ 3).
+\]
+
+For instance, at the point $(x_1, x_2) = (1, 2)$,
+\[
+\nabla_x y = (2 \times 1,\ 3) = (2, 3).
+\]
+This means that near $(1,2)$, increasing $x_1$ by a small amount increases $y$ roughly twice as fast as that same increase in $x_2$ would.
+\end{example}
 
 
 
@@ -8689,103 +8867,6 @@ Since each literal is considered, this would be considered exhaustive theory pro
 %\hd{when does \tool{} use DeepPoly/LiRPA? Small number of inputs (<50), use LP to tighten input ranges then apply DeepPoly. Otherwise, jointly optimize hidden bounds and output bounds using LiRPA (same as ab-crown) --- Actually, in small number of inputs cases, it's reimplementation of DeepPoly with adaptation of learnable \textit{slopes} as in ab-crown. Depend on the input ranges, the abstraction will compute output ranges directly use original version or use optimized slopes version of DeepPoly to get better bounds.}
 %The estimated output ranges could be used to check the reachability, as shown in Sec~\ref{sec:unsat}.
 %If the output property is unreachable, the Theory Deduce will raise ``conflict'' status, otherwise, the output property might be reachable, we could not decide the reachability status of the current assignment.
-
-\part{Optimizations and Strategies}\label{part:optimizations}
-
-\chapter{Adversarial Attacks}\label{chap:adversarial-attacks}
-
-Modern DNN verifiers such as \crown{} and \neuralsat{} often first run an adversarial attack technique to check for obvious counterexamples. If one is found, the property is violated (and the verifier returns \sat). If no counterexample is found, the verifier proceeds to the more expensive search-based verification algorithm (e.g., \bab{} as shown in~\autoref{chap:bab}).
-
-Thus, in the first phase of running adversarial attacks, the goal to \emph{falsify} the property, i.e., find a counterexample that violates the property. If this fails, then the goal is to \emph{verify} the property, i.e., prove that no counterexample exists. Of course, during the verification phase, the verifier may also discover counterexamples that the falsify phase misses.
-
-\section{Random Search Attack}
-Random search (RS) is a simple method for adversarial attack.  It randomly samples points in the allowed input ranges and checks if any samples violate the property; if so, a counterexample is found.
-
-\begin{example}
-Suppose the DNN input ranges are:
-\[
--1 \leq x_1 \leq 1,\quad -2 \leq x_2 \leq 2
-\]
-and the output is:
-\[
-y = 2x_1 - 1.5x_2 + 1.
-\]
-We wish to use RS to find a counterexample to the property $y > 0$; i.e.,  trying random inputs $(x_1, x_2)$ satisfying the given ranges and producing $y \leq 0$.
-
-
-\begin{itemize}
-    \item Try 1: $x_1 = 0.2,\ x_2 = -0.5$
-    \[
-    y = 2 \times 0.2 - 1.5 \times (-0.5) + 1 = 0.4 + 0.75 + 1 = 2.15 > 0
-    \]
-    Not a violation.
-
-    \item Try 2: $x_1 = -1,\ x_2 = 2$
-    \[
-    y = 2 \times (-1) - 1.5 \times 2 + 1 = -2 - 3 + 1 = -4 < 0
-    \]
-    \textbf{Counterexample found}: $(x_1 = -1,\ x_2 = 2)$.
-\end{itemize}
-
-
-\subsection*{2. Projected Gradient Descent (PGD)}
-
-\textbf{Projected Gradient Descent (PGD)} is a strong first-order adversarial attack that iteratively moves the input in the direction that maximizes property violation, while projecting (clipping) the input back into the allowed domain after every step.
-
-\begin{enumerate}
-    \item \textbf{Initialize} at a valid input, e.g., $(x_1^{(0)}, x_2^{(0)}) = (0, 0)$.
-    \item \textbf{For each step $t$:}
-        \begin{enumerate}
-            \item Compute the gradient:
-            \[
-            \nabla_{x} x_5 = \left( \frac{\partial x_5}{\partial x_1}, \frac{\partial x_5}{\partial x_2} \right)
-            \]
-            For our example,
-            \[
-            \nabla_{x} x_5 = (2, -1.5)
-            \]
-            \item Update:
-            \[
-            x_1^{(t+1)} = x_1^{(t)} - \eta \cdot 2
-            \]
-            \[
-            x_2^{(t+1)} = x_2^{(t)} - \eta \cdot (-1.5)
-            \]
-            \item \textbf{Project (Clip)}:
-            \[
-            x_1^{(t+1)} = \max(-1, \min(x_1^{(t+1)}, 1))
-            \]
-            \[
-            x_2^{(t+1)} = \max(-2, \min(x_2^{(t+1)}, 2))
-            \]
-            \item If $x_5 \leq 0$, \textbf{return} $(x_1^{(t+1)}, x_2^{(t+1)})$ as a counterexample.
-        \end{enumerate}
-\end{enumerate}
-
-\textbf{Example:}
-
-Let $\eta = 0.5$, initial point $(x_1, x_2) = (0, 0)$.
-\begin{align*}
-x_1^{(1)} &= 0 - 0.5 \times 2 = -1 \\
-x_2^{(1)} &= 0 - 0.5 \times (-1.5) = 0.75 \\
-\end{align*}
-Clip to the ranges: $x_1^{(1)} = -1$, $x_2^{(1)} = 0.75$.
-
-Compute:
-\[
-x_5 = 2 \times (-1) - 1.5 \times 0.75 + 1 = -2 - 1.125 + 1 = -2.125 < 0
-\]
-So, the PGD attack finds a counterexample at $(x_1 = -1,\ x_2 = 0.75)$.
-% Step 2: Random Sampling
-% 	•	Randomly generate x_1, x_2 values in [-2, 2].
-% 	•	For example:
-% 	•	Try (x_1, x_2) = (0.5, -1.0)
-% 	•	x_5 = 20.5 - 1.5(-1.0) + 1 = 1 + 1.5 + 1 = 3.5 > 0 (not a violation).
-% 	•	Try (x_1, x_2) = (-1, 2)
-% 	•	x_5 = 2*(-1) - 1.5*2 + 1 = -2 - 3 + 1 = -4 (violation found!).
-
-\end{example}
-
 
 
 
