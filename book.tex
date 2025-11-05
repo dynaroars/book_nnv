@@ -4431,7 +4431,15 @@ Apply BaB on the DNN in \autoref{fig:dnn-bab} to verify the property $x_5 > 0$ f
 \end{problem}
 
 
-
+\begin{problem}
+Test your understanding of BaB and activation patterns by answering the following questions:
+\begin{enumerate}
+  \item In \autoref{alg:bab}, what happens if \functiontextformat{Deduce} always returns infeasible?
+  \item What happens if \functiontextformat{Deduce} always returns feasible but \functiontextformat{LP} always returns satisfiable?
+  \item What is the maximum number of activation patterns that \bab{} may need to explore in the worst case for a DNN with $m$ ReLU neurons?
+  \item What is the minimum number of activation patterns that \bab{} may need to explore in the best case for a DNN with $m$ ReLU neurons? What are these patterns?
+\end{enumerate}
+\end{problem}
 
 \subsection{Beyond the Basic} What described above is the basic and minimal BaB algorithm. However, modern DNN verifiers implement many optimizations and strategies to improve the performance of the search. For example, they apply various engineering tricks to eliminate easy cases or find easy counterexamples (\autoref{chap:common-engineering}) before running the full BaB search. 
 
