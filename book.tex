@@ -3948,7 +3948,7 @@ Thus, the final bounds after ReLU are \([0, 2.0]\).
 
 
 
-\part{DNN Verification Algorithms}\label{part:algorithms}
+\part{The Branch and Bound Approach}\label{part:bab}
 \chapter{The Branch and Bound Search Algorithm}\label{chap:bab}
 
 As shown in~\autoref{chap:constraint-solving}, the NNV verification problem can be formulated as a satisfiability problem, solvable using a constraint solver,  e.g., SMT and MILP solvers.  However, such solvers not scale to large DNNs due to the complexity of the underlying formulae. Thus, modern DNN verification techniques reframe the problem to search for \emph{activation patterns} that satisfy the constraints, and use the \emph{Branch-and-Bound} algorithm to explore the space of possible activation patterns.
@@ -4446,117 +4446,28 @@ Test your understanding of BaB and activation patterns by answering the followin
 \end{enumerate}
 \end{problem}
 
-\subsection{Beyond the Basic} What described above is the basic and minimal BaB algorithm. Modern DNN verifiers implement many optimizations and strategies to improve the performance of the search. For example, they apply various engineering tricks to eliminate easy cases or find easy counterexamples (\autoref{chap:common-engineering}) before running the full BaB search. 
+\subsection{Beyond the Basic} What described above is the basic and minimal BaB algorithm. Modern DNN verifiers implement many optimizations and strategies to improve the performance of the search. For example, they apply various engineering tricks to eliminate easy cases or find easy counterexamples (\autoref{chap:adversarial-attacks}) before running the full BaB search. 
 
-Even the BaB search itself is optimized to avoid exploring the entire search space. For example, if \functiontextformat{Deduce} step determines infeasibility, a smarter \bab{} variant (e.g., the \neuralsat{} tool described in~\autoref{chap:neuralsat}) can analyze the conflict and add a new clause to the set of clauses (\texttt{clauses}) to prevent the same activation pattern from being selected again. This is similar to conflict-driven clause learning (CDCL) in modern SAT solvers and is implemented in the \neuralsat{} DNN verification tool~\cite{duong2025neuralsat}. In addition, heuristics are also used to select, e.g., which neuron to split next (\functiontextformat{Decide}). %We explore these optimizations and strategies in~\autoref{part:optimizations}.
+Even the BaB search itself is optimized to avoid exploring the entire search space. For example, if \functiontextformat{Deduce} step determines infeasibility, a smarter \bab{} variant (e.g., the \neuralsat{} tool) can analyze the conflict and add a new clause to the set of clauses (\texttt{clauses}) to prevent the same activation pattern from being selected again. This is similar to conflict-driven clause learning (CDCL) in modern SAT solvers and is implemented in the \neuralsat{} DNN verification tool~\cite{duong2025neuralsat}. In addition, heuristics are also used to select, e.g., which neuron to split next (\functiontextformat{Decide}). We explore these optimizations and strategies in later chapters (e.g.,~\autoref{chap:neuralsat}).
 
 % \tvn{TODO: this basic BaB is also used to create a proof tree, which is used to generate a proof in the \prooflang{} format. We will discuss this in~\autoref{chapter:proof-gen-check}.}
 
 
 
 
-\chapter{Common Engineerings and Optimizations}\label{chap:common-engineering}
-
-A full branch and bound (BaB) search (\autoref{chap:bab}) is typically expensive and slow on large networks. Thus, DNN verifiers often begin by applying a range of optimizations and engineering techniques that aim to quickly eliminate easy cases, such as when the network has a small number of inputs.
-
-\section{Input Splitting}\label{sec:input-splitting}
- Modern DNN verifiers~\cite{katz2019marabou,katz2022reluplex,bak2021nnenum,duong2025neuralsat} often use a technique called \emph{input splitting} to quickly deal with networks with verification problems involving low-dimensional networks, such as those in the ACAS Xu benchmark~\autoref{sec:acasxu} where the networks have a small number of inputs. Currently many work set the threshold to 50 inputs, i.e., if the network has more than 50 inputs, it is considered large and input splitting is not applied.
-
-The idea is to split the original verification problem into subproblems, each checking whether the DNN produces the desired output from a smaller input region and returns \unsat{} if all subproblems are verified and \sat{} if a counterexample is found in any subproblem. Input splitting avoids BaB search---also called \emph{neuron splitting} and focuses on individual neurons---and is often used as a fast-path optimization to quickly eliminate easy cases.
-
-
-\begin{example}
-    
-
-    Given $k$ available threads, \tool{} splits the original input region to obtain subproblems as described and and runs DPLL(T) on $k$ subproblems in parallel. % and iteratively splits any subproblem which cannot be solved within pre-defined amount of time, e.g., 2 seconds.
-\tool{} returns \unsat{} if it verifies all subproblems and \sat{} if it found a counterexample in any subproblem. Modern DNN verification tools such as \neuralsat{} uses the number of available CPU threads to determine the number of created subproblems.
-
-For example, we split the input region $\{x_1 \in [-1,1] , x_2 \in [-2,2]\}$ into four subregions 
-$\{x_1 \in [-1,0] , x_2 \in [-2,0]\}$, 
-$\{x_1 \in [-1,0] , x_2 \in [0,2]\}$ , 
-$\{x_1 \in [0,1] , x_2 \in [-2,0]\}$, and 
-$\{x_1 \in [0,1], x_2 \in [0,2]\}$.  
-
-Note that the formula $-1 \le x_1 \le 1 \land -2 \le x_2 \le 2$ representing the original input region is equivalent to the formula $(-1 \le x_1 \le 0 \lor 0 \le x \le 1) \land (-2 \le x_2 \le 0 \lor 0 \le x_2 \le 2)$ representing the combination of the created subregions.
-\end{example}
-
-
-\section{Input Bounds Tightening}\label{sec:inputboundstigthten}
-For networks with small inputs, DNN verification tools use a more aggressive abstraction process to achieve more precise computation. Specifically, they use LP solving to compute the tightest bounds for all input variables from the generated linear constraints. This computation is efficient when the number of inputs is small.
-
-%(line~\ref{line:abstraction},~\autoref{alg:deduction})
-After tightening input bounds DNN verification tools apply abstraction to approximate the output bounds, which can be more precise with better input bounds.
-For networks with large number of inputs, we obtain input bounds from the input property $\phi_{in}$.\tvn{Vu: to rewrite}
-
-\ignore{
-\subsection{Decision Heuristics}\label{sec:decision-heuristics}
-Decision or branching heuristics decide free variables to make assignments and thus are crucial for the scalability of DPLL by reducing assignment mistakes~\cite{kroening2016decision,beyer2022progress}.
-
-For networks with small inputs, \tool{} prioritizes variables representing neurons with the \emph{furthest bounds} from the decision value 0 of ReLU, i.e., the 0 in $\max(x,0)$.
-Such neurons have wider bounds and therefore are more difficult to tighten during abstraction compared to other neurons.
-This heuristic helps input bounds tightening as described in \S\ref{sec:inputboundstigthten} (which is also applied only for networks with small inputs). It is also cheap because we can reuse the computed boundaries of hidden neurons during abstraction.
-}
-
-
-\section{Adversarial Attacks (\autoref{chap:adversarial-attacks})} Most DNN verification tools implement \emph{adversarial attack} techniques to find counterexamples before running BaB. These techniques are often efficient and can quickly find counterexamples for invalid properties.
-Examples of such techniques include randomized attacks~\cite{das2021fast} and gradient-based attacks~\cite{madry2017towards}, described in \autoref{chap:adversarial-attacks}.
-
-If an attack algorithm gives a valid counterexample, the verifier returns \sat{}, indicating that property is invalid. Otherwise, if all attack algorithms fail to find a counterexample or they exceed a predefined timeout, the verifier proceeds to run the full BaB search.
-
-
-
-
-
-\section{Multiprocessing} \label{sec:input_split}
-\tvn{Do we still use this?  or we use the Parallel DPLL(T) in~\autoref{sec:parallel-search} instead?}
-For networks with small inputs, \tool{} uses a simple approach to create and solve subproblems in parallel.
-Given a verification problem $N_{orig} = (\alpha, \phi_{in}, \phi_{out})$, where $\alpha$ is the DNN and $\phi_{in} \Rightarrow \phi_{out}$ is the desired property, \tool{} creates subproblems $N_i = (\alpha, \phi_{{in}_i}, \phi_{out})$, where $\phi_{{in}_i}$ is the $i$-th subregion of the input region specified by $\phi_{in}$.
-Intuitively, each subproblem checks if the DNN produces the output $\phi_{out}$  from a smaller input region $\phi_{{in}_i}$.
-The combination of these subproperties $\bigwedge \phi_{{in}_i} \Rightarrow \phi_{out}$ is logically equivalent to the original property $\phi_{in} \Rightarrow \phi_{out}$.
-
-
-Given $k$ available threads, \tool{} splits the original input region to obtain subproblems as described and and runs DPLL(T) on $k$ subproblems in parallel. % and iteratively splits any subproblem which cannot be solved within pre-defined amount of time, e.g., 2 seconds.
-\tool{} returns \texttt{unsat} if it verifies all subproblems and \texttt{sat} if it found a counterexample in any subproblem. %In the current implementation, \tool{} uses the number of available threads to determine the number of created subproblems.
-For example, we split the input region $\{x_1 \in [-1,1] , x_2 \in [-2,2]\}$ into four subregions
-$\{x_1 \in [-1,0] , x_2 \in [-2,0]\}$,
-$\{x_1 \in [-1,0] , x_2 \in [0,2]\}$ ,
-$\{x_1 \in [0,1] , x_2 \in [-2,0]\}$, and
-$\{x_1 \in [0,1], x_2 \in [0,2]\}$.
-Note that the formula $-1 \le x_1 \le 1 \land -2 \le x_2 \le 2$ representing the original input region is equivalent to the formula $(-1 \le x_1 \le 0 \lor 0 \le x \le 1) \land (-2 \le x_2 \le 0 \lor 0 \le x_2 \le 2)$ representing the combination of the created subregions.
-
-
-
-\section{GPU Processing}\label{sec:gpu}
-
-\tvn{Hai, talk about how modern tools like crown and neuralsat leverage GPU.  Give details.  Provide small CUDO code and examples as needed.}
-
-%\hd{Updated.}
-
-
-%We note that this input splitting technique is different than other input splitting techniques whe
-
-%% can be split into the subproblems  $-1 \le x_1 \le 1 \land -2 \le x_2 \le 2  \Rightarrow x_5 \le 0$
-
-%% \tvn{hm .. if you have multiple inputs, how do you create regions from those?  e.g., if $\phi = 5\le i_1 \le 10 \land 10 \le i_2 \le 20$, then what is $\phi_k$?}
-%% \hd{Split each input at a time, e.g., split $i_1$ from $5\le i_1 \le 10$ to $(5\le i_1 \le 8) \lor (8\le i_1 \le 10)$. Now original problem is $\phi = [(5\le i_1 \le 8) \lor (8\le i_1 \le 10)] \land (10 \le i_2 \le 20)$, or we could rewrite that formula in DNF form like $\phi = [(5\le i_1 \le 8) \land (10 \le i_2 \le 20)] \lor [(8\le i_1 \le 10) \land (10 \le i_2 \le 20)]$}\tvn{so if for i1 you make k1 splits,  i2 you make k2 splits,  .., then the number of sub probs is k1*k2*...kn?}\hd{yes, this thing is very trivial, I did it when I had no idea to optimize during that time}
-%% After that, \tool{} creates multiple CDCL verification instances, and each of them will solve a subproblem independently\tvn{how do you determine the number of subregions? is it automatically based on the number of avail threads?} \hd{I did split based on number of threads for now.}
-
-
-
-
-%In the input splitting used in~\cite{wang2018formal,wang2021beta}, they only compute the abstraction over each subregion once to get estimated output.
-%If the subregion causes UNSAT, it will be eliminate immediately.
-%Otherwise, they split that current subregion into multiple instances, and continue at the aforementioned abstraction step.
-%In the other hand, in \tool{}, each CDCL instance takes input of a subregion and run for verifying it with iterations as in~\autoref{fig:alg}.
 
 \chapter{Adversarial Attacks}\label{chap:adversarial-attacks}
 
-Many DNN verification tools first run an adversarial attack technique to check for obvious counterexamples. If one is found, the property is violated (and the verifier returns \sat). If no counterexample is found, the verifier proceeds to the more expensive search (e.g., \bab{} as shown in~\autoref{chap:bab}).
 
-Thus, modern verification tools have two phases: (i) attempt to \emph{falsify} the property with adversarial attacks, and (ii) if no counterexample is found, attempt to \emph{verify} the property. Of course, during the verification phase, the verifier may also discover counterexamples that the falsify phase misses.
+Most DNN verification tools implement \emph{adversarial attack} techniques to find counterexamples before running BaB. These techniques are often efficient and can quickly find counterexamples for invalid properties.
+Examples of such techniques include randomized attacks~\cite{das2021fast} and gradient-based attacks~\cite{madry2017towards}, described in \autoref{chap:adversarial-attacks}.
+
+
+Thus, modern verification tools have two phases: (i) attempt to \emph{falsify} the property with adversarial attacks, and (ii) if no counterexample is found, attempt to \emph{verify} the property using search algorithms such as \bab{} (\autoref{chap:bab}). Of course, during the verification phase, the verifier may also discover counterexamples that the falsify phase misses.
+
 
 \section{Random Search Attack}
-Random search is a simple method for adversarial attack.  It randomly samples points in the allowed input ranges and checks if any samples violate the property; if so, a counterexample is found.
+\textbf{Random search} is a simple adversarial attack method.  It randomly samples points in the allowed input ranges and checks if any samples violate the property; if so, a counterexample is found.
 
 \begin{example}\label{ex:random-search}
 Suppose the DNN input ranges are:
@@ -4607,9 +4518,9 @@ We will reuse~\autoref{ex:random-search} to illustrate PGD. Here,  the DNN input
     For each step $t = 0, 1, 2, \ldots$:
     \begin{enumerate}
         \item \textbf{Compute the gradient.}  
-        The gradient $\nabla_x y$ tells us how sensitive the output $y$ is to each input dimension:
+        The gradient $\nabla_x y$ tells us how sensitive the output $y$ is to each input variable:
         \[
-        \nabla_x y = \left( \frac{\partial y}{\partial x_1}, \frac{\partial y}{\partial x_2} \right)
+        \nabla_x y = \left( \frac{\partial y}{\partial x_1}, \frac{\partial y}{\partial x_2}, \ldots, \frac{\partial y}{\partial x_n} \right)
         \]
         It represents the direction of steepest \emph{increase} in $y$.  
         To move toward a smaller $y$ (to make violation $y \le 0$ more likely), we go in the \emph{opposite} direction, i.e., $-\nabla_x y$.
@@ -4618,16 +4529,15 @@ We will reuse~\autoref{ex:random-search} to illustrate PGD. Here,  the DNN input
         \[
         y = 2x_1 - 1.5x_2 + 1,
         \]
-        then the gradient is:
-        \[
-        \nabla_x y = (2, -1.5)
-        \]
-        This is computed by taking the partial derivatives:
+        then the partial derivatives are:
         \[
         \frac{\partial y}{\partial x_1} = 2, \qquad
-        \frac{\partial y}{\partial x_2} = -1.5.
+        \frac{\partial y}{\partial x_2} = -1.5,
         \]
-
+        resulting in the gradient:
+        \[
+        \nabla_x y = (2, -1.5).
+        \]
         This gradient means that increasing $x_1$ by a small amount increases $y$ by about twice that amount, while increasing $x_2$ by a small amount decreases $y$ by about 1.5 times that amount.
 
          
@@ -4727,7 +4637,95 @@ This means that near $(1,2)$, increasing $x_1$ by a small amount increases $y$ r
 \end{example}
 
 
+\chapter{Common Engineerings and Optimizations}\label{chap:common-engineering}
 
+A full branch and bound (BaB) search (\autoref{chap:bab}) is typically expensive and slow on large networks. Thus, DNN verifiers often begin by applying a range of optimizations and engineering techniques that aim to quickly eliminate easy cases, such as when the network has a small number of inputs.
+
+\section{Input Splitting}\label{sec:input-splitting}
+ Modern DNN verifiers~\cite{katz2019marabou,katz2022reluplex,bak2021nnenum,duong2025neuralsat} often use a technique called \emph{input splitting} to quickly deal with networks with verification problems involving low-dimensional networks, such as those in the ACAS Xu benchmark~\autoref{sec:acasxu} where the networks have a small number of inputs. Currently many work set the threshold to 50 inputs, i.e., if the network has more than 50 inputs, it is considered large and input splitting is not applied.
+
+The idea is to split the original verification problem into subproblems, each checking whether the DNN produces the desired output from a smaller input region and returns \unsat{} if all subproblems are verified and \sat{} if a counterexample is found in any subproblem. Input splitting avoids BaB search---also called \emph{neuron splitting} and focuses on individual neurons---and is often used as a fast-path optimization to quickly eliminate easy cases.
+
+
+\begin{example}
+    
+
+    Given $k$ available threads, \tool{} splits the original input region to obtain subproblems as described and and runs DPLL(T) on $k$ subproblems in parallel. % and iteratively splits any subproblem which cannot be solved within pre-defined amount of time, e.g., 2 seconds.
+\tool{} returns \unsat{} if it verifies all subproblems and \sat{} if it found a counterexample in any subproblem. Modern DNN verification tools such as \neuralsat{} uses the number of available CPU threads to determine the number of created subproblems.
+
+For example, we split the input region $\{x_1 \in [-1,1] , x_2 \in [-2,2]\}$ into four subregions 
+$\{x_1 \in [-1,0] , x_2 \in [-2,0]\}$, 
+$\{x_1 \in [-1,0] , x_2 \in [0,2]\}$ , 
+$\{x_1 \in [0,1] , x_2 \in [-2,0]\}$, and 
+$\{x_1 \in [0,1], x_2 \in [0,2]\}$.  
+
+Note that the formula $-1 \le x_1 \le 1 \land -2 \le x_2 \le 2$ representing the original input region is equivalent to the formula $(-1 \le x_1 \le 0 \lor 0 \le x \le 1) \land (-2 \le x_2 \le 0 \lor 0 \le x_2 \le 2)$ representing the combination of the created subregions.
+\end{example}
+
+
+\section{Input Bounds Tightening}\label{sec:inputboundstigthten}
+For networks with small inputs, DNN verification tools use a more aggressive abstraction process to achieve more precise computation. Specifically, they use LP solving to compute the tightest bounds for all input variables from the generated linear constraints. This computation is efficient when the number of inputs is small.
+
+%(line~\ref{line:abstraction},~\autoref{alg:deduction})
+After tightening input bounds DNN verification tools apply abstraction to approximate the output bounds, which can be more precise with better input bounds.
+For networks with large number of inputs, we obtain input bounds from the input property $\phi_{in}$.\tvn{Vu: to rewrite}
+
+\ignore{
+\subsection{Decision Heuristics}\label{sec:decision-heuristics}
+Decision or branching heuristics decide free variables to make assignments and thus are crucial for the scalability of DPLL by reducing assignment mistakes~\cite{kroening2016decision,beyer2022progress}.
+
+For networks with small inputs, \tool{} prioritizes variables representing neurons with the \emph{furthest bounds} from the decision value 0 of ReLU, i.e., the 0 in $\max(x,0)$.
+Such neurons have wider bounds and therefore are more difficult to tighten during abstraction compared to other neurons.
+This heuristic helps input bounds tightening as described in \S\ref{sec:inputboundstigthten} (which is also applied only for networks with small inputs). It is also cheap because we can reuse the computed boundaries of hidden neurons during abstraction.
+}
+
+
+
+
+
+\section{Multiprocessing} \label{sec:input_split}
+\tvn{Do we still use this?  or we use the Parallel DPLL(T) in~\autoref{sec:parallel-search} instead?}
+For networks with small inputs, \tool{} uses a simple approach to create and solve subproblems in parallel.
+Given a verification problem $N_{orig} = (\alpha, \phi_{in}, \phi_{out})$, where $\alpha$ is the DNN and $\phi_{in} \Rightarrow \phi_{out}$ is the desired property, \tool{} creates subproblems $N_i = (\alpha, \phi_{{in}_i}, \phi_{out})$, where $\phi_{{in}_i}$ is the $i$-th subregion of the input region specified by $\phi_{in}$.
+Intuitively, each subproblem checks if the DNN produces the output $\phi_{out}$  from a smaller input region $\phi_{{in}_i}$.
+The combination of these subproperties $\bigwedge \phi_{{in}_i} \Rightarrow \phi_{out}$ is logically equivalent to the original property $\phi_{in} \Rightarrow \phi_{out}$.
+
+
+Given $k$ available threads, \tool{} splits the original input region to obtain subproblems as described and and runs DPLL(T) on $k$ subproblems in parallel. % and iteratively splits any subproblem which cannot be solved within pre-defined amount of time, e.g., 2 seconds.
+\tool{} returns \texttt{unsat} if it verifies all subproblems and \texttt{sat} if it found a counterexample in any subproblem. %In the current implementation, \tool{} uses the number of available threads to determine the number of created subproblems.
+For example, we split the input region $\{x_1 \in [-1,1] , x_2 \in [-2,2]\}$ into four subregions
+$\{x_1 \in [-1,0] , x_2 \in [-2,0]\}$,
+$\{x_1 \in [-1,0] , x_2 \in [0,2]\}$ ,
+$\{x_1 \in [0,1] , x_2 \in [-2,0]\}$, and
+$\{x_1 \in [0,1], x_2 \in [0,2]\}$.
+Note that the formula $-1 \le x_1 \le 1 \land -2 \le x_2 \le 2$ representing the original input region is equivalent to the formula $(-1 \le x_1 \le 0 \lor 0 \le x \le 1) \land (-2 \le x_2 \le 0 \lor 0 \le x_2 \le 2)$ representing the combination of the created subregions.
+
+
+
+\section{GPU Processing}\label{sec:gpu}
+
+\tvn{Hai, talk about how modern tools like crown and neuralsat leverage GPU.  Give details.  Provide small CUDO code and examples as needed.}
+
+%\hd{Updated.}
+
+
+%We note that this input splitting technique is different than other input splitting techniques whe
+
+%% can be split into the subproblems  $-1 \le x_1 \le 1 \land -2 \le x_2 \le 2  \Rightarrow x_5 \le 0$
+
+%% \tvn{hm .. if you have multiple inputs, how do you create regions from those?  e.g., if $\phi = 5\le i_1 \le 10 \land 10 \le i_2 \le 20$, then what is $\phi_k$?}
+%% \hd{Split each input at a time, e.g., split $i_1$ from $5\le i_1 \le 10$ to $(5\le i_1 \le 8) \lor (8\le i_1 \le 10)$. Now original problem is $\phi = [(5\le i_1 \le 8) \lor (8\le i_1 \le 10)] \land (10 \le i_2 \le 20)$, or we could rewrite that formula in DNF form like $\phi = [(5\le i_1 \le 8) \land (10 \le i_2 \le 20)] \lor [(8\le i_1 \le 10) \land (10 \le i_2 \le 20)]$}\tvn{so if for i1 you make k1 splits,  i2 you make k2 splits,  .., then the number of sub probs is k1*k2*...kn?}\hd{yes, this thing is very trivial, I did it when I had no idea to optimize during that time}
+%% After that, \tool{} creates multiple CDCL verification instances, and each of them will solve a subproblem independently\tvn{how do you determine the number of subregions? is it automatically based on the number of avail threads?} \hd{I did split based on number of threads for now.}
+
+
+
+
+%In the input splitting used in~\cite{wang2018formal,wang2021beta}, they only compute the abstraction over each subregion once to get estimated output.
+%If the subregion causes UNSAT, it will be eliminate immediately.
+%Otherwise, they split that current subregion into multiple instances, and continue at the aforementioned abstraction step.
+%In the other hand, in \tool{}, each CDCL instance takes input of a subregion and run for verifying it with iterations as in~\autoref{fig:alg}.
+
+\part{Modern DNN Verification Tools}\label{part:modern-tools}
 \chapter{The \neuralsat{} Algorithm}\label{chap:neuralsat}
 
 \neuralsat{}~\cite{duong2025neuralsat,duong2024harnessing} is a relatively late competitor in the DNN verification space, but it has quickly become a strong contender, consistently placed among the top tools at DNN verification competitions~\autoref{chap:vnncomps}.
