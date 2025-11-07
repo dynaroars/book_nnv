@@ -36,12 +36,13 @@ class BranchAndBound:
         
     def verify(self, input_lower, input_upper, property_fn, timeout=60):
         """
-        Main BaB verification algorithm
+        Main BaB verification algorithm following Algorithm 1 from the book
+        
         Args:
             input_lower: lower bounds of input domain  
             input_upper: upper bounds of input domain
             property_fn: function that takes (output_lower, output_upper) 
-                        and returns True if property is satisfied
+                         and returns VERIFIED, FALSIFIED, or UNKNOWN
             timeout: maximum time in seconds
             
         Returns:
@@ -49,45 +50,99 @@ class BranchAndBound:
             counterexample: input that violates property (if FALSIFIED)
         """
         start_time = time.time()
-        queue = Queue()
         
-        # Initialize queue with initial problem 
+        # Initialize verification problems (Line 5 in Algorithm 1)
+        problems = Queue()
         initial_problem = (input_lower, input_upper)
-        queue.put(initial_subproblem)
+        problems.put(initial_problem)
         
-        while not queue.empty():
+        # Main loop
+        while not problems.empty():
             if time.time() - start_time > timeout:
                 return TIMEOUT, None
                 
-            # Step 1 - Get a problem from remaining queue
-            #     Hint: use queue.get()
-            lb, ub = ...
+            # Select a subproblem
+            lb, ub = ...  # Hint: use problems.get()
             
-            # Step 2 - Compute abstract bounds for current subproblem
-            #     Hint: use self.bound()
-            output_lb, output_ub = ...
-
-            # Step 3 - Check if we can prune this subproblem
-            #     Hint: use self.prune()
-            prune_result = ...
-
-            if prune_result == VERIFIED:
-                # This subproblem is verified, prune it
-                continue
-            elif prune_result == FALSIFIED:
-                # Found counterexample, create concrete input and return
-                counterexample = ...  # Find concrete input in [lb, ub]
-                return FALSIFIED, counterexample
-            else:  # prune_result == UNKNOWN
-                # Branch this subproblem into 2 subproblems
-                #     Hint: use self.branch()
-                subproblems = ... # 
-                # Add the 2 subproblems to the queue
-                #     Hint: use queue.put()
-                ...
+            # TODO: Use self.deduce() to determine 
+            # if the problem is feasible
+            
+            if self.deduce(lb, ub, property_fn):
+                # Check satisfiability using adversarial attack 
+                # instead of LP
+                cex = ...  # Hint: use self.attack()
+                
+                if cex is not None: # Found valid counterexample
+                    return FALSIFIED, cex
+                
+                # Decide: pick a input dimension to split on
+                # and create new subproblems using input splitting
+                subproblems = ...  # Hint: use self.branch()
+                
+                # Add new subproblems to queue
+                # TODO: Add each subproblem to the queue
+                for sub_lb, sub_ub in subproblems:
+                    ...  # Hint: use problems.put()
         
-        # All subproblems processed without finding a counterexample
+        # All subproblems are verified
         return VERIFIED, None
+        
+    def deduce(self, input_lower, input_upper, property_fn):
+        """
+        Deduce: combine bound + prune to check if we can make progress
+        
+        This function implements the Deduce step
+        It combines abstract interpretation (bound) with pruning logic
+        
+        Args:
+            input_lower: lower bounds of input domain
+            input_upper: upper bounds of input domain
+            property_fn: property function to check
+            
+        Returns:
+            bool: False if verified, True othewise, need to branch
+        """
+        # TODO: 
+        # 1. Compute abstract bounds using self.bound() (PA2)
+        # 2. Check pruning using self.prune() 
+        # 3. Return True if prune_result == UNKNOWN (need to branch)
+        # 4. Return False if prune_result == VERIFIED (can prune)
+        # 5. This function should NOT handle FALSIFIED case directly
+        
+        return prune_result == UNKNOWN
+        
+    def attack(self, input_lower, input_upper, property_fn):
+        """
+        Find counterexample using adversarial attack
+        
+        Uses random sampling or adversarial attacks instead of LP solving
+        
+        Args:
+            input_lower: lower bounds of input domain
+            input_upper: upper bounds of input domain  
+            property_fn: property function to check
+            
+        Returns:
+            counterexample: cex that violates property, or None if not found
+            
+        Example approaches:
+            # Random sampling
+            for _ in range(100):
+                # Randomly sample points within the input bounds
+                random_input = ...
+                output = self.network(random_input)
+                if violates_property(output):
+                    return random_input
+                    
+            # Or use PGD attack, FGSM, etc.
+        """
+        # TODO: Implement adversarial attack to find counterexample
+        # 1. Generate candidate inputs within [input_lower, input_upper]
+        # 2. Run network on candidates  
+        # 3. Check if any output violates the property
+        # 4. Return first violating input, or None if none found
+        
+        return counterexample
 
 \end{lstlisting}
 
