@@ -4193,7 +4193,7 @@ p=\{x_3, x_4\}.
 %\tvn{may need to add some trees}
 
 
-\section{Branch and Bound}\label{sec:bab-alg}
+\section{The Branch and Bound Algorithm}\label{sec:bab-alg}
 
 Many modern DNN verifiers adopt the Branch-and-Bound (BaB) approach to explore the space of possible neuron activation patterns (\autoref{sec:activation-patterns}). BaB splits (\emph{branch}) the verification problem into smaller subproblems by fixing activation statuses of neurons, and uses abstraction (\emph{bound}) techniques to compute upper and lower bounds on the output values for these subproblems. If the bounds, computed using abstraction (\autoref{chap:abstractions}), indicate infeasible (cannot contain a counterexample), the subproblem is pruned from the search space. This process continues until either a counterexample is found or all subproblems are exhausted, proving the property holds. 
 
@@ -4448,7 +4448,7 @@ Apply BaB on the DNN in \autoref{fig:dnn-bab} to verify the property $x_5 > 0$ f
 \end{problem}
 
 
-\begin{problem}
+\begin{problem}\label{prob:bab-understanding}
 Test your understanding of BaB and activation patterns by answering the following questions:
 \begin{enumerate}
   \item In \autoref{alg:bab}, what happens if \functiontextformat{Deduce} always returns infeasible?
@@ -4668,7 +4668,7 @@ This means that near $(1,2)$, increasing $x_1$ by a small amount increases $y$ t
 \end{example}
 
 
-\begin{problem}
+\begin{problem}\label{prob:compute-gradients}
 For each of the following output functions, compute the gradient
 \[
 \nabla_x y = \left( \frac{\partial y}{\partial x_1}, \frac{\partial y}{\partial x_2} \right).
@@ -4681,7 +4681,7 @@ For each of the following output functions, compute the gradient
 Explain what the gradient tells you about how $y$ changes with $x_1$ and $x_2$.
 \end{problem}
 
-\begin{problem}
+\begin{problem}\label{prob:pgd-iterations}
 Let
 \[
 y = 2x_1 - 3x_2 + 1, \quad -1 \le x_1, x_2 \le 1.
@@ -4700,7 +4700,7 @@ Depend on your choice of step size $\eta$, your PGD might have one or more itera
 
 
 
-\chapter{Proof Generation and Checking}\label{chapter:proof-gen-check}
+\chapter{Proof Generation and Checking}\label{chap:proof-gen-check}
 
 %Advances in DNN verification have made it possible to reason about the safety and robustness of complex DNNs. 
 As DNN tools become more complex (e.g., state-of-the-art tools have 20K+ LoCs), they are more prone to bugs. VNN-COMP'23~\cite{brix2023fourth} showed that 3 of the top 7 participants produced unsound results by claiming unsafe DNNs are safe, i.e., they produce \unsat{} on problems that are actually \sat{}. %This is a serious issue, as it can lead to unsafe DNNs being deployed in safety-critical applications, such as autonomous driving and medical diagnosis.
@@ -7175,14 +7175,26 @@ In each specification, the inputs (condition distance and latent variables) are 
     \item Week 10 (Oct 29):
     \begin{itemize}        
         \item No HW because of PA2 due date
-        \item Topics: Zonotope~\autoref{sec:zonotope-abstraction} and Branch -and-Bound DNN verification~\autoref{chap:bab}
-        \item Quiz: In class
+        \item Topics: Zonotope~\autoref{sec:zonotope-abstraction} and BaB Algorithm~\autoref{chap:bab}
+        \item Quiz: attendance
     \end{itemize}
     \item Week 11 (Nov 5):
-    \begin{itemize}        
+    \begin{itemize}                
         \item HW: Do~\autoref{prob:bab-detailed},~\autoref{prob:bab-counterexample}, and ~\autoref{prob:bab-interval}
+        \item Topics: Adversarial Attacks~\autoref{chap:adversarial-attacks} and Proof Certificates~\autoref{chap:proof-gen-check}
+        \item Quiz:~\autoref{prob:bab-understanding}
     \end{itemize}
-
+    \item Programming Assignment 3 (PA3)
+    \begin{itemize}
+        \item Branch and Bound~\autoref{sec:pa3}
+        \item Due date \alert{Tuesday Nov 25, 2025 11:59pm}
+    \end{itemize}    
+    \item Week 12 (Nov 12):
+    \begin{itemize}        
+        \item HW: Do~\autoref{prob:compute-gradients},~\autoref{prob:pgd-iterations}
+    \end{itemize}
+    
+    
 \end{itemize}    
 
 \chapter{Programming Assignments}\label{chap:pa}

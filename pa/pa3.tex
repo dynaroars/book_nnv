@@ -2,13 +2,13 @@
 
 In this PA you will implement the branch and bound (BaB) algorithm as described in~\autoref{sec:bab-alg} with abstract interpretation from PA2~\autoref{sec:pa2} (using either interval~\autoref{sec:interval-abstraction} or zonotope~\autoref{sec:zonotope-abstraction}). 
 
-While symbolic execution (PA1~\autoref{sec:pa1}) provides exact analysis but does not scale, and abstract interpretation (PA2~\autoref{sec:pa2}) scales well but may lose precision, Branch and Bound provides a framework to \emph{refine} abstract domains when needed, achieving a balance between precision and scalability.
+While symbolic execution (PA1~\autoref{sec:pa1}) provides exact analysis but does not scale, and abstract interpretation (PA2~\autoref{sec:pa2}) scales well but may lose precision, Branch and Bound provides a framework that can \emph{refine} abstract domains when needed, achieving a balance between precision and scalability.
 
 You will use Python and PyTorch for this assignment, building upon your implementations from PA2. \textbf{Do not} use external verification libraries.
 
 This PA has three main parts:
 \begin{enumerate}
-    \item implement the core BaB algorithm with a priority queue-based approach.
+    \item implement the core BaB algorithm with a priority \emph{queue}-based approach.
     \item implement utility functions: \texttt{branch}, \texttt{bound}, and \texttt{prune}.
     \item evaluate the precision and scalability of BaB compared to pure abstract interpretation and symbolic execution.
 \end{enumerate}
@@ -224,7 +224,7 @@ def prune(self, output_lower, output_upper, property_fn):
 
 \subsection{Part 2: Evaluation}
 
-Use the same DNN from PA2 for testing:
+Use the same DNN from PA2 (\autoref{sec:pa2}) for testing.
 \subsubsection{Test Your Implementation}
 
 \begin{lstlisting}[language=Python]
