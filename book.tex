@@ -4485,7 +4485,7 @@ Suppose the DNN input ranges are:
 \[
 -1 \leq x_1 \leq 1,\quad -2 \leq x_2 \leq 2
 \]
-and the output is:
+and the network output is:
 \[
 y = 2x_1 - 1.5x_2 + 1.
 \]
@@ -4507,6 +4507,26 @@ We wish to use random search to find a counterexample to the property $y > 0$; i
 \end{itemize}
 \end{example}
 
+\begin{problem}
+Consider the input ranges
+\[
+-1 \le x_1 \le 1, \quad -1 \le x_2 \le 1,
+\]
+and network output
+\[
+y = 3x_1 + 2x_2 - 2.
+\]
+
+Use random search to find a counterexample to the property $y > 0$:
+\begin{enumerate}
+    \item Randomly sample three valid points and compute $y$ at each point.
+    \item Check if any sample violates the property. Note, if none violates, that's OK; just report the results.
+    \item Based on your samples, discuss whether random search is likely to be efficient for this problem.
+\end{enumerate}
+\end{problem}
+
+
+
 \section{Projected Gradient Descent (PGD)}
 
 \textbf{PGD} is a powerful and widely used adversarial attack that builds on the idea of \emph{gradient descent}.
@@ -4518,14 +4538,14 @@ We will reuse~\autoref{ex:random-search} to illustrate PGD. Here,  the DNN input
 
 
 \begin{enumerate}
-    \item \textbf{Initialize.}  
+    \item \textbf{Initialize}  
     Choose a valid starting input, for example:
     \[
     (x_1^{(0)}, x_2^{(0)}) = (0, 0)
     \]
-    This point is within the allowed input ranges, but does not violate the property $y > 0$ since $y(0,0) = 1 > 0$. So we need to continue.
+    This point is within the allowed input ranges, but does not violate the property $y > 0$ because $y = 2*0-1.5*0 + 1 = 1 > 0$. So we need to continue.
 
-    \item \textbf{Iterative update.}  
+    \item \textbf{Iterative update}  
     For each step $t = 0, 1, 2, \ldots$:
     \begin{enumerate}
         \item \textbf{Compute the gradient.}  
@@ -4553,7 +4573,7 @@ We will reuse~\autoref{ex:random-search} to illustrate PGD. Here,  the DNN input
 
          
          
-        \item \textbf{Gradient update (take a step).}  
+        \item \textbf{Gradient update}  
         Move a small distance $\eta$ (called the \emph{step size} or \emph{learning rate}) in the negative gradient direction:
         \[
         x_1^{(t+1)} = x_1^{(t)} - \eta \cdot 2, \qquad
@@ -4568,8 +4588,8 @@ We will reuse~\autoref{ex:random-search} to illustrate PGD. Here,  the DNN input
         \]
         Thus, the candidate input after one step is $(-1.0, +0.75)$.
 
-        \item \textbf{Project (Clip) to valid input range.}  
-        If the new values go outside the legal range, bring them back to the closest valid boundary:
+        \item \textbf{Project (Clip) to valid input range}  
+        If the new values go outside the valid range, bring them back to the closest valid boundary:
         \[
         x_1^{(t+1)} = \max(-1, \min(x_1^{(t+1)}, 1)), \qquad
         x_2^{(t+1)} = \max(-2, \min(x_2^{(t+1)}, 2))
@@ -4578,7 +4598,7 @@ We will reuse~\autoref{ex:random-search} to illustrate PGD. Here,  the DNN input
 
         Our candidate input $(-1.0, +0.75)$ is already within the valid ranges, so no clipping is needed.    
 
-        \item \textbf{Check for violation.}  
+        \item \textbf{Check for violation}  
         Compute the output at the new input.  
         If $y(x^{(t+1)}) \le 0$, then a counterexample has been found, and the attack succeeds.
 
@@ -4593,29 +4613,29 @@ We will reuse~\autoref{ex:random-search} to illustrate PGD. Here,  the DNN input
 
 
 \begin{example}[PGD with Clipping]
-Now let the step size be larger, $\eta = 1.0$, starting again from $(x_1^{(0)}, x_2^{(0)}) = (0, 0)$:
+We continue the example above but with a larger step size $\eta = 1.0$. Starting again from $(x_1^{(0)}, x_2^{(0)}) = (0, 0)$:
 \[
 \begin{aligned}
 x_1^{(1)} &= 0 - 1.0 \times 2 = -2.0 \\
 x_2^{(1)} &= 0 - 1.0 \times (-1.5) = +1.5
 \end{aligned}
 \]
-Here, $x_1^{(1)} = -2.0$ is outside the allowed range $[-1, 1]$, so we must \emph{clip} it:
+Here, $x_1^{(1)} = -2.0$ is outside the allowed range $[-1, 1]$, so we \emph{clip} it:
 \[
 x_1^{(1)} = -1 \quad (\text{projected to boundary})
 \]
 Meanwhile, $x_2^{(1)} = 1.5$ is within $[-2, 2]$, so it remains unchanged.
 
-After projection:
+After projection, we have:
 \[
 (x_1^{(1)}, x_2^{(1)}) = (-1, 1.5)
 \]
 
-Compute:
+Compute the output:
 \[
-y = 2(-1) - 1.5(1.5) + 1 = -2 - 2.25 + 1 = -3.25 < 0
+y = 2(-1) - 1.5(1.5) + 1 = -2 - 2.25 + 1 = -3.25 < 0,
 \]
-PGD again finds a counterexample—this time, the projection step ensured we stayed within bounds.
+which is a counterexample.
 
 \end{example}
 
@@ -4635,17 +4655,50 @@ Compute each partial derivative:
 \frac{\partial y}{\partial x_1} = 2x_1, \qquad
 \frac{\partial y}{\partial x_2} = 3.
 \]
-Therefore,
+Therefore the gradient is
 \[
 \nabla_x y = (2x_1,\ 3).
 \]
 
-For instance, at the point $(x_1, x_2) = (1, 2)$,
+For instance, at point $(x_1, x_2) = (1, 2)$,
 \[
 \nabla_x y = (2 \times 1,\ 3) = (2, 3).
 \]
-This means that near $(1,2)$, increasing $x_1$ by a small amount increases $y$ roughly twice as fast as that same increase in $x_2$ would.
+This means that near $(1,2)$, increasing $x_1$ by a small amount increases $y$ twice as fast as that same increase in $x_2$ would.
 \end{example}
+
+
+\begin{problem}
+For each of the following output functions, compute the gradient
+\[
+\nabla_x y = \left( \frac{\partial y}{\partial x_1}, \frac{\partial y}{\partial x_2} \right).
+\]
+\begin{enumerate}
+    \item $y = 2x_1 - x_2 + 1$
+    \item $y = -x_1^2 + 4x_2$
+    \item $y = 3x_1x_2 - x_2^2$
+\end{enumerate}
+Explain what the gradient tells you about how $y$ changes with $x_1$ and $x_2$.
+\end{problem}
+
+\begin{problem}
+Let
+\[
+y = 2x_1 - 3x_2 + 1, \quad -1 \le x_1, x_2 \le 1.
+\]
+Starting from $(x_1^{(0)}, x_2^{(0)}) = (0, 0)$ with some step size $\eta > 0$, use PGD to minimize $y$ so that it violates the property $y > 0$. Show all steps (e.g., computing gradient, updating point, clipping, etc) until a counterexample is found.
+
+Depend on your choice of step size $\eta$, your PGD might have one or more iterations before finding a counterexample. Thus, for this problem, identify at least two different step sizes $\eta_1$ and $\eta_2$ such that:
+\begin{itemize}
+    \item With step size $\eta_1$, PGD finds a counterexample in one iteration.
+    \item With step size $\eta_2$, PGD finds a counterexample in two or more iterations.
+\end{itemize}   
+
+\end{problem}
+
+
+
+
 
 \chapter{Proof Generation and Checking}\label{chapter:proof-gen-check}
 
