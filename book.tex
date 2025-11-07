@@ -5626,20 +5626,20 @@ Future work will explore tuning $N$ to a given verification problem.
 In addition to adversarial attacks (\autoref{chap:adversarial-attacks}), DNN verifiers often employ a range of optimizations and engineering techniques to improve performance. This chapter discusses some of the common techniques used in modern DNN verifiers.
 
 \section{Input Splitting}\label{sec:input-splitting}
- Modern DNN verifiers~\cite{katz2019marabou,katz2022reluplex,bak2021nnenum,duong2025neuralsat} often use a technique called \emph{input splitting} to quickly deal with networks with verification problems involving low-dimensional networks, such as those in the ACAS Xu benchmark~\autoref{sec:acasxu} where the networks have a small number of inputs. Currently many work set the threshold to 50 inputs, i.e., if the network has more than 50 inputs, it is considered large and input splitting is not applied.
+Modern DNN verifiers~\cite{katz2019marabou,wang2018formal,wang2021beta,duong2025neuralsat} often use a technique called \emph{input splitting} to quickly deal with networks with verification problems involving low-dimensional networks, such as those in the ACAS Xu benchmark~\autoref{sec:acasxu} where the networks have a small number of inputs. Currently many work set the threshold to 50 inputs, i.e., if the network has more than 50 inputs, it is considered large and input splitting is not applied.
 
-The idea is to split the original verification problem into subproblems, each checking whether the DNN produces the desired output from a smaller input region and returns \unsat{} if all subproblems are verified and \sat{} if a counterexample is found in any subproblem. Input splitting avoids BaB search---also called \emph{neuron splitting} and focuses on individual neurons---and is often used as a fast-path optimization to quickly eliminate easy cases.
+The idea is to split the original verification problem into subproblems, each checking whether the DNN produces the desired output from a smaller input region and returns \unsat{} if all subproblems are verified and \sat{} if a counterexample is found in any subproblem. Input splitting avoids BaB search---also called \emph{neuron splitting} and focuses on individual neurons---and is often used as a fast-path optimization to quickly eliminate easy cases.\hd{this last sentence is not clear}
 
 \begin{example}
-    Given $k$ available threads, \tool{} splits the original input region to obtain subproblems as described and and runs DPLL(T) on $k$ subproblems in parallel. % and iteratively splits any subproblem which cannot be solved within pre-defined amount of time, e.g., 2 seconds.
-\tool{} returns \unsat{} if it verifies all subproblems and \sat{} if it found a counterexample in any subproblem. Modern DNN verification tools such as \neuralsat{} uses the number of available CPU threads to determine the number of created subproblems.
-
-For example, we split the input region $\{x_1 \in [-1,1] , x_2 \in [-2,2]\}$ into four subregions 
+    % Given $k$ available threads, \tool{} splits the original input region to obtain subproblems as described and and runs DPLL(T) on $k$ subproblems in parallel. % and iteratively splits any subproblem which cannot be solved within pre-defined amount of time, e.g., 2 seconds.
+% Modern DNN verification tools such as \neuralsat{} uses the number of available CPU threads to determine the number of created subproblems.
+Given the problem with input region $\{x_1 \in [-1,1] , x_2 \in [-2,2]\}$, \tool{} splits it into four subregions:
 $\{x_1 \in [-1,0] , x_2 \in [-2,0]\}$, 
 $\{x_1 \in [-1,0] , x_2 \in [0,2]\}$ , 
 $\{x_1 \in [0,1] , x_2 \in [-2,0]\}$, and 
 $\{x_1 \in [0,1], x_2 \in [0,2]\}$.  
 
+\tool{} returns \unsat{} if it verifies all 4 subproblems and \sat{} if it found a counterexample in any of the subproblems. 
 Note that the formula $-1 \le x_1 \le 1 \land -2 \le x_2 \le 2$ representing the original input region is equivalent to the formula $(-1 \le x_1 \le 0 \lor 0 \le x \le 1) \land (-2 \le x_2 \le 0 \lor 0 \le x_2 \le 2)$ representing the combination of the created subregions.
 \end{example}
 
