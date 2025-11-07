@@ -4738,9 +4738,9 @@ In this chapter, we discuss work~\cite{duong2025generating} on generating and ch
 
 \section{Proof Generation for Branch and Bound Algorithms}\label{sec:proofgen}
 
-As described in~\autoref{chap:bab}, major DNN verification techniques share the common ``branch and bound'' (BaB) search approach. The BaB algorithm, shown in~~\autoref{alg:bab}, splits the problem into smaller subproblems and use abstraction to compute bounds to prune the search space. This commonality allows us to bring proof generation capabilities with minimal overhead to existing DNN verification tools.
 
-\begin{algorithm}[t]
+
+\begin{algorithm}
     \small
   
     \Input{DNN $\mathcal{N}$, property $\phi_{in} \Rightarrow \phi_{out}$}
@@ -4752,18 +4752,24 @@ As described in~\autoref{chap:bab}, major DNN verification techniques share the 
     $\prooftree \gets \{ ~ \}$ \tcp{initialize proof tree}\label{line:prooftree}
     
     \While(\tcp*[h]{main loop}){$\problems$}{
-        % \tcp{$\sigma_i$ is the activation pattern of problem $i$-th}
         $\sigma_i \gets \Select(\problems)$ \tcp{process problem $i$-th}
         % \Parfor(\tcp*[h]{process in parallel}){$\sigma_i ~\In~ \problems$}{ \label{line:parfor}
             \If{\Deduce{$\mathcal{N}, \phi_{in}, \phi_{out}, \sigma_i$}}{
-                $(\counterexample, v_i) \leftarrow \Decide(\mathcal{N}, \phi_{in}, \phi_{out}, \sigma_i)$ \\ 
+$\counterexample \leftarrow \LP(\mathcal{N}, \phi_{in}, \phi_{out}, \sigma_i)$ \tcp{check satisfiability}
                 \If(\tcp*[h]{found a valid cex}){$\counterexample$}{
-                    \Return{$(\sat, \counterexample)$} 
+                    \Return{$(\mysat, \counterexample)$}\label{line:babsat} 
                 }
+                $v_i \leftarrow \Decide(\mathcal{N}, \sigma_i)$\label{line:babdecide}\\
                 \tcp{create new activation patterns}
-                $\problems \leftarrow \problems \cup \{ \sigma_i \land v_i ~;~ \sigma_i \land \overline{v_i} \}$ \;
+                $\problems \leftarrow \problems \cup \{ \sigma_i \cup \{v_i\} ~;~ \sigma_i \land \{\overline{v_i}\} \}$
+                % $(\counterexample, v_i) \leftarrow \Decide(\mathcal{N}, \phi_{in}, \phi_{out}, \sigma_i)$ \\ 
+                % \If(\tcp*[h]{found a valid cex}){$\counterexample$}{
+                %     \Return{$(\sat, \counterexample)$} 
+                % }
+                % \tcp{create new activation patterns}
+                % $\problems \leftarrow \problems \cup \{ \sigma_i \land v_i ~;~ \sigma_i \land \overline{v_i} \}$ \;
             }
-            \Else(\tcp*[h]{detect a conflict}){
+            \Else(\tcp*[h]{detect infeasibility}){
                 % $\clauses \leftarrow \clauses \cup \AnalyzeConflict(\igraph_i)$ \\ \label{line:analyze_conflict}
                 $\prooftree \leftarrow \prooftree \cup \{ \sigma_i \}$ \tcp{build proof tree} \label{line:record_proof}
             }
@@ -4773,11 +4779,10 @@ As described in~\autoref{chap:bab}, major DNN verification techniques share the 
         
     }
     \Return{$(\unsat, \prooftree)$}
-    
     \caption{The \proofgen{} DNN verification with proof generation.}\label{alg:bab-proof}
 \end{algorithm}
 
-
+As described in~\autoref{chap:bab}, major DNN verification techniques share the common ``branch and bound'' (BaB) search approach. The BaB algorithm, shown in~~\autoref{alg:bab}, splits the problem into smaller subproblems and use abstraction to compute bounds to prune the search space. This commonality allows us to bring proof generation capabilities with minimal overhead to existing DNN verification tools.
 
 \autoref{alg:bab-proof} extends~\autoref{alg:bab} to show \proofgen, a BaB-based DNN verification algorithm with proof generation capability. The key idea is to introduce a proof tree (\autoref{line:prooftree}) and recording the branching decisions to the proof tree (\autoref{line:record_proof}).
 The proof tree is a binary tree structure, where each node represents a neuron and its left and right edges represent its activation decision (active or inactive).
@@ -4803,7 +4808,7 @@ At the end of the verification process, the proof tree is returned as the proof 
 \end{figure}
 %White nodes correspond to branching nodes where \neuralsat{} makes decisions to split ReLU neurons.
 
-\paragraph{Example} We reuse the example in~\autoref{chap:bab} to illustrate \proofgen{}. Recall the goal is to verify that the DNN in~\autoref{fig:example}(a) (a redraw of~\autoref{fig:example1}) has the property $(x_1, x_2) \in [-2.0, 2.0] \times [-1.0, 1,0] \Rightarrow (y_1 > y_2)$. \proofgen{} generates the proof tree in~\autoref{fig:example}(b) to show unsatisfiability, i.e., the property is valid.
+\paragraph{Example} We reuse the example in~\autoref{chap:bab} to illustrate \proofgen{}. Recall the goal is to verify that the DNN in~\autoref{fig:example}(a) has the property $(x_1, x_2) \in [-2.0, 2.0] \times [-1.0, 1,0] \Rightarrow (y_1 > y_2)$. \proofgen{} generates the proof tree in~\autoref{fig:example}(b) to show unsatisfiability, i.e., the property is valid.
 
 First, \proofgen{} initializes the activation pattern set \functiontextformat{ActPatterns} with an empty activation pattern $\emptyset$. Then \proofgen{} enters a loop (\autoref{line:dpllstart}-\autoref{line:dpllend}) to search for a satisfying assignment or a proof of unsatisfiability. In the first iteration, \proofgen{} selects the only available activation pattern $\emptyset \in \functiontextformat{ActPatterns}$. 
 It calls~\functiontextformat{Deduce} to check the feasibility of the problem based on the current activation pattern. \functiontextformat{Deduce} uses abstraction to approximate that from the input constraints the output values are feasible for the given network. 
@@ -5017,28 +5022,28 @@ If the proof tree is invalid, \proofcheck{} raises an error.
 with the constraints in~\autoref{eq:nnv2} representing the input ranges and the DNN with the objective of optimizing the output. \proofcheck{} then invokes an LP solver, which determines that this MILP is infeasible, i.e., leaf node 3 indeed leads to unsatisfiability. \proofcheck{} continues this process for the other three leaf nodes and returns \certified as all leaf nodes are unsatisfiable.
 \end{example}
 
-\subsubsection{MILP Formulation}\label{sec:milp-formulation}
+% \subsubsection{MILP Formulation}\label{sec:milp-formulation}
 
-\proofcheck{} formulates MILP problems~\cite{tjeng2019evaluating} and check for feasible solutions using off-the-shelf LP solving. Formally, the MILP problem is defined as:
-\begin{equation}
-    \begin{aligned}
-        &\mbox{(a)}\quad z^{(i)} = W^{(i)} \hat{z}^{(i-i)} + b^{(i)};\\
-        &\mbox{(b)}\quad y = z^{(L)};  x = \hat{z}^{(0)}; \\
-        &\mbox{(c)}\quad \hat{z}_j^{(i)} \ge {z}_j^{(i)}; \hat{z}_j^{(i)} \ge 0; \\
-        &\mbox{(d)}\quad a_j^{(i)} \in \{ 0, 1\} ;\\
-        &\mbox{(e)}\quad \hat{z}_j^{(i)} \le {a}_j^{(i)} {u}_j^{(i)}; \hat{z}_j^{(i)} \le {z}_j^{(i)} - {l}_j^{(i)}(1 - {a}_j^{(i)}); \\
-    \end{aligned}
-    \label{eq:mip2}
-\end{equation}
+% \proofcheck{} formulates MILP problems~\cite{tjeng2019evaluating} and check for feasible solutions using off-the-shelf LP solving. Formally, the MILP problem is defined as:
+% \begin{equation}
+%     \begin{aligned}
+%         &\mbox{(a)}\quad z^{(i)} = W^{(i)} \hat{z}^{(i-i)} + b^{(i)};\\
+%         &\mbox{(b)}\quad y = z^{(L)};  x = \hat{z}^{(0)}; \\
+%         &\mbox{(c)}\quad \hat{z}_j^{(i)} \ge {z}_j^{(i)}; \hat{z}_j^{(i)} \ge 0; \\
+%         &\mbox{(d)}\quad a_j^{(i)} \in \{ 0, 1\} ;\\
+%         &\mbox{(e)}\quad \hat{z}_j^{(i)} \le {a}_j^{(i)} {u}_j^{(i)}; \hat{z}_j^{(i)} \le {z}_j^{(i)} - {l}_j^{(i)}(1 - {a}_j^{(i)}); \\
+%     \end{aligned}
+%     \label{eq:mip2}
+% \end{equation}
 
-\noindent where $x$ is input, $y$ is output, and $z^{(i)}$, $\hat{z}^{(i)}$, $W^{(i)}$, and $b^{(i)}$ are the pre-activation, post-activation, weight, and bias vectors for layer $i$, respectively. 
-This encodes the semantics of a ReLU-based DNN:  
-(a) the affine transformation computing the pre-activation value for a neuron in terms of outputs in the preceding layer;
-(b) the inputs and outputs in terms of the adjacent hidden layers;
-(c) assertion that post-activation values are non-negative and no less than pre-activation values;
-(d) neuron activation status indicator variables that are either 0 or 1; and
-(e) constraints on the upper, $u_j^{(i)}$, and lower, $l_j^{(i)}$, bounds of the pre-activation value of the $j$th neuron in the $i$th layer.
-Deactivating a neuron, $a_j^{(i)} = 0$, simplifies the first of the (e) constraints to $\hat{z}_j^{(i)} \le 0$, and activating a neuron simplifies the second to $\hat{z}_j^{(i)} \le z_j^{(i)}$, which is consistent with the semantics of $\hat{z}_j^{(i)} = max(z_j^{(i)},0)$.
+% \noindent where $x$ is input, $y$ is output, and $z^{(i)}$, $\hat{z}^{(i)}$, $W^{(i)}$, and $b^{(i)}$ are the pre-activation, post-activation, weight, and bias vectors for layer $i$, respectively. 
+% This encodes the semantics of a ReLU-based DNN:  
+% (a) the affine transformation computing the pre-activation value for a neuron in terms of outputs in the preceding layer;
+% (b) the inputs and outputs in terms of the adjacent hidden layers;
+% (c) assertion that post-activation values are non-negative and no less than pre-activation values;
+% (d) neuron activation status indicator variables that are either 0 or 1; and
+% (e) constraints on the upper, $u_j^{(i)}$, and lower, $l_j^{(i)}$, bounds of the pre-activation value of the $j$th neuron in the $i$th layer.
+% Deactivating a neuron, $a_j^{(i)} = 0$, simplifies the first of the (e) constraints to $\hat{z}_j^{(i)} \le 0$, and activating a neuron simplifies the second to $\hat{z}_j^{(i)} \le z_j^{(i)}$, which is consistent with the semantics of $\hat{z}_j^{(i)} = max(z_j^{(i)},0)$.
 
 
 % \subsubsection{Correctness}\label{sec:checker-core-correctness}
@@ -5056,7 +5061,7 @@ While the core \proofcheck{} algorithm in~\autoref{fig:algorithm} is minimal, it
 
 \subsubsection{Neuron Stabilization}\label{sec:neuron-stabelization} 
 
-\begin{algorithm}[t]
+\begin{algorithm}
     \small
 
     \Input{DNN $\mathcal{N}$, property $\phi_{in} \Rightarrow \phi_{out}$, parallel factor $k$}
@@ -6019,7 +6024,7 @@ Deactivating a neuron, $a_j^{(i)} = 0$, simplifies the first of the (e) constrai
 \SetKwFunction{GetUnassignedVariable}{GetUnassignedVariable}
 \SetKwFunction{Sort}{Sort}
 
-\begin{algorithm}[t]
+\begin{algorithm}
     \small
 
     \Input{DNN $\alpha$, property $\phi_{in} \Rightarrow \phi_{out}$, current assignment $\sigma$, number of neurons for stabilization $k$}
@@ -8384,9 +8389,9 @@ Software verification typically deals with discrete systems and logical properti
 \SetKwData{conflictclause}{conflict\_clause}
 \SetKwData{isconflict}{is\_conflict}
 
-\begin{algorithm}[t]
+\begin{algorithm}
     \small
-    \DontPrintSemicolon
+    
 
     \Input{DNN $\alpha$, property $\phi_{in} \Rightarrow \phi_{out}$}
     \Output{\texttt{unsat} if the property is valid and \texttt{sat} otherwise}
