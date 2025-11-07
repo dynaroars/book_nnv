@@ -4190,8 +4190,6 @@ p=\{x_3, x_4\}.
 % \end{problem}
 
 
-
-
 %\tvn{may need to add some trees}
 
 
@@ -4652,7 +4650,7 @@ This means that near $(1,2)$, increasing $x_1$ by a small amount increases $y$ r
 \chapter{Proof Generation and Checking}\label{chapter:proof-gen-check}
 
 %Advances in DNN verification have made it possible to reason about the safety and robustness of complex DNNs. 
-As DNN tools become more complex (e.g., SOTA tools have 20K LoCs), they are more prone to bugs. VNN-COMP'23~\cite{brix2023fourth} showed that 3 of the top 7 participants produced unsound results by claiming unsafe DNNs are safe, i.e., they produce \unsat{} on problems that are actually \sat{}. %This is a serious issue, as it can lead to unsafe DNNs being deployed in safety-critical applications, such as autonomous driving and medical diagnosis.
+As DNN tools become more complex (e.g., state-of-the-art tools have 20K+ LoCs), they are more prone to bugs. VNN-COMP'23~\cite{brix2023fourth} showed that 3 of the top 7 participants produced unsound results by claiming unsafe DNNs are safe, i.e., they produce \unsat{} on problems that are actually \sat{}. %This is a serious issue, as it can lead to unsafe DNNs being deployed in safety-critical applications, such as autonomous driving and medical diagnosis.
 
 While checking counterexamples is relatively straightforward (we can just evaluate the DNN on the input), checking \unsat{} results---proving no counterexample exists---is far more challenging. This would require verifiers to track their decision steps, which are often complex and large. 
 In this chapter, we discuss work~\cite{duong2025generating} on generating and checking proofs of \unsat{} results for DNN verification.
@@ -4687,7 +4685,7 @@ In this chapter, we discuss work~\cite{duong2025generating} on generating and ch
 
 \section{Proof Generation for Branch and Bound Algorithms}\label{sec:proofgen}
 
-As described in~\autoref{chap:bab}, major DNN verification techniques share the common ``branch and bound'' (BaB) search algorithm. The BaB structure, shown in~~\autoref{alg:bab}, splits the problem into smaller subproblems and use abstraction to compute bounds to prune the search space. This commonality allows us to bring proof generation capabilities with minimal overhead to existing DNN verification tools.
+As described in~\autoref{chap:bab}, major DNN verification techniques share the common ``branch and bound'' (BaB) search approach. The BaB algorithm, shown in~~\autoref{alg:bab}, splits the problem into smaller subproblems and use abstraction to compute bounds to prune the search space. This commonality allows us to bring proof generation capabilities with minimal overhead to existing DNN verification tools.
 
 \begin{algorithm}[t]
     \small
