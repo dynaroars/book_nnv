@@ -4367,7 +4367,7 @@ By splitting (or fixing the neuron status), we create two \emph{simpler} subprob
 
 
 \paragraph{\textbf{Deduce vs. LP}} Note the difference between \Deduce and \mycode{LP} is that the former uses abstraction to compute over-approximated bounds to determine feasibility, while the latter uses an LP solver to check exact satisfiability. 
-Abstraction is quick but may yield false positives (declaring feasible when it is not), while LP is precise but more computationally expensive.  The combination allows \bab{} to efficiently prune infeasible branches while accurately checking for counterexamples.
+Abstraction is quick but may yield false positives (declaring feasible when it is not), while LP is precise but more computationally expensive.  Their combination allows \bab{} to efficiently prune infeasible branches while accurately checking for counterexamples.
 
 
 %\tvn{shows that \bab{} often does not exhaust all activation patterns, but rather prunes the search space by deducing infeasibility of some activation patterns.  May be use a tree example to illustrate this?}
@@ -4411,23 +4411,26 @@ by showing that counterexample exists, i.e., no inputs $(x_1,x_2)$ in the given 
 
 
 First, \bab{} initializes \problems{}\footnote{\mycode{Queue} is often used to implement the problems set \problems.} with an empty activation pattern $\emptyset$ (i.e., no neurons fixed). 
-Then \bab{} enters its main loop. In the first iteration, \bab{} selects the only available activation pattern $\emptyset$, i.e., $\sigma_i = \emptyset$,
+Then \bab{} enters its main loop.
+
+\begin{enumerate}
+\item \textbf{First iteration}~\bab{} selects the only available activation pattern $\emptyset$, i.e., $\sigma_i = \emptyset$,
 and  calls \Deduce to check the feasibility of the problem based $\sigma_i$.
 
 Here, \Deduce determines that the problem is feasible, e.g., the bounds of $y_1$ and $y_2$ indicate that $y_1 \le y_2$ can be satisfied. Thus, \bab{} calls \mycode{LP} to check the satisfiability of the problem using an LP solver. The LP solver returns unsatisfiable (or unknown)--meaning no counterexample is found in this activation pattern.  \bab{} then randomly selects a neuron to split (\Decide). Assume that it chooses $v_4$ to split, i.e., the problem spawns two independent subproblems: one with $v_4$ active and the other with $v_4$ inactive.
 It does so by unioning $\{v_4\}$ and $\{\overline{v_4}\}$ with $\sigma_i$ and adds both new activation patterns to \problems. Next, \bab{} loops back to process the next activation pattern.
 
 
-In the second iteration, \bab{} has two subproblems. For the subproblem with activation pattern $\{v_4\}$, \Deduce decides feasibility but \mycode{LP} returns unsatisfiable (or unknown), 
+\item \textbf{Second iteration}~\bab{} has two subproblems. For the subproblem with activation pattern $\{v_4\}$, \Deduce decides feasibility but \mycode{LP} returns unsatisfiable (or unknown), 
 so it selects $v_2$ to split by adding $\{v_4, v_2\}$ and $\{v_4, \overline{v_2}\}$ to \texttt{ActPatterns}. 
 For the other subproblem with $\overline{v_4}$ inactive, \Deduce determines infeasibility and thus discards this subproblem.
 
-In the third iteration, \bab{} has two subproblems corresponding to activation patterns $\{v_4, v_2\}$ and $\{v_4, \overline{v_2}\}$. For the first subproblem, \bab{} selects $v_1$ to split by unioning $v_1$ and then $\overline{v_1}$ to the current activation pattern $v_4 \land v_2$ and adds them to \problems. For the second subproblem, \Deduce determines infeasibility and \bab{} discards this subproblem.
+\item \textbf{Third iteration}~\bab{} has two subproblems corresponding to activation patterns $\{v_4, v_2\}$ and $\{v_4, \overline{v_2}\}$. For the first subproblem, \bab{} selects $v_1$ to split by unioning $v_1$ and then $\overline{v_1}$ to the current activation pattern $v_4 \land v_2$ and adds them to \problems. For the second subproblem, \Deduce determines infeasibility and \bab{} discards this subproblem.
 
-In the fourth iteration, \bab{} has two subproblems corresponding to activation patterns $\{v_4, v_2, v_1\}$ and $\{v_4, v_2, \overline{v_1}\}$, both which are then determined infeasible and discarded.
+\item \textbf{Fourth iteration}~\bab{} has two subproblems corresponding to activation patterns $\{v_4, v_2, v_1\}$ and $\{v_4, v_2, \overline{v_1}\}$, both which are then determined infeasible and discarded.
 
-Finally, \bab{} has no more activation patterns in \problems, stops the search, and returns \unsat{}, indicating that the property is valid.
-
+\item \textbf{Fith iteration}~Finally, \bab{} has no more activation patterns in \problems, stops the search, and returns \unsat{}, indicating that the property is valid.
+\end{enumerate}
 
 \autoref{fig:bab-example}b illustrates the BaB search tree corresponding to the above process. Each white node represents a branching decision where \bab{} splits a neuron, while each red node represents a leaf node where \Deduce determines infeasibility and prunes the branch. Notice that not all activation patterns are explored because some branches are pruned early due to infeasibility. In other words, while there are $2^4=16$ possible complete activation patterns for the three ReLU neurons, \bab{} only explores 6 of them in this example.
 \end{example}
