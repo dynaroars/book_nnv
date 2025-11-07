@@ -4343,26 +4343,26 @@ Note that because BaB splits ReLU neurons into active/inactive cases, it is also
 
 
 \paragraph{Reference Alg} \autoref{alg:bab} shows \bab{}, a reference~\cite{nakagawa2014consolidating} BaB architecture for DNN verification. \bab{} takes as input a ReLU-based DNN $\mathcal{N}$ and a formulae $\phi_{in}\Rightarrow \phi_{out}$ representing the property of interest.
-\bab{} maintains a set of activation patterns (\texttt{ActPatterns}) that represent the current activation pattern of the network. Initially, \texttt{ActPatterns} is initialized with an empty activation pattern (\autoref{line:babinit}).
+\bab{} maintains a set of activation patterns (\problems) that represent the current activation pattern of the network. Initially, \problems is initialized with an empty activation pattern (\autoref{line:babinit}).
 
-In each BaB iteration $i$ (\autoref{line:babstart}), the algorithm selects and removes an activation pattern $\sigma_i$ from \texttt{ActPatterns} (\autoref{line:babselect}).  
-It then calls \functiontextformat{Deduce} to \emph{quickly} determine if the current problem, i.e., the original satisfiability problem with  activation pattern $\sigma_i$,
+In each BaB iteration $i$ (\autoref{line:babstart}), the algorithm selects and removes an activation pattern $\sigma_i$ from \problems (\autoref{line:babselect}).  
+It then calls \Deduce to \emph{quickly} determine if the current problem, i.e., the original satisfiability problem with  activation pattern $\sigma_i$,
 is feasible. For example, it can use interval abstraction (\autoref{chap:abstractions}) to quickly computes the bounds of the output values with respect to $\sigma_i$, e.g., by replacing ReLU functions according to the activation statuses specified in $\sigma_i$ (\autoref{sec:pattern-reduction}). 
 
 If the computed bounds indicate that no counterexample can exist, e.g., the lower bound of the output is greater than 0 when checking $y < 0$, then the problem is \emph{infeasible}. Otherwise, the problem is \emph{potentially feasible} (because the bounds are over-approximations).
 
 (Note that we do this even on the empty activation pattern, which is the initial state of the search, because the problem might be trivially infeasible, in which case we can exit and return \unsat{} immediately (\autoref{line:babunsat}).)
 \begin{itemize}
-\item If \functiontextformat{Deduce} determines that the problem is infeasible, \bab{} discards the current processing activation pattern and loops back (to~\autoref{line:babstart}) to process the next activation pattern. In other words, it prunes the current search branch with activation pattern $\sigma_i$.
+\item If \Deduce determines that the problem is infeasible, \bab{} discards the current processing activation pattern and loops back (to~\autoref{line:babstart}) to process the next activation pattern. In other words, it prunes the current search branch with activation pattern $\sigma_i$.
 When there are no more activation patterns to process, \bab{} returns \unsat{} (\autoref{line:babunsat}), indicating that it cannot find counterexamples and the property is valid.
 
 
-\item If \functiontextformat{Deduce} determines that the problem is feasible, \bab{} checks the satisfiability of the problem using an LP solver (\autoref{line:bablp})\footnote{The problem is formulated as a MILP problem as described in~\autoref{sec:milp-formulation} and checked using an LP solver. Note that we use LP and MILP interchangeably here for simplicity. In practice, most LP solvers such as Gurobi handles MILP problems as well. Just like SMT solvers handle both SAT and SMT problems.}. If the solver finds a satisfying assignment, it returns \sat{} and the counterexample represented by the satisfying assignment (\autoref{line:babsat}), indicating that the property is invalid.
-Otherwise, \functiontextformat{LP} returns unsatisfiable, and \bab{} calls \functiontextformat{Decide} to select a neuron $v_i$ to split, i.e., to fix the activation status of $v_i$ as either active or inactive (\autoref{line:babdecide}).  This means the problem is split into two independent subproblems: one with $v_i$ (active) and the other with $\overline{v_i}$ (inactive). \bab{} then adds the two new activation patterns $\sigma_i \land v_i$ and $\sigma_i \land \overline{v_i}$ to \texttt{ActPatterns}. \bab{} then loops back to~\autoref{line:babstart} to process the next activation pattern.
+\item If \Deduce determines that the problem is feasible, \bab{} checks the satisfiability of the problem using an LP solver (\autoref{line:bablp})\footnote{The problem is formulated as a MILP problem as described in~\autoref{sec:using-milp} and checked using an LP solver. Note that we use LP and MILP interchangeably here for simplicity. In practice, most LP solvers such as Gurobi handles MILP problems as well. Just like SMT solvers handle both SAT and SMT problems.}. If the solver finds a satisfying assignment, it returns \sat{} and the counterexample represented by the satisfying assignment (\autoref{line:babsat}), indicating that the property is invalid.
+Otherwise, \functiontextformat{LP} returns unsatisfiable, and \bab{} calls \Decide to select a neuron $v_i$ to split, i.e., to fix the activation status of $v_i$ as either active or inactive (\autoref{line:babdecide}).  This means the problem is split into two independent subproblems: one with $v_i$ (active) and the other with $\overline{v_i}$ (inactive). \bab{} then adds the two new activation patterns $\sigma_i \land v_i$ and $\sigma_i \land \overline{v_i}$ to \problems. \bab{} then loops back to~\autoref{line:babstart} to process the next activation pattern.
 \end{itemize}
 
 
-\paragraph{\textbf{Deduce vs. LP}} Note the difference between \functiontextformat{Deduce} and \functiontextformat{LP} is that the former uses abstraction to compute over-approximated bounds to determine feasibility, while the latter uses an LP solver to check exact satisfiability. 
+\paragraph{\textbf{Deduce vs. LP}} Note the difference between \Deduce and \functiontextformat{LP} is that the former uses abstraction to compute over-approximated bounds to determine feasibility, while the latter uses an LP solver to check exact satisfiability. 
 Abstraction is quick but may yield false positives (declaring feasible when it is not), while LP is precise but more computationally expensive.  The combination allows \bab{} to efficiently prune infeasible branches while accurately checking for counterexamples.
 
 
@@ -4405,29 +4405,31 @@ by showing that counterexample exists, i.e., no inputs $(x_1,x_2)$ in the given 
     \end{minipage}
 \end{figure}
 
-First, \bab{} initializes \functiontextformat{ActPatterns} with an empty activation pattern $\emptyset$ (i.e., no neurons fixed). Then \bab{} enters its main loop. In the first iteration, \bab{} selects the only available activation pattern $\emptyset$, i.e., $\sigma_i = \emptyset$,
-and  calls \functiontextformat{Deduce} to check the feasibility of the problem based $\sigma_i$.
+First, \bab{} initializes \problems with an empty activation pattern $\emptyset$ (i.e., no neurons fixed). 
+\hd{Note that we often use Queue to implement the problems set \problems. Using Stack is also possible as we will need to process all the problems eventually.}
+Then \bab{} enters its main loop. In the first iteration, \bab{} selects the only available activation pattern $\emptyset$, i.e., $\sigma_i = \emptyset$,
+and  calls \Deduce to check the feasibility of the problem based $\sigma_i$.
 
-Here, \functiontextformat{Deduce} determines that the problem is feasible, e.g., the bounds of $y_1$ and $y_2$ indicate that $y_1 \le y_2$ can be satisfied. Thus, \bab{} calls \functiontextformat{LP} to check the satisfiability of the problem using an LP solver. The LP solver returns unsatisfiable (or unknown)--meaning no counterexample is found in this activation pattern.  \bab{} then randomly selects a neuron to split (\functiontextformat{Decide}). Assume that it chooses $v_4$ to split, i.e., the problem spawns two independent subproblems: one with $v_4$ active and the other with $v_4$ inactive.
-It does so by unioning $\{v_4\}$ and $\{\overline{v_4}\}$ with $\sigma_i$ and adds both new activation patterns to \functiontextformat{ActPatterns}. Next, \bab{} loops back to process the next activation pattern.
+Here, \Deduce determines that the problem is feasible, e.g., the bounds of $y_1$ and $y_2$ indicate that $y_1 \le y_2$ can be satisfied. Thus, \bab{} calls \functiontextformat{LP} to check the satisfiability of the problem using an LP solver. The LP solver returns unsatisfiable (or unknown)--meaning no counterexample is found in this activation pattern.  \bab{} then randomly selects a neuron to split (\Decide). Assume that it chooses $v_4$ to split, i.e., the problem spawns two independent subproblems: one with $v_4$ active and the other with $v_4$ inactive.
+It does so by unioning $\{v_4\}$ and $\{\overline{v_4}\}$ with $\sigma_i$ and adds both new activation patterns to \problems. Next, \bab{} loops back to process the next activation pattern.
 
 
-In the second iteration, \bab{} has two subproblems. For the subproblem with activation pattern $\{v_4\}$, \functiontextformat{Deduce} decides feasibility but \functiontextformat{LP} returns unsatisfiable (or unknown), 
+In the second iteration, \bab{} has two subproblems. For the subproblem with activation pattern $\{v_4\}$, \Deduce decides feasibility but \functiontextformat{LP} returns unsatisfiable (or unknown), 
 so it selects $v_2$ to split by adding $\{v_4, v_2\}$ and $\{v_4, \overline{v_2}\}$ to \texttt{ActPatterns}. 
-For the other subproblem with $\overline{v_4}$ inactive, \functiontextformat{Deduce} determines infeasibility and thus discards this subproblem.
+For the other subproblem with $\overline{v_4}$ inactive, \Deduce determines infeasibility and thus discards this subproblem.
 
-In the third iteration, \bab{} has two subproblems corresponding to activation patterns $\{v_4, v_2\}$ and $\{v_4, \overline{v_2}\}$. For the first subproblem, \bab{} selects $v_1$ to split by unioning $v_1$ and then $\overline{v_1}$ to the current activation pattern $v_4 \land v_2$ and adds them to \functiontextformat{ActPatterns}. For the second subproblem, \functiontextformat{Deduce} determines infeasibility and \bab{} discards this subproblem.
+In the third iteration, \bab{} has two subproblems corresponding to activation patterns $\{v_4, v_2\}$ and $\{v_4, \overline{v_2}\}$. For the first subproblem, \bab{} selects $v_1$ to split by unioning $v_1$ and then $\overline{v_1}$ to the current activation pattern $v_4 \land v_2$ and adds them to \problems. For the second subproblem, \Deduce determines infeasibility and \bab{} discards this subproblem.
 
 In the fourth iteration, \bab{} has two subproblems corresponding to activation patterns $\{v_4, v_2, v_1\}$ and $\{v_4, v_2, \overline{v_1}\}$, both which are then determined infeasible and discarded.
 
-Finally, \bab{} has no more activation patterns in \texttt{ActPatterns}, stops the search, and returns \unsat{}, indicating that the property is valid.
+Finally, \bab{} has no more activation patterns in \problems, stops the search, and returns \unsat{}, indicating that the property is valid.
 
-\autoref{fig:bab-example}b illustrates the BaB search tree corresponding to the above process. Each white node represents a branching decision where \bab{} splits a neuron, while each red node represents a leaf node where \functiontextformat{Deduce} determines infeasibility and prunes the branch. Notice that not all activation patterns are explored because some branches are pruned early due to infeasibility. In other words, while there are $2^4=16$ possible complete activation patterns for the three ReLU neurons, \bab{} only explores 6 of them in this example.
+\autoref{fig:bab-example}b illustrates the BaB search tree corresponding to the above process. Each white node represents a branching decision where \bab{} splits a neuron, while each red node represents a leaf node where \Deduce determines infeasibility and prunes the branch. Notice that not all activation patterns are explored because some branches are pruned early due to infeasibility. In other words, while there are $2^4=16$ possible complete activation patterns for the three ReLU neurons, \bab{} only explores 6 of them in this example.
 \end{example}
 
 
 \begin{problem}\label{prob:bab-detailed}
-Do~\autoref{ex:bab} but come up with concrete values for each step, e.g., what are the bounds computed by \functiontextformat{Deduce}, what does \functiontextformat{LP} return, etc to illustrate the process in more detail.
+Do~\autoref{ex:bab} but come up with concrete values for each step, e.g., what are the bounds computed by \Deduce, what does \functiontextformat{LP} return, etc to illustrate the process in more detail.
 \end{problem}
 
 
@@ -4451,8 +4453,8 @@ Apply BaB on the DNN in \autoref{fig:dnn-bab} to verify the property $x_5 > 0$ f
 \begin{problem}\label{prob:bab-understanding}
 Test your understanding of BaB and activation patterns by answering the following questions:
 \begin{enumerate}
-  \item In \autoref{alg:bab}, what happens if \functiontextformat{Deduce} always returns infeasible?
-  \item What happens if \functiontextformat{Deduce} always returns feasible but \functiontextformat{LP} always returns satisfiable?
+  \item In \autoref{alg:bab}, what happens if \Deduce always returns infeasible?
+  \item What happens if \Deduce always returns feasible but \functiontextformat{LP} always returns satisfiable?
   \item What is the maximum number of activation patterns that \bab{} may need to explore in the worst case for a DNN with $m$ ReLU neurons?
   \item What is the minimum number of activation patterns that \bab{} may need to explore in the best case for a DNN with $m$ ReLU neurons? What are these patterns?
 \end{enumerate}
@@ -4460,7 +4462,7 @@ Test your understanding of BaB and activation patterns by answering the followin
 
 \subsection{Beyond the Basic} What described above is the basic and minimal BaB algorithm. Modern DNN verifiers implement many optimizations and strategies to improve the performance of the search. For example, they apply various engineering tricks to eliminate easy cases or find easy counterexamples (\autoref{chap:adversarial-attacks}) before running the full BaB search. 
 
-Even the BaB search itself is optimized to avoid exploring the entire search space. For example, if \functiontextformat{Deduce} step determines infeasibility, a smarter \bab{} variant (e.g., the \neuralsat{} tool) can analyze the conflict and add a new clause to the set of clauses (\texttt{clauses}) to prevent the same activation pattern from being selected again. This is similar to conflict-driven clause learning (CDCL) in modern SAT solvers and is implemented in the \neuralsat{} DNN verification tool~\cite{duong2025neuralsat}. In addition, heuristics are also used to select, e.g., which neuron to split next (\functiontextformat{Decide}). We explore these optimizations and strategies in later chapters (e.g.,~\autoref{chap:neuralsat}).
+Even the BaB search itself is optimized to avoid exploring the entire search space. For example, if \Deduce step determines infeasibility, a smarter \bab{} variant (e.g., the \neuralsat{} tool) can analyze the conflict and add a new clause to the set of clauses (\texttt{clauses}) to prevent the same activation pattern from being selected again. This is similar to conflict-driven clause learning (CDCL) in modern SAT solvers and is implemented in the \neuralsat{} DNN verification tool~\cite{duong2025neuralsat}. In addition, heuristics are also used to select, e.g., which neuron to split next (\Decide). We explore these optimizations and strategies in later chapters (e.g.,~\autoref{chap:neuralsat}).
 
 % \tvn{TODO: this basic BaB is also used to create a proof tree, which is used to generate a proof in the \prooflang{} format. We will discuss this in~\autoref{chapter:proof-gen-check}.}
 
@@ -4811,14 +4813,14 @@ At the end of the verification process, the proof tree is returned as the proof 
 \paragraph{Example} We reuse the example in~\autoref{chap:bab} to illustrate \proofgen{}. Recall the goal is to verify that the DNN in~\autoref{fig:example}(a) has the property $(x_1, x_2) \in [-2.0, 2.0] \times [-1.0, 1,0] \Rightarrow (y_1 > y_2)$. \proofgen{} generates the proof tree in~\autoref{fig:example}(b) to show unsatisfiability, i.e., the property is valid.
 
 First, \proofgen{} initializes the activation pattern set \functiontextformat{ActPatterns} with an empty activation pattern $\emptyset$. Then \proofgen{} enters a loop (\autoref{line:dpllstart}-\autoref{line:dpllend}) to search for a satisfying assignment or a proof of unsatisfiability. In the first iteration, \proofgen{} selects the only available activation pattern $\emptyset \in \functiontextformat{ActPatterns}$. 
-It calls~\functiontextformat{Deduce} to check the feasibility of the problem based on the current activation pattern. \functiontextformat{Deduce} uses abstraction to approximate that from the input constraints the output values are feasible for the given network. 
-Since \functiontextformat{Deduce} cannot decide infeasibility, \proofgen{} randomly selects a neuron to split (\functiontextformat{Decide}). Let us assume that it chooses $v_4$ to split, which essentially means the problem is split into two independent subproblems: one with $v_4$ active and the other with $v_4$ inactive.
+It calls~\Deduce to check the feasibility of the problem based on the current activation pattern. \Deduce uses abstraction to approximate that from the input constraints the output values are feasible for the given network. 
+Since \Deduce cannot decide infeasibility, \proofgen{} randomly selects a neuron to split (\Decide). Let us assume that it chooses $v_4$ to split, which essentially means the problem is split into two independent subproblems: one with $v_4$ active and the other with $v_4$ inactive.
 \proofgen{} then adds $v_4$ and $\overline{v_4}$ to \functiontextformat{ActPatterns}.
 
-In the second iteration, \proofgen{} has two subproblems (that can be processed in parallel). For the first subproblem with $v_4$, \functiontextformat{Deduce} cannot decide infeasibility, so it selects $v_2$ to split. It then conjoins $v_4$ with $v_2$ and then with $\overline{v_2}$ and adds both conjuncts to \texttt{ActPatterns}. 
-For the second subproblem with $\overline{v_4}$ inactive, \functiontextformat{Deduce} determines that the problem is unsatisfiable and \proofgen{} saves the node $v_4$ to the proof tree, as node 3, to indicate one unsatisfiable pattern, i.e., whenever the network has $v_4$ being inactive, the problem is unsatisfiable.
+In the second iteration, \proofgen{} has two subproblems (that can be processed in parallel). For the first subproblem with $v_4$, \Deduce cannot decide infeasibility, so it selects $v_2$ to split. It then conjoins $v_4$ with $v_2$ and then with $\overline{v_2}$ and adds both conjuncts to \texttt{ActPatterns}. 
+For the second subproblem with $\overline{v_4}$ inactive, \Deduce determines that the problem is unsatisfiable and \proofgen{} saves the node $v_4$ to the proof tree, as node 3, to indicate one unsatisfiable pattern, i.e., whenever the network has $v_4$ being inactive, the problem is unsatisfiable.
 
-In the third iteration, \proofgen{} has two subproblems for $v_4 \land v_2$ and $v_4 \land \overline{v_2}$. For the first subproblem, \functiontextformat{Deduce} cannot decide infeasibility, so it selects $v_1$ to split. It then conjoins $v_1$ and then $\overline{v_1}$ to the current activation pattern and adds them to \functiontextformat{ActPatterns}. For the second subproblem, \functiontextformat{Deduce} determines that the problem is unsatisfiable and \proofgen{} saves the node $v_4 \land \overline{v_2}$ to the proof tree, as node 5.
+In the third iteration, \proofgen{} has two subproblems for $v_4 \land v_2$ and $v_4 \land \overline{v_2}$. For the first subproblem, \Deduce cannot decide infeasibility, so it selects $v_1$ to split. It then conjoins $v_1$ and then $\overline{v_1}$ to the current activation pattern and adds them to \functiontextformat{ActPatterns}. For the second subproblem, \Deduce determines that the problem is unsatisfiable and \proofgen{} saves the node $v_4 \land \overline{v_2}$ to the proof tree, as node 5.
 
 In the fourth iteration, \proofgen{} has two subproblems for $v_4 \land v_2 \land v_1$ and $v_4 \land v_2 \land \overline{v_1}$. Both subproblems are determined to be unsatisfiable, and \proofgen{} saves them to the proof tree as nodes 6 and 7, respectively.
 
@@ -5966,7 +5968,7 @@ However, because $v_4$ was assigned at decision level 0, \neuralsat{} can no lon
 \subsection{Neuron Stability}\label{sec:stabilization}
 A neuron is \emph{stable} if its activation status does not change regardless of the input values. In contrast, a neuron is \emph{unstable} if its activation status can change depending on the input values. For example, in the DNN in~\autoref{fig:dnn}, \tvn{any neuron stable? or they are all unstable?}
 
-The key idea in using neuron stability is that if we can determine that a neuron is stable,  we can assign the exact truth value for the corresponding Boolean variable instead of having to guess. This has a similar effect as \functiontextformat{BCP}---reducing mistaken assignments by \functiontextformat{Decide}---but it operates at the theory level instead of the propositional Boolean level.
+The key idea in using neuron stability is that if we can determine that a neuron is stable,  we can assign the exact truth value for the corresponding Boolean variable instead of having to guess. This has a similar effect as \functiontextformat{BCP}---reducing mistaken assignments by \Decide---but it operates at the theory level instead of the propositional Boolean level.
 
 %First, the T-solver creates a linear constraint system from the input assignment $\sigma$ and $\alpha \land \phi_{in} \land \overline{\phi_{out}}$, i.e., the formula in ~\autoref{eq:nnv2} representing the original problem  (line~\ref{line:lpsolver}).
 %First, the T-solver creates a set of linear constraints representing ReLU activation for hidden neurons whose activation status have been decided.

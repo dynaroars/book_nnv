@@ -9,14 +9,14 @@ You will use Python and PyTorch for this assignment, building upon your implemen
 This PA has three main parts:
 \begin{enumerate}
     \item implement the core BaB algorithm with a priority \emph{queue}-based approach.
-    \item implement utility functions: \texttt{branch}, \texttt{bound}, and \texttt{prune}.
+    \item implement utility functions: \texttt{deduce}, \texttt{decide}, \texttt{bound}, and \texttt{prune}.
     \item evaluate the precision and scalability of BaB compared to pure abstract interpretation and symbolic execution.
 \end{enumerate}
 
 \subsection{Part 1: Branch and Bound Algorithm Framework}
 
 BaB algorithm systematically explores the space by maintaining a queue of subproblems and iteratively refining them until verification is complete or a counterexample is found.
-You will implement three core utility functions that form the building blocks of the BaB algorithm: \texttt{branch}, \texttt{bound}, and \texttt{prune}.
+You will implement four core utility functions that form the building blocks of the BaB algorithm: \texttt{deduce}, \texttt{decide}, \texttt{bound}, and \texttt{prune}.
 
 \subsubsection{Algorithm Skeleton}
 
@@ -77,7 +77,7 @@ class BranchAndBound:
                 
                 # Decide: pick a input dimension to split on
                 # and create new subproblems using input splitting
-                subproblems = ...  # Hint: use self.branch()
+                subproblems = ...  # Hint: use self.decide()
                 
                 # Add new subproblems to queue
                 # TODO: Add each subproblem to the queue
@@ -86,73 +86,86 @@ class BranchAndBound:
         
         # All subproblems are verified
         return VERIFIED, None
+\end{lstlisting}
+
+\subsubsection{Deduce Function}
+
+The \texttt{deduce} function checks if the current problem is feasible by combining the abstract interpretation (bound).
+
+\begin{lstlisting}[language=Python]
+def deduce(self, input_lower, input_upper, property_fn):
+    """
+    Deduce: combine bound + prune to check if we can make progress
+    
+    This function implements the Deduce step
+    It combines abstract interpretation (bound) with pruning logic
+    
+    Args:
+        input_lower: lower bounds of input domain
+        input_upper: upper bounds of input domain
+        property_fn: property function to check
         
-    def deduce(self, input_lower, input_upper, property_fn):
-        """
-        Deduce: combine bound + prune to check if we can make progress
+    Returns:
+        bool: False if verified, True othewise, need to branch
+    """
+    # TODO: 
+    # 1. Compute abstract bounds using self.bound() (PA2)
+    # 2. Check pruning using self.prune() 
+    # 3. Return True if prune_result == UNKNOWN (need to branch)
+    # 4. Return False if prune_result == VERIFIED (can prune)
+    # 5. This function should NOT handle FALSIFIED case directly
+    
+    return prune_result == UNKNOWN
+\end{lstlisting}
+
+\subsubsection{Attack Function}
+
+The \texttt{attack} function finds a counterexample using an adversarial attack.
+This function is optional, you can choose to implement it or not. 
+If you choose to implement it, you can use random sampling or adversarial attacks like PGD, FGSM, etc.
+If not, you can simply return None.
+
+\begin{lstlisting}[language=Python]
+def attack(self, input_lower, input_upper, property_fn):
+    """
+    Find counterexample using adversarial attack
+    
+    Uses random sampling or adversarial attacks instead of LP solving
+    
+    Args:
+        input_lower: lower bounds of input domain
+        input_upper: upper bounds of input domain  
+        property_fn: property function to check
         
-        This function implements the Deduce step
-        It combines abstract interpretation (bound) with pruning logic
+    Returns:
+        counterexample: cex that violates property, or None if not found
         
-        Args:
-            input_lower: lower bounds of input domain
-            input_upper: upper bounds of input domain
-            property_fn: property function to check
-            
-        Returns:
-            bool: False if verified, True othewise, need to branch
-        """
-        # TODO: 
-        # 1. Compute abstract bounds using self.bound() (PA2)
-        # 2. Check pruning using self.prune() 
-        # 3. Return True if prune_result == UNKNOWN (need to branch)
-        # 4. Return False if prune_result == VERIFIED (can prune)
-        # 5. This function should NOT handle FALSIFIED case directly
-        
-        return prune_result == UNKNOWN
-        
-    def attack(self, input_lower, input_upper, property_fn):
-        """
-        Find counterexample using adversarial attack
-        
-        Uses random sampling or adversarial attacks instead of LP solving
-        
-        Args:
-            input_lower: lower bounds of input domain
-            input_upper: upper bounds of input domain  
-            property_fn: property function to check
-            
-        Returns:
-            counterexample: cex that violates property, or None if not found
-            
-        Example approaches:
-            # Random sampling
-            for _ in range(100):
-                # Randomly sample points within the input bounds
-                random_input = ...
-                output = self.network(random_input)
-                if violates_property(output):
-                    return random_input
-                    
-            # Or use PGD attack, FGSM, etc.
-        """
-        # TODO: Implement adversarial attack to find counterexample
-        # 1. Generate candidate inputs within [input_lower, input_upper]
-        # 2. Run network on candidates  
-        # 3. Check if any output violates the property
-        # 4. Return first violating input, or None if none found
-        
-        return counterexample
+    Example approaches:
+        # Random sampling
+        for _ in range(100):
+            # Randomly sample points within the input bounds
+            random_input = ...
+            output = self.network(random_input)
+            if violates_property(output):
+                return random_input
+                
+        # Or use PGD attack, FGSM, etc.
+    """
+    # TODO: Implement adversarial attack to find counterexample
+    # 1. Generate candidate inputs within [input_lower, input_upper]
+    # 2. Run network on candidates  
+    # 3. Check if any output violates the property
+    # 4. Return first violating input, or None if none found
+    
+    return counterexample
 
 \end{lstlisting}
 
-
-\subsubsection{Branch Function}
-
-The \texttt{branch} function splits a domain into smaller subdomains. For this PA, we use input splitting where we divide one dimension at a time.
+\subsubsection{Branch (Decide) Function}
+The \texttt{decide} function splits a domain into smaller subdomains. For this PA, we use input splitting where we divide one dimension at a time.
 
 \begin{lstlisting}[language=Python]
-def branch(self, input_lower, input_upper):
+def decide(self, input_lower, input_upper):
     """
     Split input domain into 2 subproblems by splitting one dimension
     
@@ -172,7 +185,7 @@ def branch(self, input_lower, input_upper):
         # Subproblem 1: [-1, 0] x [-2, 2] 
         # Subproblem 2:  [0, 1] x [-2, 2]
 
-        subproblems = branch(input_lower, input_upper)
+        subproblems = decide(input_lower, input_upper)
         # subproblems = [
         #     (torch.tensor([-1.0, -2.0]), torch.tensor([0.0, 2.0])),
         #     (torch.tensor([0.0, -2.0]), torch.tensor([1.0, 2.0]))
