@@ -4358,7 +4358,9 @@ When there are no more activation patterns to process, \bab{} returns \unsat{} (
 
 
 \item If \Deduce determines that the problem is feasible, \bab{} checks the satisfiability of the problem using an LP solver (\autoref{line:bablp})\footnote{The problem is formulated as a MILP problem as described in~\autoref{sec:using-milp} and checked using an LP solver. Note that we use LP and MILP interchangeably here for simplicity. In practice, most LP solvers such as Gurobi handles MILP problems as well. Just like SMT solvers handle both SAT and SMT problems.}. If the solver finds a satisfying assignment, it returns \sat{} and the counterexample represented by the satisfying assignment (\autoref{line:babsat}), indicating that the property is invalid.
-Otherwise, \functiontextformat{LP} returns unsatisfiable, and \bab{} calls \Decide to select a neuron $v_i$ to split, i.e., to fix the activation status of $v_i$ as either active or inactive (\autoref{line:babdecide}).  This means the problem is split into two independent subproblems: one with $v_i$ (active) and the other with $\overline{v_i}$ (inactive). \bab{} then adds the two new activation patterns $\sigma_i \land v_i$ and $\sigma_i \land \overline{v_i}$ to \problems. \bab{} then loops back to~\autoref{line:babstart} to process the next activation pattern.
+Otherwise, \functiontextformat{LP} returns unsatisfiable, and \bab{} calls \Decide to select a neuron $v_i$ to split, i.e., to fix the activation status of $v_i$ as either active or inactive (\autoref{line:babdecide}).  This means the problem is split into two independent subproblems: one with $v_i$ (active) and the other with $\overline{v_i}$ (inactive). 
+\hd{By splitting (or fixing the neuron status), we create two \emph{simpler} subproblems (less neurons to abstract) that are easier to solve. Thus, this step \emph{refines} the precision of abstract interpretation.}
+\bab{} then adds the two new activation patterns $\sigma_i \land v_i$ and $\sigma_i \land \overline{v_i}$ to \problems. \bab{} then loops back to~\autoref{line:babstart} to process the next activation pattern.
 \end{itemize}
 
 
