@@ -4917,8 +4917,6 @@ Assertions are logical statements that specify the conditions or properties that
 The \texttt{declare-*} statements declare input, output, and hidden variables, while the \texttt{assert} statements specify the constraints on these variables (i.e., the pre and postcondition of the desired property).
 The hidden constraints represent the activation patterns of the hidden neurons in the network (i.e., the proof tree). Each \texttt{and} statement represents a tree path that represents an activation pattern. 
 
-
-
 \begin{example} 
     The proof in~\autoref{fig:proof_example} corresponds to the proof tree in~\autoref{fig:proof-example}b. The statement \texttt{(and (< N\_4 0))} corresponds to the rightmost path of the tree with $\overline{v_4}$ decision (leaf 3).  The statement \texttt{(and (< N\_2 0) (>= N\_4 0))} corresponds to the path with $v_4 \land \overline{v_2}$ (leaf 5). 
 \end{example}
