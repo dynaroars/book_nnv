@@ -34,14 +34,13 @@ jobs:
       - name: Verify PDF
         run: |
           if [ ! -f main.pdf ]; then
-            echo "❌ No PDF produced!"
+            echo "No PDF produced!""
             exit 1
           elif ! pdfinfo main.pdf >/dev/null 2>&1; then
-            echo "❌ PDF seems corrupted!""
+            echo "PDF seems corrupted!""
             exit 1
           fi
-          echo "✅ main.pdf built successfully."
-          # mv main.pdf book.pdf
+          echo "main.pdf built successfully."
 
       - name: Upload artifact
         if: success()
