@@ -1,0 +1,54 @@
+name: Build LaTeX book
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  build-pdf:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install lightweight TeX Live
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            texlive-latex-recommended \
+            texlive-latex-extra \
+            texlive-fonts-recommended \
+            texlive-science \
+            texlive-lang-english \
+            texlive-xetex \
+            latexmk \
+            ghostscript \
+            poppler-utils
+
+      - name: Build book
+        run: |
+          echo "Building book..."
+          latexmk -pdf -interaction=nonstopmode -halt-on-error book.tex
+
+      - name: Verify PDF
+        run: |
+          if [ ! -f main.pdf ]; then
+            echo "❌ No PDF produced!"
+            exit 1
+          elif ! pdfinfo main.pdf >/dev/null 2>&1; then
+            echo "❌ PDF seems corrupted!""
+            exit 1
+          fi
+          echo "✅ main.pdf built successfully."
+          # mv main.pdf book.pdf
+
+      - name: Upload artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: book
+          path: book.pdf
+
+
+
