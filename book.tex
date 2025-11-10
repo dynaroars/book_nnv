@@ -5703,7 +5703,8 @@ Let's revisit the example above, after splitting on $x_3$, we can tighten the up
 & -2 \le x_2 \le 2
 \end{aligned}
 \end{equation}
-If the optimization result yields a maximum value of $x_4$less than 0, e.g., $u_{x_4} < 0$, we can conclude that $x_4$ is stabilized and no longer need to branch on $x_4$, thus, reducing the number of branches made by the verifier.
+If the optimization result yields a maximum value of $x_4$ less than 0, e.g., $u_{x_4} < 0$, we can conclude that $x_4$ is stabilized and no longer need to branch on $x_4$, thus, reducing the number of branches made by the verifier.
+There will be many tweaks to make the optimization problem more efficient, e.g., setting a early stopping condition, e.g., if the maximum value of $x_4$ is less than 0, we can stop the optimization. It is because the fact that, if the upper bound of $x_4$ is already less than 0, $x_4$ will be considered as \emph{inactive} no matter what the \emph{optimal} upper bound is.
 
 Note that, in both cases, optimization problems are independent (between inputs/neurons and lower/upper bounds), thus, we can solve them in parallel, e.g., optimizing the both upper and lower bounds of $x_1$ (input) and $x_4$ (neuron) in parallel.
 }
