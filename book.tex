@@ -5620,7 +5620,7 @@ In addition to adversarial attacks (\autoref{chap:adversarial-attacks}), DNN ver
 \section{Input Splitting}\label{sec:input-splitting}
 Modern DNN verifiers~\cite{katz2019marabou,wang2018formal,wang2021beta,duong2025neuralsat} often use a technique called \emph{input splitting} to quickly deal with networks with verification problems involving low-dimensional networks, such as those in the ACAS Xu benchmark~\autoref{sec:acasxu} where the networks have a small number of inputs. Currently many work set the threshold to 50 inputs, i.e., if the network has more than 50 inputs, it is considered large and input splitting is not applied.
 
-The idea is to split the original verification problem into subproblems, each checking whether the DNN produces the desired output from a smaller input region and returns \unsat{} if all subproblems are verified and \sat{} if a counterexample is found in any subproblem. Input splitting avoids BaB search---also called \emph{neuron splitting} and focuses on individual neurons---and is often used as a fast-path optimization to quickly eliminate easy cases.\hd{this last sentence is not clear}
+The idea is to split the original verification problem into subproblems, each checking whether the DNN produces the desired output from a smaller input region and returns \unsat{} if all subproblems are verified and \sat{} if a counterexample is found in any subproblem. Input splitting avoids BaB search---also called \emph{neuron splitting} and focuses on individual neurons---and is often used as a fast-path optimization to quickly eliminate easy cases.\hd{``fast-path optimization'' in the last sentence is not clear}
 
 \begin{example}
     % Given $k$ available threads, \tool{} splits the original input region to obtain subproblems as described and and runs DPLL(T) on $k$ subproblems in parallel. % and iteratively splits any subproblem which cannot be solved within pre-defined amount of time, e.g., 2 seconds.
@@ -5636,48 +5636,94 @@ Note that the formula $-1 \le x_1 \le 1 \land -2 \le x_2 \le 2$ representing the
 \end{example}
 
 
-\section{Input Bounds Tightening}\label{sec:inputboundstigthten}
-For networks with small inputs, DNN verification tools use a more aggressive abstraction process to achieve more precise computation. Specifically, they use LP solving to compute the tightest bounds for all input variables from the generated linear constraints. This computation is efficient when the number of inputs is small.
+\section{Bounds Tightening}\label{sec:boundstigthten}
 
-%(line~\ref{line:abstraction},~\autoref{alg:deduction})
-After tightening input bounds DNN verification tools apply abstraction to approximate the output bounds, which can be more precise with better input bounds.
-For networks with large number of inputs, we obtain input bounds from the input property $\phi_{in}$.\tvn{Vu: to rewrite}
+\hd{Every time verifier makes a split, it will create more constraints for each branch, e.g., $\hat{x}_i \le 0$ or $\hat{x}_i > 0$.
 
-\ignore{
-\subsection{Decision Heuristics}\label{sec:decision-heuristics}
-Decision or branching heuristics decide free variables to make assignments and thus are crucial for the scalability of DPLL by reducing assignment mistakes~\cite{kroening2016decision,beyer2022progress}.
+Recall the DNN from~\autoref{fig:dnn-b} can be represented as the formula $\alpha$
+\[
+\begin{aligned}
+& \hat{x}_3 = -0.5x_1 + 0.5x_2 + 1.0 ~\land\\
+& \hat{x}_4 = 0.5x_1 - 0.5x_2 + 1.0 ~\land\\    
+& x_3 = \relu{\hat{x}_3} ~\land \\
+& x_4 = \relu{\hat{x}_4} ~\land \\
+& x_5 = -x_3 + x_4 - 1.0,
+\end{aligned}
+\]
+and input property $\phi_{in}$
+\(
+-1 \le x_1 \le 1 \land -2 \le x_2 \le 2
+\)
 
-For networks with small inputs, \tool{} prioritizes variables representing neurons with the \emph{furthest bounds} from the decision value 0 of ReLU, i.e., the 0 in $\max(x,0)$.
-Such neurons have wider bounds and therefore are more difficult to tighten during abstraction compared to other neurons.
-This heuristic helps input bounds tightening as described in \S\ref{sec:inputboundstigthten} (which is also applied only for networks with small inputs). It is also cheap because we can reuse the computed boundaries of hidden neurons during abstraction.
+Suppose we make a split on $x_3$.
+That will give us two subproblems, in which one problem has the constraint of
+\(
+    -0.5x_1 + 0.5x_2 + 1.0 \le 0
+\)
+and the other problem has the constraint of
+\(
+    -0.5x_1 + 0.5x_2 + 1.0 > 0
+\).
+For the first subproblem, we can create an optimization problem to tighten the bounds.
+For example, to tighten the upper bounds of $x_1$, we can create an optimization problem as follows:
+\begin{equation}
+\begin{aligned}
+\text{maximize~} &x_1 \quad \text{s.t.} \\
+& -0.5x_1 + 0.5x_2 + 1.0 \le 0 \\
+& -1 \le x_1 \le 1 \\
+& -2 \le x_2 \le 2
+\end{aligned}
+\end{equation}
+
+We can apply the same approach to tighten the lower bounds of $x_1$ by formulating the minimization and the upper/lower bounds of $x_2$.
+Note that, this approach works particularly well for networks with small inputs, e.g., the ACAS Xu benchmark~\autoref{sec:acasxu} with 5 inputs, and is adopted by many modern DNN verification tools, including \marabou{} and \nnenum{}.
+For larger input dimensions networkswe, it will take much time as we need to run $2 \times$ the number of inputs to tighten all the input bounds (for each input, we need to tighten the upper and lower bounds individually).
 }
 
+% For networks with small inputs, DNN verification tools use a more aggressive abstraction process to achieve more precise computation. Specifically, they use LP solving to compute the tightest bounds for all input variables from the generated linear constraints. This computation is efficient when the number of inputs is small.
+
+
+
+%(line~\ref{line:abstraction},~\autoref{alg:deduction})
+% After tightening input bounds DNN verification tools apply abstraction to approximate the output bounds, which can be more precise with better input bounds.
+% For networks with large number of inputs, we obtain input bounds from the input property $\phi_{in}$.\tvn{Vu: to rewrite}
+
+
+% \ignore{
+\section{Branching Heuristics}\label{sec:branchingheuristics}
+% Decision or branching heuristics decide free variables to make assignments and thus are crucial for the scalability of DPLL by reducing assignment mistakes~\cite{kroening2016decision,beyer2022progress}.
+
+% For networks with small inputs, \tool{} prioritizes variables representing neurons with the \emph{furthest bounds} from the decision value 0 of ReLU, i.e., the 0 in $\max(x,0)$.
+% Such neurons have wider bounds and therefore are more difficult to tighten during abstraction compared to other neurons.
+% }
 
 
 
 
-\section{Multiprocessing} \label{sec:input_split}
-\tvn{Do we still use this?  or we use the Parallel DPLL(T) in~\autoref{sec:parallel-search} instead?}
-For networks with small inputs, \tool{} uses a simple approach to create and solve subproblems in parallel.
-Given a verification problem $N_{orig} = (\alpha, \phi_{in}, \phi_{out})$, where $\alpha$ is the DNN and $\phi_{in} \Rightarrow \phi_{out}$ is the desired property, \tool{} creates subproblems $N_i = (\alpha, \phi_{{in}_i}, \phi_{out})$, where $\phi_{{in}_i}$ is the $i$-th subregion of the input region specified by $\phi_{in}$.
-Intuitively, each subproblem checks if the DNN produces the output $\phi_{out}$  from a smaller input region $\phi_{{in}_i}$.
-The combination of these subproperties $\bigwedge \phi_{{in}_i} \Rightarrow \phi_{out}$ is logically equivalent to the original property $\phi_{in} \Rightarrow \phi_{out}$.
+
+\section{Batch Processing} \label{sec:batchprocessing}
+% \tvn{Do we still use this?  or we use the Parallel DPLL(T) in~\autoref{sec:parallel-search} instead?}
+% For networks with small inputs, \tool{} uses a simple approach to create and solve subproblems in parallel.
+% Given a verification problem $N_{orig} = (\alpha, \phi_{in}, \phi_{out})$, where $\alpha$ is the DNN and $\phi_{in} \Rightarrow \phi_{out}$ is the desired property, \tool{} creates subproblems $N_i = (\alpha, \phi_{{in}_i}, \phi_{out})$, where $\phi_{{in}_i}$ is the $i$-th subregion of the input region specified by $\phi_{in}$.
+% Intuitively, each subproblem checks if the DNN produces the output $\phi_{out}$  from a smaller input region $\phi_{{in}_i}$.
+% The combination of these subproperties $\bigwedge \phi_{{in}_i} \Rightarrow \phi_{out}$ is logically equivalent to the original property $\phi_{in} \Rightarrow \phi_{out}$.
 
 
-Given $k$ available threads, \tool{} splits the original input region to obtain subproblems as described and and runs DPLL(T) on $k$ subproblems in parallel. % and iteratively splits any subproblem which cannot be solved within pre-defined amount of time, e.g., 2 seconds.
-\tool{} returns \texttt{unsat} if it verifies all subproblems and \texttt{sat} if it found a counterexample in any subproblem. %In the current implementation, \tool{} uses the number of available threads to determine the number of created subproblems.
-For example, we split the input region $\{x_1 \in [-1,1] , x_2 \in [-2,2]\}$ into four subregions
-$\{x_1 \in [-1,0] , x_2 \in [-2,0]\}$,
-$\{x_1 \in [-1,0] , x_2 \in [0,2]\}$ ,
-$\{x_1 \in [0,1] , x_2 \in [-2,0]\}$, and
-$\{x_1 \in [0,1], x_2 \in [0,2]\}$.
-Note that the formula $-1 \le x_1 \le 1 \land -2 \le x_2 \le 2$ representing the original input region is equivalent to the formula $(-1 \le x_1 \le 0 \lor 0 \le x \le 1) \land (-2 \le x_2 \le 0 \lor 0 \le x_2 \le 2)$ representing the combination of the created subregions.
+% Given $k$ available threads, \tool{} splits the original input region to obtain subproblems as described and and runs DPLL(T) on $k$ subproblems in parallel. % and iteratively splits any subproblem which cannot be solved within pre-defined amount of time, e.g., 2 seconds.
+% \tool{} returns \texttt{unsat} if it verifies all subproblems and \texttt{sat} if it found a counterexample in any subproblem. %In the current implementation, \tool{} uses the number of available threads to determine the number of created subproblems.
+% For example, we split the input region $\{x_1 \in [-1,1] , x_2 \in [-2,2]\}$ into four subregions
+% $\{x_1 \in [-1,0] , x_2 \in [-2,0]\}$,
+% $\{x_1 \in [-1,0] , x_2 \in [0,2]\}$ ,
+% $\{x_1 \in [0,1] , x_2 \in [-2,0]\}$, and
+% $\{x_1 \in [0,1], x_2 \in [0,2]\}$.
+% Note that the formula $-1 \le x_1 \le 1 \land -2 \le x_2 \le 2$ representing the original input region is equivalent to the formula $(-1 \le x_1 \le 0 \lor 0 \le x \le 1) \land (-2 \le x_2 \le 0 \lor 0 \le x_2 \le 2)$ representing the combination of the created subregions.
 
-
+\hd{TODO: add batch processing}
 
 \section{GPU Processing}\label{sec:gpu}
 
-\tvn{Hai, talk about how modern tools like crown and neuralsat leverage GPU.  Give details.  Provide small CUDO code and examples as needed.}
+% \tvn{Hai, talk about how modern tools like crown and neuralsat leverage GPU.  Give details.  Provide small CUDO code and examples as needed.}
+\hd{TODO: add GPU processing}
 
 %\hd{Updated.}
 
@@ -8884,7 +8930,6 @@ Specifically, we over-approximate  ReLU computations to obtain the upper and low
 \autoref{fig:abs} compares the (a) interval~\cite{wang2018formal}, (b) zonotope~\cite{singh2018fast}, and (c, d) polytope~\cite{xu2020fast,singh2019abstract,wang2021beta} abstraction domains to compute the lower $l_y(x)$ and upper $u_y(x)$ bounds of a ReLU computation $y=\texttt{ReLU(x)}$ (non-convex red line).
 \tool{} can employ any existing abstract domains, though currently it adopts the \emph{LiRPA} polytope (\autoref{fig:abs}d)~\cite{xu2020fast,xu2020automatic,wang2021beta} because it has a good trade-off between precision and efficiency.
 
-%Note that in some cases we can compute a better abstraction for output bounds by first tightening the input bounds (line~\ref{line:absstart}). We discuss this input bound tightening heuristic in \S\ref{sec:inputboundstigthten}.
 %\hd{remove this sentence?}
 
 \paragraph{Inference} If abstraction results in feasible constraints, \texttt{Deduction} next attempts to infer implied literals (lines~\ref{line:infera}--~\ref{line:inferb}). To obtain the bounds of the output neurons, abstraction also needs to compute the bounds of hidden neurons, including those with undecided activation status (i.e., not yet in $\sigma$).
