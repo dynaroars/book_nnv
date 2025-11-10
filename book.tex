@@ -5638,6 +5638,7 @@ Note that the formula $-1 \le x_1 \le 1 \land -2 \le x_2 \le 2$ representing the
 
 \section{Bounds Tightening}\label{sec:boundstigthten}
 
+\subsection{Input Bounds Tightening}\label{sec:inputboundstigthten}
 \hd{Every time verifier makes a split, it will create more constraints for each branch, e.g., $\hat{x}_i \le 0$ or $\hat{x}_i > 0$.
 
 Recall the DNN from~\autoref{fig:dnn-b} can be represented as the formula $\alpha$
@@ -5678,6 +5679,33 @@ For example, to tighten the upper bounds of $x_1$, we can create an optimization
 We can apply the same approach to tighten the lower bounds of $x_1$ by formulating the minimization and the upper/lower bounds of $x_2$.
 Note that, this approach works particularly well for networks with small inputs, e.g., the ACAS Xu benchmark~\autoref{sec:acasxu} with 5 inputs, and is adopted by many modern DNN verification tools, including \marabou{} and \nnenum{}.
 For larger input dimensions networkswe, it will take much time as we need to run $2 \times$ the number of inputs to tighten all the input bounds (for each input, we need to tighten the upper and lower bounds individually).
+
+To reduce the time complexity, we can prioritize the input variables to tighten first, e.g., deciding the variable with the largest bounds first, and only tighten up to a maxinum number of inputs, e.g., 10 inputs.
+
+\subsection{Neuron (Hidden) Bounds Tightening}\label{sec:neuronboundstigthten}
+
+Instead of tightening the input bounds, we can tighten the bounds of the hidden neurons.
+There are a couple of advantages of tightening the bounds of the hidden neurons:
+\begin{enumerate}
+\item In some networks, numbers of hidden neurons are \emph{fewer} than the number of inputs, e.g., the MNISTFC 2x256 network has $28\times 28 = 784$ inputs and only 512 hidden neurons.
+\item We don't necessarily tighten all hidden neurons, as some hidden neurons are already stable, i.e., their lower bounds are greater than 0 or their upper bounds are less than 0.
+\item In the case of numerous hidden neurons, the priorization of hidden neurons is already done by branching heuristics, e.g., ranking neuron importance based on some metrics.
+\item More importantly, if a hidden neuron is stabilized after tightening its bounds, e.g., its lower bound becomes greater than 0 or its upper bound becomes less than 0, we no longer need to branch on that particular neuron.
+\end{enumerate}
+
+Let's revisit the example above, after splitting on $x_3$, we can tighten the upper bounds of $x_4$ (suppose that $l_{x_4} < 0 < u_{x_4}$, e.g., unstable and not split yet) by solving the following optimization problem:
+
+\begin{equation}
+\begin{aligned}
+\text{maximize~} &x_4 \quad \text{s.t.} \\
+& 0.5x_1 - 0.5x_2 + 1.0 \le 0 \\
+& -1 \le x_1 \le 1 \\
+& -2 \le x_2 \le 2
+\end{aligned}
+\end{equation}
+If the optimization result yields a maximum value of $x_4$less than 0, e.g., $u_{x_4} < 0$, we can conclude that $x_4$ is stabilized and no longer need to branch on $x_4$, thus, reducing the number of branches made by the verifier.
+
+Note that, in both cases, optimization problems are independent (between inputs/neurons and lower/upper bounds), thus, we can solve them in parallel, e.g., optimizing the both upper and lower bounds of $x_1$ (input) and $x_4$ (neuron) in parallel.
 }
 
 % For networks with small inputs, DNN verification tools use a more aggressive abstraction process to achieve more precise computation. Specifically, they use LP solving to compute the tightest bounds for all input variables from the generated linear constraints. This computation is efficient when the number of inputs is small.
@@ -5690,7 +5718,7 @@ For larger input dimensions networkswe, it will take much time as we need to run
 
 
 % \ignore{
-\section{Branching Heuristics}\label{sec:branchingheuristics}
+% \section{Branching Heuristics}\label{sec:branchingheuristics}
 % Decision or branching heuristics decide free variables to make assignments and thus are crucial for the scalability of DPLL by reducing assignment mistakes~\cite{kroening2016decision,beyer2022progress}.
 
 % For networks with small inputs, \tool{} prioritizes variables representing neurons with the \emph{furthest bounds} from the decision value 0 of ReLU, i.e., the 0 in $\max(x,0)$.
