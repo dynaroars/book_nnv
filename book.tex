@@ -5689,7 +5689,6 @@ There are a couple of advantages of tightening the bounds of the hidden neurons:
 \begin{enumerate}
 \item In some networks, numbers of hidden neurons are \emph{fewer} than the number of inputs, e.g., the MNISTFC 2x256 network has $28\times 28 = 784$ inputs and only 512 hidden neurons.
 \item We don't necessarily tighten all hidden neurons, as some hidden neurons are already stable, i.e., their lower bounds are greater than 0 or their upper bounds are less than 0.
-\item In the case of numerous hidden neurons, the priorization of hidden neurons is already done by branching heuristics, e.g., ranking neuron importance based on some metrics.
 \item More importantly, if a hidden neuron is stabilized after tightening its bounds, e.g., its lower bound becomes greater than 0 or its upper bound becomes less than 0, we no longer need to branch on that particular neuron.
 \end{enumerate}
 
