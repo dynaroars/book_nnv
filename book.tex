@@ -5746,7 +5746,127 @@ Note that, in both cases, optimization problems are independent (between inputs/
 % $\{x_1 \in [0,1], x_2 \in [0,2]\}$.
 % Note that the formula $-1 \le x_1 \le 1 \land -2 \le x_2 \le 2$ representing the original input region is equivalent to the formula $(-1 \le x_1 \le 0 \lor 0 \le x \le 1) \land (-2 \le x_2 \le 0 \lor 0 \le x_2 \le 2)$ representing the combination of the created subregions.
 
-\hd{TODO: add batch processing}
+\hd{
+\paragraph{Matrix Form for Interval Computation}
+While the min/max formulation~\autoref{sec:interval-abstraction} is intuitive, it can be efficiently implemented using matrix operations. 
+We can decompose the weight matrix $W$ into positive and negative components:
+\[
+W^+ = \max(W, 0) \qquad W^- = \min(W, 0)
+\]
+where the max and min operations are applied element-wise.
+
+Then the interval bounds can be computed as:
+\[
+\begin{aligned}
+f^a_L &= W^+ \cdot \mathbf{l} + W^- \cdot \mathbf{u} + \mathbf{b}\\
+f^a_U &= W^+ \cdot \mathbf{u} + W^- \cdot \mathbf{l} + \mathbf{b}
+\end{aligned}
+\]
+where $\mathbf{l} = [l_1, l_2, \ldots, l_n]^T$ and $\mathbf{u} = [u_1, u_2, \ldots, u_n]^T$ are the vectors of lower and upper bounds.
+
+
+\begin{example}\label{ex:matrix-form-equivalence}
+    We can verify that the matrix form produces identical results to the min/max approach using the same network from~\autoref{ex:transformer-affine1}.
+    
+    Given the weight $w_1 = -0.5$, $w_2 = 0.5$, and bias $b = 1.0$, we decompose:
+    \[
+    W^+ = [\max(-0.5, 0), \max(0.5, 0)] = [0, 0.5]
+    \]
+    \[
+    W^- = [\min(-0.5, 0), \min(0.5, 0)] = [-0.5, 0]
+    \]
+    
+    For inputs $x_1 \in [1, 2]$ and $x_2 \in [-1, 3]$, the lower vector $\mathbf{l} = [1, -1]$ and the upper vector $\mathbf{u} = [2, 3]$:
+    \[
+    \begin{aligned}
+    f^a_L &= W^+ \cdot \mathbf{l} + W^- \cdot \mathbf{u} + b\\
+    &= [0, 0.5] \cdot [1, -1] + [-0.5, 0] \cdot [2, 3] + 1\\
+    &= 0 \cdot 1 + 0.5 \cdot (-1) + (-0.5) \cdot 2 + 0 \cdot 3 + 1\\
+    &= 0 - 0.5 - 1.0 + 0 + 1 = -0.5
+    \end{aligned}
+    \]
+    
+    \[
+    \begin{aligned}
+    f^a_U &= W^+ \cdot \mathbf{u} + W^- \cdot \mathbf{l} + b\\
+    &= [0, 0.5] \cdot [2, 3] + [-0.5, 0] \cdot [1, -1] + 1\\
+    &= 0 \cdot 2 + 0.5 \cdot 3 + (-0.5) \cdot 1 + 0 \cdot (-1) + 1\\
+    &= 0 + 1.5 - 0.5 + 0 + 1 = 2.0
+    \end{aligned}
+    \]
+    
+    This gives us $f^a([1,2],[-1,3]) = [-0.5, 2.0]$, which matches exactly the result from the min/max approach in~\autoref{ex:transformer-affine1}.
+    \end{example}
+    
+
+The matrix formulation of interval arithmetic is equivalent to the min/max approach but enables efficient batch processing of multiple input regions simultaneously. 
+This is particularly useful when splitting input regions into multiple subproblems and computing abstraction in parallel.
+
+Consider an input region that needs to be split for improving abstraction precision. 
+For example, we can split the input region $\{x_1 \in [-1,1], x_2 \in [-2,2]\}$ along the first dimension into two subproblems:
+\begin{enumerate}
+\item Subproblem 1: $\{x_1 \in [-1,0], x_2 \in [-2,2]\}$
+\item Subproblem 2: $\{x_1 \in [0,1], x_2 \in [-2,2]\}$
+\end{enumerate}
+
+Using the matrix form in~\autoref{ex:matrix-form-equivalence}, we can process both subproblems simultaneously by stacking the bounds into matrices:
+\[
+\mathbf{L} = \begin{bmatrix} -1 & -2 \\ 0 & -2 \end{bmatrix}, \quad
+\mathbf{U} = \begin{bmatrix} 0 & 2 \\ 1 & 2 \end{bmatrix}
+\]
+where each row represents the lower and upper bounds for one subproblem.
+
+Next, for a linear layer with weight matrix $W$ and bias vector $\mathbf{b}$, we can compute the bounds for all subproblems simultaneously:
+\[
+\begin{aligned}
+\mathbf{O}_L &= \mathbf{L} \cdot (W^+)^T + \mathbf{U} \cdot (W^-)^T + \mathbf{b}\\
+\mathbf{O}_U &= \mathbf{U} \cdot (W^+)^T + \mathbf{L} \cdot (W^-)^T + \mathbf{b}
+\end{aligned}
+\]
+where $\mathbf{1}$ is a vector of ones with appropriate dimension and $\otimes$ denotes the outer product.
+
+\begin{example}\label{ex:batch-processing}
+Consider the network from~\autoref{ex:transformer-affine1} with weight $W = [-0.5, 0.5]$ and bias $b = 1.0$. We split the input region $\{x_1 \in [-1,1], x_2 \in [-2,2]\}$ into two subproblems as described above.
+
+First, we decompose the weight:
+\[W^+ = [0, 0.5] \qquad W^- = [-0.5, 0] \qquad \mathbf{b} = [1.0, 1.0]\]
+The bias vector is the same for both subproblems, thus, just duplicate it for each subproblem.
+Then we compute bounds for both subproblems:
+\[
+\mathbf{L} \cdot (W^+)^T = \begin{bmatrix} -1 & -2 \\ 0 & -2 \end{bmatrix} \begin{bmatrix} 0 \\ 0.5 \end{bmatrix} = \begin{bmatrix} -1.0 \\ -1.0 \end{bmatrix}
+\]
+
+\[
+\mathbf{U} \cdot (W^-)^T = \begin{bmatrix} 0 & 2 \\ 1 & 2 \end{bmatrix} \begin{bmatrix} -0.5 \\ 0 \end{bmatrix} = \begin{bmatrix} 0.0 \\ -0.5 \end{bmatrix}
+\]
+
+\[
+\mathbf{O}_L = \begin{bmatrix} -1.0 \\ -1.0 \end{bmatrix} + \begin{bmatrix} 0.0 \\ -0.5 \end{bmatrix} + \begin{bmatrix} 1.0 \\ 1.0 \end{bmatrix} = \begin{bmatrix} 0.0 \\ -0.5 \end{bmatrix}
+\]
+
+Similarly for upper bounds:
+\[
+\mathbf{U} \cdot (W^+)^T = \begin{bmatrix} 0 & 2 \\ 1 & 2 \end{bmatrix} \begin{bmatrix} 0 \\ 0.5 \end{bmatrix} = \begin{bmatrix} 1.0 \\ 1.0 \end{bmatrix}
+\]
+
+\[
+\mathbf{L} \cdot (W^-)^T = \begin{bmatrix} -1 & -2 \\ 0 & -2 \end{bmatrix} \begin{bmatrix} -0.5 \\ 0 \end{bmatrix} = \begin{bmatrix} 0.5 \\ 0.0 \end{bmatrix}
+\]
+
+\[
+\mathbf{O}_U = \begin{bmatrix} 1.0 \\ 1.0 \end{bmatrix} + \begin{bmatrix} 0.5 \\ 0.0 \end{bmatrix} + \begin{bmatrix} 1.0 \\ 1.0 \end{bmatrix} = \begin{bmatrix} 2.5 \\ 2.0 \end{bmatrix}
+\]
+
+Therefore:
+\begin{itemize}
+\item Subproblem 1: $x_3 \in [0.0, 2.5]$
+\item Subproblem 2: $x_3 \in [-0.5, 2.0]$
+\end{itemize}
+
+We can verify these results by computing each subproblem individually using the original formulation, which yields identical results.
+\end{example}
+
+}
 
 \section{GPU Processing}\label{sec:gpu}
 
