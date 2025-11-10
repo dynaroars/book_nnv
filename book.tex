@@ -5871,7 +5871,39 @@ We can verify these results by computing each subproblem individually using the 
 \section{GPU Processing}\label{sec:gpu}
 
 % \tvn{Hai, talk about how modern tools like crown and neuralsat leverage GPU.  Give details.  Provide small CUDO code and examples as needed.}
-\hd{TODO: add GPU processing}
+\hd{
+By using matrix operations, we can leverage using GPUs natively to speed up the computation.
+As expected, the computation time is reduced significantly using GPUs when the size of matrices (weights, bias, inputs, etc.) becomes larger~\autoref{fig:gpu-benchmarking}.
+}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.7\linewidth]{figure/gpu-benchmarking.png}
+    \caption{GPU Benchmarking Results.}\label{fig:gpu-benchmarking} 
+\end{figure}
+
+\begin{lstlisting}[language=Python]
+import torch
+
+# weights and bias
+W = torch.tensor([[0, 0.5], [-0.5, 0]]).cuda()
+b = torch.tensor([1.0, 1.0]).cuda()
+
+% input bounds
+L = torch.tensor([[-1, -2], [0, -2]]).cuda()
+U = torch.tensor([[0, 2], [1, 2]]).cuda()
+
+# decompose weights
+W_plus = W.clamp(min=0)
+W_minus = W.clamp(max=0)
+
+# compute bounds
+O_L = L @ W_plus.T + U @ W_minus.T + b
+O_U = U @ W_plus.T + L @ W_minus.T + b
+
+\end{lstlisting}
+
+
 
 %\hd{Updated.}
 
