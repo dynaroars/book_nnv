@@ -3964,7 +3964,9 @@ As shown in~\autoref{chap:constraint-solving}, the NNV verification problem can 
 \section{Activation Pattern Search}\label{sec:activation-patterns}
 
 DNNs with piecewise linear activation functions have a special structure that can be exploited for verification.
-For example, each ReLU (\autoref{sec:relu}) function partitions the input space into two regions---active and inactive.
+For example, each ReLU (\autoref{sec:relu}) function 
+has two \emph{activation statuses}: active (identity function) and inactive (zero function). Each status
+partitions the input space into two regions---active and inactive.
 Within each region, the DNN behavior can be encoded as \emph{a linear constraint}, which can be efficiently analyzed.
 
 Thus, verifying a DNN reduces to checking that none of these linear regions contains a counterexample. More specifically, we can rewrite the satisfiability formulation in~\autoref{eq:nnv2} as a disjunction:
@@ -5763,7 +5765,8 @@ Note that in both cases optimization problems are independent (between inputs/ne
 
 
 \paragraph{Matrix Form for Interval Computation}
-While the min/max formulation in~\autoref{sec:interval-abstraction} is intuitive, it can be efficiently implemented using matrix operations. 
+
+While the min/max formulation, e.g., for abstraction~\autoref{sec:interval-abstraction}, is intuitive, it can be efficiently implemented using matrix operations. 
 We can decompose the weight matrix $W$ into positive and negative components:
 \[
 W^+ = \max(W, 0) \qquad W^- = \min(W, 0)
@@ -5941,10 +5944,10 @@ O_U = U @ W_plus.T + L @ W_minus.T + b
 \part{Modern DNN Verification Tools}\label{part:modern-tools}
 \chapter{The \neuralsat{} Algorithm}\label{chap:neuralsat}
 
-\neuralsat{}~\cite{duong2025neuralsat,duong2024harnessing} is a relatively late competitor in the DNN verification space, but it has quickly become a strong contender, consistently placed among the top tools at DNN verification competitions~\autoref{chap:vnncomps}.
+\neuralsat{}~\cite{duong2025neuralsat,duong2024harnessing} is a relatively new competitor in the DNN verification space, but it has quickly become a strong contender, consistently placed among the top tools at DNN verification competitions~\autoref{chap:vnncomps}.
 
-At its core, \neuralsat{} is BaB, but follows a DPLL(T) framework~\cite{davis1962machine} and includes unique optimizations and heuristics to improve the search performance.
-Thus, \neuralsat{} is essentially an SMT solver with respect to a theory, in this case, the theory of DNNs.
+At its core, \neuralsat{} is BaB, but follows a DPLL(T) framework~\cite{davis1962machine} and includes specialized optimizations and heuristics to improve its search.
+Thus, \neuralsat{} is essentially an SMT solver (\autoref{sec:smt-solvers}) with respect to a theory, in this case, the theory of DNNs.
 
 \section{Overview}\label{sec:neuralsat:overview}
 \begin{figure}[h]
@@ -5953,17 +5956,16 @@ Thus, \neuralsat{} is essentially an SMT solver with respect to a theory, in thi
     \caption{\label{fig:overview} The \neuralsat{} DPLL(T) Algorithm.} 
 \end{figure}
 
-
 \autoref{fig:overview} gives an overview of \neuralsat{}, which consists of standard DPLL components (light shades) and the theory solver (dark shade).
 \neuralsat{} first constructs a propositional formula over Boolean variables that represent the activation status of neurons (\emph{Boolean Abstraction}). Clauses in the formula assert that each neuron, e.g., neuron $i$, is active or inactive, e.g., $v_i \vee \overline{v_i}$.
-This representation enables using standard DPLL to search for truth values satisfying these clauses and a DNN-specific theory solver to check the feasibility of truth assignments with respect to the constraints encoding the DNN and the property of interest.
+This representation enables using standard DPLL to search for truth values satisfying these clauses and a DNN-specific theory solver to check the feasibility of truth assignments---\emph{activation patterns} (\autoref{sec:activation-patterns})--- with respect to the constraints encoding the DNN and the property of interest.
 
-\neuralsat{} now enters an iterative process to find a truth assignment---\emph{activation pattern} (\autoref{sec:activation-patterns})---satisfying the activation clauses.
+\neuralsat{} now enters an iterative process to find activation pattern (truth assignment) satisfying the activation clauses.
 First, \neuralsat{} assigns a truth value to an unassigned variable (\emph{Decide}), detects unit clauses caused by this assignment, and infers additional assignments (\emph{Boolean Constraint Propagation}).
-Next, \neuralsat{} invokes the theory solver or T-solver (\emph{Deduction}), which uses LP solving and abstraction to check the satisfiability of the constraints of the current assignment with the property of interest. %The T-solver can also infer additional truth assignments.
+Next, \neuralsat{} invokes the theory solver or T-solver (\emph{Deduction}), which uses LP solving and abstraction to check the feasibility of the constraints of the current assignment with the property of interest. %The T-solver can also infer additional truth assignments.
 
 
-If the T-solver confirms satisfiability, \neuralsat{} continues with new assignments (\emph{Decide}). Otherwise, \neuralsat{} detects a conflict   (\emph{Analyze Conflict}) and learns clauses to remember it and backtrack to a previous decision  (\emph{Backtrack}).
+If the T-solver confirms feasibility, \neuralsat{} continues with new assignments (\emph{Decide}). Otherwise, \neuralsat{} detects a conflict   (\emph{Analyze Conflict}) and learns clauses to remember it and backtrack to a previous decision  (\emph{Backtrack}).
 If \neuralsat{} detects local optima, it would restart (\emph{Restart}) the search by clearing all decisions that have been made, but save the conflict clauses learned so far to avoid reaching the same state in the next runs.
 Restarting especially benefits challenging DNN problems by enabling better clause learning and exploring different decision orderings.
 
@@ -7688,7 +7690,7 @@ The answer depends on the chosen theory. Here, over real numbers ($\mathbb{R}$),
 
 
 \end{example}
-\subsection{SMT Solvers}
+\subsection{SMT Solvers}\label{sec:smt-solvers}
 
 % Like SAT solving, an SMT solver ..
 
