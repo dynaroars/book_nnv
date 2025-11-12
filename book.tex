@@ -140,7 +140,7 @@
 
 
 \newtoggle{usecomment}
-\settoggle{usecomment}{true}
+\settoggle{usecomment}{false}
 
 \newcommand{\tcomment}[1]{\iftoggle{usecomment}{#1}{}}
 \newcommand{\tvn}[1]{\iftoggle{usecomment}{{\color{red}{[TVN]: #1}}}{}}
@@ -5618,20 +5618,23 @@ Future work will explore tuning $N$ to a given verification problem.
 In addition to adversarial attacks (\autoref{chap:adversarial-attacks}), DNN verifiers often employ a range of optimizations and engineering techniques to improve performance. This chapter discusses some of the common techniques used in modern DNN verifiers.
 
 \section{Input Splitting}\label{sec:input-splitting}
-Modern DNN verifiers~\cite{katz2019marabou,wang2018formal,wang2021beta,duong2025neuralsat} often use a technique called \emph{input splitting} to quickly deal with networks with verification problems involving low-dimensional networks, such as those in the ACAS Xu benchmark~\autoref{sec:acasxu} where the networks have a small number of inputs. Currently many work set the threshold to 50 inputs, i.e., if the network has more than 50 inputs, it is considered large and input splitting is not applied.
 
-The idea is to split the original verification problem into subproblems, each checking whether the DNN produces the desired output from a smaller input region and returns \unsat{} if all subproblems are verified and \sat{} if a counterexample is found in any subproblem. Input splitting avoids BaB search---also called \emph{neuron splitting} and focuses on individual neurons---and is often used quickly eliminate easy cases.
+Many verifiers, e.g.,~\cite{katz2019marabou,wang2018formal,wang2021beta,duong2025neuralsat}, use a technique called \emph{input splitting} to quickly deal with networks with verification problems involving low-dimensional networks, such as those in the ACAS Xu benchmark~\autoref{sec:acasxu} where the networks have a small number of inputs (e.g., $\le 50$).
+
+The idea is to split the original verification problem into subproblems, each checking whether the DNN produces the desired output from a smaller input region and returns \unsat{} if all subproblems are verified and \sat{} if a counterexample is found in any subproblem. Input splitting avoids BaB search (\autoref{chap:bab})---which performs \emph{neuron splitting}---and is often used to quickly eliminate easy cases.
+
+Moreover, each subproblem now has a smaller input region, thus the verifier can often verify them more quickly than the original problem.
+Finally, because each task can be solved independently, the verifier can solve them in parallel to further speed up the verification process.
+
 
 \begin{example}
-    % Given $k$ available threads, \tool{} splits the original input region to obtain subproblems as described and and runs DPLL(T) on $k$ subproblems in parallel. % and iteratively splits any subproblem which cannot be solved within pre-defined amount of time, e.g., 2 seconds.
-% Modern DNN verification tools such as \neuralsat{} uses the number of available CPU threads to determine the number of created subproblems.
-Given the problem with input region $\{x_1 \in [-1,1] , x_2 \in [-2,2]\}$, \tool{} splits it into four subregions:
+Given a problem with input region $\{x_1 \in [-1,1] , x_2 \in [-2,2]\}$, input splitting splits the input region into four subregions:
 $\{x_1 \in [-1,0] , x_2 \in [-2,0]\}$, 
 $\{x_1 \in [-1,0] , x_2 \in [0,2]\}$ , 
 $\{x_1 \in [0,1] , x_2 \in [-2,0]\}$, and 
 $\{x_1 \in [0,1], x_2 \in [0,2]\}$.  
+The verifier then checks if the DNN produces the desired output from each of these subregions.
 
-\tool{} returns \unsat{} if it verifies all 4 subproblems and \sat{} if it found a counterexample in any of the subproblems. 
 Note that the formula $-1 \le x_1 \le 1 \land -2 \le x_2 \le 2$ representing the original input region is equivalent to the formula $(-1 \le x_1 \le 0 \lor 0 \le x \le 1) \land (-2 \le x_2 \le 0 \lor 0 \le x_2 \le 2)$ representing the combination of the created subregions.
 \end{example}
 
@@ -5639,9 +5642,16 @@ Note that the formula $-1 \le x_1 \le 1 \land -2 \le x_2 \le 2$ representing the
 \section{Bounds Tightening}\label{sec:boundstigthten}
 
 \subsection{Input Bounds Tightening}\label{sec:inputboundstigthten}
-Every time verifier makes a split, it will create more constraints for each branch, e.g., $\hat{x}_i \le 0$ or $\hat{x}_i > 0$.
 
-Recall the DNN from~\autoref{fig:dnn-b} can be represented as the formula $\alpha$
+When the verifier splits on a neuron (e.g., $\hat{x}_i \le 0$ or $\hat{x}_i > 0$), 
+it adds new linear constraints that further restrict the feasible input region. 
+As a result, the original input bounds (e.g., $-1 \le x_1 \le 1$) may no longer  reflect the true range of values that satisfy all current constraints. 
+\textbf{Input Bound tightening} recomputes the smallest possible ranges for each input variable  under these constraints. 
+These tighter input bounds propagate through the network and yield tighter neuron and output bounds, which in turn helps 
+prune subproblems earlier.
+
+\begin{example}\label{ex:inputboundstigthten}
+Recall the DNN from~\autoref{fig:dnn-b} can be represented as:
 \[
 \begin{aligned}
 & \hat{x}_3 = -0.5x_1 + 0.5x_2 + 1.0 ~\land\\
@@ -5656,15 +5666,16 @@ and input property $\phi_{in}$
 -1 \le x_1 \le 1 \land -2 \le x_2 \le 2
 \)
 
-Suppose we make a split on $x_3$.
-That will give us two subproblems, in which one problem has the constraint of
+Suppose we make a split on $x_3$, which give us two subproblems, represented by the constraints:
 \(
     -0.5x_1 + 0.5x_2 + 1.0 \le 0
 \)
-and the other problem has the constraint of
+and 
 \(
     -0.5x_1 + 0.5x_2 + 1.0 > 0
 \).
+We can use the new constraint to tighten the input bounds of $x_1$ and $x_2$ for each subproblem.
+
 For the first subproblem, we can create an optimization problem to tighten the bounds.
 For example, to tighten the upper bounds of $x_1$, we can create an optimization problem as follows:
 \begin{equation}
@@ -5676,8 +5687,11 @@ For example, to tighten the upper bounds of $x_1$, we can create an optimization
 \end{aligned}
 \end{equation}
 
-We can apply the same approach to tighten the lower bounds of $x_1$ by formulating the minimization and the upper/lower bounds of $x_2$.
-Note that, this approach works particularly well for networks with small inputs, e.g., the ACAS Xu benchmark~\autoref{sec:acasxu} with 5 inputs, and is adopted by many modern DNN verification tools, including \marabou{} and \nnenum{}.
+We can apply the same approach to tighten the lower bounds of $x_1$ using a minimization problem.  Similarly, we can create optimization problems to tighten both the bounds of $x_2$.
+
+\end{example}
+
+Note that, this approach works well for networks with small inputs, e.g., the ACAS Xu benchmark~\autoref{sec:acasxu} with 5 inputs, and is adopted by many modern DNN verification tools, including \marabou{} and \nnenum{}.
 For larger input dimensions networkswe, it will take much time as we need to run $2 \times$ the number of inputs to tighten all the input bounds (for each input, we need to tighten the upper and lower bounds individually).
 
 To reduce the time complexity, we can prioritize the input variables to tighten first, e.g., deciding the variable with the largest bounds first, and only tighten up to a maxinum number of inputs, e.g., 10 inputs.
@@ -5692,7 +5706,8 @@ There are a couple of advantages of tightening the bounds of the hidden neurons:
 \item More importantly, if a hidden neuron is stabilized after tightening its bounds, e.g., its lower bound becomes greater than 0 or its upper bound becomes less than 0, we no longer need to branch on that particular neuron.
 \end{enumerate}
 
-Let's revisit the example above, after splitting on $x_3$, we can tighten the upper bounds of $x_4$ (suppose that $l_{x_4} < 0 < u_{x_4}$, e.g., unstable and not split yet) by solving the following optimization problem:
+\begin{example}\label{ex:neuronboundstigthten}
+Let's revisit~\autoref{ex:inputboundstigthten}, after splitting $x_4$\tvn{you wrote $x_3$ here, did you mean $x_4$?}, we can tighten the upper bounds of $x_4$ (suppose that $l_{x_4} < 0 < u_{x_4}$, e.g., unstable and not split yet) by solving the following optimization problem:
 
 \begin{equation}
 \begin{aligned}
@@ -5706,7 +5721,7 @@ If the optimization result yields a maximum value of $x_4$ less than 0, e.g., $u
 There will be many tweaks to make the optimization problem more efficient, e.g., setting a early stopping condition, e.g., if the maximum value of $x_4$ is less than 0, we can stop the optimization. It is because the fact that, if the upper bound of $x_4$ is already less than 0, $x_4$ will be considered as \emph{inactive} no matter what the \emph{optimal} upper bound is.
 
 Note that in both cases optimization problems are independent (between inputs/neurons and lower/upper bounds) and thus can be solved in parallel, e.g., optimizing the both upper and lower bounds of $x_1$ (input) and $x_4$ (neuron) simultaneously.
-
+\end{example}
 
 % For networks with small inputs, DNN verification tools use a more aggressive abstraction process to achieve more precise computation. Specifically, they use LP solving to compute the tightest bounds for all input variables from the generated linear constraints. This computation is efficient when the number of inputs is small.
 
