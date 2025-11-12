@@ -6523,9 +6523,6 @@ Thus, \tool{} was able to generate non-chronological backtracks and use BCP to p
     \end{minipage}
   \end{figure}
 
-  %TODO: should use our current example, per haps for disproving property.
-
-
   \begin{example}\label{ex:reluplex}
 
   We use the DNN in~\autoref{fig:reluplex} to demonstrate \reluplex{}. Assume we want to check that the DNN has the property
@@ -6539,7 +6536,6 @@ In this case, we want to check if the negation of ~\autoref{eq:prop1} is \unsat{
     ( 0 \le i_0 \le 0.5 \land -2 \le i_1 \le -1) \land 0 \le n_{10} \le 0.5.
   \end{equation}
 
-If~\autoref{eq:negprop1} is \unsat{}, then the DNN satisfies the property in~\autoref{eq:prop1}---there exists no assignment of the inputs $i_0, i_1$ such that the output $n_{10}$ is within the range $[0, 0.5]$. Otherwise, the DNN does not have the property and we can return a counterexample.
 
 
 \paragraph{Problem Encoding}  A DNN can be encoded as a conjunctions of constraints.  The ReLU node $v$ can be encoded as a pair of variables $v'$ and $v''$, where $v'$ is used to connect the nodes of previous layers to $v$, and $v''$ is used to connect $v$ to the next layer.
@@ -6559,12 +6555,12 @@ The DNN in~\autoref{fig:reluplex} can be encoded as a conjunction of equalities:
 
 \paragraph{Basic Variables} We also introduce three new \emph{basic} (auxilliary or slack) variables to store the relationships of the DNN's constraints:
 \begin{gather}
-  a_1 = i_0 - v^b_{12} - n00'\label{eq:reluplex2a},\\
-  a_2 = i_0 + v^b_{12} - n01'\label{eq:reluplex2b},\\
+  a_1 = i_0 - i_1 - n00'\label{eq:reluplex2a},\\
+  a_2 = i_0 + i_1 - n01'\label{eq:reluplex2b},\\
   a_3 = 0.5n00'' -0.2 n01'' - n_{10}\label{eq:reluplex2c}
 \end{gather}
 
-In simplex terminology, a basic variable is a variable that is used to represent the relationship between other variables in the constraints. For example, $a_1$ represents the difference between $i_0$, $v^b_{12}$, and $n00'$. The basic variables are used to maintain the relationships between the variables in the constraints and are updated during the search process.
+In simplex terminology, a \emph{basic} variable is a variable that is used to represent the relationship between other variables in the constraints. For example, $a_1$ represents the difference between $i_0$, $i_1$, and $n00'$. Basic variables are used to maintain the relationships between the variables in the constraints and are updated during the search process.
 
 In contrast, a \emph{non-basic} variable is a variable that is not used to represent the relationship between other variables in the constraints. For example, $i_0$ and $i_1$ are non-basic because they are not used to represent the relationship between other variables in the constraints. Non-basic variables are typically the input variables of the DNN.
 
@@ -6572,7 +6568,7 @@ In contrast, a \emph{non-basic} variable is a variable that is not used to repre
 
 This iterative updating process can be demonstrated through a sequence of configuration updates over the variables.
 ~\autoref{tab:reluplex1} shows the initial configuration with all values assigned to 0.
-Observe that the lower and upper bounds of the inputs $i_0, i_1$ and output $n_{10}$ are specified in the property in ~\autoref{eq:negprop1}, the lower bounds of $v_f$'s representing ReLU are 0, and the other hidden variables are unbounded.
+Observe that the lower and upper bounds of the inputs $i_0, i_1$ and output $n_{10}$ are specified in the property in ~\autoref{eq:negprop1}, the lower bounds of $n''$ representing ReLUs are 0s, and the other hidden variables are unbounded.
 
 \begin{table}[h]
     \centering
@@ -6589,16 +6585,15 @@ Observe that the lower and upper bounds of the inputs $i_0, i_1$ and output $n_{
 \autoref{tab:reluplex1} shows that $i_1$ is out-of-bounds because $0 \notin [-2,-1]$. To fix $i_1$, which is non-basic, Reluplex simply updates it to a valid value, e.g., $i_1 \texttt{+=} -1.0 = -1.0$, which means adding -1.0 to the current value of $i_1$ and thus having $i_1= -1.0$.
 Now, because $a_1, a_2$ depend on $i_1$ as shown in~\autoref{eq:reluplex2a} and~\autoref{eq:reluplex2b}, respectively, this update to $i_1$ also changes $a_1,a_2$:
     \begin{align*}
-        a_1 ~+=~ 1.0 = 1.0   &~\text{because}~ a_1=i_0 - i_1 - n00', \\
-        a_2 ~+=~ -1.0 = -1.0  & ~\text{because}~ a_2=i_0 + i_1 - n01'.\\
+        a_1 ~\texttt{+=}~ 1.0 = 1.0   &~\text{because}~ a_1=i_0 - i_1 - n00', \\
+        a_2 ~\texttt{+=}~ -1.0 = -1.0  & ~\text{because}~ a_2=i_0 + i_1 - n01'.\\
     \end{align*}
 
 
 
-\autoref{tab:reluplex2} shows the new configuration.
-\autoref{tab:reluplex2} also shows $a_1, a_2$ violate their bounds and need to be fixed. Assume Reluplex picks $a_1$. To fix $a_1$, which is a basic variable, Reluplex pivots (swaps) it with one of the variables it depends on as shown in the constraint $ a_1 = i_0 - v^b_{12} - n00'$ in~\autoref{eq:reluplex2a}. Assume Reluplex pivots $a_1$ with $n00'$, we get
+\autoref{tab:reluplex2} shows the new configuration, which now has $a_1, a_2$ violate their bounds and need to be fixed. Assume Reluplex picks $a_1$. To fix $a_1$, which is a basic variable, Reluplex pivots (swaps) it with one of the variables it depends on as shown in the constraint $ a_1 = i_0 - i_1 - n00'$ in~\autoref{eq:reluplex2a}. Assume Reluplex pivots $a_1$ with $n00'$, we get
 \begin{equation}\label{eq:reluplex5}
-n00' = i_0 - v^b_{12} - a_1.
+n00' = i_0 - i_1 - a_1.
 \end{equation}
 
 
@@ -6629,9 +6624,9 @@ Reluplex now updates the non-basic $a_1$ to 0 ($a_1 \text{+=} -1.0 = 0$). This a
 \caption{Configuration \#3}\label{tab:reluplex3}
 \end{table}
 
-~\autoref{tab:reluplex3} shows the new configuration. ~\autoref{tab:reluplex3} also shows the basic variable $a_2$ is out-of-bound.  To fix it, Reluplex pivots $a_2$ with a variable it depends on as shown in the constraint $a_2 = i_0 + v^b_{12} - n01'$ in Eq~\ref{eq:reluplex2b}.  Assume Reluplex pivots $a_2$ with $n01'$, we get
+~\autoref{tab:reluplex3} shows the new configuration. ~\autoref{tab:reluplex3} also shows the basic variable $a_2$ is out-of-bound.  To fix it, Reluplex pivots $a_2$ with a variable it depends on as shown in the constraint $a_2 = i_0 + i_1 - n01'$ in Eq~\ref{eq:reluplex2b}.  Assume Reluplex pivots $a_2$ with $n01'$, we get
 \begin{equation}\label{eq:reluplex6}
-  n01' = i_0 + v^b_{12} - a_2
+  n01' = i_0 + i_1 - a_2
 \end{equation}
 Now $a_2$ becomes non-basic and is updated to 0 through $a_2+= 1.0 = 0$. As $n01'$ depends on $a_1$ as shown in ~\autoref{eq:reluplex6}, we make the change $n01' ~\texttt{-=}~1.0 = -1.0$.
 
@@ -9176,3 +9171,212 @@ Since each literal is considered, this would be considered exhaustive theory pro
 
 
 \end{document}
+
+
+
+\section{PGD Quiz Problems with Solutions}
+
+\subsection*{Easy Problems}
+
+\begin{problem}[PGD Step and Gradient Direction]\label{prob:pgd-easy1}
+Consider 
+\[
+y = 3x_1 - 2x_2 + 1, \quad -1 \le x_1 \le 1, \ -1 \le x_2 \le 1.
+\]
+\begin{enumerate}
+    \item Compute the gradient $\nabla_x y$.
+    \item If you want to \emph{minimize} $y$, in which direction should you move: $+\nabla_x y$ or $-\nabla_x y$?
+    \item Starting from $(x_1^{(0)}, x_2^{(0)}) = (0, 0)$ and $\eta = 0.5$, perform one PGD update (including clipping if needed).
+\end{enumerate}
+
+\begin{solution}
+We have
+\[
+\nabla_x y = \left(\frac{\partial y}{\partial x_1}, \frac{\partial y}{\partial x_2}\right) = (3, -2).
+\]
+To minimize $y$, we move in direction $-\nabla_x y = (-3, 2)$.  
+Starting from $(0, 0)$:
+\[
+x_1^{(1)} = 0 - 0.5 \times 3 = -1.5 \Rightarrow \text{clip to } -1, \qquad
+x_2^{(1)} = 0 - 0.5 \times (-2) = 1.
+\]
+Thus, $(x_1^{(1)}, x_2^{(1)}) = (-1, 1)$.  
+Compute
+\[
+y = 3(-1) - 2(1) + 1 = -4 < 0,
+\]
+so PGD finds a counterexample in one step.
+\end{solution}
+\end{problem}
+
+\begin{problem}[Gradient Intuition]\label{prob:pgd-easy2}
+Suppose $\nabla_x y = (4, -1.5)$ at some input $(x_1, x_2)$.  
+Which variable, $x_1$ or $x_2$, affects $y$ more strongly, and why?
+
+\begin{solution}
+Because $|4| > |{-1.5}|$, $x_1$ affects $y$ more strongly — small changes in $x_1$ cause larger changes in $y$ than the same changes in $x_2$.
+\end{solution}
+\end{problem}
+
+
+\subsection*{Medium Problems}
+
+\begin{problem}[PGD with Projection]\label{prob:pgd-med1}
+Consider 
+\[
+y = -x_1 + 2x_2 + 0.5, \quad -1 \le x_1, x_2 \le 1.
+\]
+We want to find a counterexample to $y > 0$ using PGD starting from $(x_1^{(0)}, x_2^{(0)}) = (0, 0)$.
+\begin{enumerate}
+    \item Compute the gradient $\nabla_x y$.
+    \item Use step size $\eta = 1.0$ and perform one PGD update.
+    \item Apply projection (clipping) if necessary.
+    \item Compute $y$ at the new point. Has a counterexample been found?
+\end{enumerate}
+
+\begin{solution}
+Gradient:
+\[
+\nabla_x y = (-1, 2).
+\]
+Update:
+\[
+x^{(1)} = (0, 0) - 1.0 \times (-1, 2) = (1, -2).
+\]
+Project (clip to $[-1, 1]$):
+\[
+x^{(1)} = (1, -1).
+\]
+Compute:
+\[
+y = -1 + 2(-1) + 0.5 = -2.5 < 0.
+\]
+Thus, a counterexample is found after one iteration.
+\end{solution}
+\end{problem}
+
+\begin{problem}[Choosing Step Size]\label{prob:pgd-med2}
+Let 
+\[
+y = 2x_1 - 3x_2 + 1, \quad -1 \le x_1, x_2 \le 1.
+\]
+Starting from $(x_1^{(0)}, x_2^{(0)}) = (0, 0)$:
+\begin{enumerate}
+    \item For $\eta = 0.25$, perform two PGD iterations and check if $y \le 0$.
+    \item For $\eta = 1.0$, perform one PGD iteration.  
+    Which step size finds a counterexample faster?
+\end{enumerate}
+
+\begin{solution}
+\[
+\nabla_x y = (2, -3).
+\]
+For $\eta = 0.25$:
+\[
+x^{(1)} = (0, 0) - 0.25(2, -3) = (-0.5, 0.75), \quad y = 2(-0.5) - 3(0.75) + 1 = -2.25 < 0.
+\]
+Counterexample found after 1 step.  
+For $\eta = 1.0$:
+\[
+x^{(1)} = (0, 0) - 1.0(2, -3) = (-2, 3) \Rightarrow \text{clip to } (-1, 1),
+\]
+so $(x_1, x_2) = (-1, 1)$, and
+\[
+y = 2(-1) - 3(1) + 1 = -4 < 0.
+\]
+Both find a counterexample, but $\eta = 1.0$ overshoots while $\eta = 0.25$ converges smoothly.
+\end{solution}
+\end{problem}
+
+
+\subsection*{Hard Problems}
+
+\begin{problem}[Nonlinear Gradient Update]\label{prob:pgd-hard1}
+Let 
+\[
+y = x_1^2 - 4x_1x_2 + 2x_2^2 + 1, \quad -2 \le x_1, x_2 \le 2.
+\]
+\begin{enumerate}
+    \item Compute the gradient $\nabla_x y = \left( \frac{\partial y}{\partial x_1}, \frac{\partial y}{\partial x_2} \right)$.
+    \item Starting from $(x_1^{(0)}, x_2^{(0)}) = (1, 1)$ and $\eta = 0.5$, perform one PGD update to minimize $y$.
+    \item Clip the result if it goes out of range, and compute the new value of $y$.
+    \item Discuss whether the gradient direction still aligns with the direction of decreasing $y$ after this step.
+\end{enumerate}
+
+\begin{solution}
+\[
+\frac{\partial y}{\partial x_1} = 2x_1 - 4x_2, \qquad
+\frac{\partial y}{\partial x_2} = -4x_1 + 4x_2.
+\]
+At $(1,1)$:
+\[
+\nabla_x y = (2(1) - 4(1), -4(1) + 4(1)) = (-2, 0).
+\]
+Update:
+\[
+x^{(1)} = (1, 1) - 0.5(-2, 0) = (2, 1).
+\]
+Clip (still within $[-2, 2]$).  
+Compute
+\[
+y(2, 1) = 2^2 - 4(2)(1) + 2(1)^2 + 1 = 4 - 8 + 2 + 1 = -1 < y(1, 1)=0.
+\]
+Thus $y$ decreases — gradient direction aligns with the desired decrease.
+\end{solution}
+\end{problem}
+
+\begin{problem}[Multiple Iterations and Convergence]\label{prob:pgd-hard2}
+Consider 
+\[
+y = x_1^2 + x_2^2 - 2x_1 - 4x_2 + 4, \quad -3 \le x_1, x_2 \le 3.
+\]
+\begin{enumerate}
+    \item Derive $\nabla_x y$.
+    \item Start from $(x_1^{(0)}, x_2^{(0)}) = (0, 0)$ and use $\eta = 0.5$.
+    \item Perform 3 PGD iterations, showing all intermediate points (after clipping).
+    \item Does PGD converge toward the minimum (or violation)? Explain why.
+\end{enumerate}
+
+\begin{solution}
+\[
+\nabla_x y = (2x_1 - 2, 2x_2 - 4).
+\]
+\begin{align*}
+(0, 0):\ & \nabla y = (-2, -4), & x^{(1)} &= (0, 0) - 0.5(-2, -4) = (1, 2) \\
+(1, 2):\ & \nabla y = (0, 0), & x^{(2)} &= (1, 2) \\
+\end{align*}
+The process converges after one step because $(1, 2)$ is the true minimum (solves $\nabla y = 0$).  
+Thus PGD converges to the optimal violation point quickly.
+\end{solution}
+\end{problem}
+
+\begin{problem}[Effect of Step Size on Overshooting]\label{prob:pgd-hard3}
+Let 
+\[
+y = 3x_1 - 4x_2 + 2, \quad -1 \le x_1, x_2 \le 1.
+\]
+Starting from $(x_1^{(0)}, x_2^{(0)}) = (0, 0)$:
+\begin{enumerate}
+    \item Compute one PGD update with $\eta = 0.2$ and another with $\eta = 1.0$.
+    \item Compare the updated points and $y$ values.
+    \item Explain why a larger $\eta$ might lead to faster or less stable convergence.
+\end{enumerate}
+
+\begin{solution}
+\[
+\nabla_x y = (3, -4).
+\]
+For $\eta = 0.2$:
+\[
+x^{(1)} = (0, 0) - 0.2(3, -4) = (-0.6, 0.8), \quad y = 3(-0.6) - 4(0.8) + 2 = -3.4 < 0.
+\]
+For $\eta = 1.0$:
+\[
+x^{(1)} = (0, 0) - 1.0(3, -4) = (-3, 4) \Rightarrow \text{clip to } (-1, 1),
+\]
+\[
+y = 3(-1) - 4(1) + 2 = -5 < 0.
+\]
+Large $\eta$ converges faster but risks overshooting or oscillating; small $\eta$ is slower but more stable.
+\end{solution}
+\end{problem}
