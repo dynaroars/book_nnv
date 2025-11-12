@@ -1825,7 +1825,7 @@ Consider the NN in~\autoref{fig:proofnet}. Note that in this network the hidden 
 \item Come up with \textbf{three} properties that that this network has (i.e., as long as the precondition holds, the postcondition holds).   
 \begin{itemize}
     \item Argue why each property always holds (e.g., for any input satisfying the range X, the first layer outputs values in range Y, etc).
-    \item (Optional, A bit harder) Try to use Z3 to show that the properties you came up will always hold by asking Z3 to prove that no counterexample exists (i.e., \texttt{unsat}).  
+    \item (Optional) Show that the properties you came up will always hold by using Z3 to prove that no counterexample exists (i.e., \unsat{}).  
 \end{itemize}
 \end{itemize}
 
@@ -5746,9 +5746,9 @@ Note that in both cases optimization problems are independent (between inputs/ne
 % $\{x_1 \in [0,1], x_2 \in [0,2]\}$.
 % Note that the formula $-1 \le x_1 \le 1 \land -2 \le x_2 \le 2$ representing the original input region is equivalent to the formula $(-1 \le x_1 \le 0 \lor 0 \le x \le 1) \land (-2 \le x_2 \le 0 \lor 0 \le x_2 \le 2)$ representing the combination of the created subregions.
 
-\hd{
+
 \paragraph{Matrix Form for Interval Computation}
-While the min/max formulation~\autoref{sec:interval-abstraction} is intuitive, it can be efficiently implemented using matrix operations. 
+While the min/max formulation in~\autoref{sec:interval-abstraction} is intuitive, it can be efficiently implemented using matrix operations. 
 We can decompose the weight matrix $W$ into positive and negative components:
 \[
 W^+ = \max(W, 0) \qquad W^- = \min(W, 0)
@@ -5866,7 +5866,7 @@ Therefore:
 We can verify these results by computing each subproblem individually using the original formulation, which yields identical results.
 \end{example}
 
-}
+
 
 \section{GPU Processing}\label{sec:gpu}
 
