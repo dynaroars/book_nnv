@@ -1,0 +1,380 @@
+\section{PA3: Branch and Bound with Abstract Interpretation}\label{sec:pa3}
+
+In this PA you will implement the branch and bound (BaB) algorithm as described in~\autoref{sec:bab-alg} with abstract interpretation from PA2~\autoref{sec:pa2} (using either interval~\autoref{sec:interval-abstraction} or zonotope~\autoref{sec:zonotope-abstraction}). 
+
+While symbolic execution (PA1~\autoref{sec:pa1}) provides exact analysis but does not scale, and abstract interpretation (PA2~\autoref{sec:pa2}) scales well but may lose precision, Branch and Bound provides a framework that can \emph{refine} abstract domains when needed, achieving a balance between precision and scalability.
+
+You will use Python and PyTorch for this assignment, building upon your implementations from PA2. \textbf{Do not} use external verification libraries.
+
+This PA has three main parts:
+\begin{enumerate}
+    \item implement the core BaB algorithm with a priority \emph{queue}-based approach.
+    \item implement utility functions: \texttt{deduce}, \texttt{decide}, \texttt{bound}, and \texttt{prune}.
+    \item evaluate the precision and scalability of BaB compared to pure abstract interpretation and symbolic execution.
+\end{enumerate}
+
+\subsection{Part 1: Branch and Bound Algorithm Framework}
+
+BaB algorithm systematically explores the space by maintaining a queue of subproblems and iteratively refining them until verification is complete or a counterexample is found.
+You will implement four core utility functions that form the building blocks of the BaB algorithm: \texttt{deduce}, \texttt{decide}, \texttt{bound}, and \texttt{prune}.
+
+\subsubsection{Algorithm Skeleton}
+
+\begin{lstlisting}[language=Python]
+class BranchAndBound:
+    def __init__(self, network, abstraction_type):
+        """
+        Initialize BaB verifier
+        Args:
+            network: DNN to verify (same format as PA2)
+            abstraction_type: Interval or Zonotope from PA2
+        """
+
+        # TODO: Initialize your abstraction from PA2
+        self.abstraction = ...
+        self.network = network
+        
+    def verify(self, input_lower, input_upper, property_fn, timeout=60):
+        """
+        Main BaB verification algorithm following Algorithm 1 from the book
+        
+        Args:
+            input_lower: lower bounds of input domain  
+            input_upper: upper bounds of input domain
+            property_fn: function that takes (output_lower, output_upper) 
+                         and returns VERIFIED, FALSIFIED, or UNKNOWN
+            timeout: maximum time in seconds
+            
+        Returns:
+            result: VERIFIED, FALSIFIED, or TIMEOUT
+            counterexample: input that violates property (if FALSIFIED)
+        """
+        start_time = time.time()
+        
+        # Initialize verification problems (Line 5 in Algorithm 1)
+        problems = Queue()
+        initial_problem = (input_lower, input_upper)
+        problems.put(initial_problem)
+        
+        # Main loop
+        while not problems.empty():
+            if time.time() - start_time > timeout:
+                return TIMEOUT, None
+                
+            # Select a subproblem
+            lb, ub = ...  # Hint: use problems.get()
+            
+            # TODO: Use self.deduce() to determine 
+            # if the problem is feasible
+            
+            if self.deduce(lb, ub, property_fn):
+                # Check satisfiability using adversarial attack 
+                # instead of LP
+                cex = ...  # Hint: use self.attack()
+                
+                if cex is not None: # Found valid counterexample
+                    return FALSIFIED, cex
+                
+                # Decide: pick a input dimension to split on
+                # and create new subproblems using input splitting
+                subproblems = ...  # Hint: use self.decide()
+                
+                # Add new subproblems to queue
+                # TODO: Add each subproblem to the queue
+                for sub_lb, sub_ub in subproblems:
+                    ...  # Hint: use problems.put()
+        
+        # All subproblems are verified
+        return VERIFIED, None
+\end{lstlisting}
+
+\subsubsection{Deduce Function}
+
+The \texttt{deduce} function checks if the current problem is feasible by combining the abstract interpretation (bound).
+
+\begin{lstlisting}[language=Python]
+def deduce(self, input_lower, input_upper, property_fn):
+    """
+    Deduce: combine bound + prune to check if we can make progress
+    
+    This function implements the Deduce step
+    It combines abstract interpretation (bound) with pruning logic
+    
+    Args:
+        input_lower: lower bounds of input domain
+        input_upper: upper bounds of input domain
+        property_fn: property function to check
+        
+    Returns:
+        bool: False if verified, True othewise, need to branch
+    """
+    # TODO: 
+    # 1. Compute abstract bounds using self.bound() (PA2)
+    # 2. Check pruning using self.prune() 
+    # 3. Return True if prune_result == UNKNOWN (need to branch)
+    # 4. Return False if prune_result == VERIFIED (can prune)
+    # 5. This function should NOT handle FALSIFIED case directly
+    
+    return prune_result == UNKNOWN
+\end{lstlisting}
+
+\subsubsection{Attack Function}
+
+The \texttt{attack} function finds a counterexample using an adversarial attack.
+This function is optional, you can choose to implement it or not. 
+If you choose to implement it, you can use random sampling or adversarial attacks like PGD, FGSM, etc.
+If not, you can simply return None.
+
+\begin{lstlisting}[language=Python]
+def attack(self, input_lower, input_upper, property_fn):
+    """
+    Find counterexample using adversarial attack
+    
+    Uses random sampling or adversarial attacks instead of LP solving
+    
+    Args:
+        input_lower: lower bounds of input domain
+        input_upper: upper bounds of input domain  
+        property_fn: property function to check
+        
+    Returns:
+        counterexample: cex that violates property, or None if not found
+        
+    Example approaches:
+        # Random sampling
+        for _ in range(100):
+            # Randomly sample points within the input bounds
+            random_input = ...
+            output = self.network(random_input)
+            if violates_property(output):
+                return random_input
+                
+        # Or use PGD attack, FGSM, etc.
+    """
+    # TODO: Implement adversarial attack to find counterexample
+    # 1. Generate candidate inputs within [input_lower, input_upper]
+    # 2. Run network on candidates  
+    # 3. Check if any output violates the property
+    # 4. Return first violating input, or None if none found
+    
+    return counterexample
+
+\end{lstlisting}
+
+\subsubsection{Branch (Decide) Function}
+The \texttt{decide} function splits a domain into smaller subdomains. For this PA, we use input splitting where we divide one dimension at a time.
+
+\begin{lstlisting}[language=Python]
+def decide(self, input_lower, input_upper):
+    """
+    Split input domain into 2 subproblems by splitting one dimension
+    
+    Args:
+        input_lower: lower bounds of input domain
+        input_upper: upper bounds of input domain
+        
+    Returns:
+        list of (sub_lower, sub_upper) tuples representing subproblems
+        
+    Example:
+        # Input domain: [-1, 1] x [-2, 2]
+        input_lower = torch.tensor([-1.0, -2.0])
+        input_upper = torch.tensor([1.0, 2.0])
+        
+        # Splitting the 1st dimension at 0 should return:
+        # Subproblem 1: [-1, 0] x [-2, 2] 
+        # Subproblem 2:  [0, 1] x [-2, 2]
+
+        subproblems = decide(input_lower, input_upper)
+        # subproblems = [
+        #     (torch.tensor([-1.0, -2.0]), torch.tensor([0.0, 2.0])),
+        #     (torch.tensor([0.0, -2.0]), torch.tensor([1.0, 2.0]))
+        # ]
+    """
+    # TODO: 
+    # 1. Find desired dimension to split on 
+    #       (e.g., first dimension, max width, random, etc.)
+    # 2. Compute split point for that dimension 
+    #       (e.g., midpoint, random, etc.)
+    # 3. Create two subproblems by splitting at the computed point
+    # 4. Return list of subproblems
+    
+    return subproblems
+
+\end{lstlisting}
+
+\subsubsection{Bound Function}
+
+The \texttt{bound} function computes abstract output bounds using your abstraction from PA2.
+
+\begin{lstlisting}[language=Python]
+def bound(self, input_lower, input_upper):
+    """
+    Compute output bounds using abstract interpretation
+    
+    Args:
+        input_lower: lower bounds of input domain
+        input_upper: upper bounds of input domain
+        
+    Returns:
+        (output_lower, output_upper): abstract bounds on network outputs
+        
+    Example:
+        # Example with a simple 2-input 1-output DNN
+        # Input domain: [-1, 1] x [-2, 2]
+        input_lower = torch.tensor([-1.0, -2.0])
+        input_upper = torch.tensor([1.0, 2.0])
+        
+        # Using abstraction from PA2 (interval or zonotope):
+        output_lower, output_upper = bound(input_lower, input_upper)
+        # output_lower = tensor([-10.0])
+        # output_upper = tensor([10.0])
+    """
+    # TODO: Use your abstraction from PA2 (interval or zonotope)
+    # to compute output bounds
+    
+    return output_lower, output_upper
+
+\end{lstlisting}
+
+\subsubsection{Prune Function}
+
+The \texttt{prune} function determines whether a subproblem can be eliminated based on the property being verified.
+
+\begin{lstlisting}[language=Python]
+def prune(self, output_lower, output_upper, property_fn):
+    """
+    Determine if subproblem can be pruned based on abstract bounds
+    
+    Args:
+        output_lower: lower bounds on network outputs
+        output_upper: upper bounds on network outputs  
+        property_fn: function that checks if bounds satisfy property
+        
+    Returns:
+        VERIFIED: property holds for all points in this subproblem
+        FALSIFIED: property violated for all points in this subproblem  
+        UNKNOWN: cannot determine, need to branch further
+        
+    Example:
+        # Property: network output should be < threshold (safety property)
+        def safety_property(out_lb, out_ub, threshold):
+            if torch.all(out_ub < threshold):
+                return VERIFIED    # All outputs < threshold
+            elif torch.all(out_lb >= threshold): 
+                return FALSIFIED   # All outputs >= threshold
+            else:
+                return UNKNOWN     # Outputs cross threshold
+
+        # Property 1: output should be < 5
+        prop_1 = lambda out_lb, out_ub: safety_property(out_lb, out_ub, 5)
+
+        
+        # Example 1: Can be pruned as VERIFIED
+        output_lower = torch.tensor([-10.0])
+        output_upper = torch.tensor([3.0])  # All outputs < 5
+        result = prune(output_lower, output_upper, prop_1)
+        # result = VERIFIED -> prune this subproblem
+        
+        # Example 2: Cannot be pruned  
+        output_lower = torch.tensor([-2.0])
+        output_upper = torch.tensor([8.0])  # Outputs span threshold
+        result = prune(output_lower, output_upper, prop_1)  
+        # result = UNKNOWN -> need to branch further
+    """
+    # TODO: 
+    # 1. Check if property_fn gives definitive answer
+    # 2. Return appropriate result based on property satisfaction
+    
+    return result
+
+\end{lstlisting}
+
+\subsection{Part 2: Evaluation}
+
+Use the same DNN from PA2 (\autoref{sec:pa2}) for testing.
+\subsubsection{Test Your Implementation}
+
+\begin{lstlisting}[language=Python]
+def test_bab():
+    """Test BaB on a DNN"""
+    dnn = ...
+    
+    # Test with interval abstraction
+    bab = BranchAndBound(dnn, 'interval')
+        
+    # Input domain  
+    input_lower = ...
+    input_upper = ...
+    
+    # Property: 
+    property_fn = ...
+
+    
+    result, counterexample, stats = bab.verify(
+        input_lower, input_upper, property_fn, timeout=30
+    )
+    
+    print(f"Result: {result}")
+
+
+\end{lstlisting}
+
+\subsubsection{Analysis}
+
+Create two additional test functions:
+
+\begin{enumerate}
+\item \texttt{bab\_vs\_z3}: Compare BaB with Z3 on a local robustness property
+\item \texttt{bab\_vs\_abstraction}: Compare BaB with pure abstraction from PA2
+\end{enumerate}
+For each testcase, you should:
+\begin{enumerate}
+    \item Create networks of varying sizes
+    \item Use BaB with different configurations (e.g., abstraction types, branching strategies, etc.)
+    \item For each network, measure:
+        \begin{itemize}
+            \item Symbolic execution time/result (PA1)
+            \item Pure abstraction time/result (PA2)
+            \item BaB verification time/result  
+        \end{itemize}
+    \item Plot results showing precision vs scalability trade-offs
+    \item Analyze when BaB is most beneficial
+\end{enumerate}
+
+\subsubsection{Discussion Questions}
+
+Address the following in your README:
+
+\begin{enumerate}
+\item \textbf{Precision vs Efficiency}: How does BaB balance precision and efficiency compared to pure abstraction and symbolic execution?
+
+\item \textbf{Branching Strategy}: How does your input splitting strategy affect verification performance? 
+
+\item \textbf{Abstraction Choice}: What are the trade-offs between interval and zonotope abstraction in BaB?
+
+\item \textbf{Optimization Opportunities}: What improvements could make your BaB implementation more efficient?
+\end{enumerate}
+
+\subsection{Grading Rubric (out of 30 points)}
+
+\begin{itemize}
+\item 20 points — Core BaB implementation
+    \begin{itemize}
+    \item 5 points for correct \texttt{verify} algorithm implementation
+    \item 5 points for \texttt{branch} function with proper input splitting
+    \item 5 points for \texttt{bound} function integration with PA2 abstractions
+    \item 5 points for \texttt{prune} function with correct pruning logic
+    \end{itemize}
+\item 10 points — Analysis and documentation
+    \begin{itemize}
+    \item 2 points for testing your implementation
+    \item 2 points for \texttt{bab\_vs\_z3}
+    \item 2 points for \texttt{bab\_vs\_abstraction}
+    \item 4 points for answers to discussion questions
+    \end{itemize}
+% \item \textbf{BONUS} (up to 5 extra points) — Advanced improvements
+%     \begin{itemize}
+%     \item 5 points for implementing alternative branching strategies
+%     \end{itemize}
+\end{itemize}
