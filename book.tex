@@ -6541,7 +6541,7 @@ In contrast, \tool{} has a smaller search space shown in~\autoref{fig:tree}a.
 However, because of the learned clause $v_2\lor v_3$, \tool{} performs a BCP step that sets $v_3$ (and therefore prunes the branch with $\overline{v_3}$ that needs to be considered in the other tree).
 Then \tool{} splits $v_4$, and like the other tool, determines infeasibility for both branches. Now \tool{}'s conflict analysis determines from learned clauses that it needs to backtrack to $v_3$ (yellow node) instead of $v_1$.  Without learned clauses and non-chronological backtracking, \tool{} would backtrack to decision $v_1$ and continues with the $\overline{v_1}$ branch, just like the other tool in~\autoref{fig:tree}b.
 
-Thus, \tool{} was able to generate non-chronological backtracks and use BCP to prune various parts of the search tree.  In contrast, the other tool would have to move through the exponential search space to eventually reach the same result as \tool{}.
+Thus, \tool{} was able to generate non-chronological backtracks and use BCP to prune various parts of the search tree.  In contrast, the other tool would have to move through the exponential search space to eventually reach the same result.
 
 
 
