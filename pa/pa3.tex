@@ -15,7 +15,7 @@ This PA has three main parts:
 
 \subsection{Part 1: Branch and Bound Algorithm Framework}
 
-BaB algorithm systematically explores the space by maintaining a queue of subproblems and iteratively refining them until verification is complete or a counterexample is found.
+BaB systematically explores the space by maintaining a queue of subproblems and iteratively refining them until verification is complete or a counterexample is found.
 You will implement four core utility functions that form the building blocks of the BaB algorithm: \texttt{deduce}, \texttt{decide}, \texttt{bound}, and \texttt{prune}.
 
 \subsubsection{Algorithm Skeleton}
@@ -118,7 +118,7 @@ def deduce(self, input_lower, input_upper, property_fn):
     return prune_result == UNKNOWN
 \end{lstlisting}
 
-\subsubsection{Attack Function}
+\subsubsection{Attack Function (Optional)}
 
 The \texttt{attack} function finds a counterexample using an adversarial attack.
 This function is optional, you can choose to implement it or not. 
