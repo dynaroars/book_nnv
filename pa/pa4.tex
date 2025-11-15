@@ -33,6 +33,9 @@ for layer_name, layer in enumerate(layers):
     elif isinstance(layer, nn.ReLU):
         # TODO handle ReLU layer
         pass
+    elif isinstance(layer, sub):
+        # handle subtraction layer
+        continue # this layer is y = x - 0, which is identity, so skip it
     else:
         # TODO handle other layers
         pass
@@ -174,7 +177,7 @@ print(sub_property.rhs)
 
 \end{lstlisting}
 
-\subsection{Part 3: Verifying ACAS XU benchmarks}
+\subsubsection{Verifying VNNLIB Properties}
 
 
 Remember that we have a list of disjunctive sub-properties (e.g., property 1 and property 2 for property 7). 
@@ -199,3 +202,20 @@ while len(properties): # make sure to verify all sub-properties
 # all sub-properties are verified, the original property is UNSAT
 return UNSAT
 \end{lstlisting}
+
+\subsection{Part 3: Verifying ACAS XU benchmarks}
+
+Download ACAS XU benchmarks from here\footnote{\url{https://github.com/dynaroars/neuralbench/tree/main/instances/acasxu}}.
+In this folder, you will find the following files/folders:
+\begin{itemize}
+    \item Folder \texttt{onnx}: contains the ONNX networks
+    \item Folder \texttt{vnnlib}: contains the VNNLIB properties
+    \item File \texttt{instances.csv}: contains list of instances of the ACAS XU benchmarks, where each line is a tuple of (network path, property path, timeout in seconds).
+\end{itemize}
+
+Your task is to:
+\begin{enumerate}
+    \item enumerate all instances in \texttt{instances.csv} and verify the properties.
+    \item report the result for each instance, either, UNSAT, SAT, or TIMEOUT.
+    \item check the results with the ground truth.
+\end{enumerate}
