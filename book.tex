@@ -4086,7 +4086,7 @@ Thus, given a set of neurons, we can construct an activation pattern by specifyi
 
 
 \subsection{State Space Reduction}\label{sec:pattern-reduction}
-Once having an activation pattern $p$, we can simplify the formula $\alpha$ representing the DNN by replacing each ReLU function with a linear constraint according to the activation status specified in $p$. For example, if $p$ specifies that neuron $n_i$ is active, we replace $\relu{z_i}$ with $z_i$ and add the constraint $z_i \ge 0$; if $n_i$ is inactive, we replace $\relu{z_i}$ with $0$ and add the constraint $z_i < 0$.
+Once having an activation pattern $p$, we can simplify the formula $\alpha$ representing the DNN by replacing each ReLU function with a linear constraint according to the activation status specified in $p$. For example, if $p$ specifies that neuron $n_i$ is active, we replace $\relu{z_i}$ with the constraint $z_i \ge 0$, i.e., the pre-activation value $z_i$ must be non-negative. Otherwise, if $n_i$ is inactive, we replace $\relu{z_i}$ with $z_i < 0$.
 This gives us the formula $\alpha_p$ corresponding to the linear region defined by $p$.
 
 A complete activation pattern $p$ defines a unique linear region of the DNN. This is because with a complete pattern $p$, $\alpha_p$ becomes a purely linear formula.
