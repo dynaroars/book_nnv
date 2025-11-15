@@ -4368,8 +4368,8 @@ By splitting (or fixing the neuron status), we create two \emph{simpler} subprob
 \end{itemize}
 
 
-\paragraph{\textbf{Deduce vs. LP}} Note the difference between \Deduce and \mycode{LP} is that the former uses abstraction to compute over-approximated bounds to determine feasibility, while the latter uses an LP solver to check exact satisfiability. 
-Abstraction is quick but may yield false positives (declaring feasible when it is not), while LP is precise but more computationally expensive.  Their combination allows \bab{} to efficiently prune infeasible branches while accurately checking for counterexamples.
+\paragraph{\textbf{Deduce vs. LP}} The difference between \Deduce and \mycode{LP} is that the former uses abstraction to compute over-approximated bounds to determine feasibility, while the latter uses an LP solver to check exact satisfiability. 
+Abstraction is (very) quick but may yield false positives (declaring feasible when it is not), while LP is precise but more computationally expensive.  Their combination allows \bab{} to efficiently prune infeasible branches while accurately checking for counterexamples.
 
 
 %\tvn{shows that \bab{} often does not exhaust all activation patterns, but rather prunes the search space by deducing infeasibility of some activation patterns.  May be use a tree example to illustrate this?}
