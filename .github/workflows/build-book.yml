@@ -34,7 +34,7 @@ jobs:
       - name: Verify PDF
         run: |
           if [ ! -f main.pdf ]; then
-            echo "No PDF produced!""
+            echo "No PDF produced!"
             exit 1
           elif ! pdfinfo main.pdf >/dev/null 2>&1; then
             echo "PDF seems corrupted!"
