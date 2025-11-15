@@ -30,17 +30,18 @@ jobs:
         run: |
           echo "Building book..."
           latexmk -pdf -interaction=nonstopmode -halt-on-error book.tex
-
+          bibtex book || true
+          latexmk -pdf -interaction=nonstopmode -halt-on-error book.tex
       - name: Verify PDF
         run: |
-          if [ ! -f main.pdf ]; then
-            echo "No PDF produced!""
+          if [ ! -f book.pdf ]; then
+            echo "No PDF produced!"
             exit 1
-          elif ! pdfinfo main.pdf >/dev/null 2>&1; then
+          elif ! pdfinfo book.pdf >/dev/null 2>&1; then
             echo "PDF seems corrupted!"
             exit 1
           fi
-          echo "main.pdf built successfully."
+          echo "book.pdf built successfully."
 
       - name: Upload artifact
         if: success()
