@@ -1,3 +1,201 @@
-\section{PA4: Putting it all together}\label{sec:pa4}
+\section{PA4: Verifying ACAS XU benchmarks}\label{sec:pa4}
 
-In this PA, you will put together implementations you have done in previous PAs to build a realistic neural network verifier, which will verify properties of common formats (ONNX for networks, and VNNLIB for properties).
+In this PA, you will use your existing implementations you have done in previous PAs to verify properties of a real benchmark using the standard format (ONNX for networks, and VNNLIB for properties).
+
+\subsection{Part 1: Handling ONNX Networks}
+
+In order to handle ONNX networks, the simplest way is to use the ONNX library to load the network and convert to Pytorch model.
+You can install the conversion library ``onnx2pytorch'' using pip:
+\begin{center}
+    \begin{lstlisting}[language=bash]
+    pip install onnx2pytorch
+    \end{lstlisting}
+\end{center}
+Then you can use the library to load the network and convert to Pytorch model as follows:
+
+\begin{lstlisting}[language=Python]
+import onnx
+import onnx2pytorch
+
+# load the ONNX network
+model = onnx.load("path/to/your/network.onnx")
+
+# convert to Pytorch model
+# experimental=True is optional to use batch processing
+model = onnx2pytorch.convert(model, experimental=True) 
+
+# since ACAS XU benchmarks contain simple feed-forward networks,
+# we can simply enumerate each layer of a network
+for layer_name, layer in enumerate(layers):
+    if isinstance(layer, nn.Linear):
+        # TODO handle linear layer
+        pass
+    elif isinstance(layer, nn.ReLU):
+        # TODO handle ReLU layer
+        pass
+    else:
+        # TODO handle other layers
+        pass
+
+\end{lstlisting}
+
+
+\subsection{Part 2: Handling VNNLIB Properties}
+
+\subsubsection{Parsing VNNLIB Properties}
+
+VNNLIB properties are designed to represent properties of neural networks in a formal language.
+It specifies the precondition and postcondition of the network.
+To extract the preconditions and postconditions from a VNNLIB property, you can use code from \neuralsat{}\footnote{\url{https://github.com/dynaroars/neuralsat/blob/d96cc13aba2643f36c76d58bd03575fad5c8d52d/src/helper/spec/objective.py}}:
+
+\begin{lstlisting}[language=Python]
+# input shape is (1, 5) for ACAS XU benchmarks
+input_shape = (1, 5) 
+
+# parse the VNNLIB property
+properties = parse_vnnlib("path/to/your/property.vnnlib", input_shape)
+\end{lstlisting}
+
+\subsubsection{VNNLIB Disjunctive Properties}
+Note that, one VNNLIB file can contain disjunctive properties. Let's take a look at an example VNNLIB property 7 of ACAS XU benchmarks:
+
+\begin{lstlisting}[language=SMTLIB]
+; ACAS Xu property 7
+
+(declare-const X_0 Real)
+(declare-const X_1 Real)
+(declare-const X_2 Real)
+(declare-const X_3 Real)
+(declare-const X_4 Real)
+
+(declare-const Y_0 Real)
+(declare-const Y_1 Real)
+(declare-const Y_2 Real)
+(declare-const Y_3 Real)
+(declare-const Y_4 Real)
+
+; Unscaled Input 0: (0, 60760)
+(assert (<= X_0 0.679857769))
+(assert (>= X_0 -0.328422877))
+
+; Unscaled Input 1: (-3.141592, 3.141592)
+(assert (<= X_1 0.499999896))
+(assert (>= X_1 -0.499999896))
+
+; Unscaled Input 2: (-3.141592, 3.141592)
+(assert (<= X_2 0.499999896))
+(assert (>= X_2 -0.499999896))
+
+; Unscaled Input 3: (100, 1200)
+(assert (<= X_3 0.5))
+(assert (>= X_3 -0.5))
+
+; Unscaled Input 4: (0, 1200)
+(assert (<= X_4 0.5))
+(assert (>= X_4 -0.5))
+
+; unsafe if strong left is minimial or strong right is minimal
+(assert (or
+    (and (<= Y_3 Y_0) (<= Y_3 Y_1) (<= Y_3 Y_2))
+    (and (<= Y_4 Y_0) (<= Y_4 Y_1) (<= Y_4 Y_2))
+))
+\end{lstlisting}
+
+This file specifies the properties in form of \(X \land (P_0 \vee P_1)\), where \(X\) is the precondition on input variables ($X_0$, $X_1$, $X_2$, $X_3$, $X_4$) and \(P_0\) and \(P_1\) are the postconditions in \emph{negation form} (do not negate them!) on output variables ($Y_0$, $Y_1$, $Y_2$, $Y_3$, $Y_4$).
+
+
+Specifically,
+\begin{align*}
+X \equiv &~(-0.328422877 \leq X_0 \leq 0.679857769) \\
+    \land &~(-0.499999896 \leq X_1 \leq 0.499999896) \\
+    \land &~(-0.499999896 \leq X_2 \leq 0.499999896) \\
+    \land &~(-0.5 \leq X_3 \leq 0.5) \\
+    \land &~(-0.5 \leq X_4 \leq 0.5) \\
+% P_0 \equiv & (Y_0 \leq Y_1) \land (Y_0 \leq Y_2) \land (Y_0 \leq Y_3) \land (Y_0 \leq Y_4) \\
+% P_1 \equiv & (Y_3 \leq Y_4) \\
+\end{align*}
+\begin{align*}
+P_0 \equiv &~(Y_3 \leq Y_0) \land (Y_3 \leq Y_1) \land (Y_3 \leq Y_2) \\
+P_1 \equiv &~(Y_4 \leq Y_0) \land (Y_4 \leq Y_1) \land (Y_4 \leq Y_2)
+\end{align*}
+
+To deal with disjuntive postconditions (\(P_0 \vee P_1\)), the code above from \neuralsat{} simply converts \(X \land (P_0 \vee P_1)\) to a list of conjunctive postconditions:
+\[
+\underbrace{(X \land P_0)}_{\text{property 1}} \lor \underbrace{(X \land P_1)}_{\text{property 2}}
+\]
+Now each sub-property (e.g., property 1 and property 2) has the same form as PA3, to verify a sub-property, you can use the code from PA3.
+
+\subsubsection{Output Constraints in VNNLIB}
+VNNLIB always represents the output constraints in the form of:
+\[cs \cdot Y \leq rhs\]
+where \(Y\) is the output vector.
+
+For example, \(Y_3 \leq Y_0\) is equivalent to \(-Y_0 + Y_3 \leq 0\), which is represented as:
+\[
+\underbrace{\begin{bmatrix}
+-1 & 0 & 0 & 1 & 0
+\end{bmatrix}}_{cs}
+\underbrace{\begin{bmatrix}
+Y_0 \\ Y_1 \\ Y_2 \\ Y_3 \\ Y_4
+\end{bmatrix}}_{Y}
+\leq
+\underbrace{\begin{bmatrix}
+0
+\end{bmatrix}}_{rhs}
+\]
+
+If you are using VNNLIB extraction code from \neuralsat{}, each sub-property is an object with following attributes:
+\begin{itemize}
+    \item \texttt{lower\_bounds}: input lower bounds (e.g., lower bounds of all input variables)
+    \item \texttt{upper\_bounds}: input upper bounds (e.g., upper bounds of all input variables)
+    \item \texttt{cs}: coefficient matrix for output constraints
+    \item \texttt{rhs}: constant vector for output constraints
+\end{itemize}
+
+\begin{lstlisting}[language=Python]
+
+# number in pop(), e.g., pop(1), means numbers of sub-properties 
+# we want to verify simultaneously, not the index of the sub-property
+sub_property = properties.pop(1) # get one sub-property
+
+print(sub_property.lower_bounds)
+# tensor([[-0.3284, -0.5000, -0.5000, -0.5000, -0.5000]])
+
+print(sub_property.upper_bounds)
+# tensor([[0.6799, 0.5000, 0.5000, 0.5000, 0.5000]])
+
+print(sub_property.cs)
+# tensor([[[-1.,  0.,  0.,  1.,  0.],   # Y_3 <= Y_0
+#         [ 0., -1.,  0.,  1.,  0.],    # Y_3 <= Y_1
+#         [ 0.,  0., -1.,  1.,  0.]]])  # Y_3 <= Y_2
+
+print(sub_property.rhs)
+# tensor([[0., 0., 0.]])
+
+\end{lstlisting}
+
+\subsection{Part 3: Verifying ACAS XU benchmarks}
+
+
+Remember that we have a list of disjunctive sub-properties (e.g., property 1 and property 2 for property 7). 
+To verify the original property is UNSAT, we need to verify all sub-properties are UNSAT. 
+But to show the original property is SAT, disproving one sub-property is enough.
+The high-level idea should look like this:
+\begin{lstlisting}[language=Python]
+while len(properties): # make sure to verify all sub-properties
+    sub_property = properties.pop(1) # get one sub-property
+    # disprove one sub-property, return counterexample immediately
+    if verify(network, sub_property) == SAT:
+        return SAT, cex
+
+    # run out of time
+    if verify(network, sub_property) == TIMEOUT:
+        return TIMEOUT
+
+    # prove one sub-property
+    if verify(network, sub_property) == UNSAT:
+        continue # move to next sub-property
+
+# all sub-properties are verified, the original property is UNSAT
+return UNSAT
+\end{lstlisting}
