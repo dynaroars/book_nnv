@@ -49,7 +49,7 @@ for layer_name, layer in enumerate(layers):
 
 VNNLIB properties are designed to represent properties of neural networks in a formal language.
 It specifies the precondition and postcondition of the network.
-To extract the preconditions and postconditions from a VNNLIB property, you can use provided code here\footnote{\url{https://github.com/dynaroars/book_nnv/blob/4bacdfdb58e01441afb8de84f8955c86390479e6/code/pa4/objective.py\#L181}}:
+To extract the preconditions and postconditions from a VNNLIB property, you can follow the provided code \url{https://github.com/dynaroars/book_nnv/blob/main/code/pa4/test.py}:
 
 \begin{lstlisting}[language=Python]
 # input shape is (1, 5) for ACAS XU benchmarks
@@ -205,7 +205,7 @@ return UNSAT
 
 \subsection{Part 3: Verifying ACAS XU benchmarks}
 
-Download ACAS XU benchmarks from here\footnote{\url{https://github.com/dynaroars/neuralbench/tree/main/instances/acasxu}}.
+Download ACAS XU benchmarks from \url{https://github.com/dynaroars/neuralbench/tree/main/instances/acasxu}.
 In this folder, you will find the following files/folders:
 \begin{itemize}
     \item Folder \texttt{onnx}: contains the ONNX networks
@@ -217,5 +217,5 @@ Your task is to:
 \begin{enumerate}
     \item enumerate all instances in \texttt{instances.csv} and verify the properties.
     \item report the result for each instance, either, UNSAT, SAT, or TIMEOUT.
-    \item check the results with the ground truth.
+    \item check the results with the ground truth at \url{https://github.com/dynaroars/book_nnv/blob/main/code/pa4/acasxu_ground_truth.csv}.
 \end{enumerate}
