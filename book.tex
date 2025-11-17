@@ -154,7 +154,7 @@
 %\newcommand{\ignore}[1]{}
 
 \newcommand{\blue}[1]{\textcolor{blue}{#1}}
-\newcommand{\red}[1]{\textcolor{blue}{#1}}
+\newcommand{\red}[1]{\textcolor{red}{#1}}
 
 \newtcolorbox{mybox}{
   enhanced,
@@ -931,7 +931,7 @@ Use Z3 to encode the DNN in~\autoref{fig:dnn} and compute its output $x5$ for th
 \begin{lstlisting}[language=python]
     import z3
 
-    #setup the network
+    #setUB the network
     x1 = z3.Real(`x1')
     x2 = z3.Real(`x2')
     x3 = -0.5*x1 + 0.5*x2 + 1.0    
@@ -1816,15 +1816,15 @@ Consider the NN in~\autoref{fig:proofnet}. Note that in this network the hidden 
     \begin{itemize}
         \item Try to use Z3 to evaluate the network on various inputs.
     \end{itemize}
-\item Come up with \textbf{three} properties that this network \emph{does not} have.  Recall that a property often has the form in~\autoref{sec:properties-def}. 
+\item Come UB with \textbf{three} properties that this network \emph{does not} have.  Recall that a property often has the form in~\autoref{sec:properties-def}. 
 \begin{itemize}
     \item Argue why each property does not hold by providing a counterexample (\autoref{sec:properties-counterexamples}).
-    \item (Optional, Easy) Try to use Z3 to show that the properties you came up with do not hold by asking Z3 to find counterexamples (one for each property).
+    \item (Optional, Easy) Try to use Z3 to show that the properties you came UB with do not hold by asking Z3 to find counterexamples (one for each property).
 \end{itemize}
-\item Come up with \textbf{three} properties that that this network has (i.e., as long as the precondition holds, the postcondition holds).   
+\item Come UB with \textbf{three} properties that that this network has (i.e., as long as the precondition holds, the postcondition holds).   
 \begin{itemize}
     \item Argue why each property always holds (e.g., for any input satisfying the range X, the first layer outputs values in range Y, etc).
-    \item (Optional) Show that the properties you came up will always hold by using Z3 to prove that no counterexample exists (i.e., \unsat{}).  
+    \item (Optional) Show that the properties you came UB will always hold by using Z3 to prove that no counterexample exists (i.e., \unsat{}).  
 \end{itemize}
 \end{itemize}
 
@@ -2314,7 +2314,7 @@ As shown in~\autoref{ex:relu_milp1}, the upper and lower bounds of neuron $x_3$ 
     \item \textbf{Scalability:} While MILP is efficient in dealing with linear constraints, it still cannot be applied directly to real-world DNNs due to the large search space. Each ReLU application to an unstable neuron introduces a binary variable (\autoref{sec:relu-encoding}), leading to exponential number of possible branches, and real-world DNNs can have millions of such ReLUs, making the search space intractable.
 
     \item \textbf{Limited exploitation of network structure and modern hardware} Off-the-shelf MILP solvers are designed for arbitrary MILP problems and do not exploit DNN-specific structures and concepts such as activation patterns (\autoref{sec:activation-patterns}) to prune the search space.
-    Moreover, MILP solvers, even industrial-strength ones such as Gurobi~\cite{gurobi}, are primarily CPU-based and does not leverage the massive parallelism provided by modern GPUs to speed up computation.
+    Moreover, MILP solvers, even industrial-strength ones such as Gurobi~\cite{gurobi}, are primarily CPU-based and does not leverage the massive parallelism provided by modern GPUs to speed UB computation.
 
     %\item \textbf{Generic branch-and-bound algorithms:} While MILP solvers employ branch-and-bound (BaB) algorithms, these are generic and not tailored to DNNs. In contrast, specialized DNN verification algorithms leverage DNN-specific BaB strategies, such as layer-wise branching, abstract domain propagation, and neuron-specific heuristics, enabling greater efficiency.
 
@@ -2911,7 +2911,7 @@ v \in [l, u] = \{v \in \mathbb{R} \mid l \le v \le u\}
 \]
 
 
-For $n$ variables, the interval becomes a box (like a rectangle in 2D, a cuboid in 3D, or a hyperrectangle in $n$D):
+For $n$ variables, the interval becomes a box (like a rectangle in 2D, a cupoid in 3D, or a hyperrectangle in $n$D):
 \[
 [v_1, v_2, \ldots, v_n] \in [l_1, u_1] \times [l_2, u_2] \times \cdots \times [l_n, u_n]
 \]
@@ -3788,7 +3788,7 @@ Thus, the final bounds after ReLU are \([0, 2.0]\).
 % For other activations like sigmoid or tanh, the approximation involves linearizing the curve between the lower and upper bounds of the input variable, but the number of constraints can quickly grow, increasing computational complexity.
 
 % \paragraph{DeepPoly.}  
-% By containing two lower polyhedra constraints for \(y\), the approximation in \ref{minimum_polyhedron} inherently suffers from a potential blow-up in number of constraints as the analysis proceeds. Due to scalability issues associated with general polyhedral representations, DeepPoly \cite{singh2019abstract} was proposed as a precise and scalable abstract domain. DeepPoly introduces a specialized form of polyhedral abstraction combined with interval bounds. 
+% By containing two lower polyhedra constraints for \(y\), the approximation in \ref{minimum_polyhedron} inherently suffers from a potential blow-UB in number of constraints as the analysis proceeds. Due to scalability issues associated with general polyhedral representations, DeepPoly \cite{singh2019abstract} was proposed as a precise and scalable abstract domain. DeepPoly introduces a specialized form of polyhedral abstraction combined with interval bounds. 
 
 % More specifically,  DeepPoly only allows for one lower bound in \ref{minimum_polyhedron}, the selection of which lower constraint depends on which constraint provides the tighter approximation.
 
@@ -4435,7 +4435,7 @@ For the other subproblem with $\overline{v_4}$ inactive, \Deduce determines infe
 
 
 \begin{problem}\label{prob:bab-detailed}
-Do~\autoref{ex:bab} but come up with concrete values for each step, e.g., what are the bounds computed by \Deduce, what does \mycode{LP} return, etc to illustrate the process in more detail.
+Do~\autoref{ex:bab} but come UB with concrete values for each step, e.g., what are the bounds computed by \Deduce, what does \mycode{LP} return, etc to illustrate the process in more detail.
 \end{problem}
 
 
@@ -5158,7 +5158,7 @@ Future work will explore tuning $N$ to a given verification problem.
 % \hd{Without X, \proofcheck{} will have to check all the children.}
 
 % \hd{It backjumps when the leave node is proved and X optimization is enabled. 
-% We can keep backing up until it cannot prove anymore, however, after N times, each time half the length of an activation pattern, an activation pattern is shortened to $1 / 2^{N}$ (e.g., if $N=2$, after 2 times of backing up, an activation pattern is shortened to 1/4 of its length). 
+% We can keep backing UB until it cannot prove anymore, however, after N times, each time half the length of an activation pattern, an activation pattern is shortened to $1 / 2^{N}$ (e.g., if $N=2$, after 2 times of backing up, an activation pattern is shortened to 1/4 of its length). 
 % This is when the pruned leaves by those proved interiors are getting overlapped (due to parallelization, we backjump on multiple leaves), so more backjumps might not helpful. 
 % Instead, we start over with a new iteration with remaining leaves.
 % I experienced with $N = \{1, 2, 3, 4, 5\}$ and I settled down $N=2$ for all experiments (fixed N) which seems to be good enough in our experiments. 
@@ -5353,7 +5353,7 @@ Future work will explore tuning $N$ to a given verification problem.
 % proof stabilization (S).  We kept a third optimization that controls the
 % degree of parallelization in proof checking fixed at a value of 64 to mitigate
 % experimental cost; since the independence of sub-proofs means that
-% proof checking is amenable to linear speedup we felt this aspect of experimentation
+% proof checking is amenable to linear speedUB we felt this aspect of experimentation
 % was less valuable.
 % For RQ3, we use both \neuralsat{} and \crown{} to generate proofs; this
 % constitutes a treatment for this research question as it varies the
@@ -5462,7 +5462,7 @@ Future work will explore tuning $N$ to a given verification problem.
 % problem, i.e., the number of nodes of the proof tree.
 % When interpreting these plots, understand that the y-axis log scale means that vertical
 % distances have a different meaning as you move upward in the plot.
-% While the vast majority of the verification problems have proof trees of fewer then 2000 leaves, but 17 of them have larger trees up to a maximum of more than 10000 leaves.
+% While the vast majority of the verification problems have proof trees of fewer then 2000 leaves, but 17 of them have larger trees UB to a maximum of more than 10000 leaves.
 % Note also that even among the smaller sized proof trees, there are some problems that cannot be solved.
 % This is due to complexity of solving the MILP constraints at the leaves of those proof trees.
 
@@ -5637,7 +5637,7 @@ Many verifiers, e.g.,~\cite{katz2019marabou,wang2018formal,wang2021beta,duong202
 The idea is to split the original verification problem into subproblems, each checking whether the DNN produces the desired output from a smaller input region and returns \unsat{} if all subproblems are verified and \sat{} if a counterexample is found in any subproblem. Input splitting avoids BaB search (\autoref{chap:bab})---which performs \emph{neuron splitting}---and is often used to quickly eliminate easy cases.
 
 Moreover, each subproblem now has a smaller input region, thus the verifier can often verify them more quickly than the original problem.
-Finally, because each task can be solved independently, the verifier can solve them in parallel to further speed up the verification process.
+Finally, because each task can be solved independently, the verifier can solve them in parallel to further speed UB the verification process.
 
 
 \begin{example}
@@ -5707,7 +5707,7 @@ We can apply the same approach to tighten the lower bounds of $x_1$ using a mini
 Note that, this approach works well for networks with small inputs, e.g., the ACAS Xu benchmark~\autoref{sec:acasxu} with 5 inputs, and is adopted by many modern DNN verification tools, including \marabou{} and \nnenum{}.
 For larger input dimensions networkswe, it will take much time as we need to run $2 \times$ the number of inputs to tighten all the input bounds (for each input, we need to tighten the upper and lower bounds individually).
 
-To reduce the time complexity, we can prioritize the input variables to tighten first, e.g., deciding the variable with the largest bounds first, and only tighten up to a maxinum number of inputs, e.g., 10 inputs.
+To reduce the time complexity, we can prioritize the input variables to tighten first, e.g., deciding the variable with the largest bounds first, and only tighten UB to a maxinum number of inputs, e.g., 10 inputs.
 
 \subsection{Neuron (Hidden) Bounds Tightening}\label{sec:neuronboundstigthten}
 
@@ -5901,7 +5901,7 @@ We can verify these results by computing each subproblem individually using the 
 
 
 
-By using matrix operations, we can leverage using GPUs natively to speed up the computation.
+By using matrix operations, we can leverage using GPUs natively to speed UB the computation.
 As expected, the computation time is reduced significantly using GPUs when the size of matrices (weights, bias, inputs, etc.) becomes larger~\autoref{fig:gpu-benchmarking}.
 
 \begin{figure}[t]
@@ -6272,11 +6272,13 @@ Thus, \tool{} was able to generate non-chronological backtracks and use BCP to p
 
 
 
-
 \chapter{The \reluplex{} Algorithm}\label{chap:reluplex}
 
 \reluplex{}~\cite{katz2017reluplex} is a classical BaB (\autoref{chap:bab}) approach for verifying neural networks. The technique extends the simplex method~\cite{nelder1965simplex} to support the ReLU activation function (\textbf{Reluplex} = \textbf{Relu} + Sim\textbf{plex}). \reluplex{} has been succeeded by the Marabou~\cite{katz2019marabou} tool, which are more efficient and scalable. However, the core ideas of \reluplex{} are still relevant and therefore we present it here.
 
+\section{Algorithm Overview}\label{sec:reluplex-overview}
+
+\reluplex{} extends the classical simplex algorithm to handle ReLU activation functions. The key idea is to maintain a tableau representing the linear relationships between the variables in the DNN and keep track of values assigned to these variables. Initially, \reluplex{} assigns random values to all variables and then iteratively refines these values to satisfy the bounds of the variables and the ReLU constraints.
 \section{Illustration}
 
 
@@ -6332,160 +6334,168 @@ Thus, \tool{} was able to generate non-chronological backtracks and use BCP to p
     x_5 = 0.5\hat{x_3} - 0.2\hat{x_4}
 \end{gather*}
 
-  
-  
-  Assume we want to check that the DNN has the property
+We want to check that the DNN has the property
 \begin{equation}\label{eq:prop1}
   (0 \le x_1 \le 0.5 \land -2 \le x_2 \le -1) \implies ( x_5< 0 \lor x_5 > 0.5).
 \end{equation}
 That is, when the inputs $x_1, x_2$ fall within certain ranges, then the result $x_5$ has certain values.
-As shown in~\autoref{sec:negation-trick}, we turn this into a satisfiability problem by negating the property:
+As shown in~\autoref{sec:satisfiability-and-activation-pattern-search}, we turn this into a satisfiability problem by negating the property:
 \begin{equation}\label{eq:negprop1}
     ( 0 \le x_1 \le 0.5 \land -2 \le x_2 \le -1) \land 0 \le x_5 \le 0.5, 
   \end{equation}
 and checking whether there exists a counterexample satisfying the negated property.
-
   
 % For example, in~\autoref{fig:reluplex}, the ReLU node $x_3=\max(i0 -1i1,0)$ is encoded using two variables $x_3'=i0 -1i1$ and $x_3''=\max(x_3',0)$.  The DNN in\autoref{fig:reluplexB} shows the network in~\autoref{fig:reluplex} with additional nodes representing ReLU encoding.
 
 
+We now use \reluplex{} to check whether there exists an assignment satisfying the negated property in~\autoref{eq:negprop1}.
 
+\textbf{Basic Variables}~We start by introducing three \emph{basic} (auxilliary or slack) variables to represent the relationships between the variables in the DNN:
 
-
-\paragraph{Basic Variables} We also introduce three new \emph{basic} (auxilliary or slack) variables to store the relationships of the DNN's constraints:
 \begin{gather}
-  a_1 = x_1 - x_2 - x_3'\label{eq:reluplex2a},\\
-  a_2 = x_1 + x_2 - x_4'\label{eq:reluplex2b},\\
-  a_3 = 0.5x_3'' -0.2 x_4'' - x_5\label{eq:reluplex2c}
+  a_1 = x_1 - x_2 - x_3\label{eq:reluplex2a},\\
+  a_2 = x_1 + x_2 - x_4\label{eq:reluplex2b},\\
+  a_3 = 0.5\hat{x}_3 -0.2 \hat{x}_4 - x_5\label{eq:reluplex2c}
 \end{gather}
 
-In simplex terminology, a \emph{basic} variable is a variable that is used to represent the relationship between other variables in the constraints. For example, $a_1$ represents the difference between $x_1$, $x_2$, and $x_3'$. Basic variables are used to maintain the relationships between the variables in the constraints and are updated during the search process.
+These basic variables are used to maintain the relationships between the variables in the constraints and are updated during the search process.
+In contrast, a \emph{non-basic} variable is one that does not represent the relationship between other variables in the constraints. In this example, all variables except $a_1, a_2, a_3$ are non-basic because they are not used to represent the relationship between other variables in the constraints.
 
-In contrast, a \emph{non-basic} variable is a variable that is not used to represent the relationship between other variables in the constraints. For example, $x_1$ and $x_2$ are non-basic because they are not used to represent the relationship between other variables in the constraints. Non-basic variables are typically the input variables of the DNN.
+\textbf{Iteration}~\reluplex{} first assigns 0 to all variables in the equations in~\autoref{eq:reluplex2a}--~\autoref{eq:reluplex2c}.  This assignment are essentially an initial guess and would likely cause issues such as variables violating their bounds.  \reluplex{} works by iteratively fixing these invalid values until it finds a feasible assignment (\sat{}), or cannot do so (\unsat{}).
 
-\paragraph{Iteration} \reluplex{} first assigns 0 to all \tvn{basic?} variables in the constraints in~\autoref{eq:reluplex2a}--~\autoref{eq:reluplex2c}.  This assignment---essentially an initial guess---would likely cause issues such as variables violating their bounds.  \reluplex{} works by iteratively fixing these invalid values until it finds a feasible assignment (and returns \texttt{sat}) or cannot do so (and returns \texttt{unsat}).
-
-This iterative updating process can be demonstrated through a sequence of configuration updates over the variables.
+This \reluplex{} iterative updating process can be demonstrated through a sequence of \emph{configuration updates} over the variables.
 ~\autoref{tab:reluplex1} shows the initial configuration with all values assigned to 0.
-Observe that the lower and upper bounds of the inputs $x_1, x_2$ and output $x_5$ are specified in the property in ~\autoref{eq:negprop1}, the lower bounds of $n''$ representing ReLUs are 0s, and the other hidden variables are unbounded.
+The lower (LB) and upper (UB) bounds of the inputs $x_1, x_2$ and output $x_5$ are specified in ~\autoref{eq:negprop1}. The LBs of $\hat{n}_i$'s representing ReLUs are 0s, and the other hidden variables are unbounded (i.e., $-\infty$ to $\infty$).
 
 \begin{table}[h]
+    \caption{Configuration \#1}\label{tab:reluplex1}
     \centering
+    \small
 \begin{tabular}{ccccccccccc}
-     & $x_1$ & $x_2$ & $x_3'$ & $x_3''$ & $x_4'$ & $x_4''$ & $x_5$ &$a_1$&$a_2$&$a_3$ \\
+     & $x_1$ & $x_2$ & $x_3$ & $\hat{x}_3$ & $x_4$ & $\hat{x}_4$ & $x_5$ &$a_1$&$a_2$&$a_3$ \\
     \midrule
     LB & 0 & -2 & $-\infty$&0&$-\infty$& 0 & 0 & 0 & 0 &0\\
-    Val& 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
-    UP & 0.5 & -1 &$\infty$&$\infty$&$\infty$&$\infty$&0.5& 0 & 0 & 0
+    Val& 0 & \textbf{0} & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
+    UB & 0.5 & -1 &$\infty$&$\infty$&$\infty$&$\infty$&0.5& 0 & 0 & 0
 \end{tabular}
-\caption{Configuration \#1}\label{tab:reluplex1}
 \end{table}
 
-\autoref{tab:reluplex1} shows that $x_2$ is out-of-bounds because $0 \notin [-2,-1]$. To fix $x_2$, which is non-basic, Reluplex simply updates it to a valid value, e.g., $x_2 \texttt{+=} -1.0 = -1.0$, which means adding -1.0 to the current value of $x_2$ and thus having $x_2= -1.0$.
+
+\reluplex{} now checks whether any variable violates its bounds and fixes them by updating their values.
+For non-basic variables, \reluplex{} simply updates them to valid values within their bounds and propagates the changes to the basic variables that depend on them. For basic variables, \reluplex{} pivots (swaps) them with one of the variables they depend and then updates the non-basic variable to a valid value.
+
+\autoref{tab:reluplex1} shows that $x_2$ is out-of-bounds because $0 \notin [-2,-1]$. To fix $x_2$, which is non-basic, \reluplex{} updates it to a valid value, e.g., $x_2 \texttt{+=} -1.0 = -1.0$ by adding -1.0 to the current value of $x_2$.
+
 Now, because $a_1, a_2$ depend on $x_2$ as shown in~\autoref{eq:reluplex2a} and~\autoref{eq:reluplex2b}, respectively, this update to $x_2$ also changes $a_1,a_2$:
     \begin{align*}
-        a_1 ~\texttt{+=}~ 1.0 = 1.0   &~\text{because}~ a_1=x_1 - x_2 - x_3', \\
-        a_2 ~\texttt{+=}~ -1.0 = -1.0  & ~\text{because}~ a_2=x_1 + x_2 - x_4'.\\
+        a_1 ~\texttt{+=}~ 1.0 = 1.0   &~\text{because}~ a_1=x_1 - x_2 - x_3, \\
+        a_2 ~\texttt{+=}~ -1.0 = -1.0  & ~\text{because}~ a_2=x_1 + x_2 - x_4.\\
     \end{align*}
 
 
-
-\autoref{tab:reluplex2} shows the new configuration, which now has $a_1, a_2$ violate their bounds and need to be fixed. Assume Reluplex picks $a_1$. To fix $a_1$, which is a basic variable, Reluplex pivots (swaps) it with one of the variables it depends on as shown in the constraint $ a_1 = x_1 - x_2 - x_3'$ in~\autoref{eq:reluplex2a}. Assume Reluplex pivots $a_1$ with $x_3'$, we get
-\begin{equation}\label{eq:reluplex5}
-x_3' = x_1 - x_2 - a_1.
-\end{equation}
-
-
 \begin{table}[h]
+\caption{Configuration \#2}\label{tab:reluplex2}    
     \centering
+\small
 \begin{tabular}{ccccccccccc}
-     & $x_1$ & $x_2$ & $x_3'$ & $x_3''$ & $x_4'$ & $x_4''$ & $x_5$ &$a_1$&$a_2$&$a_3$ \\
+     & $x_1$ & $x_2$ & $x_3$ & $\hat{x}_3$ & $x_4$ & $\hat{x}_4$ & $x_5$ &$a_1$&$a_2$&$a_3$ \\
     \midrule
     LB & 0 & -2 & $-\infty$&0&$-\infty$& 0 & 0 & 0 & 0 &0\\
-    Val& 0 & \textbf{-1} & 0 & 0 & 0 & 0 & 0 & \textbf{1} & \textbf{-1} & 0\\
-    UP & 0.5 & -1 &$\infty$&$\infty$&$\infty$&$\infty$&0.5& 0 & 0 & 0\\\
+    Val& 0 & \textbf{\red{-1}} & 0 & 0 & 0 & 0 & 0 & \textbf{\red{1}} & \textbf{\red{-1}} & 0\\
+    UB & 0.5 & -1 &$\infty$&$\infty$&$\infty$&$\infty$&0.5& 0 & 0 & 0\\\
 \end{tabular}
-\caption{Configuration \#2}\label{tab:reluplex2}
 \end{table}
 
+\autoref{tab:reluplex2} shows the new configuration, which now has $a_1, a_2$ violating their bounds and need to be fixed. Assume \reluplex{} picks $a_1$. To fix $a_1$---a basic variable---\reluplex{} pivots (swaps) it with a variable it depends on from the constraint $ a_1 = x_1 - x_2 - x_3$ in~\autoref{eq:reluplex2a}. Assume \reluplex{} pivots $a_1$ with $x_3$, we get
+\begin{equation}\label{eq:reluplex5}
+x_3 = x_1 - x_2 - a_1.
+\end{equation}
 
-Reluplex now updates the non-basic $a_1$ to 0 ($a_1 \text{+=} -1.0 = 0$). This also changes $x_3'$  to 1.0 ($x_3'+=1.0 = 1.0)$ because $x_3'$ depends on $a_1$ as shown in~\autoref{eq:reluplex5}.
-
+\reluplex{} now updates the non-basic $a_1$ to 0 ($a_1 \text{+=} -1.0 = 0$). This also changes $x_3$  to 1.0 ($x_3+=1.0 = 1.0)$ because $x_3$ depends on $a_1$ as shown in~\autoref{eq:reluplex5}.
 \begin{table}[h]
+\caption{Configuration \#3}\label{tab:reluplex3}
     \centering
+    \small
 \begin{tabular}{ccccccccccc}
-     & $x_1$ & $x_2$ & $x_3'$ & $x_3''$ & $x_4'$ & $x_4''$ & $x_5$ &$a_1$&$a_2$&$a_3$ \\
+     & $x_1$ & $x_2$ & $x_3$ & $\hat{x}_3$ & $x_4$ & $\hat{x}_4$ & $\hat{x}_5$ &$a_1$&$a_2$&$a_3$ \\
     \midrule
     LB & 0 & -2 & $-\infty$&0&$-\infty$& 0 & 0 & 0 & 0 &0\\
     Val& 0 & -1 & \textbf{1} & 0 & 0 & 0 & 0 & \textbf{0} & -1 & 0\\
-    UP & 0.5 & -1 &$\infty$&$\infty$&$\infty$&$\infty$&0.5& 0 & 0 & 0\\\
+    UB & 0.5 & -1 &$\infty$&$\infty$&$\infty$&$\infty$&0.5& 0 & 0 & 0\\\
 \end{tabular}
-\caption{Configuration \#3}\label{tab:reluplex3}
+
 \end{table}
 
-~\autoref{tab:reluplex3} shows the new configuration. ~\autoref{tab:reluplex3} also shows the basic variable $a_2$ is out-of-bound.  To fix it, Reluplex pivots $a_2$ with a variable it depends on as shown in the constraint $a_2 = x_1 + x_2 - x_4'$ in Eq~\ref{eq:reluplex2b}.  Assume Reluplex pivots $a_2$ with $x_4'$, we get
+~\autoref{tab:reluplex3} shows the new configuration, which now has the basic variable $a_2$ out-of-bound.  To fix it, \reluplex{} pivots $a_2$ with a variable it depends on from the constraint $a_2 = x_1 + x_2 - x_4$ in Eq~\ref{eq:reluplex2b}.  Assume \reluplex{} pivots $a_2$ with $x_4$, we get
 \begin{equation}\label{eq:reluplex6}
-  x_4' = x_1 + x_2 - a_2
+  x_4 = x_1 + x_2 - a_2
 \end{equation}
-Now $a_2$ becomes non-basic and is updated to 0 through $a_2+= 1.0 = 0$. As $x_4'$ depends on $a_1$ as shown in ~\autoref{eq:reluplex6}, we make the change $x_4' ~\texttt{-=}~1.0 = -1.0$.
+Now $a_2$ becomes non-basic and is updated to 0 through $a_2+= 1.0 = 0$. As $x_4$ depends on $a_1$ as shown in ~\autoref{eq:reluplex6}, we make the change $x_4 ~\texttt{-=}~1.0 = -1.0$.
 
 
 \begin{table}[h]
+    \caption{Configuration \#4}\label{tab:reluplex4}
     \centering
+    \small
 \begin{tabular}{ccccccccccc}
-     & $x_1$ & $x_2$ & $x_3'$ & $x_3''$ & $x_4'$ & $x_4''$ & $x_5$ &$a_1$&$a_2$&$a_3$ \\
+     & $x_1$ & $x_2$ & $x_3$ & $\hat{x}_3$ & $x_4$ & $\hat{x}_4$ & $x_5$ &$a_1$&$a_2$&$a_3$ \\
     \midrule
     LB & 0 & -2 & $-\infty$&0&$-\infty$& 0 & 0 & 0 & 0 &0\\
     Val& 0 & -1 & 1 & 0 & \textbf{-1} & 0 & 0 & 0 & \textbf{0} & 0\\
-    UP & 0.5 & -1 &$\infty$&$\infty$&$\infty$&$\infty$&0.5& 0 & 0 & 0\\\
+    UB & 0.5 & -1 &$\infty$&$\infty$&$\infty$&$\infty$&0.5& 0 & 0 & 0\\\
 \end{tabular}
-\caption{Configuration \#4}\label{tab:reluplex4}
+
 \end{table}
 
-~\autoref{tab:reluplex4} shows the new configuration.
-At this point, we no longer have out-of-bound variables, but have inconsistent values for the pair of RELU variables $x_3', x_3''$. This is because $x_3'' = \max(x_3',0)$ but  we have $x_3'=1$ thus $\max(1,0)=1$, which is not $x_3''=0$.  Thus, Reluplex needs to fix either $x_3''$ or $x_3'$.
+\autoref{tab:reluplex4} shows the new configuration.
+At this point, we no longer have out-of-bound variables, but have inconsistent values for the pair of RELU variables $x_3, \hat{x}_3$. This is because $\hat{x}_3 = \max(x_3,0)$ but  we have $x_3=1$ thus $\max(1,0)=1$, which is not $\hat{x}_3=0$.  Thus, \reluplex{} needs to fix either $\hat{x}_3$ or $x_3$.
 
-Assume Reluplex picks $x_3''$. Because $x_3''$ is non-basic, we simply update it, i.e.,  $x_3'' = \text{+} 1 = 1$.  As $a_3$ depends on $x_4''$, i.e., $ a_3 = 0.5x_3'' -0.2 x_4'' - x_5$, Reluplex also makes the change $a_3+= 0.5\times 1.0=0.5$.
+Assume \reluplex{} picks $\hat{x}_3$. Because $\hat{x}_3$ is non-basic, we simply update it, i.e.,  $\hat{x}_3 = \text{+} 1 = 1$.  As $a_3$ depends on $\hat{x}_4$, i.e., $ a_3 = 0.5\hat{x}_3 -0.2 \hat{x}_4 - x_5$, \reluplex{} also makes the change $a_3+= 0.5\times 1.0=0.5$.
 
 
 
 \begin{table}[h]
+    \caption{Configuration \#5}\label{tab:reluplex5}
     \centering
+    \small
 \begin{tabular}{ccccccccccc}
-     & $x_1$ & $x_2$ & $x_3'$ & $x_3''$ & $x_4'$ & $x_4''$ & $x_5$ &$a_1$&$a_2$&$a_3$ \\
+     & $x_1$ & $x_2$ & $x_3$ & $\hat{x}_3$ & $x_4$ & $\hat{x}_4$ & $x_5$ &$a_1$&$a_2$&$a_3$ \\
     \midrule
     LB & 0 & -2 & $-\infty$&0&$-\infty$& 0 & 0 & 0 & 0 &0\\
     Val& 0 & -1 & 1 & \textbf{1} & -1 & 0 & 0 & 0 & 0 & \textbf{0.5}\\
-    UP & 0.5 & -1 &$\infty$&$\infty$&$\infty$&$\infty$&0.5& 0 & 0 & 0\\\
+    UB & 0.5 & -1 &$\infty$&$\infty$&$\infty$&$\infty$&0.5& 0 & 0 & 0\\\
 \end{tabular}
-\caption{Configuration \#5}\label{tab:reluplex5}
+
 \end{table}
 
 ~\autoref{tab:reluplex5} shows the new configuration.
-In the new configuration, $a_3$ is out-of-bound. To fix this basic variable, we pivot $a_3$ with one of the variables $x_3'', x_4'', x_5$ because of the constraint $a_3 = 0.5x_3'' -0.2 x_4'' - x_5$ in ~\autoref{eq:reluplex2c}. Assume we pivot $a_3$ with $x_5$, we get
+In the new configuration, $a_3$ is out-of-bound. To fix this basic variable, we pivot $a_3$ with one of the variables $\hat{x}_3, \hat{x}_4, x_5$ because of the constraint $a_3 = 0.5\hat{x}_3 -0.2 \hat{x}_4 - x_5$ in ~\autoref{eq:reluplex2c}. Assume we pivot $a_3$ with $x_5$, we get
 \begin{equation}\label{eq:reluplex7}
-  x_5 = 0.5x_3'' -0.2 x_4'' - a_3
+  x_5 = 0.5\hat{x}_3 -0.2 \hat{x}_4 - a_3
 \end{equation}
 
 Now, $a_3$ becomes non-basic and we update it to 0 through $a_3+=-0.5=0$.  As $x_5$ depends on $a_3$ as shown in Eq~\ref{eq:reluplex7}, we make the change $x_5 += 0.5=0.5$.
 
 \begin{table}[h]
+    \caption{Configuration \#6}\label{tab:reluplex6}
     \centering
+    \small
 \begin{tabular}{ccccccccccc}
-     & $x_1$ & $x_2$ & $x_3'$ & $x_3''$ & $x_4'$ & $x_4''$ & $x_5$ &$a_1$&$a_2$&$a_3$ \\
+     & $x_1$ & $x_2$ & $x_3$ & $\hat{x}_3$ & $x_4$ & $\hat{x}_4$ & $x_5$ &$a_1$&$a_2$&$a_3$ \\
     \midrule
     LB & 0 & -2 & $-\infty$&0&$-\infty$& 0 & 0 & 0 & 0 &0\\
     Val& 0 & -1 & 1 & \textbf{1} & -1 & 0 & \textbf{0.5} & 0 & 0 & \textbf{0}\\
-    UP & 0.5 & -1 &$\infty$&$\infty$&$\infty$&$\infty$&0.5& 0 & 0 & 0\\\
+    UB & 0.5 & -1 &$\infty$&$\infty$&$\infty$&$\infty$&0.5& 0 & 0 & 0\\\
 \end{tabular}
-\caption{Configuration \#6}\label{tab:reluplex6}
+
 \end{table}
 
 ~\autoref{tab:reluplex6} shows the new configuration.
-At this point, Reluplex no longer has any out-of-bound or inconsinstent values, and thus stops and returns \sat{} with the values in the \textbf{Val} row in ~\autoref{tab:reluplex6} as the satisfying assignment for the formula in Eq~\ref{eq:negprop1}.
+At this point, \reluplex{} no longer has any out-of-bound or inconsinstent values, and thus stops and returns \sat{} with the values in the \textbf{Val} row in ~\autoref{tab:reluplex6} as the satisfying assignment for the formula in Eq~\ref{eq:negprop1}.
 
-Thus, in this example, we conclude that property in~\autoref{eq:prop1} is \emph{not valid} for the DNN in~\autoref{fig:reluplex} because for the inputs $x_1=0,v_{-12}=-1$, the DNN gives the output $x_5=0.5$, which violates the property in~\autoref{eq:prop1}.
+Thus, in this example, we conclude that property in~\autoref{eq:prop1} is \emph{not valid} for the DNN in~\autoref{fig:dnn-replux} because for the inputs $x_1=0,v_{-12}=-1$, the DNN gives the output $x_5=0.5$, which violates the property in~\autoref{eq:prop1}.
 \end{example}
+
 
 \begin{problem}\label{problem:reluplex-hand}
     Reread the example in~\autoref{ex:reluplex} carefully. Then: 
@@ -6495,10 +6505,10 @@ Thus, in this example, we conclude that property in~\autoref{eq:prop1} is \emph{
     \end{itemize}
 \end{problem}
 
-\begin{problem}
-Consider the DNN in~\autoref{fig:reluplex} and the property in~\autoref{eq:prop1}.  Use \reluplex{} to verify the property.  If you find a counterexample, provide it.  You will need to provide all the steps in the \reluplex{} algorithm, e.g., DNN encoding, basic variable encoding, and the \reluplex{} search through a series of configurations as shown in~\autoref{ex:reluplex}.
+% \begin{problem}
+% Consider the DNN in~\autoref{fig:reluplex} and the property in~\autoref{eq:prop1}.  Use \reluplex{} to verify the property.  If you find a counterexample, provide it.  You will need to provide all the steps in the \reluplex{} algorithm, e.g., DNN encoding, basic variable encoding, and the \reluplex{} search through a series of configurations as shown in~\autoref{ex:reluplex}.
 
-\end{problem}
+% \end{problem}
 
 
 \part{Advanced Topics\label{part:advanced-topics}}
@@ -6582,7 +6592,7 @@ Here we survey the latest benchmarks in DNN verification and how SOTA tools perf
 \subsection{VGGNET16}
 \paragraph*{Proposed by} Stanley Bak, Stony Brook University
 
-\paragraph*{Motivation} This benchmark tries to scale up the size of networks being analyzed by using the well-studied VGGNET-16 architecture~\cite{simonyan2014very} that runs on ImageNet. Input-output properties are proposed on pixel-level perturbations that can lead to image misclassification. 
+\paragraph*{Motivation} This benchmark tries to scale UB the size of networks being analyzed by using the well-studied VGGNET-16 architecture~\cite{simonyan2014very} that runs on ImageNet. Input-output properties are proposed on pixel-level perturbations that can lead to image misclassification. 
 
 \paragraph*{Networks} All properties are run on the same network, which includes 138 million parameters. The network features convolution layers, ReLU activation functions, as well as max pooling layers.
 
@@ -6954,7 +6964,7 @@ In each specification, the inputs (condition distance and latent variables) are 
 
 % %\vfill
 % %\pagebreak
-% \paragraph*{Specifications}  All specifications have as input constraints the hypercube $[-2,2]^2$. Since all networks have only a single output, the output properties consist of a randomly generated real number and a randomly generated inequality direction. Random output samples from the network are used to roughly ensure that the real number property has an equal likelihood of being within the output range of the NN and being outside of it (either above or below all NN outputs on the input constraint set). The inequality direction is generated independently and with each direction having an equal probability. This scheme biases the benchmark towards verification problems for which counterexamples exist. 
+% \paragraph*{Specifications}  All specifications have as input constraints the hypercupe $[-2,2]^2$. Since all networks have only a single output, the output properties consist of a randomly generated real number and a randomly generated inequality direction. Random output samples from the network are used to roughly ensure that the real number property has an equal likelihood of being within the output range of the NN and being outside of it (either above or below all NN outputs on the input constraint set). The inequality direction is generated independently and with each direction having an equal probability. This scheme biases the benchmark towards verification problems for which counterexamples exist. 
 
 % \paragraph*{Link} \url{https://github.com/jferlez/TLLVerifyBench}
 % \paragraph*{Commit}
@@ -6988,7 +6998,7 @@ In each specification, the inputs (condition distance and latent variables) are 
 %     \item \emph{Datasets:} Although there was no clear consensus in~\cite{jia2019certified,huang2019achieving,welbl2020towards,zhang2021certified,wang2023robustness,ko2019popqorn,du2021cert,shi2020robustness,bonaert2021fast}, the most frequently used dataset in prior works was the IMDB dataset containing film reviews. Its disadvantage is unclear relation to safety critical domains that usually motivate verification efforts. On the other hand, none of the previously used datasets concerned safety-critical applications of NLP. We decided to address this problem, and therefore applied our generic NLP verification pipeline on two safety-critical datasets:  R-U-A-Robot~\cite{gros2021ruarobot}, which focuses on the chatbot disclosure problem, and Medical~\cite{abercrombie2022risk}, which addresses the issue of harmful advice provided by medical chatbots. Both datasets are pre-processed into two classes, positive and negative, to simplify the verification task. For further details on the pre-processing steps and datasets, see~\cite{casadio2024nlp} and the \href{https://github.com/ANTONIONLP/safeNLP}{benchmark GitHub repository}.
 %     \item \emph{Input Space:} In both datasets, sentences are transformed into fixed-size vector representations, i.e. embeddings, which serve as the inputs to the neural networks. For this VNNCOMP benchmark, we used Sentence-BERT~\cite{reimers-gurevych-2019-sentence}. 
 %     %This part is handled by ANTONIO, which employs .
-%     \item \emph{What to Verify:} For each dataset, we generated meaning-preseving sentence perturbations at character and word level as in Moradi et al.~\cite{moradi2021evaluating} and at sentence level with Vicuna~\cite{vicuna2023}. For each positive sentence in the dataset, the smallest hypercube containing the embeddings of all of its obtained perturbations formed one input subspace for verification. Such subspaces were obtained for all positive sentences from the given data set, and were subject to VNCCOMP verification challenge. 
+%     \item \emph{What to Verify:} For each dataset, we generated meaning-preseving sentence perturbations at character and word level as in Moradi et al.~\cite{moradi2021evaluating} and at sentence level with Vicuna~\cite{vicuna2023}. For each positive sentence in the dataset, the smallest hypercupe containing the embeddings of all of its obtained perturbations formed one input subspace for verification. Such subspaces were obtained for all positive sentences from the given data set, and were subject to VNCCOMP verification challenge. 
 %     %ANTONIO’s modular approach allows us to independently chose both the perturbation algorithms and the subspaces form.
 %     %The goal is to verify that every point within these subspaces is classified as positive by the network.
 %     \item \emph{A note on broader impact:} Verified models can serve as filters for larger NLP systems: e.g. to screen inputs to ensure they meet safety criteria before being passed on to more complex models.
@@ -6999,7 +7009,7 @@ In each specification, the inputs (condition distance and latent variables) are 
 % %flexibly select the training mode and robustness algorithm. Specifically, we 
 % %customise the PGD algorithm to work effectively with the subspaces used in our specifications.
 
-% \paragraph*{Specifications} The benchmark uses hyper-rectangles in the 30-dimensional embedding space as the subspaces of choice, offering a computationally efficient way to define more precise and adaptable regions compared to the traditional $\epsilon$-cubes. 
+% \paragraph*{Specifications} The benchmark uses hyper-rectangles in the 30-dimensional embedding space as the subspaces of choice, offering a computationally efficient way to define more precise and adaptable regions compared to the traditional $\epsilon$-cupes. 
 % %These hyper-rectangles are defined by a series of lower and upper bounds. 
 % The specifications require verifying that, for a given network and hyper-rectangle, every point within the hyper-rectangle is classified as the positive class by the network. To meet time constraints, we randomly select 1,080 such specifications, each linked to one of the two networks and a corresponding hyper-rectangle, with a timeout of 20 seconds per specification.
 
@@ -8035,7 +8045,7 @@ We can use Z3's optimization capabilities to solve both LP and MILP problems. No
 from z3 import *
 
 x, y = Reals("x y")
-opt = Optimize() # setup the optimization problem
+opt = Optimize() # setUB the optimization problem
 opt.add(x + y <= 4, x >= 0, y >= 0)
 
 # Objective
@@ -8472,7 +8482,6 @@ Software verification typically deals with discrete systems and logical properti
 \end{algorithm}
 
 
-
 \autoref{fig:alg} shows the \tool{} algorithm, which takes as input the formula $\alpha$ representing the ReLU-based DNN $N$ and the formulae $\phi_{in}\Rightarrow \phi_{out}$ representing the property $\phi$ to be proved.
 Internally, \tool{} checks the satisfiability of the formula given in~\autoref{eq:nnv2}
 \begin{equation*}
@@ -8767,7 +8776,7 @@ If the clause is \emph{unary} (containing just a single literal), then we backtr
 
 Currently, \tool{} uses the standard \emph{conflict-drive backtracking} strategy~\cite{barrett2013decision}, which sets the backtracking level to the \emph{second most recent} decision level in the clause.
 Intuitively, by backtracking to the second most recent level, which means erasing assignments made \emph{after} that level, this strategy encourages trying new assignments for more recently decided variables.
-%\hd{Other backtracking scheme in Chaff~\cite{moskewicz2001chaff}: always stop clause learning at the first UIP --- This form of clause learning, and associated backtracking procedure, is referred to as first UIP clause learning. Existing results indicate that the first UIP clause learning procedure may end up doing more backtracking than the original clause learning of GRASP~\cite{zhang2001efficient}. However, Chaff creates significantly fewer clauses and is significantly more effective at backtracking. As a result, the first UIP learning scheme is now commonly used by the majority of CDCL SAT solvers.}
+%\hd{Other backtracking scheme in Chaff~\cite{moskewicz2001chaff}: always stop clause learning at the first UIP --- This form of clause learning, and associated backtracking procedure, is referred to as first UIP clause learning. Existing results indicate that the first UIP clause learning procedure may end UB doing more backtracking than the original clause learning of GRASP~\cite{zhang2001efficient}. However, Chaff creates significantly fewer clauses and is significantly more effective at backtracking. As a result, the first UIP learning scheme is now commonly used by the majority of CDCL SAT solvers.}
 
 %\tvn{Intuitively this is because} \hd{Intuitively, backtracking to 2nd most recent $dl$ in $cl$ to flip the assignment of the most recent decided literal (True to False or False to True). For example, \{$\neg x_5@3, x_1@6$\} causes the conflict, the most recent decided literal is $x_1$, then we need to flip $x_1$ from True to False. But now $x_1$ is associated with decision level 3 (dl 3 is decision level of $x_5$ --- the literal which has 2nd most recent decision level in the learned conflict clause.)}.
 
@@ -8882,7 +8891,7 @@ We found the combination of clause learning and restarts effective for DNN verif
 First, it creates a linear constraint system from the input assignment $\sigma$ and $\alpha \land \phi_{in} \land \overline{\phi_{out}}$, i.e., the formula in ~\autoref{eq:nnv2} representing the original problem  (line~\ref{line:lpsolver}).
 The key idea is that we can remove ReLU activation for hidden neurons whose activation status have been decided.
 For constraints in $\alpha$ associated with variables that are not in the $\sigma$,  we ignore them and just consider the cutting planes introduced by the partial assignment.
-%Fixup preceding sentence based on answer.}
+%FixUB preceding sentence based on answer.}
 %\hd{Yes, you're correct. We ignore constraints generated by unassigned variables and only consider the cutting planes introduced by the partial assignment}
 For example, for the assignment $v_3\mapsto T, v_4 \mapsto F$, the non-linear ReLU constraints $x_3=ReLU(-0.5x_1+0.5x_2+1)$ and  $x_4=ReLU(x_1+x_2-1)$ for the DNN in~\autoref{fig:dnn} become linear constraints $x_3=-0.5x_1+0.5x_2$ and $x_4=0$, respectively.
 
@@ -9107,13 +9116,13 @@ These optimization processes, i.e., \mycode{Maximize} (line~\ref{line:maximize1}
 
 The DPLL(T) process in \tool{} is designed as a tree-search problem where each internal node encodes an \textit{activation pattern} defined by the variable assignments from the root.
 To parallelize DPLL(T), we adopt a beam search-like strategy which combines distributed search from Distributed Tree Search (DTS) algorithm~\cite{ferguson1988distributed} and Divide and Conquer (DNC)~\cite{le2017painless} paradigms for splitting the search space into disjoint subspaces that can be solved independently.
-At every step of the search algorithm, we select up to $n$ nodes  of the DPLL(T) search tree to create a beam of width $n$.
+At every step of the search algorithm, we select UB to $n$ nodes  of the DPLL(T) search tree to create a beam of width $n$.
 This splits (like DNC) the search into $n$ subproblems that are independently processed.  Each subproblem extends the tree by a depth of 1.
 
 Our approach simplifies the more general DNC scheme since the $n$ bodies of the \textbf{parfor} on line~\ref{line:parfor} of~\autoref{fig:alg} are roughly load balanced.
 While this is a limited form of parallelism, it sidesteps one of the major roadblocks to DPLL parallelism -- the need to efficiently synchronize across load-imbalanced subproblems~\cite{le2017painless,le2019modular}.
 
-In addition to raw speedup due to multiprocessing, parallelism accelerates the sharing of information across search subspaces, in particular learned clause information for DPLL. In \tool{}, we only generate independent subproblems which eliminates the need to coordinate their solution. When all subproblems are complete, their conflicts are accumulated,~\autoref{fig:alg} line~\ref{line:analyze_conflict},  to inform the next round of search.
+In addition to raw speedUB due to multiprocessing, parallelism accelerates the sharing of information across search subspaces, in particular learned clause information for DPLL. In \tool{}, we only generate independent subproblems which eliminates the need to coordinate their solution. When all subproblems are complete, their conflicts are accumulated,~\autoref{fig:alg} line~\ref{line:analyze_conflict},  to inform the next round of search.
 
 
 \subsection{Restart}
@@ -9204,10 +9213,10 @@ Although restarting may seem like an engineering aspect, it plays a crucial role
 %% \begin{gather}
 %%         x_3 = -0.5x_1 + 0.5x_2 + 1 \;\land\; x_3' = ReLU(x_3) \;\land\; \nonumber\\
 %%         x_4 = x_1 + x_2 - 1 \;\land\; x_4' = ReLU(x_4)  \;\land\; \\
-%%         x_5 = -x_3' + x_4' - 1 \;\nonumber
+%%         x_5 = -x_3 + x_4' - 1 \;\nonumber
 %% \end{gather}
-%% If \tool{} decides $v_3 = True$ ($v_3$ is status variable of neuron $x_3'$) and $v_4$ is undecided, we cannot have the linear relationship between $x_5$ and the inputs $x_1, x_2$, because the first layer is not fully decided, then we cannot remove the ReLU layer.
-%% Otherwise, \tool{} decides $v_3 = True$ and $v_4 = False$, then $x_3' = -0.5x_1 + 0.5x_2 + 1$ and $x_4' = 0$, also $x_5 = 0.5x_1 - 0.5x_2 - 2$.
+%% If \tool{} decides $v_3 = True$ ($v_3$ is status variable of neuron $x_3$) and $v_4$ is undecided, we cannot have the linear relationship between $x_5$ and the inputs $x_1, x_2$, because the first layer is not fully decided, then we cannot remove the ReLU layer.
+%% Otherwise, \tool{} decides $v_3 = True$ and $v_4 = False$, then $x_3 = -0.5x_1 + 0.5x_2 + 1$ and $x_4' = 0$, also $x_5 = 0.5x_1 - 0.5x_2 - 2$.
 %% The first layer now is fully assigned, then the ReLU layer no longer exists, that makes we could build linear relationship of $x_5$ over $x_1, x_2$.
 
 %When all the neurons of the network are decided, the network becomes a linear one, then we could build a linear solver to check the feasibility of the model w.r.t the specification, with the constraints as linear equations of outputs over inputs.
