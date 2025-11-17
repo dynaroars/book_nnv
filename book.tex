@@ -6465,7 +6465,7 @@ The lower (LB) and upper (UB) bounds of the inputs $x_1, x_2$ and output $x_5$ a
 
 
 %\reluplex{} now checks whether any variable violates its bounds and fixes them by updating their values.
-For non-basic variables, \reluplex{} simply updates them to valid values within their bounds and propagates the changes to the basic variables that depend on them. For basic variables, \reluplex{} pivots (swaps) them with one of the variables they depend and then updates the non-basic variable to a valid value.
+%For non-basic variables, \reluplex{} simply updates them to valid values within their bounds and propagates the changes to the basic variables that depend on them. For basic variables, \reluplex{} pivots (swaps) them with one of the variables they depend and then updates the non-basic variable to a valid value.
 
 \autoref{tab:reluplex1} also shows that $x_2$ is out-of-bounds because $0 \notin [-2,-1]$. To fix $x_2$, which is non-basic, \reluplex{} updates it to a valid value, e.g., $x_2 \texttt{+=} -1.0 = -1.0$ by adding -1.0 to the current value of $x_2$.
 
@@ -6502,7 +6502,7 @@ x_3 = x_1 - x_2 - a_1.
      & $x_1$ & $x_2$ & $x_3$ & $\hat{x}_3$ & $x_4$ & $\hat{x}_4$ & $\hat{x}_5$ &$a_1$&$a_2$&$a_3$ \\
     \midrule
     LB & 0 & -2 & $-\infty$&0&$-\infty$& 0 & 0 & 0 & 0 &0\\
-    Val& 0 & -1 & \textbf{1} & 0 & 0 & 0 & 0 & \textbf{0} & -1 & 0\\
+    Val& 0 & -1 & \textbf{\red{1}} & 0 & 0 & 0 & 0 & \textbf{\red{0}} & -1 & 0\\
     UB & 0.5 & -1 &$\infty$&$\infty$&$\infty$&$\infty$&0.5& 0 & 0 & 0\\\
 \end{tabular}
 
@@ -6523,7 +6523,7 @@ Now $a_2$ becomes non-basic and is updated to 0 through $a_2+= 1.0 = 0$. As $x_4
      & $x_1$ & $x_2$ & $x_3$ & $\hat{x}_3$ & $x_4$ & $\hat{x}_4$ & $x_5$ &$a_1$&$a_2$&$a_3$ \\
     \midrule
     LB & 0 & -2 & $-\infty$&0&$-\infty$& 0 & 0 & 0 & 0 &0\\
-    Val& 0 & -1 & 1 & 0 & \textbf{-1} & 0 & 0 & 0 & \textbf{0} & 0\\
+    Val& 0 & -1 & 1 & 0 & \textbf{\red{-1}} & 0 & 0 & 0 & \textbf{\red{0}} & 0\\
     UB & 0.5 & -1 &$\infty$&$\infty$&$\infty$&$\infty$&0.5& 0 & 0 & 0\\\
 \end{tabular}
 
@@ -6544,7 +6544,7 @@ Assume \reluplex{} picks $\hat{x}_3$. Because $\hat{x}_3$ is non-basic, we simpl
      & $x_1$ & $x_2$ & $x_3$ & $\hat{x}_3$ & $x_4$ & $\hat{x}_4$ & $x_5$ &$a_1$&$a_2$&$a_3$ \\
     \midrule
     LB & 0 & -2 & $-\infty$&0&$-\infty$& 0 & 0 & 0 & 0 &0\\
-    Val& 0 & -1 & 1 & \textbf{1} & -1 & 0 & 0 & 0 & 0 & \textbf{0.5}\\
+    Val& 0 & -1 & 1 & \textbf{\red{1}} & -1 & 0 & 0 & 0 & 0 & \textbf{\red{0.5}}\\
     UB & 0.5 & -1 &$\infty$&$\infty$&$\infty$&$\infty$&0.5& 0 & 0 & 0\\\
 \end{tabular}
 
@@ -6566,16 +6566,16 @@ Now, $a_3$ becomes non-basic and we update it to 0 through $a_3+=-0.5=0$.  As $x
      & $x_1$ & $x_2$ & $x_3$ & $\hat{x}_3$ & $x_4$ & $\hat{x}_4$ & $x_5$ &$a_1$&$a_2$&$a_3$ \\
     \midrule
     LB & 0 & -2 & $-\infty$&0&$-\infty$& 0 & 0 & 0 & 0 &0\\
-    Val& 0 & -1 & 1 & \textbf{1} & -1 & 0 & \textbf{0.5} & 0 & 0 & \textbf{0}\\
+    Val& 0 & -1 & 1 & \textbf{\red{1}} & -1 & 0 & \textbf{\red{0.5}} & 0 & 0 & \textbf{\red{0}}\\
     UB & 0.5 & -1 &$\infty$&$\infty$&$\infty$&$\infty$&0.5& 0 & 0 & 0\\\
 \end{tabular}
 
 \end{table}
 
 ~\autoref{tab:reluplex6} shows the new configuration.
-At this point, \reluplex{} no longer has any out-of-bound or inconsinstent values, and thus stops and returns \sat{} with the values in the \textbf{Val} row in ~\autoref{tab:reluplex6} as the satisfying assignment for the formula in Eq~\ref{eq:negprop1}.
+At this point, \reluplex{} no longer sees any out-of-bound or inconsinstent values, and thus stops and returns \sat{} with the values in the \textbf{Val} row in ~\autoref{tab:reluplex6} as the satisfying assignment for the formula in Eq~\ref{eq:negprop1}.
 
-Thus, in this example, we conclude that property in~\autoref{eq:prop1} is \emph{not valid} for the DNN in~\autoref{fig:dnn-replux} because for the inputs $x_1=0,x_2=-1$, the DNN gives the output $x_5=0.5$, which violates the property in~\autoref{eq:prop1}.
+Thus, in this example, we conclude that property in~\autoref{eq:prop1} is \emph{not valid} for the DNN in~\autoref{fig:dnn-replux} because for the inputs $x_1=0,x_2=-1$, the network gives the output $x_5=0.5$, which violates the property.
 \end{example}
 
 
