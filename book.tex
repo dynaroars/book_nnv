@@ -5964,6 +5964,8 @@ O_U = U @ W_plus.T + L @ W_minus.T + b
 At its core, \neuralsat{} is BaB, but follows a DPLL(T) framework~\cite{davis1962machine} and includes specialized optimizations and heuristics to improve its search.
 Thus, \neuralsat{} is essentially an SMT solver (\autoref{sec:smt-solvers}) with respect to a theory, in this case, the theory of DNNs.
 
+
+\tvn{TODO: rewrite completely because hard to explain without knowing BCP and stuff. Have a section on DPLL(T) first.}
 \section{Overview}\label{sec:neuralsat:overview}
 \begin{figure}[h]
     \centering
@@ -6281,20 +6283,11 @@ Thus, \tool{} was able to generate non-chronological backtracks and use BCP to p
 
 \section{Illustration}
 
-\begin{figure}[h]
-    \centering
-    \begin{minipage}{0.49\linewidth}
-        \centering
-        \includegraphics[width=0.6\linewidth]{reluplexA.pdf}
-        \caption{A DNN example}\label{fig:reluplex}
-    \end{minipage}
-    \hfill
-    \begin{minipage}{0.50\linewidth}
-        \centering
-        \includegraphics[width=0.9\linewidth]{reluplexB.pdf}
-        \caption{Separating nodes to represent RELU}\label{fig:reluplexB}
-    \end{minipage}
-  \end{figure}
+\begin{figure}
+\centering
+\includegraphics[width=0.6\linewidth]{reluplexA.pdf}
+\caption{A DNN example}\label{fig:reluplex}
+\end{figure}
 
   \begin{example}\label{ex:reluplex}
 
