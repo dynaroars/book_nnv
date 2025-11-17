@@ -6206,248 +6206,6 @@ However, because $v_4$ was assigned at decision level 0, \neuralsat{} can no lon
 
 
 
-
-\section{\tool{}'s Optimizations}\label{sec:optimizations}
-
-\tool{}implements several optimizations to improve the performance of the search. First are the common optimizations used by other DNN verifiers, such as input splittings (\autoref{chap:common-engineering}) and adversarial attacks (\autoref{chap:adversarial-attacks}). In addition, \neuralsat{} implements several unique optimizations~\cite{duong2024harnessing} to improve the performance of the search. These are neuron stability, restart tree, and restart.
-
-
-\subsection{Neuron Stability}\label{sec:stabilization}
-A neuron is \emph{stable} if its activation status does not change regardless of the input values. In contrast, a neuron is \emph{unstable} if its activation status can change depending on the input values. For example, in the DNN in~\autoref{fig:dnn}, \tvn{any neuron stable? or they are all unstable?}
-
-
-The key idea in using neuron stability is that if we can determine that a neuron is stable,  we can assign the exact truth value for the corresponding Boolean variable instead of having to guess. This has a similar effect as \mycode{BCP}---reducing mistaken assignments by \Decide---but it operates at the theory level instead of the propositional Boolean level.
-
-%First, the T-solver creates a linear constraint system from the input assignment $\sigma$ and $\alpha \land \phi_{in} \land \overline{\phi_{out}}$, i.e., the formula in ~\autoref{eq:nnv2} representing the original problem  (line~\ref{line:lpsolver}).
-%First, the T-solver creates a set of linear constraints representing ReLU activation for hidden neurons whose activation status have been decided.
-%Next, those constraints are used in \textsc{Stabilize} for inferring status of neurons that are unassigned, \textsc{Deduce} then applies the polytope abstraction to check satisfiability.
-%If the abstraction confirms the infeasibility, \textsc{Deduce} returns \texttt{False} so that \textsc{AnalyzeConflict} can analyze the assignment and and learn the conflict clause.
-%Otherwise, the current assignment might be feasible and \textsc{Decide} continues to split more hidden neurons.
-
-
-%\texttt{Stabilize} (\autoref{fig:alg} line~\ref{line:stabilize}) first creates linear constraints consisting of the DNN $\alpha$, the input \tvn{fillin} and output \tvn{fillin} conditions, and the current assignment $\sigma$. Next, it uses these constraints to generate a Mixed Integer Linear Programming (MILP) problem (~\autoref{eq:mip}), whose objective is compute a tighter lower and upper bounds for unstable neurons based on the current search state (i.e., the current assignment $\sigma$).
-
-%the considered property into a set of constraints for
-%The main goal of this process is to
-
-
-%the boolean values activation status instead of
-%that we can remove ReLU activation for hidden neurons whose activation status have been decided, each propositional variable in current assignment concretizes (removes) its corresponding constraints in MILP problem (~\autoref{eq:mip}) that helps solver reduce numbers of constraints and be able to tighten bounds further.
-
-
-
-% \hd{Should mention about StabilizeCondition: \tool{} invokes Stabilize() after a number of iterations without improvement in Deduce step (abstraction), e.g, 10 iterations.}
-
-%\tvn{candidate to remove}
-%The complexity of this problem can increase exponentially with the number of ReLU neurons, so it would take long time to run even on a small network.
-%In the previous work, \mipverify{}~\cite{tjeng2019evaluating} encoded the adversarial attack and verification of ReLU-based networks MIP problem, directly solved by existing MILP solvers (e.g., Gurobi).
-%In this work, we do not use MILP for solving instances directly, instead we leverage the progressive bound tightening for determining tighter bounds for hidden neurons which is crucial for problem tractability: tight bounds strengthen the problem formulation and thus improve solve times~\cite{vielma2015mixed}.
-%Furthermore, if we can prove that a neuron is stable, we can avoid splitting in the DPLL(T)-based search process.
-
-%Theoretically, for ReLU-based networks, each neuron can either be \textit{active} (its input is positive) or \textit{inactive} (its input is negative so the output is 0), which can be encoded by discrete 0-1 variables.
-%Those networks can be generally formulated into a MILP problem which has binary variables $a_j^{(i)}$ for an $j^{th}$ ReLU at layer $i$:
-
-Stabilization involves the solution of a mixed integer linear program (MILP) system~\cite{tjeng2019evaluating}:
-\begin{equation}
-    \begin{aligned}
-        &\mbox{(a)}\quad z^{(i)} = W^{(i)} \hat{z}^{(i-i)} + b^{(i)}; \\
-        &\mbox{(b)}\quad y = z^{(L)};  x = \hat{z}^{(0)}; \\
-        &\mbox{(c)}\quad \hat{z}_j^{(i)} \ge {z}_j^{(i)}; \hat{z}_j^{(i)} \ge 0; \\
-        &\mbox{(d)}\quad a_j^{(i)} \in \{ 0, 1\} ;\\
-        &\mbox{(e)}\quad \hat{z}_j^{(i)} \le {a}_j^{(i)} {u}_j^{(i)}; \hat{z}_j^{(i)} \le {z}_j^{(i)} - {l}_j^{(i)}(1 - {a}_j^{(i)}); \\
-    \end{aligned}
-    \label{eq:mip1}
-\end{equation}
-where $x$ is input, $y$ is output, and $z^{(i)}$, $\hat{z}^{(i)}$, $W^{(i)}$, and $b^{(i)}$ are the pre-activation, post-activation, weight, and bias vectors for layer $i$.
-The equations encode the semantics of a DNN as follows:
-(a) defines the affine transformation computing the pre-activation value for a neuron in terms of outputs in the preceding layer;
-(b) defines the inputs and outputs in terms of the adjacent hidden layers;
-(c) asserts that post-activation values are non-negative and no less than pre-activation values;
-(d) defines that the neuron activation status indicator variables that are either 0 or 1; and
-(e) defines constraints on the upper, $u_j^{(i)}$, and lower, $l_j^{(i)}$, bounds of the pre-activation value of the $j$th neuron in the $i$th layer.
-Deactivating a neuron, $a_j^{(i)} = 0$, simplifies the first of the (e) constraints to $\hat{z}_j^{(i)} \le 0$, and activating a neuron simplifies the second to $\hat{z}_j^{(i)} \le z_j^{(i)}$, which is consistent with the semantics of $\hat{z}_j^{(i)} = max(z_j^{(i)},0)$.
-
-%Even if \mycode{Stabilize} fails to stabilize, \tool{} still can solve problem by other components, e.g., parallel DPLL(T) search.
-
-
-
-\SetKwFunction{GetUnassignedVariable}{GetUnassignedVariable}
-\SetKwFunction{Sort}{Sort}
-
-\begin{algorithm}
-    \small
-
-    \Input{DNN $\alpha$, property $\phi_{in} \Rightarrow \phi_{out}$, current assignment $\sigma$, number of neurons for stabilization $k$}
-    \Output{Tighten bounds for variables \textbf{not} in $\sigma$ (unassigned variables)}
-    \BlankLine
-
-    % \tcp{create an MILP solver based on ~\autoref{eq:mip}}
-    $\model \leftarrow \MIP(\alpha, \phi_{in}, \phi_{out}, \sigma)$ \tcp{create model (~\autoref{eq:mip1}) with  current assignment}
-
-    $[v_1, ..., v_m] \leftarrow \GetUnassignedVariable(\sigma)$ \tcp{get all $m$ current unassigned variables} \label{line:find}
-
-
-    $[v_1', ..., v_m'] \leftarrow \Sort([v_1, ..., v_m])$ \tcp{prioritize tightening order} \label{line:sort}
-    $[v_1', ..., v_k'] \leftarrow \Select([v_1', ..., v_m'], k)$ \tcp{select top-$k$ unassigned variables, $k \le m$} \label{line:topk}
-
-    \tcp{stabilize $k$ neurons in parallel}
-    \Parfor{$v_i$ \textbf{in} $[v_1', ..., v_k']$}{
-        \If(\tcp*[h]{lower is closer to 0 than upper, optimize lower first}){$(v_i.lower + v_i.upper) \ge 0$}{
-            % \tcp{lower is closer to 0 than upper, optimize lower first}
-            $\Maximize(\model, v_i.lower)$ \tcp{tighten lower bound of $v_i$} \label{line:maximize1}
-            \If(\tcp*[h]{still unstable}){$v_i.lower < 0$}{
-                $\Minimize(\model, v_i.upper)$ \tcp{tighten upper bound of $v_i$} \label{line:minimize1}
-            }
-        }
-        \Else(\tcp*[h]{upper is closer to 0 than lower, optimize upper first}){
-            % \tcp{upper is closer to 0 than lower, optimize upper first}
-            $\Minimize(\model, v_i.upper)$ \tcp{tighten upper bound of $v_i$} \label{line:minimize2}
-            \If(\tcp*[h]{still unstable}){$v_i.upper > 0$}{
-                $\Maximize(\model, v_i.lower)$ \tcp{tighten lower bound of $v_i$} \label{line:maximize2}
-            }
-        }
-    }
-    \vspace*{-0.2in}
-    \caption{\texttt{Stabilize}}
-    \label{fig:stabilize}
-\end{algorithm}
-
-
-
-\autoref{fig:stabilize} describes Stabilize solves this equation system.
-First,  a MILP problem is created from the current assignment, the DNN, and the property of interest using formulation in ~\autoref{eq:mip1}.
-Note that the neuron lower (${l}_j^{(i)}$) and upper bounds (${u}_j^{(i)}$) can be quickly computed by polytope abstraction.
-
-Next, it collects a list of all unassigned variables which are candidates being stabilized (line~\ref{line:find}).
-In general, there are too many unassigned neurons, so
-\mycode{Stabilize} restricts consideration to $k$ candidates.
-Because each neuron has a different impact on abstraction precision we prioritize the candidates.
-In \mycode{Stabilize}, neurons are prioritized based on their interval boundaries (line~\ref{line:sort}) with a preference for neurons with either lower or upper bounds that are closer to zero.
-The intuition is that neurons with bounds close to zero are more likely to become stable after tightening.
-
-We then select the top-$k$ (line~\ref{line:topk}) candidates and seek to further tighten their interval bounds.
-The order of optimizing bounds of select neurons is decided by its boundaries, e.g., if the lower bound is closer to zero than the upper bound then the lower bound would be optimized first.
-These optimization processes, i.e., \mycode{Maximize} (line~\ref{line:maximize1} or line~\ref{line:maximize2}) and \mycode{Minimize} (line~\ref{line:minimize1} or line~\ref{line:minimize2}), are performed by an external LP solver (e.g., Gurobi~\cite{gurobi}).
-
-%Note that the work in~\cite{tjeng2019evaluating} uses the MILP system in ~\autoref{eq:mip} to encode the entire verification problem and thus is limited to the encodings of small networks that can be handled by an LP solver.
-%This MILP system is used by~\cite{tjeng2019evaluating} to encode the entire verification problem. It is passed to an LP solver to optimize the output of the network with respect to the the property of interest.
-%This approach only works small networks whose constraints can be handled by LP solving.
-%In contrast, \tool{} creates this system based on the current assignment, which has significantly fewer constraints.
-%Moreover, we only use the computed bounds of hidden neurons from this system, and thus even if it cannot be solved, \tool{} will still continue.
-
-
-
-\begin{example}
-  \tvn{Need a concrete example here.  Use the DNN in~\autoref{fig:dnn} and create the MILP system in ~\autoref{eq:mip1}.}
-\end{example}
-
-\subsubsection{Parallel Search}\label{sec:parallel-search}
-% Things need to write about
-% \begin{itemize}
-%     \item [+] how to parallelize DPLL: remove backtrack, compute both branches
-%     \item [+] how to use learned clauses: run several times until problem is solved or reaches timeout, save conflict clauses before restarting and use them as initial clauses for next runs
-%     \item [!] non-chronological backtracking isn't supported yet, need more engineering to handle this sort of backtracks
-% \end{itemize}
-
-
-%\tvn{this section is short. Add some more, may be some small examples (recall in the POPL paper we have various examples describing various DPLL components).  Does the tree in Fig1. applicable here?  If so you can refer to it. }
-%\hd{it appears that's purely engineering to me, shouldn't be focused too much}\tvn{just write what engineerings were used here to help people understand how it works.  Also describe how this removes the need for Backtracking}
-% We adopt the idea of Distributed tree search (DTS) algorithm which is a class of algorithms for searching values in an efficient and distributed manner~\cite{ferguson1988distributed}.
-% \matt{I woud cite DTS.}
-% Their purpose is to iterate through a tree by working along multiple branches in parallel and merging the results of each branch into one common solution, in order to minimize time spent searching for a value in a tree-like data structure.
-% DPLL(T) is tree-search problem in each internal nodes is actually an activation pattern containing conditions values along the path from root to such node.
-% \matt{replace path condition with activation pattern throughout the paper}
-% The arrival of many-core machines leads to new possibilities for SAT solving.
-% \matt{What techniques do the parallel SAT people use, i.e., \cite{le2017painless}, we should relate our solution to theirs.}
-% Parallel SAT solving rely on two concepts: parallelization strategy and learnt clause exchanges.
-% Two main parallelization methods have been developed: Portfolio~\cite{hamadi2010manysat} and Divide-and-Conquer~\cite{le2017painless}.
-% The main idea of Portfolio is to run sequential solvers working in parallel on the entire formula, in a competitive way, aiming at increasing the probability of finding a solution using the diversification.
-% The Divide-and-Conquer (DnC) approach is based on splitting the search space in disjoint subspaces that are solved independently in parallel by different workers.
-% If a subspace is proven sat then the initial formula is sat.
-% The formula is unsat if all the subspaces are unsat.
-% The challenging points of the divide-and-conquer mechanism are:
-% dividing the search space, balancing jobs between workers, and exchanging learnt clauses.
-
-% We follow the DnC scheme
-The DPLL(T) process in \tool{} is designed as a tree-search problem where each internal node encodes an \textit{activation pattern} defined by the variable assignments from the root.
-To parallelize DPLL(T), we adopt a beam search-like strategy which combines distributed search from Distributed Tree Search (DTS) algorithm~\cite{ferguson1988distributed} and Divide and Conquer (DNC)~\cite{le2017painless} paradigms for splitting the search space into disjoint subspaces that can be solved independently.
-At every step of the search algorithm, we select up to $n$ nodes  of the DPLL(T) search tree to create a beam of width $n$.
-This splits (like DNC) the search into $n$ subproblems that are independently processed.  Each subproblem extends the tree by a depth of 1.
-
-Our approach simplifies the more general DNC scheme since the $n$ bodies of the \textbf{parfor} on line~\ref{line:parfor} of~\autoref{fig:alg} are roughly load balanced.
-While this is a limited form of parallelism, it sidesteps one of the major roadblocks to DPLL parallelism -- the need to efficiently synchronize across load-imbalanced subproblems~\cite{le2017painless,le2019modular}.
-
-In addition to raw speedup due to multiprocessing, parallelism accelerates the sharing of information across search subspaces, in particular learned clause information for DPLL. In \tool{}, we only generate independent subproblems which eliminates the need to coordinate their solution. When all subproblems are complete, their conflicts are accumulated,~\autoref{fig:alg} line~\ref{line:analyze_conflict},  to inform the next round of search.
-As we show in \S\ref{sec:eval}, the engineering of this form of parallelism in DPLL(T) leads to substantial performance improvement.
-
-\subsection{Restart}
-
-\SetKwFunction{threshold}{threshold}
-\SetKwFunction{maxvisited}{max\_visited}
-\SetKwFunction{maxremaining}{max\_remaining}
-\SetKwData{implicationgraph}{igraph}
-
-
-% \begin{algorithm}
-%     \small
-
-%     \Input{TBD}
-%     \Output{TBD}
-%     \BlankLine
-
-%     $\threshold \leftarrow 3$ \tcp{predefined maximum number of restarts}
-%     $\maxvisited \leftarrow 200000$ \tcp{predefined maximum number of visited nodes}
-%     $\maxremaining \leftarrow 30000$ \tcp{predefined maximum number of remaining nodes}
-
-    % \tcp{create an MILP solver based on ~\autoref{eq:mip}}
-    % $\model \leftarrow \MIP(\alpha, \phi_{in}, \phi_{out}, \sigma)$ \tcp{create model (~\autoref{eq:mip}) with  current assignment}
-
-    % $[v_1, ..., v_m] \leftarrow \GetUnassignedVariable(\sigma)$ \tcp{get all $m$ current unassigned variables} \label{line:find}
-
-
-    % $[v_1', ..., v_m'] \leftarrow \Sort([v_1, ..., v_m])$ \tcp{prioritize tightening order} \label{line:sort}
-    % $[v_1', ..., v_k'] \leftarrow \Select([v_1', ..., v_m'], k)$ \tcp{select top-$k$ unassigned variables, $k \le m$} \label{line:topk}
-
-    % \tcp{stabilize $k$ neurons in parallel}
-    % \For{$v_i$ \textbf{in} $[v_1', ..., v_k']$}{
-    %     \If(){$(v_i.lower + v_i.upper) \ge 0$}{
-    %         \tcp{lower is closer to 0 than upper, optimize lower first}
-    %         $\Maximize(\model, v_i.lower)$ \tcp{tighten lower bound of $v_i$}
-    %         \If(){$v_i.lower < 0$}{
-    %             \tcp{still unstable}
-    %             $\Minimize(\model, v_i.upper)$ \tcp{tighten upper bound of $v_i$}
-    %         }
-    %     }
-    %     \Else{
-    %         \tcp{upper is closer to 0 than lower, optimize upper first}
-    %         $\Minimize(\model, v_i.upper)$ \tcp{tighten upper bound of $v_i$}
-    %         \If(){$v_i.upper > 0$}{
-    %             \tcp{still unstable}
-    %             $\Maximize(\model, v_i.lower)$ \tcp{tighten lower bound of $v_i$}
-    %         }
-    %     }
-    % }
-%     \caption{\texttt{Reset}}
-%     \label{fig:restart}
-% \end{algorithm}
-
-As with any stochastic algorithm, \tool{} would perform poorly if it gets into a subspace of the search that does not quickly lead to a solution, e.g., due to choosing a bad sequence of neurons to split~\cite{ferrari2022complete,wang2021beta,de2021improved}.
-%In the development of modern SAT solver (e.g.PicoSAT~\cite{biere2008picosat}), researchers has realized most practical problems, even very large or complex, can be easily solved if they follow
-This problem, which has been recognized in early SAT solving, motivates the introduction of restarting the search~\cite{gomes1998boosting} to avoid being stuck in such a \emph{local optima}. %This kind of heavy-tail behavior was also the motivation in the original publication on restarts \cite{}.
-
-
-%In our context where easy SAT instances are usually falsified by external adversarial attack (e.g., PGD~\cite{madry2017towards}), or easy UNSAT instances are often verified within few iterations (e.g., a single iteration), we adopt restart schedule to avoid local optima during search process for ``hard'' problems (at certain points, the abstraction would not be improved or rarely improved).
-%Moreover, previous related work showed that the order of making decisions had a great impact to their performance, hence, we hope that after restarting and decision heuristic is changed, \tool{} can follow other search directions toward the goal.
-
-%\tvn{I am not so sure about listing all these numbers. Do we have to write about them here?}\hd{I think so, we can neglect those number too, those are heuristically selected and we didn't change them, different numbers might have different performances.}
-\tool{} uses a simple restart heuristic that triggers a restart when either the number of processed assignments (nodes) exceeds a pre-defined number or the number of remaining assignments that need be checked exceeds a pre-defined threshold. % (e.g, 5000). (e.g, 20000)
-% It also has a fast restart on the \textit{first} run when it detects a number of consecutive iterations (e.g., 10) without any improvement in abstraction steps.
-%The period of restart is repeated until exceed a predefined maximum number of restarts (e.g., 3).
-%These thresholds are chosen heuristically based on our experience. %and subject to change and performance of \tool{} might vary depending on those numbers.
-After a restart, \tool{} avoids using the same decision order of previous runs (i.e., it would use a different sequence of neuron splittings). It also resets all internal information except the learned conflict clauses, which are kept and reused as these are \textit{facts} about the given constraint system.
-This allows a restarted search to quickly prune parts of the space of assignments.
-Although restarting may seem like an engineering aspect, it plays a crucial role in stochastic algorithms, and helps \neuralsat{} reduce verification time for challenging problemsk.
-
 %In addition, to avoid revisiting the same search space over and over again, the decision  is changed at the beginning of every new run and conflict clauses learned so far are saved and never deleted.
 
 % \hd{Why are restarts beneficial?}
@@ -9157,6 +8915,252 @@ Since each literal is considered, this would be considered exhaustive theory pro
 \begin{example} For the illustrative example in~\autoref{ex:neuralsat}, in iteration 3, the current assignment $\sigma$ is  $\{v_4=1\}$, corresponding to a constraint $x_1 + x_2 - 1 > 0$. With the new constraint, we optimize the input bounds and compute the new bounds for hidden neurons $0.5 \le x_3 \le 2.5$, $0 < x_4 \le 2.0$ and output neuron  $x_5 \le 0.5$ (and use this to determine that the postcondition $x_5 > 0$ might be feasible). We also infer $v_3=1$ because of the positive lower bound $0.5 \le x_3$.
 \end{example}
 
+
+
+\section{\tool{}'s Optimizations}\label{sec:optimizations}
+
+\tool{} implements several optimizations to improve the performance of the search. First are the common optimizations used by other DNN verifiers, such as input splittings (\autoref{chap:common-engineering}) and adversarial attacks (\autoref{chap:adversarial-attacks}). In addition, \neuralsat{} implements several unique optimizations~\cite{duong2024harnessing} to improve the performance of the search. These are neuron stability, restart tree, and restart.
+
+
+\subsection{Neuron Stability}\label{sec:stabilization}
+A neuron is \emph{stable} if its activation status does not change regardless of the input values. In contrast, a neuron is \emph{unstable} if its activation status can change depending on the input values. For example, in the DNN in~\autoref{fig:dnn}, \tvn{any neuron stable? or they are all unstable?}
+
+
+The key idea in using neuron stability is that if we can determine that a neuron is stable,  we can assign the exact truth value for the corresponding Boolean variable instead of having to guess. This has a similar effect as \mycode{BCP}---reducing mistaken assignments by \Decide---but it operates at the theory level instead of the propositional Boolean level.
+
+%First, the T-solver creates a linear constraint system from the input assignment $\sigma$ and $\alpha \land \phi_{in} \land \overline{\phi_{out}}$, i.e., the formula in ~\autoref{eq:nnv2} representing the original problem  (line~\ref{line:lpsolver}).
+%First, the T-solver creates a set of linear constraints representing ReLU activation for hidden neurons whose activation status have been decided.
+%Next, those constraints are used in \textsc{Stabilize} for inferring status of neurons that are unassigned, \textsc{Deduce} then applies the polytope abstraction to check satisfiability.
+%If the abstraction confirms the infeasibility, \textsc{Deduce} returns \texttt{False} so that \textsc{AnalyzeConflict} can analyze the assignment and and learn the conflict clause.
+%Otherwise, the current assignment might be feasible and \textsc{Decide} continues to split more hidden neurons.
+
+
+%\texttt{Stabilize} (\autoref{fig:alg} line~\ref{line:stabilize}) first creates linear constraints consisting of the DNN $\alpha$, the input \tvn{fillin} and output \tvn{fillin} conditions, and the current assignment $\sigma$. Next, it uses these constraints to generate a Mixed Integer Linear Programming (MILP) problem (~\autoref{eq:mip}), whose objective is compute a tighter lower and upper bounds for unstable neurons based on the current search state (i.e., the current assignment $\sigma$).
+
+%the considered property into a set of constraints for
+%The main goal of this process is to
+
+
+%the boolean values activation status instead of
+%that we can remove ReLU activation for hidden neurons whose activation status have been decided, each propositional variable in current assignment concretizes (removes) its corresponding constraints in MILP problem (~\autoref{eq:mip}) that helps solver reduce numbers of constraints and be able to tighten bounds further.
+
+
+
+% \hd{Should mention about StabilizeCondition: \tool{} invokes Stabilize() after a number of iterations without improvement in Deduce step (abstraction), e.g, 10 iterations.}
+
+%\tvn{candidate to remove}
+%The complexity of this problem can increase exponentially with the number of ReLU neurons, so it would take long time to run even on a small network.
+%In the previous work, \mipverify{}~\cite{tjeng2019evaluating} encoded the adversarial attack and verification of ReLU-based networks MIP problem, directly solved by existing MILP solvers (e.g., Gurobi).
+%In this work, we do not use MILP for solving instances directly, instead we leverage the progressive bound tightening for determining tighter bounds for hidden neurons which is crucial for problem tractability: tight bounds strengthen the problem formulation and thus improve solve times~\cite{vielma2015mixed}.
+%Furthermore, if we can prove that a neuron is stable, we can avoid splitting in the DPLL(T)-based search process.
+
+%Theoretically, for ReLU-based networks, each neuron can either be \textit{active} (its input is positive) or \textit{inactive} (its input is negative so the output is 0), which can be encoded by discrete 0-1 variables.
+%Those networks can be generally formulated into a MILP problem which has binary variables $a_j^{(i)}$ for an $j^{th}$ ReLU at layer $i$:
+
+Stabilization involves the solution of a mixed integer linear program (MILP) system~\cite{tjeng2019evaluating}:
+\begin{equation}
+    \begin{aligned}
+        &\mbox{(a)}\quad z^{(i)} = W^{(i)} \hat{z}^{(i-i)} + b^{(i)}; \\
+        &\mbox{(b)}\quad y = z^{(L)};  x = \hat{z}^{(0)}; \\
+        &\mbox{(c)}\quad \hat{z}_j^{(i)} \ge {z}_j^{(i)}; \hat{z}_j^{(i)} \ge 0; \\
+        &\mbox{(d)}\quad a_j^{(i)} \in \{ 0, 1\} ;\\
+        &\mbox{(e)}\quad \hat{z}_j^{(i)} \le {a}_j^{(i)} {u}_j^{(i)}; \hat{z}_j^{(i)} \le {z}_j^{(i)} - {l}_j^{(i)}(1 - {a}_j^{(i)}); \\
+    \end{aligned}
+    \label{eq:mip1}
+\end{equation}
+where $x$ is input, $y$ is output, and $z^{(i)}$, $\hat{z}^{(i)}$, $W^{(i)}$, and $b^{(i)}$ are the pre-activation, post-activation, weight, and bias vectors for layer $i$.
+The equations encode the semantics of a DNN as follows:
+(a) defines the affine transformation computing the pre-activation value for a neuron in terms of outputs in the preceding layer;
+(b) defines the inputs and outputs in terms of the adjacent hidden layers;
+(c) asserts that post-activation values are non-negative and no less than pre-activation values;
+(d) defines that the neuron activation status indicator variables that are either 0 or 1; and
+(e) defines constraints on the upper, $u_j^{(i)}$, and lower, $l_j^{(i)}$, bounds of the pre-activation value of the $j$th neuron in the $i$th layer.
+Deactivating a neuron, $a_j^{(i)} = 0$, simplifies the first of the (e) constraints to $\hat{z}_j^{(i)} \le 0$, and activating a neuron simplifies the second to $\hat{z}_j^{(i)} \le z_j^{(i)}$, which is consistent with the semantics of $\hat{z}_j^{(i)} = max(z_j^{(i)},0)$.
+
+%Even if \mycode{Stabilize} fails to stabilize, \tool{} still can solve problem by other components, e.g., parallel DPLL(T) search.
+
+
+
+\SetKwFunction{GetUnassignedVariable}{GetUnassignedVariable}
+\SetKwFunction{Sort}{Sort}
+
+\begin{algorithm}
+    \small
+
+    \Input{DNN $\alpha$, property $\phi_{in} \Rightarrow \phi_{out}$, current assignment $\sigma$, number of neurons for stabilization $k$}
+    \Output{Tighten bounds for variables \textbf{not} in $\sigma$ (unassigned variables)}
+    \BlankLine
+
+    % \tcp{create an MILP solver based on ~\autoref{eq:mip}}
+    $\model \leftarrow \MIP(\alpha, \phi_{in}, \phi_{out}, \sigma)$ \tcp{create model (~\autoref{eq:mip1}) with  current assignment}
+
+    $[v_1, ..., v_m] \leftarrow \GetUnassignedVariable(\sigma)$ \tcp{get all $m$ current unassigned variables} \label{line:find}
+
+
+    $[v_1', ..., v_m'] \leftarrow \Sort([v_1, ..., v_m])$ \tcp{prioritize tightening order} \label{line:sort}
+    $[v_1', ..., v_k'] \leftarrow \Select([v_1', ..., v_m'], k)$ \tcp{select top-$k$ unassigned variables, $k \le m$} \label{line:topk}
+
+    \tcp{stabilize $k$ neurons in parallel}
+    \Parfor{$v_i$ \textbf{in} $[v_1', ..., v_k']$}{
+        \If(\tcp*[h]{lower is closer to 0 than upper, optimize lower first}){$(v_i.lower + v_i.upper) \ge 0$}{
+            % \tcp{lower is closer to 0 than upper, optimize lower first}
+            $\Maximize(\model, v_i.lower)$ \tcp{tighten lower bound of $v_i$} \label{line:maximize1}
+            \If(\tcp*[h]{still unstable}){$v_i.lower < 0$}{
+                $\Minimize(\model, v_i.upper)$ \tcp{tighten upper bound of $v_i$} \label{line:minimize1}
+            }
+        }
+        \Else(\tcp*[h]{upper is closer to 0 than lower, optimize upper first}){
+            % \tcp{upper is closer to 0 than lower, optimize upper first}
+            $\Minimize(\model, v_i.upper)$ \tcp{tighten upper bound of $v_i$} \label{line:minimize2}
+            \If(\tcp*[h]{still unstable}){$v_i.upper > 0$}{
+                $\Maximize(\model, v_i.lower)$ \tcp{tighten lower bound of $v_i$} \label{line:maximize2}
+            }
+        }
+    }
+    \vspace*{-0.2in}
+    \caption{\texttt{Stabilize}}
+    \label{fig:stabilize}
+\end{algorithm}
+
+
+
+\autoref{fig:stabilize} describes Stabilize solves this equation system.
+First,  a MILP problem is created from the current assignment, the DNN, and the property of interest using formulation in ~\autoref{eq:mip1}.
+Note that the neuron lower (${l}_j^{(i)}$) and upper bounds (${u}_j^{(i)}$) can be quickly computed by polytope abstraction.
+
+Next, it collects a list of all unassigned variables which are candidates being stabilized (line~\ref{line:find}).
+In general, there are too many unassigned neurons, so
+\mycode{Stabilize} restricts consideration to $k$ candidates.
+Because each neuron has a different impact on abstraction precision we prioritize the candidates.
+In \mycode{Stabilize}, neurons are prioritized based on their interval boundaries (line~\ref{line:sort}) with a preference for neurons with either lower or upper bounds that are closer to zero.
+The intuition is that neurons with bounds close to zero are more likely to become stable after tightening.
+
+We then select the top-$k$ (line~\ref{line:topk}) candidates and seek to further tighten their interval bounds.
+The order of optimizing bounds of select neurons is decided by its boundaries, e.g., if the lower bound is closer to zero than the upper bound then the lower bound would be optimized first.
+These optimization processes, i.e., \mycode{Maximize} (line~\ref{line:maximize1} or line~\ref{line:maximize2}) and \mycode{Minimize} (line~\ref{line:minimize1} or line~\ref{line:minimize2}), are performed by an external LP solver (e.g., Gurobi~\cite{gurobi}).
+
+%Note that the work in~\cite{tjeng2019evaluating} uses the MILP system in ~\autoref{eq:mip} to encode the entire verification problem and thus is limited to the encodings of small networks that can be handled by an LP solver.
+%This MILP system is used by~\cite{tjeng2019evaluating} to encode the entire verification problem. It is passed to an LP solver to optimize the output of the network with respect to the the property of interest.
+%This approach only works small networks whose constraints can be handled by LP solving.
+%In contrast, \tool{} creates this system based on the current assignment, which has significantly fewer constraints.
+%Moreover, we only use the computed bounds of hidden neurons from this system, and thus even if it cannot be solved, \tool{} will still continue.
+
+
+
+\begin{example}
+  \tvn{Need a concrete example here.  Use the DNN in~\autoref{fig:dnn} and create the MILP system in ~\autoref{eq:mip1}.}
+\end{example}
+
+\subsubsection{Parallel Search}\label{sec:parallel-search}
+% Things need to write about
+% \begin{itemize}
+%     \item [+] how to parallelize DPLL: remove backtrack, compute both branches
+%     \item [+] how to use learned clauses: run several times until problem is solved or reaches timeout, save conflict clauses before restarting and use them as initial clauses for next runs
+%     \item [!] non-chronological backtracking isn't supported yet, need more engineering to handle this sort of backtracks
+% \end{itemize}
+
+
+%\tvn{this section is short. Add some more, may be some small examples (recall in the POPL paper we have various examples describing various DPLL components).  Does the tree in Fig1. applicable here?  If so you can refer to it. }
+%\hd{it appears that's purely engineering to me, shouldn't be focused too much}\tvn{just write what engineerings were used here to help people understand how it works.  Also describe how this removes the need for Backtracking}
+% We adopt the idea of Distributed tree search (DTS) algorithm which is a class of algorithms for searching values in an efficient and distributed manner~\cite{ferguson1988distributed}.
+% \matt{I woud cite DTS.}
+% Their purpose is to iterate through a tree by working along multiple branches in parallel and merging the results of each branch into one common solution, in order to minimize time spent searching for a value in a tree-like data structure.
+% DPLL(T) is tree-search problem in each internal nodes is actually an activation pattern containing conditions values along the path from root to such node.
+% \matt{replace path condition with activation pattern throughout the paper}
+% The arrival of many-core machines leads to new possibilities for SAT solving.
+% \matt{What techniques do the parallel SAT people use, i.e., \cite{le2017painless}, we should relate our solution to theirs.}
+% Parallel SAT solving rely on two concepts: parallelization strategy and learnt clause exchanges.
+% Two main parallelization methods have been developed: Portfolio~\cite{hamadi2010manysat} and Divide-and-Conquer~\cite{le2017painless}.
+% The main idea of Portfolio is to run sequential solvers working in parallel on the entire formula, in a competitive way, aiming at increasing the probability of finding a solution using the diversification.
+% The Divide-and-Conquer (DnC) approach is based on splitting the search space in disjoint subspaces that are solved independently in parallel by different workers.
+% If a subspace is proven sat then the initial formula is sat.
+% The formula is unsat if all the subspaces are unsat.
+% The challenging points of the divide-and-conquer mechanism are:
+% dividing the search space, balancing jobs between workers, and exchanging learnt clauses.
+
+
+The DPLL(T) process in \tool{} is designed as a tree-search problem where each internal node encodes an \textit{activation pattern} defined by the variable assignments from the root.
+To parallelize DPLL(T), we adopt a beam search-like strategy which combines distributed search from Distributed Tree Search (DTS) algorithm~\cite{ferguson1988distributed} and Divide and Conquer (DNC)~\cite{le2017painless} paradigms for splitting the search space into disjoint subspaces that can be solved independently.
+At every step of the search algorithm, we select up to $n$ nodes  of the DPLL(T) search tree to create a beam of width $n$.
+This splits (like DNC) the search into $n$ subproblems that are independently processed.  Each subproblem extends the tree by a depth of 1.
+
+Our approach simplifies the more general DNC scheme since the $n$ bodies of the \textbf{parfor} on line~\ref{line:parfor} of~\autoref{fig:alg} are roughly load balanced.
+While this is a limited form of parallelism, it sidesteps one of the major roadblocks to DPLL parallelism -- the need to efficiently synchronize across load-imbalanced subproblems~\cite{le2017painless,le2019modular}.
+
+In addition to raw speedup due to multiprocessing, parallelism accelerates the sharing of information across search subspaces, in particular learned clause information for DPLL. In \tool{}, we only generate independent subproblems which eliminates the need to coordinate their solution. When all subproblems are complete, their conflicts are accumulated,~\autoref{fig:alg} line~\ref{line:analyze_conflict},  to inform the next round of search.
+
+
+\subsection{Restart}
+
+\SetKwFunction{threshold}{threshold}
+\SetKwFunction{maxvisited}{max\_visited}
+\SetKwFunction{maxremaining}{max\_remaining}
+\SetKwData{implicationgraph}{igraph}
+
+
+% \begin{algorithm}
+%     \small
+
+%     \Input{TBD}
+%     \Output{TBD}
+%     \BlankLine
+
+%     $\threshold \leftarrow 3$ \tcp{predefined maximum number of restarts}
+%     $\maxvisited \leftarrow 200000$ \tcp{predefined maximum number of visited nodes}
+%     $\maxremaining \leftarrow 30000$ \tcp{predefined maximum number of remaining nodes}
+
+    % \tcp{create an MILP solver based on ~\autoref{eq:mip}}
+    % $\model \leftarrow \MIP(\alpha, \phi_{in}, \phi_{out}, \sigma)$ \tcp{create model (~\autoref{eq:mip}) with  current assignment}
+
+    % $[v_1, ..., v_m] \leftarrow \GetUnassignedVariable(\sigma)$ \tcp{get all $m$ current unassigned variables} \label{line:find}
+
+
+    % $[v_1', ..., v_m'] \leftarrow \Sort([v_1, ..., v_m])$ \tcp{prioritize tightening order} \label{line:sort}
+    % $[v_1', ..., v_k'] \leftarrow \Select([v_1', ..., v_m'], k)$ \tcp{select top-$k$ unassigned variables, $k \le m$} \label{line:topk}
+
+    % \tcp{stabilize $k$ neurons in parallel}
+    % \For{$v_i$ \textbf{in} $[v_1', ..., v_k']$}{
+    %     \If(){$(v_i.lower + v_i.upper) \ge 0$}{
+    %         \tcp{lower is closer to 0 than upper, optimize lower first}
+    %         $\Maximize(\model, v_i.lower)$ \tcp{tighten lower bound of $v_i$}
+    %         \If(){$v_i.lower < 0$}{
+    %             \tcp{still unstable}
+    %             $\Minimize(\model, v_i.upper)$ \tcp{tighten upper bound of $v_i$}
+    %         }
+    %     }
+    %     \Else{
+    %         \tcp{upper is closer to 0 than lower, optimize upper first}
+    %         $\Minimize(\model, v_i.upper)$ \tcp{tighten upper bound of $v_i$}
+    %         \If(){$v_i.upper > 0$}{
+    %             \tcp{still unstable}
+    %             $\Maximize(\model, v_i.lower)$ \tcp{tighten lower bound of $v_i$}
+    %         }
+    %     }
+    % }
+%     \caption{\texttt{Reset}}
+%     \label{fig:restart}
+% \end{algorithm}
+
+As with any stochastic algorithm, \tool{} would perform poorly if it gets into a subspace of the search that does not quickly lead to a solution, e.g., due to choosing a bad sequence of neurons to split~\cite{ferrari2022complete,wang2021beta,de2021improved}.
+%In the development of modern SAT solver (e.g.PicoSAT~\cite{biere2008picosat}), researchers has realized most practical problems, even very large or complex, can be easily solved if they follow
+This problem, which has been recognized in early SAT solving, motivates the introduction of restarting the search~\cite{gomes1998boosting} to avoid being stuck in such a \emph{local optima}. %This kind of heavy-tail behavior was also the motivation in the original publication on restarts \cite{}.
+
+
+%In our context where easy SAT instances are usually falsified by external adversarial attack (e.g., PGD~\cite{madry2017towards}), or easy UNSAT instances are often verified within few iterations (e.g., a single iteration), we adopt restart schedule to avoid local optima during search process for ``hard'' problems (at certain points, the abstraction would not be improved or rarely improved).
+%Moreover, previous related work showed that the order of making decisions had a great impact to their performance, hence, we hope that after restarting and decision heuristic is changed, \tool{} can follow other search directions toward the goal.
+
+%\tvn{I am not so sure about listing all these numbers. Do we have to write about them here?}\hd{I think so, we can neglect those number too, those are heuristically selected and we didn't change them, different numbers might have different performances.}
+\tool{} uses a simple restart heuristic that triggers a restart when either the number of processed assignments (nodes) exceeds a pre-defined number or the number of remaining assignments that need be checked exceeds a pre-defined threshold. % (e.g, 5000). (e.g, 20000)
+% It also has a fast restart on the \textit{first} run when it detects a number of consecutive iterations (e.g., 10) without any improvement in abstraction steps.
+%The period of restart is repeated until exceed a predefined maximum number of restarts (e.g., 3).
+%These thresholds are chosen heuristically based on our experience. %and subject to change and performance of \tool{} might vary depending on those numbers.
+After a restart, \tool{} avoids using the same decision order of previous runs (i.e., it would use a different sequence of neuron splittings). It also resets all internal information except the learned conflict clauses, which are kept and reused as these are \textit{facts} about the given constraint system.
+This allows a restarted search to quickly prune parts of the space of assignments.
+Although restarting may seem like an engineering aspect, it plays a crucial role in stochastic algorithms, and helps \neuralsat{} reduce verification time for challenging problemsk.
+
+
+
+
 %reason
 %with trade-offs between computational complexity and precision.
 
@@ -9413,3 +9417,5 @@ y = 3(-1) - 4(1) + 2 = -5 < 0.
 Large $\eta$ converges faster but risks overshooting or oscillating; small $\eta$ is slower but more stable.
 \end{solution}
 \end{problem}
+
+
