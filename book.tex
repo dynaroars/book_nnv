@@ -6276,9 +6276,9 @@ Thus, \tool{} was able to generate non-chronological backtracks and use BCP to p
 
 \reluplex{}~\cite{katz2017reluplex} is a classical BaB (\autoref{chap:bab}) approach for verifying neural networks. The technique extends the simplex method~\cite{nelder1965simplex} to support the ReLU activation function (\textbf{Reluplex} = \textbf{Relu} + Sim\textbf{plex}). \reluplex{} has been succeeded by the Marabou~\cite{katz2019marabou} tool, which are more efficient and scalable. However, the core ideas of \reluplex{} are still relevant and therefore we present it here.
 
-\section{Algorithm Overview}\label{sec:reluplex-overview}
+% \section{Algorithm Overview}\label{sec:reluplex-overview}
 
-\reluplex{} extends the classical simplex algorithm to handle ReLU activation functions. The key idea is to maintain a tableau representing the linear relationships between the variables in the DNN and keep track of values assigned to these variables. Initially, \reluplex{} assigns random values to all variables and then iteratively refines these values to satisfy the bounds of the variables and the ReLU constraints.
+% \reluplex{} extends the classical simplex algorithm to handle ReLU activation functions. The key idea is to maintain a tableau representing the linear relationships between the variables in the DNN and keep track of values assigned to these variables. Initially, \reluplex{} assigns random values to all variables and then iteratively refines these values to satisfy the bounds of the variables and the ReLU constraints.
 \section{Illustration}
 
 
