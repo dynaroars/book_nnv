@@ -296,7 +296,7 @@ Use the same DNN from PA2 (\autoref{sec:pa2}) for testing.
 \subsubsection{Test Your Implementation}
 
 This function is used to test whether your BaB implementation is correct. 
-Make sure there is at least on dimension perturbed, e.g., input\_lower should not be equal to input\_upper, or otherwise, the input space is just a single point and no need to use abstraction.
+Make sure there is \emph{at least one perturbed dimension}, e.g., input\_lower should not be equal to input\_upper, or otherwise, the input space is just a single point and no need to use abstraction.
 
 \begin{lstlisting}[language=Python]
 def test_bab():
@@ -331,6 +331,8 @@ Create two additional test functions:
 \item \texttt{bab\_vs\_z3}: Compare BaB with Z3 on a local robustness property
 \item \texttt{bab\_vs\_abstraction}: Compare BaB with pure abstraction from PA2
 \end{enumerate}
+Note that, property\_fn can be an arbitrary function, make up your own property function (e.g., $y_0 > 0$ or $y_0 > y_1$, etc.,), just make sure to use \emph{same property function} for different methods so that the comparison is fair.
+
 For each testcase, you should:
 \begin{enumerate}
     \item Create networks of varying sizes
