@@ -295,6 +295,9 @@ def prune(self, output_lower, output_upper, property_fn):
 Use the same DNN from PA2 (\autoref{sec:pa2}) for testing.
 \subsubsection{Test Your Implementation}
 
+This function is used to test whether your BaB implementation is correct. 
+Make sure there is at least on dimension perturbed, e.g., input\_lower should not be equal to input\_upper, or otherwise, the input space is just a single point and no need to use abstraction.
+
 \begin{lstlisting}[language=Python]
 def test_bab():
     """Test BaB on a DNN"""
