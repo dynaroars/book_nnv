@@ -5137,7 +5137,7 @@ For all stable neurons, the disjunctive ReLU constraint is replaced with a linea
 
 \paragraph{Pruning Leaf Nodes}
 
-Another optimizationis that \proofgen{} does not check child nodes if the parent node is unsatisfiable.
+Another optimization used is that \proofgen{} does not check child nodes if the parent node is unsatisfiable.
 In a \prooflang{} proof tree, a child node adds constraints to the parent (e.g., node 6 adds the constraint of $v_1$ to node 4, which adds the constraint of $v_2$ to node 2 in~\autoref{fig:proof-example}b). Thus, if we determine that the constraint of the parent is unsatisfiable, we can skip the child nodes, which must also be unsatisfiable.  
 
 %Simply checking parent nodes would actually increase MILP cost, because they have shorter tree paths and thus have a greater number of disjunctive constraints.
@@ -6277,59 +6277,6 @@ Thus, \tool{} was able to generate non-chronological backtracks and use BCP to p
 \section{Algorithm Overview}\label{sec:reluplex-overview}
 
 
-% \begin{algorithm}
-%     \small
-
-% \KwIn{Linear constraints $A\mathbf{x} = b$, variable bounds $\ell \le \mathbf{x} \le u$, ReLU constraints $\hat{x}_i = \max(x_i,0)$}
-% \KwOut{\sat{} assignment or \unsat{}}
-
-% \BlankLine
-% \textbf{Initialization:}\;
-% \Indp
-% Choose a set of basic variables and rewrite $A\mathbf{x}=b$ into basic form.\;
-% Initialize all variable values (e.g., 0). \;
-% \Indm
-
-% \BlankLine
-% \While{true}{
-%     \BlankLine
-%     \textbf{1. Check bound violations.}\;
-%     \If{some variable $v$ violates its bounds}{
-%         \If{$v$ is non-basic}{
-%             Update $v$ toward the nearest bound and propagate updates to all basic variables depending on $v$.\;
-%         }
-%         \Else(\tcp*[f]{basic variable}){
-%             Choose a variable $u$ in $v$'s defining equation and pivot: swap $v$ with $u$.\;
-%             Update the now non-basic $v$ to satisfy its bounds and propagate the changes.\;
-%         }
-%         \Continue\tcp*[f]{restart loop}
-%     }
-    
-%     \BlankLine
-%     \textbf{2. Check ReLU consistency.}\;
-%     \If{some ReLU pair $(x_i,\hat{x}_i)$ violates $\hat{x}_i=\max(x_i,0)$}{
-%         Let $v$ be the violated variable ($x_i$ or $\hat{x}_i$). \;
-%         \If{$v$ is non-basic}{
-%             Update $v$ to satisfy the ReLU relation and propagate changes.\;
-%         }
-%         \Else{
-%             Pivot $v$ with a variable in its defining equation.\;
-%             Update the new non-basic variable to restore consistency.\;
-%         }
-%         \Continue
-%     }
-    
-%     \BlankLine
-%     \textbf{3. All constraints satisfied.}\;
-%     \Return{\sat{}} with current assignment.\;
-% }
-% \caption{\reluplex{}}
-% \label{alg:reluplex}
-
-% \end{algorithm}
-
-
-%\autoref{alg:reluplex} 
 \reluplex{} extends the classical simplex method so that it can handle the
 non-linear ReLU constraints $\hat{x} = \max(x,0)$.  
 Like simplex, \reluplex{} maintains a set of \emph{basic} variables whose values are determined by other (non-basic) variables, and updates them through pivot operations.
@@ -6357,8 +6304,6 @@ If \reluplex{} explores all possible pivoting options without finding any feasib
 
 
 
-
-% \reluplex{} extends the classical simplex algorithm to handle ReLU activation functions. The key idea is to maintain a tableau representing the linear relationships between the variables in the DNN and keep track of values assigned to these variables. Initially, \reluplex{} assigns random values to all variables and then iteratively refines these values to satisfy the bounds of the variables and the ReLU constraints.
 \section{Illustration}
 
 
@@ -6383,10 +6328,7 @@ If \reluplex{} explores all possible pivoting options without finding any feasib
     \draw (x3) -- (x5) node[midway, below] {$0.5$};
     \draw (x4) -- (x5) node[midway, below] {$-0.2$};
 
-    % Output weights under x3, x4, x5 (biases)
-    % \node[above] at (x3.north) {$+1.0$};
-    % \node[below] at (x4.south) {$-1.0$};
-    % \node[above] at (x5.north) {$-1.0$};
+
 \end{tikzpicture}
 }
 
@@ -6571,18 +6513,18 @@ Now, $a_3$ becomes non-basic and we update it to 0 through $a_3+=-0.5=0$.  As $x
 
 \end{table}
 
-~\autoref{tab:reluplex6} shows the new configuration.
+\autoref{tab:reluplex6} shows the new configuration.
 At this point, \reluplex{} no longer sees any out-of-bound or inconsinstent values, and thus stops and returns \sat{} with the values in the \textbf{Val} row in ~\autoref{tab:reluplex6} as the satisfying assignment for the formula in Eq~\ref{eq:negprop1}.
 
-Thus, in this example, we conclude that property in~\autoref{eq:prop1} is \emph{not valid} for the DNN in~\autoref{fig:dnn-replux} because for the inputs $x_1=0,x_2=-1$, the network gives the output $x_5=0.5$, which violates the property.
+Thus, the property in~\autoref{eq:prop1} is \emph{not valid} for the DNN in~\autoref{fig:dnn-replux} because for inputs $x_1=0,x_2=-1$, the network gives the output $x_5=0.5$, violating the property.
 \end{example}
 
 
 \begin{problem}\label{problem:reluplex-hand}
-    Reread the example in~\autoref{ex:reluplex} carefully. Then: 
+    Read the example in~\autoref{ex:reluplex} again carefully. Then: 
     \begin{itemize}
-    \item Rewrite the steps in~\autoref{ex:reluplex} on paper, showing all the calculations for each step. The goal of handwriting the steps is to help you understand how \reluplex{} works.  Take picture and submit as attachment.
-    \item Provide feedback on this example.  Is it clear?  Are there any steps or terminologies that are confusing?  How can we improve the explanation?  For this part you write directly on a text file and submit.
+    \item Rewrite the steps in~\autoref{ex:reluplex} on paper, showing all the calculations for each step. The goal of handwriting the steps is to help you understand how \reluplex{} works in detail.  Take pictures and submit as attachment.
+    \item Provide feedback on this example.  Is it clear?  Are there any steps or terminologies that are confusing?  How can we improve the explanation?  For this part you can type directly on a text file and submit.
     \end{itemize}
 \end{problem}
 
@@ -6590,6 +6532,19 @@ Thus, in this example, we conclude that property in~\autoref{eq:prop1} is \emph{
 % Consider the DNN in~\autoref{fig:reluplex} and the property in~\autoref{eq:prop1}.  Use \reluplex{} to verify the property.  If you find a counterexample, provide it.  You will need to provide all the steps in the \reluplex{} algorithm, e.g., DNN encoding, basic variable encoding, and the \reluplex{} search through a series of configurations as shown in~\autoref{ex:reluplex}.
 
 % \end{problem}
+
+
+\begin{problem}\label{problem:reluplex-basic-nonbasic}
+  Consider the description of \reluplex{} in~\autoref{sec:reluplex-overview} and the example in~\autoref{ex:reluplex}.
+
+  \begin{enumerate}
+    \item Explain the difference between a \emph{basic} and a \emph{non-basic} variable in \reluplex{}. 
+    \item Why can \reluplex{} update a non-basic variable directly, but must perform a pivot before updating a basic variable? Use an example if necessary.
+    \item Explain why \reluplex{} must \emph{still} consider ReLU violations after all bound violations have been fixed.  Why is all variables (excluding ReLU ones) within bounds not sufficient? Use an example if necessary.
+   \end{enumerate}
+\end{problem}
+
+
 
 
 \part{Advanced Topics\label{part:advanced-topics}}
