@@ -7288,6 +7288,8 @@ In each specification, the inputs (condition distance and latent variables) are 
 \input{pa/pa3.tex}
 \input{pa/pa4.tex}
 
+
+\part{Background\label{part:background}}
 \renewcommand{\appendixname}{Background}
 \appendix
 
@@ -7686,17 +7688,17 @@ What does Z3 return?
 \end{problem}
 
 
-\section{SAT and SMT Solving Algorithms}\label{sec:sat-smt-algorithms}
+\chapter{SAT and SMT Solving Algorithms}\label{chap:sat-smt-algorithms}
 
-Here we briefly discuss SAT and SMT solving algorithms, which are used to determine the satisfiability (and therefore validity) of SAT and SMT formulae.
+Here we illustrate the classical DPLL and CDCL algorithms to determine the satisfiability (and therefore validity) of SAT and SMT formulae.
 
-\subsection{Satisfiability (SAT) Problem}\label{sec:sat-problem}
+\section{Satisfiability (SAT) Problem}\label{sec:sat-problem}
 The classical satisfiability (SAT) problem asks if a given propositional formulae (\autoref{sec:propositional-logic}) can be satisfied~\cite{biere2009handbook}.  Given a formula CNF $f$, an SAT solver returns \sat{} if it can find a satisfying assignment that maps truth values to variables of $f$ that makes $f$ evaluate to true, and \unsat{} if it cannot find any satisfying assignments.
 
 The SAT problem is \NP-Complete and research into methods for efficiently solving  problem instances has been ongoing for multiple decades.
 
 
-\subsection{DPLL}
+\section{DPLL}
 
 
 
@@ -7712,11 +7714,239 @@ The SAT problem is \NP-Complete and research into methods for efficiently solvin
 These steps repeat until DPLL finds  a satisfying assignment and returns \texttt{sat}, or decides that it cannot backtrack (\texttt{dl}=-1) and returns \texttt{unsat}.
 
 
+
+
+\paragraph{Decide}
+
+
+The \emph{Decide} step selects an unassigned variable and assigns it a truth value.
+This assignment creates a new \emph{decision level}.
+
+\begin{example}[Simple Decision]
+Consider the CNF:
+\[
+\varphi = (x_1 \lor x_2) \ \land\ (\lnot x_1 \lor x_3).
+\]
+All variables are initially unassigned.  
+DPLL may choose:
+\[
+\text{Decide: } x_1 = \text{True} \qquad (\text{Decision level } 1).
+\]
+\end{example}
+
+\begin{example}[Decision Using a Heuristic]
+Given:
+\[
+\varphi = (x_1 \lor x_3) \land (x_3 \lor x_4) \land (\lnot x_3 \lor x_2),
+\]
+a heuristic such as VSIDS may choose the most frequent variable:
+\[
+\text{Decide: } x_3 = \text{False}.
+\]
+\end{example}
+
+% =========================================================
+\paragraph{Boolean Constraint Propagation (BCP)}
+
+BCP detects \emph{unit clauses}, i.e., clauses with exactly one unassigned literal
+and all other literals set to False. Such clauses force the remaining literal to be
+assigned True. BCP is useful because it can deduce variable assignments without making decisions.
+
+\begin{example}[Single Propagation]
+\[
+\varphi = (x_1) \land (\lnot x_1 \lor x_2).
+\]
+The unit clause $(x_1)$ forces:
+\[
+x_1 = \text{True}.
+\]
+Now $(\lnot x_1 \lor x_2)$ becomes $(\text{False} \lor x_2)$, hence:
+\[
+x_2 = \text{True}.
+\]
+\end{example}
+
+\begin{example}[Propagation Leading to Conflict]
+\[
+\varphi = (x_1) \land (\lnot x_1).
+\]
+BCP assigns $x_1 = \text{True}$, immediately contradicting $(\lnot x_1)$.
+\end{example}
+
+\begin{example}[Cascade of Propagations]
+\[
+\varphi = (x_1) \land (\lnot x_1 \lor x_2) \land (\lnot x_2 \lor x_3).
+\]
+BCP yields:
+\[
+x_1=\mathrm{True} \Rightarrow x_2=\mathrm{True} \Rightarrow x_3=\mathrm{True}.
+\]
+\end{example}
+
+% =========================================================
+% TikZ diagram for BCP
+% =========================================================
+% \begin{figure}
+% \centering
+% \begin{tikzpicture}[node distance=2cm,auto,>=latex,thick]
+% \node (x1) [circle,draw] {$x_1=\text{T}$};
+% \node (x2) [circle,draw,right of=x1] {$x_2=\text{T}$};
+% \node (x3) [circle,draw,right of=x2] {$x_3=\text{T}$};
+
+% \draw[->] (x1) -- node[above]{from $(\lnot x_1 \lor x_2)$} (x2);
+% \draw[->] (x2) -- node[above]{from $(\lnot x_2 \lor x_3)$} (x3);
+
+% \caption{Implication chain created by BCP.}\label{fig:bcp-chain}
+% \end{tikzpicture}
+% \end{figure}
+
+% =========================================================
+\paragraph{Conflict Detection}
+
+
+A \emph{conflict} occurs when a clause becomes empty; that is, all literals in the
+clause are assigned False.
+
+\begin{example}[Immediate Conflict]
+\[
+\varphi = (\lnot x_1 \lor x_2)\ \land\ (\lnot x_2)\ \land\ (x_1).
+\]
+Assignments $x_1=\mathrm{True}$ and $x_2=\mathrm{False}$ make  
+$(\lnot x_1 \lor x_2) = (\text{False} \lor \text{False})$, producing a conflict.
+\end{example}
+
+% TikZ conflict visualization
+% \begin{figure}[h]
+% \centering
+% \begin{tikzpicture}[>=latex,thick]
+% \node (x1) [circle,draw] {$x_1=\text{T}$};
+% \node (x2) [circle,draw,right=2cm of x1] {$x_2=\text{F}$};
+% \node (cl) [rectangle,draw,below=1cm of $(x1)!0.5!(x2)$,text width=3.5cm,align=center]
+% {Clause $(\lnot x_1 \lor x_2)$ becomes $(\text{F} \lor \text{F})$};
+
+% \draw[->] (x1) -- (cl);
+% \draw[->] (x2) -- (cl);
+
+% \node (boom) [below=1cm of cl] {\Large\textbf{Conflict!}};
+
+% \caption{Conflict arises when a clause becomes empty.}
+% \label{fig:conflict}
+% \end{tikzpicture}
+% \end{figure}
+
+% =========================================================
+\paragraph{Conflict Analysis}
+
+
+Conflict analysis explains why the conflict occurred and generates a \emph{learned
+clause} that prevents the solver from revisiting the same conflicting assignment.
+Most modern solvers use the 1st-UIP (Unique Implication Point) learning scheme.
+
+\begin{example}[Simple Learned Clause]
+\[
+(x_1) \land (\lnot x_1).
+\]
+The conflict directly yields the learned clause:
+\[
+\lnot x_1 \lor x_1.
+\]
+Because this is always false, the solver concludes the formula is unsatisfiable.
+\end{example}
+
+\begin{example}[UIP Conflict Analysis]
+Assume decision levels:
+\[
+x_1=\mathrm{True} \ (dl=1), \qquad x_2=\mathrm{False}\ (dl=2).
+\]
+Clauses:
+\[
+(\lnot x_1 \lor x_2 \lor x_3),\qquad (\lnot x_2 \lor x_3),\qquad (\lnot x_3).
+\]
+Propagation yields $x_3=\mathrm{False}$, causing a conflict with $(\lnot x_3)$.
+
+The implication graph is:
+
+% \begin{figure}[h]
+% \centering
+% \begin{tikzpicture}[>=latex,thick,node distance=1.8cm]
+
+% \node (x1) [circle,draw] {$x_1=\text{T}$\\ dl 1};
+% \node (x2) [circle,draw,right of=x1] {$x_2=\text{F}$\\ dl 2};
+% \node (x3) [circle,draw,below right=1cm and 1cm of x1] {$x_3=\text{F}$\\ bcp};
+% \node (conf) [rectangle,draw,below=1.1cm of x3,align=center] {Clause $(\lnot x_3)$\\Conflict};
+
+% \draw[->] (x1) -- node[sloped,above]{from $(\lnot x_1\lor x_2\lor x_3)$} (x3);
+% \draw[->] (x2) -- node[sloped,below]{from $(\lnot x_2 \lor x_3)$} (x3);
+% \draw[->] (x3) -- (conf);
+
+% \caption{Implication graph and conflict.}
+% \label{fig:uip}
+% \end{figure}
+
+The learned clause (1st-UIP) is:
+\[
+(\lnot x_2 \lor \lnot x_1).
+\]
+\end{example}
+
+% =========================================================
+\paragraph{Backtracking}
+
+
+Given a learned clause, DPLL backtracks to the decision level at which the clause
+becomes unit.
+
+\begin{example}[Non-Chronological Backtracking]
+Decision levels:
+\[
+dl=1: x_1=\mathrm{True}, \qquad dl=2: x_2=\mathrm{True}, \qquad dl=3: x_3=\mathrm{False}.
+\]
+A conflict analysis produces the learned clause $(\lnot x_1 \lor x_3)$.  
+The highest decision level in the clause except the most recent UIP is 1, so the
+solver backtracks to level 1, undoing assignments to $x_2$ and $x_3$.
+\end{example}
+
+% Diagram for backtracking
+% \begin{figure}[h]
+% \centering
+% \begin{tikzpicture}[>=latex,thick,node distance=2cm]
+% \node (dl1) [circle,draw] {$dl_1:\\ x_1=\text{T}$};
+% \node (dl2) [circle,draw,below of=dl1] {$dl_2:\\ x_2=\text{T}$};
+% \node (dl3) [circle,draw,below of=dl2] {$dl_3:\\ x_3=\text{F}$};
+
+% \draw[->,red,thick] (dl3.west) .. controls +(-2,0) and +(-2,-1) .. node[left]{backtrack to $dl_1$} (dl1.west);
+
+% \caption{Non-chronological backtracking drops from decision level 3 to 1.}
+% \label{fig:backtrack}
+% \end{figure}
+
+% % =========================================================
+% \subsection{End-to-End Mini Example}
+% \label{subsec:dpll-mini-example}
+
+% Finally, we show an entire DPLL cycle:
+
+% \[
+% \varphi = (x_1 \lor x_2)
+% \land (\lnot x_1 \lor x_3)
+% \land (\lnot x_3).
+% \]
+
+% \begin{enumerate}
+% \item Decide $x_1=\mathrm{True}$ (dl=1).  
+% \item BCP on $(\lnot x_1 \lor x_3)$ gives $x_3=\mathrm{True}$.  
+% \item Conflict with $(\lnot x_3)$.  
+% \item Learned clause: $(\lnot x_1)$.  
+% \item Backtrack to level 0 and set $x_1=\mathrm{False}$.  
+% \end{enumerate}
+
+% The solver continues until it finds a model or proves unsatisfiability.
+
 %DPLL is both sound (its results are correct) and complete (it can find a solution for any input in finite time). %Since its introduction, many heuristics have been introduced to make DPLL more efficient,
 %However, because SAT solving is NP-Complete and DPLL has a worst-case exponential time complexity. %However, many heuristics have been developed to help DPLL efficient in practice,  e.g., choosing variables to assign values and decision levels to backtrack to~\cite{TODO}.
 
 
-\subsection{CDCL} 
+\section{CDCL} 
 
 Modern DPLL solving improves the original version with Conflict-Driven Clause Learning (\emph{CDCL}~\cite{bayardo1997using,marques1999grasp,569607}).
 DPLL with CDCL can \emph{learn new clauses} to avoid past conflicts and backtrack more intelligently (e.g., using non-chronologically backjumping).
