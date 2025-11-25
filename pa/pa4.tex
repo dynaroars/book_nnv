@@ -215,7 +215,10 @@ In this folder, you will find the following files/folders:
 
 Your task is to:
 \begin{enumerate}
-    \item enumerate all instances in \texttt{instances.csv} and verify the properties.
+    \item enumerate first 45 instances in \texttt{instances.csv} and verify the properties, the rest are optional.
     \item report the result for each instance, either, UNSAT, SAT, or TIMEOUT.
     \item check the results with the ground truth at \url{https://github.com/dynaroars/book_nnv/blob/main/code/pa4/acasxu_ground_truth.csv}.
 \end{enumerate}
+
+Note that, you can also double check the ground truths to check whether the instances are SAT (counterexample exists).
+If that is the case, using abstraction alone will never return "verified", you will need a way to find a counterexample.
