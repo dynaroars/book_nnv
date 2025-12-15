@@ -4440,7 +4440,7 @@ Do~\autoref{ex:bab} but come UB with concrete values for each step, e.g., what a
 
 
 \begin{problem}\label{prob:bab-counterexample}
-Do~\autoref{ex:bab} but assume the property is invalid and find a counterexample. It is also OK to change the problem, e.g., the input bounds or the property itself, to make it invalid.
+Do~\autoref{ex:bab} again but make the property is invalid and find a counterexample. It is also OK to change the problem, e.g., the input bounds or the property itself, to make it invalid.
 \end{problem}
 
 
@@ -6523,7 +6523,8 @@ Thus, the property in~\autoref{eq:prop1} is \emph{not valid} for the DNN in~\aut
 \begin{problem}\label{problem:reluplex-hand}
     Read the example in~\autoref{ex:reluplex} again carefully. Then: 
     \begin{itemize}
-    \item Rewrite the steps in~\autoref{ex:reluplex} on paper, showing all the calculations for each step. The goal of handwriting the steps is to help you understand how \reluplex{} works in detail.  Take pictures and submit as attachment.
+      \item Rewrite the steps in~\autoref{ex:reluplex} on paper, showing all the calculations for each step. The goal of handwriting the steps is to help you understand how \reluplex{} works in detail.
+
     \item Provide feedback on this example.  Is it clear?  Are there any steps or terminologies that are confusing?  How can we improve the explanation?  For this part you can type directly on a text file and submit.
     \end{itemize}
 \end{problem}
@@ -6543,7 +6544,6 @@ Thus, the property in~\autoref{eq:prop1} is \emph{not valid} for the DNN in~\aut
     \item Explain why \reluplex{} must \emph{still} consider ReLU violations after all bound violations have been fixed.  Why is all variables (excluding ReLU ones) within bounds not sufficient? Use an example if necessary.
    \end{enumerate}
 \end{problem}
-
 
 
 
@@ -7175,178 +7175,74 @@ In each specification, the inputs (condition distance and latent variables) are 
 % \end{table}
 
 
-\chapter{VNN-COMPs}\label{chap:vnncomps}
+%\chapter{VNN-COMPs}\label{chap:vnncomps}
 
-\chapter{Benchmarks Generation}\label{chap:benchmarks-generation}
+%\chapter{Benchmarks Generation}\label{chap:benchmarks-generation}
 
 
 
-\chapter{Conclusion}
+%\chapter{Conclusion}
 
-\part{Appendices\label{part:appendices}}
-%\renewcommand{\appendixname}{Assignment}
-\appendix
-\chapter{Schedule and Assignments}
-\begin{itemize}
-    \item Week 1 (Aug 27): Introduction (videos of neural networks, basic terminologies and concepts).
-    \item Week 2 (Sept 3):
-    \begin{itemize}
-    \item HW due: Post a short introduction about yourself on Canvas
-    \item Topics: Background on Logic~\autoref{chap:logics} and Linear Programming~\autoref{chap:lp}
-    \item Quiz: no quiz this week
-    \end{itemize}
-    \item Week 3 (Sept 10):
-    \begin{itemize}
-        \item HW due: MILP problem~\autoref{ex:milp-online}
-        \item Topics: DNN and Properties and their formal representation (~\autoref{chap:nn-basics} and~\autoref{chap:properties})
-        \item Quiz:~\autoref{problem:milp-hand}
-    \end{itemize}
-    \item Week 4 (Sept 17):
-    \begin{itemize}
-        \item HW due: Neural Networks and Properties~\autoref{problem:z3-properties}
-        \item Topics: DNN Verification (\autoref{sec:verification}) 
-        \item Quiz:~\autoref{problem:drone}
-    \end{itemize}
-    \item Week 5 (Sept 24): No class this week (prof not available). No quiz or HW due. 
-
-    \item Programming Assignment 1 (PA1)
-    \begin{itemize}
-        \item Symbolic Execution of Neural Networks~\autoref{sec:pa1} 
-        \item Due date \alert{Monday October 6, 2025 11:59pm}
-    \end{itemize}
-    \item Week 6 (Oct 1):
-    \begin{itemize}
-        \item HW due:~\autoref{ex:negation-trick},~\autoref{problem:z3-dnn}, and~\autoref{problem:pattern-enumeration}. %, and ~\autoref{problem:nnv-pattern}
-        \item Topics: Activation Pattern Search (\autoref{sec:activation-patterns}) and Symbolic Execution (\autoref{sec:se-smt})
-        \item Quiz:~\autoref{problem:mydnntwo}
-    \end{itemize}
-    \item Week 7 (Oct 8):
-    \begin{itemize}
-        \item No HW because of PA1 due date
-        \item Topics: MILP Enncoding of DNNs (\autoref{sec:using-milp})
-        \item Quiz: (Re)Do~\autoref{ex:milp-dnn} by hand
-    \end{itemize}
-    \item Programming Assignment 2 (PA2)
-    \begin{itemize}
-        \item Abstraction~\autoref{sec:pa2}
-        \item Due date \alert{Wednesday October 29, 2025 11:59pm}
-    \end{itemize}
-    \item Week 8 (Oct 15):
-    \begin{itemize}
-      \item HW: Do~\autoref{prob:milp-dnn}
-       \item Topics: Abstraction (\autoref{chap:abstractions}), Interval and Zonotope (\autoref{sec:interval-abstraction},~\autoref{sec:zonotope-abstraction})
-       \item Quiz:~\autoref{prob:stable-neuron}
-    \end{itemize}
-  \item Week 9 (Oct 22):
-        \begin{itemize}
-          \item Topics: Abstraction (\autoref{chap:abstractions}), Interval and Zonotope (\autoref{sec:interval-abstraction},~\autoref{sec:zonotope-abstraction})                
-          \item HW: Do~\autoref{prob:int-abs}
-          \item Quiz:~\autoref{prob:correct-abs}      
-        \end{itemize}
-    \item Week 10 (Oct 29):
-    \begin{itemize}        
-        \item No HW because of PA2 due date
-        \item Topics: Zonotope~\autoref{sec:zonotope-abstraction} and BaB Algorithm~\autoref{chap:bab}
-        \item Quiz: attendance
-    \end{itemize}
-    \item Week 11 (Nov 5):
-    \begin{itemize}                
-        \item HW: Do~\autoref{prob:bab-detailed},~\autoref{prob:bab-counterexample}, and ~\autoref{prob:bab-interval}
-        \item Topics: Adversarial Attacks~\autoref{chap:adversarial-attacks} and Proof Certificates~\autoref{chap:proof-gen-check}
-        \item Quiz:~\autoref{prob:bab-understanding}
-    \end{itemize}
-    \item Programming Assignment 3 (PA3)
-    \begin{itemize}
-        \item Branch and Bound~\autoref{sec:pa3}
-        \item Due date \alert{Tuesday Nov 25, 2025 11:59pm}
-    \end{itemize}    
-    \item Week 12 (Nov 12):
-    \begin{itemize}        
-        \item Topics: Engineering and Optimization Tricks~\autoref{chap:common-engineering}, \neuralsat{} algorithm~\autoref{chap:neuralsat}, \reluplex{} algorithm~\autoref{chap:reluplex}
-        \item HW: Do~\autoref{prob:compute-gradients},~\autoref{prob:pgd-iterations}
-        \item Quiz:~\autoref{prob:pgd-iterations} (part 2 only)
-    \end{itemize}
-    \item Week 13 (Nov 19):
-    \begin{itemize}        
-        \item Topics: TBD
-        \item HW: Do~\autoref{prob:proof-tree} and~\autoref{problem:reluplex-hand}
-        \item Quiz: TBD
-    \end{itemize}
-    \item Finally Project---Programming Assignment 4 (PA4))
-    \begin{itemize}
-        \item Putting everything together~\autoref{sec:pa4}
-        \item Due date \alert{Wednesday Dec 10, 2025 11:59pm}
-    \end{itemize}    
-    
-    
-\end{itemize}    
-
-\chapter{Programming Assignments}\label{chap:pa}
-
-\input{pa/pa1.tex}
-\input{pa/pa2.tex}
-\input{pa/pa3.tex}
-\input{pa/pa4.tex}
 
 
 \part{Background\label{part:background}}
 \renewcommand{\appendixname}{Background}
 \appendix
 
-\chapter{Comparing neural networks with software}\label{app:nn-vs-software}
+% \chapter{Comparing neural networks with software}\label{app:nn-vs-software}
 
-\begin{table}
-    \caption{Similarities}\label{tab:nn-software-similarities}
-    \scriptsize
-    \centering
-\begin{tabular}{l|l}
-    \toprule
-    Aspect & Description\\
-    \midrule
-    Representation &	Represented using if-then-else statements\\
-    Input-Output Mapping &	Take Inputs and produce outputs\\
-    Determinism	& Can produce deterministic outputs\\
-    Execution Path	& Paths from input to output\\
-    Specifications & Can have specifications involving preconditions over inputs and postconditions over outputs\\
-    Logical Constraints	& Can be represented as logical constraints\\
-    Bugs and Errors & Can have bugs that violate specifications\\
-    \bottomrule
-\end{tabular}    
-\end{table}
+% \begin{table}
+%     \caption{Similarities}\label{tab:nn-software-similarities}
+%     \scriptsize
+%     \centering
+% \begin{tabular}{l|l}
+%     \toprule
+%     Aspect & Description\\
+%     \midrule
+%     Representation &	Represented using if-then-else statements\\
+%     Input-Output Mapping &	Take Inputs and produce outputs\\
+%     Determinism	& Can produce deterministic outputs\\
+%     Execution Path	& Paths from input to output\\
+%     Specifications & Can have specifications involving preconditions over inputs and postconditions over outputs\\
+%     Logical Constraints	& Can be represented as logical constraints\\
+%     Bugs and Errors & Can have bugs that violate specifications\\
+%     \bottomrule
+% \end{tabular}    
+% \end{table}
 
-\begin{table}
-    \caption{Differences}\label{tab:nn-software-differences}
-    \scriptsize
-    \centering
-\begin{tabular}{l|l|l}
-    \toprule
-    Aspect	& Traditional Software	& Neural Networks \\
-    \midrule
-    % Control Flow	Complex flow with loops, recursion, and branching.	Feedforward execution; no explicit loops or recursion during inference.
-    % State Representation	Uses variables, objects, and explicit state transitions.	Encodes state in weights and neuron activations.
-    % Granularity	Operates at a higher abstraction level with fewer conditional branches.	Operates on thousands or millions of neurons, creating many implicit conditional branches.
-    % Object-Oriented Features	Incorporates OOP principles like encapsulation, inheritance, and polymorphism.	Lacks explicit OOP features but can be modular (e.g., layers, sub-networks).
-    % Execution Path	Determined by explicit logic and relatively few branches.	Implicit execution paths defined by piecewise-linear regions from activations.
-    % Termination	Explicitly handles termination in loops and recursion.	Fixed-length inference process with no explicit termination conditions.
-    % Semantics	Implements precise, deterministic logic for well-defined tasks.	Approximates functions based on training, often non-deterministic during learning.
-    % Verification	Formal verification methods are established for correctness.	Verification is challenging due to non-linearity and high dimensionality.
-    % Debugging	Tools like debuggers allow step-by-step inspection of logic.	Focuses on diagnosing data issues, architecture problems, or training convergence.
-    Explainability & Can be explained through code inspection & Lacks explicit explainability mechanisms\\
-    Designing &	Written by human & Created by machine through learning from training data\\
-    Size & Small to medium-sized codebases & Large number of neurons and layers\\
-    Error Causing & arise from bugs in logic or implementation & arise from insufficient training data, overfitting, etc\\
-    Error Incurring & Can cause crashes, incorrect outputs, or unexpected behavior & Can cause incorrect predictions or unexpected behavior\\
-    Error Handling & try-catch blocks for exception handling &	Lacks explicit error-handling mechanisms\\
-    % Learning	Does not “learn”; behavior must be explicitly defined.	Learns to approximate functions through training.
-    % Non-Linearity	Handles non-linearity explicitly through conditional logic or complex mathematical operations.	Uses activation functions like ReLU, Sigmoid, or Tanh to introduce non-linearity.
-    % Parallelism	Often single-threaded or relies on explicit multi-threading for parallelism.	Intrinsic large-scale parallelism due to the structure of layers and neurons.
-    % Adversarial Vulnerability	Less vulnerable to adversarial inputs, but bugs can lead to unexpected behavior.	Susceptible to small, imperceptible perturbations in input (adversarial examples).
-    % Generalization	Executes pre-defined logic; does not generalize beyond explicit instructions.	Generalizes from training data, allowing predictions on unseen inputs.    
-    % Dynamic Resource Management	Explicitly handles memory, files, and resources during execution.	Resources are statically allocated during training and inference; no dynamic management.
-    % Concurrency	Explicitly handles concurrent operations using threads or async programming.	No explicit concurrency; parallelism occurs naturally due to network architecture.
-    \bottomrule
-\end{tabular}    
-\end{table}
+% \begin{table}
+%     \caption{Differences}\label{tab:nn-software-differences}
+%     \scriptsize
+%     \centering
+% \begin{tabular}{l|l|l}
+%     \toprule
+%     Aspect	& Traditional Software	& Neural Networks \\
+%     \midrule
+%     % Control Flow	Complex flow with loops, recursion, and branching.	Feedforward execution; no explicit loops or recursion during inference.
+%     % State Representation	Uses variables, objects, and explicit state transitions.	Encodes state in weights and neuron activations.
+%     % Granularity	Operates at a higher abstraction level with fewer conditional branches.	Operates on thousands or millions of neurons, creating many implicit conditional branches.
+%     % Object-Oriented Features	Incorporates OOP principles like encapsulation, inheritance, and polymorphism.	Lacks explicit OOP features but can be modular (e.g., layers, sub-networks).
+%     % Execution Path	Determined by explicit logic and relatively few branches.	Implicit execution paths defined by piecewise-linear regions from activations.
+%     % Termination	Explicitly handles termination in loops and recursion.	Fixed-length inference process with no explicit termination conditions.
+%     % Semantics	Implements precise, deterministic logic for well-defined tasks.	Approximates functions based on training, often non-deterministic during learning.
+%     % Verification	Formal verification methods are established for correctness.	Verification is challenging due to non-linearity and high dimensionality.
+%     % Debugging	Tools like debuggers allow step-by-step inspection of logic.	Focuses on diagnosing data issues, architecture problems, or training convergence.
+%     Explainability & Can be explained through code inspection & Lacks explicit explainability mechanisms\\
+%     Designing &	Written by human & Created by machine through learning from training data\\
+%     Size & Small to medium-sized codebases & Large number of neurons and layers\\
+%     Error Causing & arise from bugs in logic or implementation & arise from insufficient training data, overfitting, etc\\
+%     Error Incurring & Can cause crashes, incorrect outputs, or unexpected behavior & Can cause incorrect predictions or unexpected behavior\\
+%     Error Handling & try-catch blocks for exception handling &	Lacks explicit error-handling mechanisms\\
+%     % Learning	Does not “learn”; behavior must be explicitly defined.	Learns to approximate functions through training.
+%     % Non-Linearity	Handles non-linearity explicitly through conditional logic or complex mathematical operations.	Uses activation functions like ReLU, Sigmoid, or Tanh to introduce non-linearity.
+%     % Parallelism	Often single-threaded or relies on explicit multi-threading for parallelism.	Intrinsic large-scale parallelism due to the structure of layers and neurons.
+%     % Adversarial Vulnerability	Less vulnerable to adversarial inputs, but bugs can lead to unexpected behavior.	Susceptible to small, imperceptible perturbations in input (adversarial examples).
+%     % Generalization	Executes pre-defined logic; does not generalize beyond explicit instructions.	Generalizes from training data, allowing predictions on unseen inputs.    
+%     % Dynamic Resource Management	Explicitly handles memory, files, and resources during execution.	Resources are statically allocated during training and inference; no dynamic management.
+%     % Concurrency	Explicitly handles concurrent operations using threads or async programming.	No explicit concurrency; parallelism occurs naturally due to network architecture.
+%     \bottomrule
+% \end{tabular}    
+% \end{table}
 
 \chapter{Logics}\label{chap:logics}
 
@@ -8553,71 +8449,73 @@ Running an LP solver with objective $\min 0$ will return a point, e.g., (x=0,y=0
 
 
 
-\chapter{Software vs DNN Verification}\label{app:software-vs-dnn}
+% \chapter{Software vs DNN Verification}\label{app:software-vs-dnn}
 
 
-\paragraph{General}
-Software verification and DNN verification share the common goal of ensuring the correctness and reliability of their respective systems. Both fields aim to identify and eliminate potential errors or vulnerabilities before deployment, ultimately enhancing user trust and system robustness.
+% \paragraph{General}
+% Software verification and DNN verification share the common goal of ensuring the correctness and reliability of their respective systems. Both fields aim to identify and eliminate potential errors or vulnerabilities before deployment, ultimately enhancing user trust and system robustness.
 
-\begin{table}
-    \caption{Comparison of Software Verification and DNN Verification}
-    \footnotesize
-\begin{tabular}{|c|c|c|}
-    \hline
-    \textbf{Aspect} & \textbf{Software Verification} & \textbf{DNN Verification} \\
-    \hline
-    \textbf{Input} & Source code, specifications & DNN model, input space \\
-    \hline
-    \textbf{Output} & Verification results, counterexamples & Verification results, adversarial examples \\
-    \hline
-    \textbf{Techniques} & Model checking, theorem proving & Formal methods, testing \\
-    \hline
-    \textbf{Challenges} & State explosion, incomplete specifications & High dimensionality, non-convexity \\
-    \hline
-\end{tabular}
-\end{table}
+% \begin{table}
+%     \caption{Comparison of Software Verification and DNN Verification}
+%     \footnotesize
+% \begin{tabular}{|c|c|c|}
+%     \hline
+%     \textbf{Aspect} & \textbf{Software Verification} & \textbf{DNN Verification} \\
+%     \hline
+%     \textbf{Input} & Source code, specifications & DNN model, input space \\
+%     \hline
+%     \textbf{Output} & Verification results, counterexamples & Verification results, adversarial examples \\
+%     \hline
+%     \textbf{Techniques} & Model checking, theorem proving & Formal methods, testing \\
+%     \hline
+%     \textbf{Challenges} & State explosion, incomplete specifications & High dimensionality, non-convexity \\
+%     \hline
+% \end{tabular}
+% \end{table}
 
-\paragraph{Similarities} 
+% \paragraph{Similarities} 
 
-\begin{table}
-\caption{Similarities of Software Verification and DNN Verification}
-\footnotesize
-\begin{tabular}{|c|c|c|}
-    \hline
-    \textbf{Aspect} & \textbf{Software Verification} & \textbf{DNN Verification} \\
-    \hline
-    \textbf{Input} & Source code, specifications & DNN model, input space \\
-    \hline
-    \textbf{Output} & Verification results, counterexamples & Verification results, adversarial examples \\
-    \hline
-    \textbf{Techniques} & Model checking, theorem proving & Formal methods, testing \\
-    \hline
-    \textbf{Challenges} & State explosion, incomplete specifications & High dimensionality, non-convexity \\
-    \hline
-\end{tabular}
-\end{table}
+% \begin{table}
+% \caption{Similarities of Software Verification and DNN Verification}
+% \footnotesize
+% \begin{tabular}{|c|c|c|}
+%     \hline
+%     \textbf{Aspect} & \textbf{Software Verification} & \textbf{DNN Verification} \\
+%     \hline
+%     \textbf{Input} & Source code, specifications & DNN model, input space \\
+%     \hline
+%     \textbf{Output} & Verification results, counterexamples & Verification results, adversarial examples \\
+%     \hline
+%     \textbf{Techniques} & Model checking, theorem proving & Formal methods, testing \\
+%     \hline
+%     \textbf{Challenges} & State explosion, incomplete specifications & High dimensionality, non-convexity \\
+%     \hline
+% \end{tabular}
+% \end{table}
 
-\paragraph{Differences}
-Software verification typically deals with discrete systems and logical properties, while DNN verification focuses on continuous input spaces and the behavior of neural networks under various conditions. Additionally, the techniques used in each field differ significantly, with software verification relying on formal methods and testing, whereas DNN verification often employs specialized techniques such as adversarial training and robustness analysis.
+% \paragraph{Differences}
+% Software verification typically deals with discrete systems and logical properties, while DNN verification focuses on continuous input spaces and the behavior of neural networks under various conditions. Additionally, the techniques used in each field differ significantly, with software verification relying on formal methods and testing, whereas DNN verification often employs specialized techniques such as adversarial training and robustness analysis.
 
-\begin{table}
-\caption{Differences of Software Verification and DNN Verification}
-\begin{tabular}{|c|c|c|}
-    \hline
-    \textbf{Aspect} & \textbf{Software Verification} & \textbf{DNN Verification} \\
-    \hline
-    \textbf{Input} & Source code, specifications & DNN model, input space \\
-    \hline
-    \textbf{Output} & Verification results, counterexamples & Verification results, adversarial examples \\
-    \hline
-    \textbf{Techniques} & Model checking, theorem proving & Formal methods, testing \\
-    \hline
-    \textbf{Challenges} & State explosion, incomplete specifications & High dimensionality, non-convexity \\
-    \hline
-\end{tabular}
-\end{table}
+% \begin{table}
+% \caption{Differences of Software Verification and DNN Verification}
+% \begin{tabular}{|c|c|c|}
+%     \hline
+%     \textbf{Aspect} & \textbf{Software Verification} & \textbf{DNN Verification} \\
+%     \hline
+%     \textbf{Input} & Source code, specifications & DNN model, input space \\
+%     \hline
+%     \textbf{Output} & Verification results, counterexamples & Verification results, adversarial examples \\
+%     \hline
+%     \textbf{Techniques} & Model checking, theorem proving & Formal methods, testing \\
+%     \hline
+%     \textbf{Challenges} & State explosion, incomplete specifications & High dimensionality, non-convexity \\
+%     \hline
+% \end{tabular}
+% \end{table}
 
 
+\part{Appendices\label{part:appendices}}
+%\renewcommand{\appendixname}{Assignment}
 \renewcommand{\appendixname}{Advanced Topics}
 \appendix
 
@@ -9499,6 +9397,118 @@ Although restarting may seem like an engineering aspect, it plays a crucial role
 %\hd{when does \tool{} use DeepPoly/LiRPA? Small number of inputs (<50), use LP to tighten input ranges then apply DeepPoly. Otherwise, jointly optimize hidden bounds and output bounds using LiRPA (same as ab-crown) --- Actually, in small number of inputs cases, it's reimplementation of DeepPoly with adaptation of learnable \textit{slopes} as in ab-crown. Depend on the input ranges, the abstraction will compute output ranges directly use original version or use optimized slopes version of DeepPoly to get better bounds.}
 %The estimated output ranges could be used to check the reachability, as shown in Sec~\ref{sec:unsat}.
 %If the output property is unreachable, the Theory Deduce will raise ``conflict'' status, otherwise, the output property might be reachable, we could not decide the reachability status of the current assignment.
+
+
+\part{Programming Assignments and Schedule\label{part:pas-schedule}}
+\renewcommand{\appendixname}{Assignments}
+\appendix
+
+\chapter{Programming Assignments}\label{chap:pa}
+
+\input{pa/pa1.tex}
+\input{pa/pa2.tex}
+\input{pa/pa3.tex}
+\input{pa/pa4.tex}
+
+
+\chapter{Schedule}\label{chap:schedule}
+
+\begin{itemize}
+    \item Week 1 (Aug 27): Introduction (videos of neural networks, basic terminologies and concepts).
+    \item Week 2 (Sept 3):
+    \begin{itemize}
+    \item HW due: Post a short introduction about yourself on Canvas
+    \item Topics: Background on Logic~\autoref{chap:logics} and Linear Programming~\autoref{chap:lp}
+    \item Quiz: no quiz this week
+    \end{itemize}
+    \item Week 3 (Sept 10):
+    \begin{itemize}
+        \item HW due: MILP problem~\autoref{ex:milp-online}
+        \item Topics: DNN and Properties and their formal representation (~\autoref{chap:nn-basics} and~\autoref{chap:properties})
+        \item Quiz:~\autoref{problem:milp-hand}
+    \end{itemize}
+    \item Week 4 (Sept 17):
+    \begin{itemize}
+        \item HW due: Neural Networks and Properties~\autoref{problem:z3-properties}
+        \item Topics: DNN Verification (\autoref{sec:verification}) 
+        \item Quiz:~\autoref{problem:drone}
+    \end{itemize}
+    \item Week 5 (Sept 24): No class this week (prof not available). No quiz or HW due. 
+
+    \item Programming Assignment 1 (PA1)
+    \begin{itemize}
+        \item Symbolic Execution of Neural Networks~\autoref{sec:pa1} 
+        \item Due date \alert{Monday October 6, 2025 11:59pm}
+    \end{itemize}
+    \item Week 6 (Oct 1):
+    \begin{itemize}
+        \item HW due:~\autoref{ex:negation-trick},~\autoref{problem:z3-dnn}, and~\autoref{problem:pattern-enumeration}. %, and ~\autoref{problem:nnv-pattern}
+        \item Topics: Activation Pattern Search (\autoref{sec:activation-patterns}) and Symbolic Execution (\autoref{sec:se-smt})
+        \item Quiz:~\autoref{problem:mydnntwo}
+    \end{itemize}
+    \item Week 7 (Oct 8):
+    \begin{itemize}
+        \item No HW because of PA1 due date
+        \item Topics: MILP Enncoding of DNNs (\autoref{sec:using-milp})
+        \item Quiz: (Re)Do~\autoref{ex:milp-dnn} by hand
+    \end{itemize}
+    \item Programming Assignment 2 (PA2)
+    \begin{itemize}
+        \item Abstraction~\autoref{sec:pa2}
+        \item Due date \alert{Wednesday October 29, 2025 11:59pm}
+    \end{itemize}
+    \item Week 8 (Oct 15):
+    \begin{itemize}
+      \item HW: Do~\autoref{prob:milp-dnn}
+       \item Topics: Abstraction (\autoref{chap:abstractions}), Interval and Zonotope (\autoref{sec:interval-abstraction},~\autoref{sec:zonotope-abstraction})
+       \item Quiz:~\autoref{prob:stable-neuron}
+    \end{itemize}
+  \item Week 9 (Oct 22):
+        \begin{itemize}
+          \item Topics: Abstraction (\autoref{chap:abstractions}), Interval and Zonotope (\autoref{sec:interval-abstraction},~\autoref{sec:zonotope-abstraction})                
+          \item HW: Do~\autoref{prob:int-abs}
+          \item Quiz:~\autoref{prob:correct-abs}      
+        \end{itemize}
+    \item Week 10 (Oct 29):
+    \begin{itemize}        
+        \item No HW because of PA2 due date
+        \item Topics: Zonotope~\autoref{sec:zonotope-abstraction} and BaB Algorithm~\autoref{chap:bab}
+        \item Quiz: attendance
+    \end{itemize}
+    \item Week 11 (Nov 5):
+    \begin{itemize}                
+        \item HW: Do~\autoref{prob:bab-detailed},~\autoref{prob:bab-counterexample}, and ~\autoref{prob:bab-interval}
+        \item Topics: Adversarial Attacks~\autoref{chap:adversarial-attacks} and Proof Certificates~\autoref{chap:proof-gen-check}
+        \item Quiz:~\autoref{prob:bab-understanding}
+    \end{itemize}
+    \item Programming Assignment 3 (PA3)
+    \begin{itemize}
+        \item Branch and Bound~\autoref{sec:pa3}
+        \item Due date \alert{Tuesday Nov 25, 2025 11:59pm}
+    \end{itemize}    
+    \item Week 12 (Nov 12):
+    \begin{itemize}        
+        \item Topics: Engineering and Optimization Tricks~\autoref{chap:common-engineering}, \neuralsat{} algorithm~\autoref{chap:neuralsat}, \reluplex{} algorithm~\autoref{chap:reluplex}
+        \item HW: Do~\autoref{prob:compute-gradients},~\autoref{prob:pgd-iterations}
+        \item Quiz:~\autoref{prob:pgd-iterations} (part 2 only)
+    \end{itemize}
+    \item Week 13 (Nov 19):
+    \begin{itemize}        
+        \item Topics: TBD
+        \item HW: Do~\autoref{prob:proof-tree} and~\autoref{problem:reluplex-hand}
+        \item Quiz: \autoref{problem:reluplex-basic-nonbasic}
+    \end{itemize}
+    \item Final Project---Programming Assignment 4 (PA4)
+    \begin{itemize}
+        \item Putting everything together~\autoref{sec:pa4}
+        \item Due date \alert{Wednesday Dec 10, 2025 11:59pm}
+    \end{itemize}    
+    
+    
+\end{itemize}    
+
+
+
 
 
 
