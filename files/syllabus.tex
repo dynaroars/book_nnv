@@ -16,57 +16,54 @@
 
 \begin{document}
 \begin{center}
-{\Large \textsc{SWE-699/CS-690: AI Safety \& Assurance}}
+{\Large \textsc{CS690/SWE699: Formal Reasoning in AI and Software Engineering (SWE)}}
 
 \vspace{0.1in}
-{\large Fall '25}
+{\large Spring '26}
 \end{center}
 
 \begin{minipage}[t]{.75\textwidth}
     \centering
 \begin{tabular}{llcccll}
   \toprule
-  \textbf{Meetings:} & Wed 4:30PM -- 7:10PM  & & & & \textbf{Place:} & PLANET 122\\
+  \textbf{Meetings:} & Tues 4:30PM -- 7:10PM  & & & & \textbf{Place:} & PLANET 224\\
 \textbf{Instructor:} & \href{https://roars.dev}{ThanhVu Nguyen} & & &  & \textbf{Email:} &  \href{mailto:tvn@gmu.edu}{tvn@gmu.edu} (Canvas is preferred)\\
 \textbf{Office Hr:} & (email to set appointment)& & & & \textbf{Place:} & Zoom or ENGR 4430\\
   \hline
-\textbf{GTA:} & Linhan Li & & &  & \textbf{Email:} &  \href{mailto:lli34@gmu.edu}{lli34@gmu.edu}\\
-\textbf{Office Hr:} & 10AM--12PM  & & & & \textbf{Place:} & in-person or Zoom (email for info) \\
+\textbf{GTA:} & TBD& & &  & \textbf{Email:} &  \href{mailto:tbd@gmu.edu}{tbd@gmu.edu}\\
+\textbf{Office Hr:} & TBD  & & & & \textbf{Place:} & in-person or Zoom (email for info) \\
 %  \hline
 %\textbf{UTA:} & Josabeth Zelalem Hailu & & &  & \textbf{Email:} &  \href{mailto:jhailu2@gmu.edu}{jhailu2@gmu.edu}\\
 \bottomrule
 \end{tabular}
 \end{minipage}
  
-
 \section{Description}
 
 \paragraph{Course Overview}
-This special topic course is a \textbf{research seminar} on \emph{AI Verification and Assurance}.  AI, in particular Deep Neural Networks (DNNs), have emerged as an effective approach for solving challenging real-world problems. %Among many others, they have been used for image recognition, autonomous driving, airplane collision control,
+This special topic course is a \textbf{research seminar} on the application of \emph{Formal Method} (FM) techniques to AI and Software Engineering (SWE) problems, with a focus on \emph{Deep Neural Networks} (DNNs) verification and assurance..  AI, in particular DNNs, have emerged as an effective approach for solving challenging real-world problems. %Among many others, they have been used for image recognition, autonomous driving, airplane collision control,
 power grid control, fake news detection, drug synthesis and discovery, 
 and COVID-19 detection and diagnosis.
 However, just like traditional software, DNNs can have ``bugs'', e.g., producing unexpected results on inputs that are different from those in training data, and be attacked, e.g., small perturbations to the inputs by a malicious adversary or even sensorial imperfections result in misclassification.
 These issues, which have been observed in many DNNs and demonstrated in the real world,  naturally raise the question of how DNNs should be tested, validated, and ultimately \emph{verified} to meet the requirements of relevant robustness or safety standards.
 
-In this class, we will learn various techniques and tools to verify DNNs. We will cover topics including the applications
-of verification, testing, analysis, constraint solving, and abstraction
+In this class, we will learn various techniques and tools to verify software, and treat DNNs as special software systems. We will cover topics including the applications of verification, testing, analysis, constraint solving, and abstraction
 techniques to DNNS such as Feedforward Neural Networks
 (FNNs), Residual Networks (ResNet), and Convolutional Neural Networks
 (CNNs). We will focus on scalable and precise techniques that can deal with large, real-world DNNS.
 
-The course will focus on active research areas in formal AI and DNN reasoning,
+The course will focus on active research areas in formal software and DNN reasoning,
 but the specific topics will be largely determined by a
 combination of instructor fiat and the interests of the students.
 
 \paragraph{Learning Outcomes}
 
-
-By the end of the course, students will gain a solid understanding of the principles of AI verification and assurance, particularly techniques for verifying the safety and robustness of DNNs.
+By the end of the course, students will gain a solid understanding of FM and their applications, particularly in the context of AI and software engineering. 
 
 \subsection{Learning Outcomes}
 
 \begin{itemize}
-\item \textbf{Understanding of AI Verification Techniques and Tools}: Students will gain a deep understanding of AI verification concepts, techniques, and tools. They will learn how to apply these techniques to various types of neural networks, including FNNs, REsNets, CNNs, and RNNs.  The student will also learn how to use existing tools to analyze and verify DNNs.
+\item \textbf{Understanding of AI Verification Techniques and Tools}: Students will gain a deep understanding of FM verification concepts, techniques, and tools. They will learn how to apply these techniques to various types of neural networks, including FNNs, REsNets, CNNs, and RNNs.  The student will also learn how to use existing tools to analyze and verify DNNs.
 
 \item \textbf{In-Depth Understanding}: For the final project, students will delve into DNN verification. They will not only understand the theory but also be able to provide concrete examples and \emph{implement} the technique themselves, gaining a comprehensive understanding of the topic.  
 
@@ -109,7 +106,15 @@ Programming assignments will require students to implement AI analysis technique
 We will use \textbf{Canvas} for communication and submitting assignments, and to keep track of grades (\autoref{sec:grading}).  
 It's the student's responsibility to ensure that your grade records are correct.
 
-When submitting to Canvas, you can either submit a PDF, Word, or text (code) file.  If you manually write your answers, take a picture and submit it.  \textbf{DO NOT} submit link (e.g., to Google Docs or some other services); you will receive a 0 for the assignment if you submit a link.
+There are two types of assignments in this course: hand-written assignments and code/programming assignments. 
+\textbf{DO NOT} submit link to an image, document, file; you will receive a 0 for the assignment if you submit a link.
+
+
+\paragraph{Hand-written Assignments} All assignments except programming ones (discussed below) have to be written by hand (on paper, tablet, etc -- but must be handwritten). Then take a picture of your answers and submit the picture (as a PDF or image file) to Canvas. 
+
+
+\paragraph{Code/Programming Assignments}  You will submit your \texttt{src code} files (Python files) and \texttt{README} file (in PDF or Markdown format) to Canvas. You can submit a single ZIP file containing all files. Instructions are provided in each assignment.
+
 
 
 
@@ -144,12 +149,11 @@ When submitting to Canvas, you can either submit a PDF, Word, or text (code) fil
 \begin{tabular}{lr}
 \textbf{Assignments} & \textbf{Percentage} \\
 \hline
-Participation & 10\% \\
-Homework Assignments & 25\% \\
-Quizzes & 20\% \\
-Programming Assignments & 20\% \\
-Project & 25\% \\
-  \hline
+Participation & 5\% \\
+Homework (HW) Assignments & 35\% \\
+Quizzes & 40\% \\
+Programming Assignments (PAs) & 20\% \\
+\hline
     \textbf{Total} & 100\% \\
 \end{tabular}
 \end{center}
@@ -168,9 +172,7 @@ Project & 25\% \\
     \end{tabular}
     \end{center}
 
-\paragraph{Groups} For homework, PAs, and the project, you can team up with another student (a group of 2). You will need to submit a \emph{single group} solution for each assignment. You also need to include a statement of contributions from each group member. Once you form a group, you cannot change it and will work with your group on all PAs and the project.
-
-
+\paragraph{Groups} For quizzes, you will work individually, but for HW and PAs you can team up with another student (a group of 2). You will need to submit a \emph{single group} solution for each assignment. You also need to include a statement of contributions from each group member. Once you form a group, you cannot change it and will work with your group on all assignments.  
 
 
 \subsection{Participation}
@@ -180,52 +182,40 @@ I place great emphasis on peer learning and interactive engagement. The class is
 
 \subsection{Homework Assignments}\label{homework-assignments}
 
-There are weekly \emph{group homework assignments}, which are given in \textbf{Appendix A} of the Engineering a DNN verifier book. Homework assignments are due \textbf{before class}, i.e., before 4:30 PM on the day we meet. Late submissions are \emph{not} accepted except in truly exceptional circumstances.
+There are weekly \emph{group homework assignments}, which are given in \textbf{Schedule} section of the DNN verification book. Homework assignments are due \textbf{before class}, i.e., before 4:30 PM on the day we meet. Late submissions are \emph{not} accepted except in truly exceptional circumstances.
 
 \begin{itemize}
 \item
-Each group should be prepared to present their homework solution in
-class.
-
-\item There are \textbf{no make-ups}.
-\item Everyone in the group gets the same credit.
+You will be asked present their homework solution in class.
+\item There are \textbf{no make-ups} and \textbf{no late submissions}.
+\item If work in group then everyone in the group gets the same credit.
 \end{itemize}
 
 
 
 \subsection{Quizzes}\label{weekly-quizzes}
 
-We will have a short quiz every week. Each quiz is worth 10 pts. The quiz will be based on the material covered in the previous weeks. Each quiz happens during the last part of class. \emph{You must be present to take the quiz}.
-
-
-\paragraph{Quiz Make-up Policy} You will have the opportunity to make up a quiz if you miss it. The grading and make-up policy is as follows:
+We will have a short quiz every week. Each quiz is worth 10 pts. The quiz will be based on the material covered in the previous weeks. Each quiz happens during class. \emph{You must be present to take the quiz}.  The quizzes will be handwritten so be sure to bring writing materials to class.
 
 \begin{itemize}
-\item Contact the GTA and schedule a make-up quiz (likely will be offered during TA office hours). The make-up can be different from the quiz given in class, but focuses on the same topics.
-\item
-  The make-up must be taken promptly and within \emph{a week of the quiz}.
-\item
-  All quizzes count towards the final grade. Each quiz is scored on a 10
-  point scale. Missed quizzes score 0/10.
-\item
-  The maximum possible score on the make-up is 8/10. 
-
+\item We will \textbf{drop your lowest two} quiz scores.
+\item \textbf{No make-ups} for missed quizzes.
 \end{itemize}
 
 
 \subsection{Programming Assignments (PA's)}
 
-This course consists of several Programming Assignments (PA's) in Python. These PAs are designed for you to gain fundamental knowledge of state of the art AI analysis. \emph{All assignments have similar grading weights}.
+This course consists of several Programming Assignments (PA's) in Python. These PAs are designed for you to practice and implement the techniques learned in class. \emph{All assignments have similar grading weights}.
 
-Your submissions will be evaluated for correctness,
-organization, and documentation. We will not attempt to fix broken
+Your submissions will be evaluated for correctness, answers to solutions, and documentation. We will not attempt to fix broken
 submissions that fail to execute properly; only limited partial credit will be given in such situations. Assignments are due at \textbf{11:59pm} on the due date.
 
-\subsection{Project}
 
-Your project will involve implementing and evaluating a full DNN verifier (though many components are already implemented in your PAs). You will implement and evaluating your verifier on given benchmarks. You will also write a final report on your work.
+\begin{itemize}
+\item \textbf{No late submissions}
+\end{itemize}
 
-Just like the PAs, the project will be evaluated based on correctness, organization, and documentation. The assignment are due at \textbf{11:59pm} on the due date.
+
 
 \newpage
 \section{GMU Policies}
