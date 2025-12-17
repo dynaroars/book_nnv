@@ -1338,7 +1338,7 @@ graph example_nn {
 
 \chapter{Properties}\label{chap:properties}
 
-Similar to software programs, neural networks (NNs) have desirable properties to ensure the network behaves as expected. These could be specific to the applications modeled by the network, e.g., safety properties for a network modelling a collision avoidance system, or general properties that are desired by all networks, e.g., robustness to small perturbations in the input data.
+Similar to software programs (\autoref{chap:nn-vs-software}), neural networks (NNs) have desirable properties to ensure the network behaves as expected. These could be specific to the applications modeled by the network, e.g., safety properties for a network modelling a collision avoidance system, or general properties that are desired by all networks, e.g., robustness to small perturbations in the input data.
 
 Below we will discuss properties that are relevant to the verification of NNs. Specifically, these properties can be 
 expressed in a formal language supported by a DNN verifier. Additional properties can be found in the literature~\cite{seshia2018formal}.
@@ -6568,165 +6568,164 @@ Thus, the property in~\autoref{eq:prop1} is \emph{not valid} for the DNN in~\aut
 \end{problem}
 
 
+% \part{Advanced Topics\label{part:advanced-topics}}
 
-\part{Advanced Topics\label{part:advanced-topics}}
-
-\chapter{DNN Verification Benchmarks}\label{chap:benchmarks}
-Here we survey the latest benchmarks in DNN verification and how SOTA tools perform on them.  These results are taken from the Verification Neural Network Competitions (VNN-COMP)~\cite{brix2024fifth} and the recent work by Duong et al.~\cite{duong2024harnessing}.
-
-
-\section{VNN-COMP Benchmarks}
-
-%Artifacts for all benchmarks are available in the repository\footnote{\url{https://github.com/ChristopherBrix/vnncomp2024_benchmarks/tree/main/benchmarks}}.
-
-\tvn{check this table with VNN-COMP'24 reports. The Report seems to have a lot more benchmarks for regular tracks. Also many numbers don't quite match. We should probably use the benchmarks from VNN-COMP'24 report. I also ? on place for you to fill in}
-
-\begin{table}
-    \caption{Benchmark instances. U: \texttt{unsat}, S: \texttt{sat}, ?: \texttt{unknown}.}\label{tab:benchmarks}
-    \resizebox{\textwidth}{!}{
-    \begin{tabular}{c|ccccc|cc}
-        \toprule
-        \multirow{2}{*}{\textbf{Benchmarks}} &\multicolumn{2}{c}{\textbf{Networks}} &  \multicolumn{3}{c|}{\textbf{Per Network}} &\multicolumn{2}{c}{\textbf{Tasks}} \\
-        & Type & Networks & Neurons & Parameters & Input Dim & Properties & Instances (U/S/?) \\
-        \midrule
-      cGan &  Conv. + Vision Trans. & & & 500K--68M & 5 &  &  \\
-      NN4Sys & ReLU + Sigmoid       & & & 33k--37M & 1--308 & & \\
-      LinearizeNN & FC. + Conv. + & && 203k & 4 && \\
-      &Vision Trans. + Res. + ReLU &&&&&&\\
-      \midrule
-      Collins RUL CNN & Conv. + ReLU, Dropout  &&& 60k--262k  & 400--800 &&\\
-      cifar100 &FC + Conv. + Res., & &&2.5M--3.8M & 3072 & &\\
-                                             &ReLU + BatchNorm &&&&&&\\
-      tinyimagenet &FC + Conv. + Res., &&& 3.6M & 9408 & &\\
-      & ReLU + BatchNorm &&&&&&\\
-      Metaroom & Conv. + FC, ReLU &&& 466k--7.4M & 5376 & &\\
-
-      \midrule
-
-      TLL Verify Bench & Two-Level Lattice NN (FC. + ReLU)  &&& 17k--67M & 2 &&\\
-      Acas XU & FC. + ReLU &45&300& 13k & 5 &10&139/47/0\\
-      %ACAS Xu & FNN & 45 & 300 & 13305 & 5 & 10 & 139/47/0 \\
-      Dist Shift & FC. + ReLU + Sigmoid &&& 342k -- 855k & 792 &&\\
-      safeNLP & FC. + ReLU &&& 4k & 30 &&\\
-      CORA & FC. + ReLU &&& 575k, 1.1M & 784, 3072 &&\\
+% \chapter{DNN Verification Benchmarks}\label{chap:benchmarks}
+% Here we survey the latest benchmarks in DNN verification and how SOTA tools perform on them.  These results are taken from the Verification Neural Network Competitions (VNN-COMP)~\cite{brix2024fifth} and the recent work by Duong et al.~\cite{duong2024harnessing}.
 
 
-        % MNISTFC & FNN & 3 &  0.5--1.5K & 269--532K & & 30 & 56/23/11\\
+% \section{VNN-COMP Benchmarks}
 
-        % %CIFAR2020 & FNN+CNN & 3 &  17--62K & 2.1--2.5M && 203 & 149/43/11 \\
-        % \midrule
+% %Artifacts for all benchmarks are available in the repository\footnote{\url{https://github.com/ChristopherBrix/vnncomp2024_benchmarks/tree/main/benchmarks}}.
 
-        % RESNET\_A/B & CNN+ResNet & 2 & 11K & 354K & & 144 & 49/23/72 \\
-        % \midrule
+% \tvn{check this table with VNN-COMP'24 reports. The Report seems to have a lot more benchmarks for regular tracks. Also many numbers don't quite match. We should probably use the benchmarks from VNN-COMP'24 report. I also ? on place for you to fill in}
 
-        % CIFAR\_GDVB & FNN+CNN & 42 & 9--49K & 0.08--58M && 39 & 60/0/0 \\
-        % \midrule
-        % \midrule
-        % VGGNet16 & CNN + ReLU + MaxPool& ? & ? & 138M & 150K & ? & ? \\
-        \bottomrule
-        \end{tabular}
-    }
-\end{table}
-
-
-
-\subsection{ACAS Xu}\label{sec:acasxu}
-\paragraph{Networks} The ACASXu benchmark consists of 10 properties defined over 45 neural networks used to issue turn advisories to aircraft to avoid collisions. The neural networks have 300 neurons arranged in 6 layers, with ReLU activation functions. There are 5 inputs corresponding to the aircraft states, and 5 network outputs, where the minimum output is used as the turn advisory the system ultimately produces.
-
-\paragraph{Specifications} VNN-COMP uses the original 10 properties~\cite{katz2017reluplex}, where properties 1--4 are checked on all 45 networks as was done in later work by the original authors~\cite{katz2019marabou}. Properties 5--10 are checked on a single network. The total number of benchmarks is therefore 186.\tvn{does not match table}
-
-
-\subsection{Cifar2020}
-
-\paragraph*{Motivation} This benchmark combines two convolutional CIFAR10 networks from last year's VNN-COMP 2020 with a new, larger network with the goal to evaluate the progress made by the whole field of Neural Network verification.
-
-\paragraph*{Networks} The two ReLU networks \texttt{cifar\_10\_2\_255} and \texttt{cifar\_10\_8\_255} with two convolutional and two fully-connected layers were trained for $\ell_\infty$ perturbations of $\epsilon = \frac{2}{255}$ and $\frac{8}{255}$, respectively, using COLT \cite{balunovic:20}  and the larger \texttt{ConvBig} with four convolutional and three fully-connected networks, was trained using adversarial training \cite{madry:17} and $\epsilon = \frac{2}{255}$.
-
-\paragraph*{Specifications} We draw the first 100 images from the CIFAR10 test set and for every network reject incorrectly classified ones. For the remaining images, the specifications describe a correct classification under an $\ell_\infty$-norm perturbation of at most $\frac{2}{255}$ and $\frac{8}{255}$ for \texttt{cifar\_10\_2\_255} and \texttt{ConvBig} and \texttt{cifar\_10\_8\_255}, respectively and allow a per sample timeout of 5 minutes.
-
-
-\subsection{VGGNET16}
-\paragraph*{Proposed by} Stanley Bak, Stony Brook University
-
-\paragraph*{Motivation} This benchmark tries to scale UB the size of networks being analyzed by using the well-studied VGGNET-16 architecture~\cite{simonyan2014very} that runs on ImageNet. Input-output properties are proposed on pixel-level perturbations that can lead to image misclassification. 
-
-\paragraph*{Networks} All properties are run on the same network, which includes 138 million parameters. The network features convolution layers, ReLU activation functions, as well as max pooling layers.
-
-\paragraph*{Specifications} Properties analyzed ranged from single-pixel perturbations to perturbations on all 150528 pixles (L-infinity perturbations). A subset of the images was used to create the specifications, one from each category, which was randomly chosen to attack. Pixels to perturb were also randomly selected according to a random seed.
-
-\paragraph*{Link} \url{https://github.com/stanleybak/vggnet16_benchmark2022/}
-
-
-
-
-
-% \begin{table}[h]
-%     \centering
-%     \caption{Overview of all scored benchmarks.}\label{tab:my_label}
+% \begin{table}
+%     \caption{Benchmark instances. U: \texttt{unsat}, S: \texttt{sat}, ?: \texttt{unknown}.}\label{tab:benchmarks}
 %     \resizebox{\textwidth}{!}{
-%     \renewcommand{\arraystretch}{1.4}
-%     \begin{tabular}{ccccccc}
-%     \toprule
-%     Category &
-%     Benchmark &
-%     Application &
-%     Network Types &
-%     \# Params &
-%     Effective Input Dim &
-%     Track
-%     \\
-%     \midrule
-%     \multirow{8}{*}{Complex}
-%     %& Carvana UNet  & Image Segmentation & Complex UNet              & 275k - 373k & 4.3k \\
-%     & cGAN & \makecell{Image Generation \\ \& Image Prediction} & Conv. + Vision Transformer & 500k - 68M & 5 & regular \\
-%     & NN4Sys & \makecell{Dataset Indexing \\ \&  Cardinality Prediction}   & ReLU + Sigmoid & 33k - 37M & 1-308 & regular \\
-%     %& ml4acopf & Power System & Complex (ReLU + Trigonometric + Sigmoid) & 4k-680k & 22 - 402 & extended \\
-%     %& ViT & Vision & Conv. + Residual + Softmax + BatchNorm & 68k - 76k & 3072 & extended \\
-%     %& Collins Aerospace & - & FC + Conv. + Residual, LeakyReLU + MaxPool + Square & 1.8M & 1.2M & extended \\
-%     %& LSNC & Lyapunov stability of NN controllers & FC + Residual, ReLU + Sin + Cos & 210, 406 & 8 & extended \\
-%     %& CCTSDB & - & FC + Conv. + Residual, ReLU +  MaxPool + Clip & 100k & 2 & extended \\
-%     %\cmidrule(lr){1-7}
-%     %\multirow{7}{*}{\makecell{CNN \\ \& ResNet}}
-%     % & Cifar Bias Field      & Image Classification & Conv. + ReLU  & 45k   & 16 \\
+%     \begin{tabular}{c|ccccc|cc}
+%         \toprule
+%         \multirow{2}{*}{\textbf{Benchmarks}} &\multicolumn{2}{c}{\textbf{Networks}} &  \multicolumn{3}{c|}{\textbf{Per Network}} &\multicolumn{2}{c}{\textbf{Tasks}} \\
+%         & Type & Networks & Neurons & Parameters & Input Dim & Properties & Instances (U/S/?) \\
+%         \midrule
+%       cGan &  Conv. + Vision Trans. & & & 500K--68M & 5 &  &  \\
+%       NN4Sys & ReLU + Sigmoid       & & & 33k--37M & 1--308 & & \\
+%       LinearizeNN & FC. + Conv. + & && 203k & 4 && \\
+%       &Vision Trans. + Res. + ReLU &&&&&&\\
+%       \midrule
+%       Collins RUL CNN & Conv. + ReLU, Dropout  &&& 60k--262k  & 400--800 &&\\
+%       cifar100 &FC + Conv. + Res., & &&2.5M--3.8M & 3072 & &\\
+%                                              &ReLU + BatchNorm &&&&&&\\
+%       tinyimagenet &FC + Conv. + Res., &&& 3.6M & 9408 & &\\
+%       & ReLU + BatchNorm &&&&&&\\
+%       Metaroom & Conv. + FC, ReLU &&& 466k--7.4M & 5376 & &\\
 
-%     % & Large ResNets         & Image Classification & ResNet (Conv. + ReLU)  & 55k - 286k   & 3.1k - 12k \\
-%     % & Oval21 & Image Classification & Conv. + ReLU  & 3.1k - 6.2k   & 3.1k \\
-%     % & SRI ResNet A/B & Image Classification  & ResNet (Conv. + ReLU)  & 11k   & 3.1k \\
-%     %& VGGNet16 & Image Classification & Conv. + ReLU + MaxPool    & 138M & 150k & extended \\
-%     & Traffic Signs Recognition & Image Classification & Conv. + Sign + MakPool + BatchNorm & 905k - 1.7M & 2.7k - 12k & extended \\
+%       \midrule
 
-%     % & Yolo & - & FC + Conv. + Residual, ReLU + Sigmoid & 22k - 37M & 1 - 308 & extended \\
-%     % %
-%     % \cmidrule(lr){1-7} %
-%     % \multirow{5.5}{*}{\makecell{FC}}
-%     % %& MNIST FC & Image Classification & FC. + ReLU    & 512 - 1.5k & 784 \\
-%     % %& Reach Prob Density    & Probability density estimation & FC. + ReLU    & 64 - 192 & 3 - 14 \\
-%     % %& RL Benchmarks  & Reinforcement Learning & FC. + ReLU    & 128 - 512  & 4 - 8 \\
-%     \bottomrule
-%     \end{tabular}
+%       TLL Verify Bench & Two-Level Lattice NN (FC. + ReLU)  &&& 17k--67M & 2 &&\\
+%       Acas XU & FC. + ReLU &45&300& 13k & 5 &10&139/47/0\\
+%       %ACAS Xu & FNN & 45 & 300 & 13305 & 5 & 10 & 139/47/0 \\
+%       Dist Shift & FC. + ReLU + Sigmoid &&& 342k -- 855k & 792 &&\\
+%       safeNLP & FC. + ReLU &&& 4k & 30 &&\\
+%       CORA & FC. + ReLU &&& 575k, 1.1M & 784, 3072 &&\\
+
+
+%         % MNISTFC & FNN & 3 &  0.5--1.5K & 269--532K & & 30 & 56/23/11\\
+
+%         % %CIFAR2020 & FNN+CNN & 3 &  17--62K & 2.1--2.5M && 203 & 149/43/11 \\
+%         % \midrule
+
+%         % RESNET\_A/B & CNN+ResNet & 2 & 11K & 354K & & 144 & 49/23/72 \\
+%         % \midrule
+
+%         % CIFAR\_GDVB & FNN+CNN & 42 & 9--49K & 0.08--58M && 39 & 60/0/0 \\
+%         % \midrule
+%         % \midrule
+%         % VGGNet16 & CNN + ReLU + MaxPool& ? & ? & 138M & 150K & ? & ? \\
+%         \bottomrule
+%         \end{tabular}
 %     }
 % \end{table}
 
 
-\subsection{cGAN}
-\paragraph*{Proposed by} Feiyang Cai, Ali Arjomandbigdeli, Stanley Bak (Stony Brook Univ.). Link: \url{https://github.com/feiyang-cai/cgan_benchmark2023}
 
-This benchmark targets robustness verification for generative models—an area often overlooked compared to discriminative networks.
-It uses conditional GANs trained to generate images of vehicles at specific distances. The generator takes a 1D distance input and a 4D noise vector; the discriminator outputs a real/fake score and a predicted distance.
-Models vary in architecture (CNNs, vision transformers) and image size (32×32, 64×64).
-The verification task checks whether the predicted distance from the generated image matches the input condition, under small input perturbations.
+% \subsection{ACAS Xu}\label{sec:acasxu}
+% \paragraph{Networks} The ACASXu benchmark consists of 10 properties defined over 45 neural networks used to issue turn advisories to aircraft to avoid collisions. The neural networks have 300 neurons arranged in 6 layers, with ReLU activation functions. There are 5 inputs corresponding to the aircraft states, and 5 network outputs, where the minimum output is used as the turn advisory the system ultimately produces.
+
+% \paragraph{Specifications} VNN-COMP uses the original 10 properties~\cite{katz2017reluplex}, where properties 1--4 are checked on all 45 networks as was done in later work by the original authors~\cite{katz2019marabou}. Properties 5--10 are checked on a single network. The total number of benchmarks is therefore 186.\tvn{does not match table}
 
 
-\paragraph*{Motivation}
-While existing neural network verification benchmarks focus on discriminative models, the exploration of practical and widely used generative networks remains neglected in terms of robustness assessment.
-This benchmark introduces a set of image generation networks specifically designed for verifying the robustness of the generative networks.
-\paragraph*{Networks}
-The generative networks are trained using conditional generative adversarial networks (cGAN), whose objective is to generate camera images that contain a vehicle obstacle located at a specific distance in front of the ego vehicle, where the distance is controlled by the input distance condition.
-The network to be verified is the concatenation of a generator and a discriminator.  The generator takes two inputs: 1) a distance condition (1D scalar) and 2) a noise vector controlling the environment (4D vector). The output of the generator is the generated image. The discriminator takes the generated image as input and outputs two values: 1) a real/fake score (1D scalar) and 2) a predicted distance (1D scalar).
-Several different models with varying architectures (CNN and vision transformer) and image sizes (32x32, 64x64) are provided for different difficulty levels.
-\paragraph*{Specifications}
-The verification task is to check whether the generated image aligns with the input distance condition, or in other words, verify whether the input distance condition matches the predicted distance of the generated image.
-In each specification, the inputs (condition distance and latent variables) are constrained in small ranges, and the output is the predicted distance with the same center as the condition distance but with slightly larger range.
+% \subsection{Cifar2020}
+
+% \paragraph*{Motivation} This benchmark combines two convolutional CIFAR10 networks from last year's VNN-COMP 2020 with a new, larger network with the goal to evaluate the progress made by the whole field of Neural Network verification.
+
+% \paragraph*{Networks} The two ReLU networks \texttt{cifar\_10\_2\_255} and \texttt{cifar\_10\_8\_255} with two convolutional and two fully-connected layers were trained for $\ell_\infty$ perturbations of $\epsilon = \frac{2}{255}$ and $\frac{8}{255}$, respectively, using COLT \cite{balunovic:20}  and the larger \texttt{ConvBig} with four convolutional and three fully-connected networks, was trained using adversarial training \cite{madry:17} and $\epsilon = \frac{2}{255}$.
+
+% \paragraph*{Specifications} We draw the first 100 images from the CIFAR10 test set and for every network reject incorrectly classified ones. For the remaining images, the specifications describe a correct classification under an $\ell_\infty$-norm perturbation of at most $\frac{2}{255}$ and $\frac{8}{255}$ for \texttt{cifar\_10\_2\_255} and \texttt{ConvBig} and \texttt{cifar\_10\_8\_255}, respectively and allow a per sample timeout of 5 minutes.
+
+
+% \subsection{VGGNET16}
+% \paragraph*{Proposed by} Stanley Bak, Stony Brook University
+
+% \paragraph*{Motivation} This benchmark tries to scale UB the size of networks being analyzed by using the well-studied VGGNET-16 architecture~\cite{simonyan2014very} that runs on ImageNet. Input-output properties are proposed on pixel-level perturbations that can lead to image misclassification. 
+
+% \paragraph*{Networks} All properties are run on the same network, which includes 138 million parameters. The network features convolution layers, ReLU activation functions, as well as max pooling layers.
+
+% \paragraph*{Specifications} Properties analyzed ranged from single-pixel perturbations to perturbations on all 150528 pixles (L-infinity perturbations). A subset of the images was used to create the specifications, one from each category, which was randomly chosen to attack. Pixels to perturb were also randomly selected according to a random seed.
+
+% \paragraph*{Link} \url{https://github.com/stanleybak/vggnet16_benchmark2022/}
+
+
+
+
+
+% % \begin{table}[h]
+% %     \centering
+% %     \caption{Overview of all scored benchmarks.}\label{tab:my_label}
+% %     \resizebox{\textwidth}{!}{
+% %     \renewcommand{\arraystretch}{1.4}
+% %     \begin{tabular}{ccccccc}
+% %     \toprule
+% %     Category &
+% %     Benchmark &
+% %     Application &
+% %     Network Types &
+% %     \# Params &
+% %     Effective Input Dim &
+% %     Track
+% %     \\
+% %     \midrule
+% %     \multirow{8}{*}{Complex}
+% %     %& Carvana UNet  & Image Segmentation & Complex UNet              & 275k - 373k & 4.3k \\
+% %     & cGAN & \makecell{Image Generation \\ \& Image Prediction} & Conv. + Vision Transformer & 500k - 68M & 5 & regular \\
+% %     & NN4Sys & \makecell{Dataset Indexing \\ \&  Cardinality Prediction}   & ReLU + Sigmoid & 33k - 37M & 1-308 & regular \\
+% %     %& ml4acopf & Power System & Complex (ReLU + Trigonometric + Sigmoid) & 4k-680k & 22 - 402 & extended \\
+% %     %& ViT & Vision & Conv. + Residual + Softmax + BatchNorm & 68k - 76k & 3072 & extended \\
+% %     %& Collins Aerospace & - & FC + Conv. + Residual, LeakyReLU + MaxPool + Square & 1.8M & 1.2M & extended \\
+% %     %& LSNC & Lyapunov stability of NN controllers & FC + Residual, ReLU + Sin + Cos & 210, 406 & 8 & extended \\
+% %     %& CCTSDB & - & FC + Conv. + Residual, ReLU +  MaxPool + Clip & 100k & 2 & extended \\
+% %     %\cmidrule(lr){1-7}
+% %     %\multirow{7}{*}{\makecell{CNN \\ \& ResNet}}
+% %     % & Cifar Bias Field      & Image Classification & Conv. + ReLU  & 45k   & 16 \\
+
+% %     % & Large ResNets         & Image Classification & ResNet (Conv. + ReLU)  & 55k - 286k   & 3.1k - 12k \\
+% %     % & Oval21 & Image Classification & Conv. + ReLU  & 3.1k - 6.2k   & 3.1k \\
+% %     % & SRI ResNet A/B & Image Classification  & ResNet (Conv. + ReLU)  & 11k   & 3.1k \\
+% %     %& VGGNet16 & Image Classification & Conv. + ReLU + MaxPool    & 138M & 150k & extended \\
+% %     & Traffic Signs Recognition & Image Classification & Conv. + Sign + MakPool + BatchNorm & 905k - 1.7M & 2.7k - 12k & extended \\
+
+% %     % & Yolo & - & FC + Conv. + Residual, ReLU + Sigmoid & 22k - 37M & 1 - 308 & extended \\
+% %     % %
+% %     % \cmidrule(lr){1-7} %
+% %     % \multirow{5.5}{*}{\makecell{FC}}
+% %     % %& MNIST FC & Image Classification & FC. + ReLU    & 512 - 1.5k & 784 \\
+% %     % %& Reach Prob Density    & Probability density estimation & FC. + ReLU    & 64 - 192 & 3 - 14 \\
+% %     % %& RL Benchmarks  & Reinforcement Learning & FC. + ReLU    & 128 - 512  & 4 - 8 \\
+% %     \bottomrule
+% %     \end{tabular}
+% %     }
+% % \end{table}
+
+
+% \subsection{cGAN}
+% \paragraph*{Proposed by} Feiyang Cai, Ali Arjomandbigdeli, Stanley Bak (Stony Brook Univ.). Link: \url{https://github.com/feiyang-cai/cgan_benchmark2023}
+
+% This benchmark targets robustness verification for generative models—an area often overlooked compared to discriminative networks.
+% It uses conditional GANs trained to generate images of vehicles at specific distances. The generator takes a 1D distance input and a 4D noise vector; the discriminator outputs a real/fake score and a predicted distance.
+% Models vary in architecture (CNNs, vision transformers) and image size (32×32, 64×64).
+% The verification task checks whether the predicted distance from the generated image matches the input condition, under small input perturbations.
+
+
+% \paragraph*{Motivation}
+% While existing neural network verification benchmarks focus on discriminative models, the exploration of practical and widely used generative networks remains neglected in terms of robustness assessment.
+% This benchmark introduces a set of image generation networks specifically designed for verifying the robustness of the generative networks.
+% \paragraph*{Networks}
+% The generative networks are trained using conditional generative adversarial networks (cGAN), whose objective is to generate camera images that contain a vehicle obstacle located at a specific distance in front of the ego vehicle, where the distance is controlled by the input distance condition.
+% The network to be verified is the concatenation of a generator and a discriminator.  The generator takes two inputs: 1) a distance condition (1D scalar) and 2) a noise vector controlling the environment (4D vector). The output of the generator is the generated image. The discriminator takes the generated image as input and outputs two values: 1) a real/fake score (1D scalar) and 2) a predicted distance (1D scalar).
+% Several different models with varying architectures (CNN and vision transformer) and image sizes (32x32, 64x64) are provided for different difficulty levels.
+% \paragraph*{Specifications}
+% The verification task is to check whether the generated image aligns with the input distance condition, or in other words, verify whether the input distance condition matches the predicted distance of the generated image.
+% In each specification, the inputs (condition distance and latent variables) are constrained in small ranges, and the output is the predicted distance with the same center as the condition distance but with slightly larger range.
 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -7211,74 +7210,20 @@ In each specification, the inputs (condition distance and latent variables) are 
 \renewcommand{\appendixname}{Background}
 \appendix
 
-% \chapter{Comparing neural networks with software}\label{app:nn-vs-software}
 
-% \begin{table}
-%     \caption{Similarities}\label{tab:nn-software-similarities}
-%     \scriptsize
-%     \centering
-% \begin{tabular}{l|l}
-%     \toprule
-%     Aspect & Description\\
-%     \midrule
-%     Representation &	Represented using if-then-else statements\\
-%     Input-Output Mapping &	Take Inputs and produce outputs\\
-%     Determinism	& Can produce deterministic outputs\\
-%     Execution Path	& Paths from input to output\\
-%     Specifications & Can have specifications involving preconditions over inputs and postconditions over outputs\\
-%     Logical Constraints	& Can be represented as logical constraints\\
-%     Bugs and Errors & Can have bugs that violate specifications\\
-%     \bottomrule
-% \end{tabular}    
-% \end{table}
+%\chapter{Logics}\label{chap:logics}
 
-% \begin{table}
-%     \caption{Differences}\label{tab:nn-software-differences}
-%     \scriptsize
-%     \centering
-% \begin{tabular}{l|l|l}
-%     \toprule
-%     Aspect	& Traditional Software	& Neural Networks \\
-%     \midrule
-%     % Control Flow	Complex flow with loops, recursion, and branching.	Feedforward execution; no explicit loops or recursion during inference.
-%     % State Representation	Uses variables, objects, and explicit state transitions.	Encodes state in weights and neuron activations.
-%     % Granularity	Operates at a higher abstraction level with fewer conditional branches.	Operates on thousands or millions of neurons, creating many implicit conditional branches.
-%     % Object-Oriented Features	Incorporates OOP principles like encapsulation, inheritance, and polymorphism.	Lacks explicit OOP features but can be modular (e.g., layers, sub-networks).
-%     % Execution Path	Determined by explicit logic and relatively few branches.	Implicit execution paths defined by piecewise-linear regions from activations.
-%     % Termination	Explicitly handles termination in loops and recursion.	Fixed-length inference process with no explicit termination conditions.
-%     % Semantics	Implements precise, deterministic logic for well-defined tasks.	Approximates functions based on training, often non-deterministic during learning.
-%     % Verification	Formal verification methods are established for correctness.	Verification is challenging due to non-linearity and high dimensionality.
-%     % Debugging	Tools like debuggers allow step-by-step inspection of logic.	Focuses on diagnosing data issues, architecture problems, or training convergence.
-%     Explainability & Can be explained through code inspection & Lacks explicit explainability mechanisms\\
-%     Designing &	Written by human & Created by machine through learning from training data\\
-%     Size & Small to medium-sized codebases & Large number of neurons and layers\\
-%     Error Causing & arise from bugs in logic or implementation & arise from insufficient training data, overfitting, etc\\
-%     Error Incurring & Can cause crashes, incorrect outputs, or unexpected behavior & Can cause incorrect predictions or unexpected behavior\\
-%     Error Handling & try-catch blocks for exception handling &	Lacks explicit error-handling mechanisms\\
-%     % Learning	Does not “learn”; behavior must be explicitly defined.	Learns to approximate functions through training.
-%     % Non-Linearity	Handles non-linearity explicitly through conditional logic or complex mathematical operations.	Uses activation functions like ReLU, Sigmoid, or Tanh to introduce non-linearity.
-%     % Parallelism	Often single-threaded or relies on explicit multi-threading for parallelism.	Intrinsic large-scale parallelism due to the structure of layers and neurons.
-%     % Adversarial Vulnerability	Less vulnerable to adversarial inputs, but bugs can lead to unexpected behavior.	Susceptible to small, imperceptible perturbations in input (adversarial examples).
-%     % Generalization	Executes pre-defined logic; does not generalize beyond explicit instructions.	Generalizes from training data, allowing predictions on unseen inputs.    
-%     % Dynamic Resource Management	Explicitly handles memory, files, and resources during execution.	Resources are statically allocated during training and inference; no dynamic management.
-%     % Concurrency	Explicitly handles concurrent operations using threads or async programming.	No explicit concurrency; parallelism occurs naturally due to network architecture.
-%     \bottomrule
-% \end{tabular}    
-% \end{table}
-
-\chapter{Logics}\label{chap:logics}
-
-The field of neural network verification (NNV) relies heavily on two fundamental areas: 
-\emph{logic} (to formalize and reason about properties as logical formulae) and \emph{optimization} (to formulate and reason about numerical constraints).
-This chapter and the next (\autoref{chap:lp}) provides the necessary background on both topics in detail, starting with propositional logic and satisfiability, 
-and then moving to linear and mixed-integer programming.
+% The field of neural network verification (NNV) relies heavily on two fundamental areas: 
+% \emph{logic} (to formalize and reason about properties as logical formulae) and \emph{optimization} (to formulate and reason about numerical constraints).
+% This chapter and the next (\autoref{chap:lp}) provides the necessary background on both topics in detail, starting with propositional logic and satisfiability, 
+% and then moving to linear and mixed-integer programming.
 
 
-\section{Propositional Logic and Satisfiability}\label{sec:propositional-logic}
+\chapter{Propositional Logic and Satisfiability}\label{sec:propositional-logic}
 
 Propositional, or Boolean, logic is the branch of logic that studies formulae built from Boolean variables, where each variable can take only the values \texttt{True} or \texttt{False}. These formulae are combined using logical connectives such as \texttt{and}, \texttt{or}, and \texttt{not}, and their evaluation always reduces to a single truth value.
 
-\subsection{Syntax}
+\section{Syntax}
 
 A \emph{propositional variable} is a symbol (e.g., $x, y, z$). Logical formulae are built \emph{inductively} from these variables using logical connectives as follows:
 
@@ -7306,10 +7251,18 @@ is a formula involving three variables $x,y,z$.
 \end{itemize}
 
 
-\paragraph{Convert to Conjunctive Normal Form (CNF)} A formula is in CNF if it is a conjunction of disjunctions of literals,
+\subsection{Conjunctive Normal Form (CNF)} A formula is in CNF if it is a conjunction of disjunctions of literals,
 where a literal is either a variable $p$ or its negation $\lnot p$. 
 
-Any formula can be transformed into CNF. The process generally involves the following steps:
+\begin{example}
+\[
+(x \lor y) \land (\lnot x \lor z)
+\]
+is in CNF. Each clause $(x \lor y)$, $(\lnot x \lor z)$ is a disjunction of literals.
+\end{example}
+
+
+\paragraph{Transforming to CNF} Any formula can be transformed into CNF. The process generally involves the following steps:
 \begin{enumerate}
 \item Eliminate biconditionals and implications.
 \item Move negations inward using De Morgan's laws.
@@ -7328,7 +7281,7 @@ into CNF.
 \begin{commentbox}
 Notice here that we purely define the syntax of propositional logic, which allows us to construct valid formulae. We will discuss the semantics or meanings of formulae next (\autoref{sec:propositional-semantics}).
 \end{commentbox}
-\subsection{Semantics}\label{sec:propositional-semantics}
+\section{Semantics}\label{sec:propositional-semantics}
 
 A logical formula in propositional logic has a truth value, which can be either \texttt{True} or \texttt{False}. 
 For example, the formula $x \lor \neg{x}$ is always \texttt{True}, while the formula $x \land y$ is \texttt{True} if both $x$ and $y$ are \texttt{True}, and \texttt{False} otherwise.
@@ -7355,7 +7308,7 @@ For the formula
 evaluate its truth value under all $2^3=8$ possible assignments of $x,y,z$.
 \end{problem}
 
-\subsection{Satisfiability and Validity}
+\section{Satisfiability and Validity}
 \begin{definition}[Satisfiability]\label{def:sat-validity}
      A formula $\phi$
 
@@ -7386,11 +7339,9 @@ Show that $(\phi \to \psi)$ is equivalent to $(\lnot \phi \lor \psi)$.
 \end{problem}
 
 
-\subsection{SAT Solving}\label{sec:sat-solving}
+\subsection{SAT Checking}\label{sec:sat-solving}
 
-A SAT solver takes a propositional formula as input and determines its satisfiability by searching for a satisfying assignment. If one exists, it returns the assignment; otherwise, it reports \unsat{}. % Modern solvers use search algorithms such as
-% \emph{DPLL (Davis–Putnam–Logemann–Loveland)} and
-% \emph{CDCL (Conflict-Driven Clause Learning)}.
+\emph{A SAT solver} takes a propositional formula, typically in CNF, as input and determines its satisfiability by searching for a satisfying assignment. If one exists, it returns the assignment; otherwise, it reports \unsat{}. 
 
 \begin{example}
 \begin{align*}
@@ -7413,19 +7364,6 @@ Provide a satisfying assignment if it exists.
 
 
 
-\paragraph{Conjunctive Normal Form (CNF)}
-In practice, SAT solvers do not take arbitrary formulae as input. Instead, they require the formula to be in \emph{Conjunctive Normal Form (CNF)}.
-
-
-\begin{example}
-\[
-(x \lor y) \land (\lnot x \lor z)
-\]
-is in CNF. Each clause $(x \lor y)$, $(\lnot x \lor z)$ is a disjunction of literals.
-\end{example}
-
-
-
 \subsection{Validity Checking}\label{sec:validity-checking}
 By~\autoref{def:sat-validity}, a formula $\alpha$ is valid if all assignments satisfy it.
 This is equivalent to saying that its negation $\overline{\alpha}$ is unsatisfiable (no assignment satisfies it), i.e., 
@@ -7437,186 +7375,18 @@ Thus, to check the validity of $\alpha$, we can use a SAT solver to check that $
 %We can use a SAT solver to check if a formula $\alpha$ is valid (no satisfying assignment) by checking that its \emph{negation}, $\overline{\alpha}$, is \emph{not} satisfiabile. 
 
 
-\section{Satisfiability Modulo Theories (SMT)}
-
-SAT solvers only reason about propositional formulae, which only contain Boolean variables and logical operators such as $\land, \lor$.  However, in verification problems, we often need to reason about arithmetic constraints $2x + 3y \leq 7; x \geq 0; x,y \in \mathbb{Z}$.
-
-
-This leads to \emph{Satisfiability Modulo Theories (SMT)}:
-\begin{itemize}
-  \item SMT generalizes SAT by adding background theories (e.g., linear arithmetic, bit-vectors, arrays).
-  \item An SMT formula mixes Boolean structure with constraints from these theories.
-\end{itemize}
-
-\begin{example}\label{ex:smt2}
-Is the formula $2x = 1$ satisfiable? 
-
-The answer depends on the chosen theory. Here, over real numbers ($\mathbb{R}$), it is SAT (e.g., $x=0.5$), but over integers ($\mathbb{Z}$) it is UNSAT.
-
-
-\end{example}
-\subsection{SMT Solvers}\label{sec:smt-solvers}
-
-% Like SAT solving, an SMT solver ..
-
-Popular SMT solvers include Z3 (Microsoft Research), CVC5, and dReal.
-They combine:
-\begin{itemize}
-  \item A SAT solver for the Boolean skeleton.
-  \item A \emph{theory solver} or T-solver (e.g., linear arithmetic) for the numeric parts.
-\end{itemize}
-
-The SAT solver guesses a truth assignment for the Boolean structure. The T-solver checks whether the corresponding arithmetic constraints are feasible. This loop continues until either a satisfying assignment is found or \unsat{} is proven.
-
-\begin{problem}
-Decide the satisfiability of:
-\[
-(x > 3) \land (y < 2) \land (x+y < 1).
-\]
-
-First, do the reasoning informally by hand, and then confirm with an SMT solver such as Z3.
-\end{problem}
-
-
-\subsection{Z3 SMT Solver}\label{sec:z3}
-
-Z3~\cite{de2008z3} is a well-known SMT solver developed by Microsoft Research. Here we'll show how to use it for various logical and arithmetic problems.
-
-
-\paragraph{Installing} You can install Z3 using your package manager, for example
-
-\begin{lstlisting}
-    brew install z3        # using homebrew
-    pip install z3-solver   # using pip
-    apt install z3 python3-z3 # using apt (on Debian-based Linux systems)
-    conda install z3solver # using conda
-\end{lstlisting}    
-
-
-Then try its Python interface:
-
-\begin{lstlisting}
-    from z3 import *
-    x = Int(`x')
-    y = Int(`y')
-    solve(x > 2, y < 10, x + 2*y == 7)
-\end{lstlisting} 
 
 
 
-\begin{example}[Propositional Logic]\label{ex:z3-propositional}
+\subsection{Complexity of SAT}\label{sec:complexity-sat}
 
-We use Z3 to check satisfiability of propositional formulae and generate counterexamples.
-
-\begin{lstlisting}
-from z3 import *
-
-x, y = Bools(`x y')
-formula = And(Or(x, y), Or(Not(x), y))
-s = Solver()
-s.add(formula)
-print(s.check())   #output: sat
-print(s.model())   #a possible model is {x=True, y=True}
-\end{lstlisting}
-\end{example}
-
-\begin{problem}
-Modify the code in~\autoref{ex:z3-propositional} to check 
-
-\[
-(x \land \lnot x).
-\]
-Confirm that the result is \texttt{unsat}.
-\end{problem}
+The SAT problem---checking if a propositional formula is satisfiable---is \NP-Complete~\cite{TODO}.
+Thus research into methods for efficiently solving  problem instances has been ongoing for multiple decades. We discuss one of the most influential algorithms, DPLL, next.
 
 
+\section{DPLL}\label{sec:dpll}
 
 
-\begin{example}[Linear Constraints.]
-
-We now use Z3 as an SMT solver to check linear constraints.
-
-    \begin{lstlisting}
-from z3 import *
-x, y = Reals(`x y')
-
-# example 1
-s = Solver()
-s.add(x > 0, y > 0, 2*x + y <= 1)
-print(s.check())  # Output: unsat
-
-# example 2
-s = Solver()
-s.add(x + y <= 4, x >= 0, y >= 0)
-print(s.check()) # Output: sat
-print(s.model())  # Output: {x=0, y=0}
-
-
-# example 3
-x, y = Ints(`x y')
-s = Solver()
-s.add(Implies(x > 3, y > 2))
-print(s.check()) # Output: sat
-print(s.model()) # Output: {x=0, y=0}
-\end{lstlisting}
-\end{example}
-
-\begin{problem}
-Use Z3 to check whether the constraints
-\[
-x+y=5, \quad x \geq 0, \quad y \geq 0
-\]
-are satisfiable, and if so, ask Z3 for a model.
-\end{problem}
-
-\begin{problem}
-Use Z3 to check the formula given in~\autoref{ex:smt2}. Do it for both the reals and integers.
-\end{problem}
-
-\begin{problem}
-Use Z3 to formulate and check the statement \texttt{``If $x>3$ then $y>2$ AND $x \leq 1$''}.
-Is it satisfiable? What model does Z3 return?
-\end{problem}
-
-
-
-\begin{example}[DNN-style checking]
-Consider a one-neuron ReLU: $y = \max(0, x - 1)$.  
-We want to check if the property \texttt{``For all $x \leq 0$, we have $y=0$''} holds.
-
-
-\begin{lstlisting}
-x, y = Reals(`x y')
-s = Solver()
-
-# y = max(0, x-1)
-s.add(y >= x-1, y >= 0)
-s.add(Or(y == x-1, y == 0)) # ReLU
-s.add(x <= 0, y != 0) # Negation of property
-
-print(s.check()) # Output: unsat, property holds
-\end{lstlisting}
-\end{example}
-
-
-\begin{problem}
-Modify the above to check property:  
-\texttt{``For all $x \geq 2$, we have $y \geq 1$.''}  
-What does Z3 return?
-\end{problem}
-
-
-\chapter{SAT and SMT Solving Algorithms}\label{chap:sat-smt-algorithms}
-
-Here we illustrate the classical DPLL and CDCL algorithms to determine the satisfiability (and therefore validity) of SAT and SMT formulae.
-
-\section{Satisfiability (SAT) Problem}\label{sec:sat-problem}
-The classical satisfiability (SAT) problem asks if a given propositional formulae (\autoref{sec:propositional-logic}) can be satisfied~\cite{biere2009handbook}.  Given a formula CNF $f$, an SAT solver returns \sat{} if it can find a satisfying assignment that maps truth values to variables of $f$ that makes $f$ evaluate to true, and \unsat{} if it cannot find any satisfying assignments.
-
-The SAT problem is \NP-Complete and research into methods for efficiently solving  problem instances has been ongoing for multiple decades.
-
-
-\section{DPLL}
 
 
 
@@ -7634,10 +7404,14 @@ These steps repeat until DPLL finds  a satisfying assignment and returns \texttt
 
 
 
-\paragraph{Decide}
+\subsection{Decide}
 
 
 The \emph{Decide} step selects an unassigned variable and assigns it a truth value.
+Decision is the main source for branching---state space exploration---in DPLL.
+The reason is that these operations use random choices or heuristics (e.g., VSIDS~\cite{moskewicz2001chaff}) to select the variable and truth value. 
+Value assignments can be \emph{wrong} (e.g., $x$ should be False but is assigned True), leading to conflicts later on. 
+
 This assignment creates a new \emph{decision level}.
 
 \begin{example}[Simple Decision]
@@ -7663,12 +7437,17 @@ a heuristic such as VSIDS may choose the most frequent variable:
 \]
 \end{example}
 
-% =========================================================
-\paragraph{Boolean Constraint Propagation (BCP)}
+
+% \paragraph{Assignments} A partial assignment $\sigma$ maps variables to truth values (\texttt{True} or \texttt{False}). For example, $\sigma = \{x_1=\text{True}, x_2=\text{False}\}$ assigns $x_1$ to True and $x_2$ to False, leaving other variables unassigned.
+% A complete assignment maps all variables to truth values.
+
+\subsection{Boolean Constraint Propagation (BCP)}\label{sec:bcp}
 
 BCP detects \emph{unit clauses}, i.e., clauses with exactly one unassigned literal
 and all other literals set to False. Such clauses force the remaining literal to be
-assigned True. BCP is useful because it can deduce variable assignments without making decisions.
+assigned True. 
+
+BCP is very useful because it can deduce variable assignments directly without making decisions (guesses), which could be wrong. For example, if we have the clause $(\lnot x_1 \lor x_2)$ and we know $x_1$ is True, then we don't need to guess $x_2$; it must be True to satisfy the clause.
 
 \begin{example}[Single Propagation]
 \[
@@ -7718,14 +7497,13 @@ x_1=\mathrm{True} \Rightarrow x_2=\mathrm{True} \Rightarrow x_3=\mathrm{True}.
 % \end{tikzpicture}
 % \end{figure}
 
-% =========================================================
-\paragraph{Conflict Detection}
+
+\subsection{Conflict Detection and Analysis}\label{sec:conflict-analysis}
 
 
-A \emph{conflict} occurs when a clause becomes empty; that is, all literals in the
-clause are assigned False.
+A \emph{conflict} occurs the formula is False under the current assignment $\sigma$. More specifically, since the formula is in CNF, a conflict arises when at least one clause is False (i.e., all its literals are False).
 
-\begin{example}[Immediate Conflict]
+\begin{example}
 \[
 \varphi = (\lnot x_1 \lor x_2)\ \land\ (\lnot x_2)\ \land\ (x_1).
 \]
@@ -7863,7 +7641,6 @@ solver backtracks to level 1, undoing assignments to $x_2$ and $x_3$.
 %DPLL is both sound (its results are correct) and complete (it can find a solution for any input in finite time). %Since its introduction, many heuristics have been introduced to make DPLL more efficient,
 %However, because SAT solving is NP-Complete and DPLL has a worst-case exponential time complexity. %However, many heuristics have been developed to help DPLL efficient in practice,  e.g., choosing variables to assign values and decision levels to backtrack to~\cite{TODO}.
 
-
 \section{CDCL} 
 
 Modern DPLL solving improves the original version with Conflict-Driven Clause Learning (\emph{CDCL}~\cite{bayardo1997using,marques1999grasp,569607}).
@@ -7871,6 +7648,177 @@ DPLL with CDCL can \emph{learn new clauses} to avoid past conflicts and backtrac
 %Similar to DPLL, CDCL is sound and complete, but also incurs an exponential complexity.  However, 
 Due to its ability to learn new clauses, CDCL can significantly  reduce the search space and allow SAT solvers to scale to large problems.
 In the following, whenever we refer to DPLL, we mean DPLL with CDCL.
+
+
+\chapter{Satisfiability Modulo Theories (SMT)}\label{chap:smt}
+
+SAT solvers only reason about propositional formulae, which only contain Boolean variables and logical operators such as $\land, \lor$.  However, in verification problems, we often need to reason about arithmetic constraints $2x + 3y \leq 7; x \geq 0; x,y \in \mathbb{Z}$.
+
+
+This leads to \emph{Satisfiability Modulo Theories (SMT)}:
+\begin{itemize}
+  \item SMT generalizes propositional logic by adding background theories (e.g., linear arithmetic, bit-vectors, arrays).
+  \item An SMT formula mixes Boolean structure with constraints from these theories.
+\end{itemize}
+
+\begin{example}\label{ex:smt2}
+Is the formula $2x = 1$ satisfiable? 
+
+The answer depends on the chosen theory. Here, over real numbers ($\mathbb{R}$), it is SAT (e.g., $x=0.5$), but over integers ($\mathbb{Z}$) it is UNSAT.
+
+
+\end{example}
+\section{SMT Solvers}\label{sec:smt-solvers}
+
+% Like SAT solving, an SMT solver ..
+
+Popular SMT solvers include Z3 (Microsoft Research), CVC5, and dReal.
+They combine:
+\begin{itemize}
+  \item A SAT solver for the Boolean skeleton.
+  \item A \emph{theory solver} or T-solver (e.g., linear arithmetic) for the numeric parts.
+\end{itemize}
+
+The SAT solver guesses a truth assignment for the Boolean structure. The T-solver checks whether the corresponding arithmetic constraints are feasible. This loop continues until either a satisfying assignment is found or \unsat{} is proven.
+
+\begin{problem}
+Decide the satisfiability of:
+\[
+(x > 3) \land (y < 2) \land (x+y < 1).
+\]
+
+First, do the reasoning informally by hand, and then confirm with an SMT solver such as Z3.
+\end{problem}
+
+
+\section{Z3 SMT Solver}\label{sec:z3}
+
+Z3~\cite{de2008z3} is a well-known SMT solver developed by Microsoft Research. Here we'll show how to use it for various logical and arithmetic problems.
+
+
+\paragraph{Installing} You can install Z3 using your package manager, for example
+
+\begin{lstlisting}
+    brew install z3        # using homebrew
+    pip install z3-solver   # using pip
+    apt install z3 python3-z3 # using apt (on Debian-based Linux systems)
+    conda install z3solver # using conda
+\end{lstlisting}    
+
+
+Then try its Python interface:
+
+\begin{lstlisting}
+    from z3 import *
+    x = Int(`x')
+    y = Int(`y')
+    solve(x > 2, y < 10, x + 2*y == 7)
+\end{lstlisting} 
+
+
+
+\begin{example}[Propositional Logic]\label{ex:z3-propositional}
+
+We use Z3 to check satisfiability of propositional formulae and generate counterexamples.
+
+\begin{lstlisting}
+from z3 import *
+
+x, y = Bools(`x y')
+formula = And(Or(x, y), Or(Not(x), y))
+s = Solver()
+s.add(formula)
+print(s.check())   #output: sat
+print(s.model())   #a possible model is {x=True, y=True}
+\end{lstlisting}
+\end{example}
+
+\begin{problem}
+Modify the code in~\autoref{ex:z3-propositional} to check 
+
+\[
+(x \land \lnot x).
+\]
+Confirm that the result is \texttt{unsat}.
+\end{problem}
+
+
+
+
+\begin{example}[Linear Constraints.]
+
+We now use Z3 as an SMT solver to check linear constraints.
+
+    \begin{lstlisting}
+from z3 import *
+x, y = Reals(`x y')
+
+# example 1
+s = Solver()
+s.add(x > 0, y > 0, 2*x + y <= 1)
+print(s.check())  # Output: unsat
+
+# example 2
+s = Solver()
+s.add(x + y <= 4, x >= 0, y >= 0)
+print(s.check()) # Output: sat
+print(s.model())  # Output: {x=0, y=0}
+
+
+# example 3
+x, y = Ints(`x y')
+s = Solver()
+s.add(Implies(x > 3, y > 2))
+print(s.check()) # Output: sat
+print(s.model()) # Output: {x=0, y=0}
+\end{lstlisting}
+\end{example}
+
+\begin{problem}
+Use Z3 to check whether the constraints
+\[
+x+y=5, \quad x \geq 0, \quad y \geq 0
+\]
+are satisfiable, and if so, ask Z3 for a model.
+\end{problem}
+
+\begin{problem}
+Use Z3 to check the formula given in~\autoref{ex:smt2}. Do it for both the reals and integers.
+\end{problem}
+
+\begin{problem}
+Use Z3 to formulate and check the statement \texttt{``If $x>3$ then $y>2$ AND $x \leq 1$''}.
+Is it satisfiable? What model does Z3 return?
+\end{problem}
+
+
+
+\begin{example}[DNN-style checking]
+Consider a one-neuron ReLU: $y = \max(0, x - 1)$.  
+We want to check if the property \texttt{``For all $x \leq 0$, we have $y=0$''} holds.
+
+
+\begin{lstlisting}
+x, y = Reals(`x y')
+s = Solver()
+
+# y = max(0, x-1)
+s.add(y >= x-1, y >= 0)
+s.add(Or(y == x-1, y == 0)) # ReLU
+s.add(x <= 0, y != 0) # Negation of property
+
+print(s.check()) # Output: unsat, property holds
+\end{lstlisting}
+\end{example}
+
+
+\begin{problem}
+Modify the above to check property:  
+\texttt{``For all $x \geq 2$, we have $y \geq 1$.''}  
+What does Z3 return?
+\end{problem}
+
+
 
 \subsection{DPLL(T)} 
 
@@ -8290,160 +8238,7 @@ You can either do this by hand on paper (and take picture) or write Python code 
 \end{enumerate}
 \end{problem}
 
-% \paragraph{Example.}  
-% One-neuron ReLU: $y = \max(0,2x-1)$.  
-% Verify: “For all $x \in [0,0.4]$, $y=0$.”  
-% - Encode input range, ReLU, and negation ($y>0$).  
-% - MILP is infeasible.  
-% - Property holds.
 
-% ---
-
-% \section{problems}
-
-% \paragraph{problem 1 (Warm-up).}  
-% Maximize $2x+3y$ subject to $x+2y \leq 8, \; 2x+y \leq 8, \; x,y \geq 0$.  
-% (a) Sketch feasible region.  
-% (b) Identify corner points.  
-% (c) Find optimal solution.
-
-% \paragraph{problem 2.}  
-% Formulate and solve a diet problem with three foods and two nutrients.  
-% Find the cheapest diet satisfying requirements.
-
-% \paragraph{problem 3.}  
-% Duality practice:  
-% Write the dual of
-% \[
-% \min 5x_1+2x_2 \quad \text{s.t. } x_1+x_2 \geq 3, \; x_1, x_2 \geq 0.
-% \]
-
-% \paragraph{problem 4 (MILP).}  
-% Encode in MILP:  
-% “If factory A is open ($z_A=1$) then production $\geq 50$,  
-% if factory B is open ($z_B=1$) then production $\geq 30$.  
-% At most one factory may be open.”
-
-% \paragraph{problem 5 (Verification).}  
-% Network: $h=\max(0,x_1-x_2), \; y=h+x_2$.  
-% Verify: For all $x_1,x_2 \in [0,1]$, $y \geq 0$.  
-% Model as MILP and solve.
-
-
-
-% \section{Linear Constraints and Feasible Regions}
-
-% A \emph{linear constraint} has the form:
-% \[
-% a_1x_1 + a_2x_2 + \cdots + a_nx_n \leq b.
-% \]
-
-
-% \paragraph{Example.}  
-% Constraints:
-% \[
-% x + y \leq 4, \quad x \geq 0, \quad y \geq 0.
-% \]
-% The feasible region is a triangle bounded by the axes and the line $x+y=4$.
-
-% \begin{example}
-%     Sketch the feasible region defined by:
-% \[
-% 2x + y \leq 6, \quad x \geq 0, \quad y \geq 0.
-% \]
-% \end{example}
-% \section{Linear Programming Problems}
-
-% An LP is an optimization problem:
-% \[
-% \max c^T x \quad \text{subject to } Ax \leq b, \; x \geq 0.
-% \]
-
-% \paragraph{Example.}  
-% Maximize $x+y$ subject to
-% \[
-% x+y \leq 4, \quad x \geq 0, \quad y \geq 0.
-% \]
-% Solution: maximum is 4 at $(4,0)$ or $(0,4)$.
-
-% \paragraph{problem 6 (Homework).}  
-% Solve the LP:
-% \[
-% \max 3x+2y \quad \text{subject to } 
-% \quad 2x+y \leq 8, \; x+2y \leq 6, \; x,y \geq 0.
-% \]
-
-% \subsection{Duality (Optional Enrichment)}
-
-% Every LP has a \emph{dual} problem, and strong duality holds under mild conditions.  
-% Understanding duality is useful in verification because it enables certificates of infeasibility.
-
-% ---
-
-% \section{Mixed-Integer Linear Programming (MILP)}
-
-% \subsection{From Logic to MILP}
-
-% SAT handles logic, LP handles linear inequalities.
-% MILP combines both: some variables are required to be integers (often binary).
-
-% \paragraph{Example.}
-% Constraint:
-% \[
-% x \in \{0,1\}, \quad y \geq 2x.
-% \]
-% - If $x=0$, then $y \geq 0$.
-% - If $x=1$, then $y \geq 2$.
-
-% This encodes logical branching into optimization.
-
-% \paragraph{problem 7 (In-class).}  
-% Formulate “if $x=1$, then $y=0$” as linear constraints using a binary variable and a big-$M$ method.
-
-% \subsection{Encoding ReLU Constraints}
-
-% A ReLU is $y = \max(0,x)$.  
-% We introduce a binary variable $z$ to encode activation:
-% \begin{align*}
-% y &\geq x, \\
-% y &\geq 0, \\
-% y &\leq x + M(1-z), \\
-% y &\leq Mz.
-% \end{align*}
-% Here $M$ is a large constant.
-
-% - If $z=0$, $y=0$.
-% - If $z=1$, $y=x$.
-
-% \paragraph{problem 8 (Homework).}  
-% Write MILP constraints for $y = \max(0, 2x+1)$ with $-10 \leq x \leq 10$.
-
-% \subsection{Example: Verifying a Tiny Network}
-
-% Network: input $x \in [0,1]$, hidden neuron $h = \max(0, 2x-1)$, output $y=h$.
-
-% \paragraph{Property.}
-% Verify: for all $x \in [0,0.4]$, $y=0$.
-
-% \paragraph{Encoding.}
-% \begin{itemize}
-%   \item Input constraint: $0 \leq x \leq 0.4$.
-%   \item ReLU encoding for $h = \max(0, 2x-1)$.
-%   \item Negation of property: $y > 0$.
-% \end{itemize}
-
-% \paragraph{Result.}
-% MILP is infeasible $\Rightarrow$ property holds.
-
-% \paragraph{problem 9 (Homework).}  
-% Modify the property to “for all $x \in [0.6,1]$, $y > 0$.”  
-% Check if the MILP is feasible.
-
-% ---
-
-% ---
-
----
 
 \subsection{Using LP as Feasibility Checking}\label{sec:lp-feasibility}
 
@@ -8534,7 +8329,69 @@ Running an LP solver with objective $\min 0$ will return a point, e.g., (x=0,y=0
 %     \hline
 % \end{tabular}
 % \end{table}
+\chapter{Comparing neural networks with software}\label{chap:nn-vs-software}
 
+\begin{table}
+    \caption{Similarities}\label{tab:nn-software-similarities}
+    \scriptsize
+    \centering
+\begin{tabular}{l|l}
+    \toprule
+    Aspect & Description\\
+    \midrule
+    Representation &	Represented using if-then-else statements\\
+    Input-Output Mapping &	Take Inputs and produce outputs\\
+    Determinism	& Can produce deterministic outputs\\
+    Execution Path	& Paths from input to output\\
+    Specifications & Can have specifications involving preconditions over inputs and postconditions over outputs\\
+    Logical Constraints	& Can be represented as logical constraints\\
+    Bugs and Errors & Can have bugs that violate specifications\\
+    \bottomrule
+\end{tabular}    
+\end{table}
+
+\begin{table}
+    \caption{Differences}\label{tab:nn-software-differences}
+    \scriptsize
+    \centering
+\begin{tabular}{l|l|l}
+    \toprule
+    Aspect	& Traditional Software	& Neural Networks \\
+    \midrule
+    % Control Flow	Complex flow with loops, recursion, and branching.	Feedforward execution; no explicit loops or recursion during inference.
+    % State Representation	Uses variables, objects, and explicit state transitions.	Encodes state in weights and neuron activations.
+    % Granularity	Operates at a higher abstraction level with fewer conditional branches.	Operates on thousands or millions of neurons, creating many implicit conditional branches.
+    % Object-Oriented Features	Incorporates OOP principles like encapsulation, inheritance, and polymorphism.	Lacks explicit OOP features but can be modular (e.g., layers, sub-networks).
+    % Execution Path	Determined by explicit logic and relatively few branches.	Implicit execution paths defined by piecewise-linear regions from activations.
+    % Termination	Explicitly handles termination in loops and recursion.	Fixed-length inference process with no explicit termination conditions.
+    % Semantics	Implements precise, deterministic logic for well-defined tasks.	Approximates functions based on training, often non-deterministic during learning.
+    % Verification	Formal verification methods are established for correctness.	Verification is challenging due to non-linearity and high dimensionality.
+    % Debugging	Tools like debuggers allow step-by-step inspection of logic.	Focuses on diagnosing data issues, architecture problems, or training convergence.
+    Explainability & Can be explained through code inspection & Lacks explicit explainability mechanisms\\
+    Designing &	Written by human & Created by machine through learning from training data\\
+    Size & Small to medium-sized codebases & Large number of neurons and layers\\
+    Error Causing & arise from bugs in logic or implementation & arise from insufficient training data, overfitting, etc\\
+    Error Incurring & Can cause crashes, incorrect outputs, or unexpected behavior & Can cause incorrect predictions or unexpected behavior\\
+    Error Handling & try-catch blocks for exception handling &	Lacks explicit error-handling mechanisms\\
+    % Learning	Does not “learn”; behavior must be explicitly defined.	Learns to approximate functions through training.
+    % Non-Linearity	Handles non-linearity explicitly through conditional logic or complex mathematical operations.	Uses activation functions like ReLU, Sigmoid, or Tanh to introduce non-linearity.
+    % Parallelism	Often single-threaded or relies on explicit multi-threading for parallelism.	Intrinsic large-scale parallelism due to the structure of layers and neurons.
+    % Adversarial Vulnerability	Less vulnerable to adversarial inputs, but bugs can lead to unexpected behavior.	Susceptible to small, imperceptible perturbations in input (adversarial examples).
+    % Generalization	Executes pre-defined logic; does not generalize beyond explicit instructions.	Generalizes from training data, allowing predictions on unseen inputs.    
+    % Dynamic Resource Management	Explicitly handles memory, files, and resources during execution.	Resources are statically allocated during training and inference; no dynamic management.
+    % Concurrency	Explicitly handles concurrent operations using threads or async programming.	No explicit concurrency; parallelism occurs naturally due to network architecture.
+    \bottomrule
+\end{tabular}    
+\end{table}
+
+
+\paragraph{Representation (Source Code)} Both NNs and software have static representations that can be analyzed. Software is represented as source code, e.g., Pyhon or Java code, while NNs are represented by their architecture and weights, stored in files like ONNX or TensorFlow. 
+
+Compared to software, NNs are often much larger in size (e.g., billions of parameters), but have less expressive semantics and structure (e.g., no pointers, OOP features, or complex loops). In fact, we can treat NNs as large functions composed of many simple operations (e.g., matrix multiplications and activations). Note that activation functions such as ReLU can be represented as simple if-then-else statements, e.g., ReLU(x) = \code{if x > 0 then x else 0}.
+
+\paragraph{Specifications} Both NNs and software can have specifications that describe their intended behavior. %For software, specifications are often written in formal languages or as assertions within the code. For NNs, specifications can be expressed as properties over input-output behavior, e.g., ``for all inputs within a certain range, the output should satisfy a certain condition.''
+
+\paragraph{Constructions} Software is typically \emph{designed} and \emph{written} by humans using programming languages and code editors. In constrast, NNs are largely \emph{constructed} and \emph{trained} by machines using training data and optimization algorithms. This leads to different types of errors: software errors often arise from bugs in logic or implementation, while NN errors often arise from insufficient training data and overfitting.
 
 \part{Appendices\label{part:appendices}}
 %\renewcommand{\appendixname}{Assignment}
@@ -9024,6 +8881,7 @@ We found the combination of clause learning and restarts effective for DNN verif
 % \tvn{these are standard arguments for restart.  For \tool{} and DNN verifcation problem,  restart is even more important because the inital clause is too simple to make clause learning effective.  You should say something here about that issue.  Just write all of them here and we can clean it up}
 
 
+
 \section{Deduction (Theory Solving)}\label{sec:deduction}
 
 \begin{algorithm}[t]
@@ -9440,7 +9298,7 @@ Although restarting may seem like an engineering aspect, it plays a crucial role
     \item Week 2 (Sept 3):
     \begin{itemize}
     \item HW due: Post a short introduction about yourself on Canvas
-    \item Topics: Background on Logic~\autoref{chap:logics} and Linear Programming~\autoref{chap:lp}
+    \item Topics: Background on Logic~\autoref{chap:propositional-logic} and Linear Programming~\autoref{chap:lp}
     \item Quiz: no quiz this week
     \end{itemize}
     \item Week 3 (Sept 10):
