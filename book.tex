@@ -7230,7 +7230,7 @@ A \emph{propositional variable} is a symbol (e.g., $x, y, z$). Logical formulae 
 \begin{itemize}
   \item Variables: Any propositional variable $p$ is a formula.
   \item Constants: $\top$ and $\bot$ are formulae.
-  \item Negation: If $\phi$ is a formula, then so is $\lnot \phi$.
+  \item Negation: If $\phi$ is a formula, then so is $\overline{\phi}$.
   \item Binary connectives: If $\phi, \psi$ are formulae, then so are
     $(\phi \land \psi)$, $(\phi \lor \psi)$, and $(\phi \to \psi)$.
 \end{itemize}
@@ -7246,19 +7246,21 @@ is a formula involving three variables $x,y,z$.
 \paragraph{Special connectives} In addition to the standard connectives, we define some special connectives that are often useful:
 
 \begin{itemize}
-    \item \emph{Implication}: $\phi \to \psi \equiv \lnot \phi \lor \psi$
+    \item \emph{Implication}: $\phi \to \psi \equiv \overline{\phi} \lor \psi$
     \item \emph{Biconditional} (or \emph{equivalence}): $\phi \leftrightarrow \psi \equiv (\phi \to \psi) \land (\psi \to \phi)$
 \end{itemize}
 
+\begin{commentbox}
+Notice here that we purely define the syntax of propositional logic, which allows us to construct valid formulae. We will discuss the semantics or meanings of formulae next (\autoref{sec:propositional-semantics}).
+\end{commentbox}
 
-\subsection{Conjunctive Normal Form (CNF)} A formula is in CNF if it is a conjunction of disjunctions of literals,
-where a literal is either a variable $p$ or its negation $\lnot p$. 
+\subsection{Conjunctive Normal Form (CNF)} A formula is in CNF if it is a \emph{conjunction} of  \emph{clauses}, where each clause is a \emph{disjunction} of \emph{literals}, where a literal is either a variable $p$ or its negation $\overline{p}$. 
 
 \begin{example}
 \[
-(x \lor y) \land (\lnot x \lor z)
+(x \lor y) \land (\overline{x} \lor z)
 \]
-is in CNF. Each clause $(x \lor y)$, $(\lnot x \lor z)$ is a disjunction of literals.
+is in CNF. Each clause $(x \lor y)$, $(\overline{x} \lor z)$ is a disjunction of literals.
 \end{example}
 
 
@@ -7270,33 +7272,30 @@ is in CNF. Each clause $(x \lor y)$, $(\lnot x \lor z)$ is a disjunction of lite
 \end{enumerate}
 
 \begin{problem}
-Transform the formula 
+Transform the following formula into CNF:
 \[
 (x \to y) \land (y \to z)
 \]
-into CNF.
 \end{problem}
 
 
-\begin{commentbox}
-Notice here that we purely define the syntax of propositional logic, which allows us to construct valid formulae. We will discuss the semantics or meanings of formulae next (\autoref{sec:propositional-semantics}).
-\end{commentbox}
+
+
 \section{Semantics}\label{sec:propositional-semantics}
 
 A logical formula in propositional logic has a truth value, which can be either \texttt{True} or \texttt{False}. 
-For example, the formula $x \lor \neg{x}$ is always \texttt{True}, while the formula $x \land y$ is \texttt{True} if both $x$ and $y$ are \texttt{True}, and \texttt{False} otherwise.
+For example, the formula $x \lor \overline{x}$ is always \texttt{True}, while the formula $x \land y$ is \texttt{True} if both $x$ and $y$ are \texttt{True}, and \texttt{False} otherwise.
 This is the \emph{semantics} of the formula.
 
-An \emph{assignment} $\alpha$ maps each formula to $\texttt{True}$ or $\texttt{False}$.
-The truth value of a formula is defined recursively
+An \emph{assignment} $\sigma$ maps each formula to $\texttt{True}$ or $\texttt{False}$.
+The truth value of a formula is defined recursively:
 \begin{align*}
-  \alpha(\top) &\quad = \texttt{True}, \\
-  \alpha(\bot) &\quad = \texttt{False}, \\
-  \alpha(p) &\quad \text{iff } \alpha(p) = \texttt{True}, \\
-  \alpha(\lnot \phi) = \texttt{True} &\quad \text{iff } \alpha(\lnot \phi) = \texttt{True}, \\
-  \alpha(\phi \land \psi) = \texttt{True} &\quad \text{iff } \alpha(\phi) = \texttt{True} \text{ and } \alpha(\psi) = \texttt{True}, \\
-  \alpha(\phi \lor \psi) = \texttt{True} &\quad \text{iff } \alpha(\phi) = \texttt{True} \text{ or } \alpha(\psi) = \texttt{True}, \\
-  \alpha(\phi \to \psi) = \texttt{True} &\quad \text{iff } \alpha(\phi) = \texttt{False} \text{ or } \alpha(\psi) = \texttt{True}.
+  \sigma(\top) &\quad = \texttt{True}, \\
+  \sigma(\bot) &\quad = \texttt{False}, \\
+  \sigma(\overline{\phi}) = \texttt{True} &\quad \text{iff } \sigma(\phi) = \texttt{False}, \\
+  \sigma(\phi \land \psi) = \texttt{True} &\quad \text{iff } \sigma(\phi) = \texttt{True} \text{ and } \sigma(\psi) = \texttt{True}, \\
+  \sigma(\phi \lor \psi) = \texttt{True} &\quad \text{iff } \sigma(\phi) = \texttt{True} \text{ or } \sigma(\psi) = \texttt{True}, \\
+  \sigma(\phi \to \psi) = \texttt{True} &\quad \text{iff } \sigma(\phi) = \texttt{False} \text{ or } \sigma(\psi) = \texttt{True}.
 \end{align*}
 
 \begin{problem}  
@@ -7313,22 +7312,23 @@ evaluate its truth value under all $2^3=8$ possible assignments of $x,y,z$.
      A formula $\phi$
 
 \begin{itemize}
-  \item is \emph{satisfiable} if there exists \textbf{some} $\alpha$ such that $\alpha(\phi) = \texttt{True}$.
+  \item is \emph{satisfiable} if there exists \textbf{some} $\sigma$ such that $\sigma(\phi) = \texttt{True}$.
   \item is \emph{unsatisfiable} if \textbf{no} assignment satisfies it.
   \item is \emph{valid} if \textbf{all} assignments satisfy it.
 \end{itemize}
 \end{definition}
 
-\begin{example} The formula
-    \[x\]
-    is satisfiable (e.g., $\alpha(x) = \texttt{True}$).
+\begin{example} The formula $x$ is satisfiable (e.g., $\sigma(x) = \texttt{True}$).
+
+
+\noindent The formula
 \[
-(x) \land (\lnot x)
+(x) \land (\overline{x})
 \]
 is unsatisfiable (no assignment works).
 In contrast,
 \[
-(x \lor \lnot x)
+(x \lor \overline{x})
 \]
 is valid.
 \end{example}
@@ -7341,7 +7341,7 @@ Show that $(\phi \to \psi)$ is equivalent to $(\lnot \phi \lor \psi)$.
 
 \subsection{SAT Checking}\label{sec:sat-solving}
 
-\emph{A SAT solver} takes a propositional formula, typically in CNF, as input and determines its satisfiability by searching for a satisfying assignment. If one exists, it returns the assignment; otherwise, it reports \unsat{}. 
+\emph{A SAT solver} takes a propositional formula, typically in CNF, as input and determines its satisfiability by searching for a satisfying assignment $\sigma$ that makes the formula true. If one exists, it returns \sat{} (and optionally $\sigma$); otherwise, it reports \unsat{}. 
 
 \begin{example}
 \begin{align*}
