@@ -7380,15 +7380,11 @@ Thus, to check the validity of $\alpha$, we can use a SAT solver to check that $
 
 \subsection{Complexity of SAT}\label{sec:complexity-sat}
 
-The SAT problem---checking if a propositional formula is satisfiable---is \NP-Complete~\cite{TODO}.
-Thus research into methods for efficiently solving  problem instances has been ongoing for multiple decades. We discuss one of the most influential algorithms, DPLL, next.
+The SAT problem---checking if a propositional formula is satisfiable---is \NP-Complete~\cite{cook2023complexity,karp2009reducibility}.
+This means that unlikely there exists an efficient (i.e., polynomial-time) algorithm that can solve all SAT instances, and that in the worst case, any SAT solving algorithm may need to explore an exponential number of assignments (in the number of variables) to determine satisfiability. Thus, SAT solvers typically employ heuristics and optimizations to handle practical instances efficiently, even though the worst-case complexity remains exponential. We will discuss DPLL, a popular SAT solving algorithm, next (\autoref{sec:dpll}).
 
 
-\section{DPLL}\label{sec:dpll}
-
-
-
-
+\section{The DPLL SAT Solving Algorithm}\label{sec:dpll}
 
 \begin{figure}
     \centering
