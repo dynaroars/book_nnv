@@ -7230,7 +7230,7 @@ A \emph{propositional variable} is a symbol (e.g., $x, y, z$). Logical formulae 
 \begin{itemize}
   \item Variables: Any propositional variable $p$ is a formula.
   \item Constants: $\top$ and $\bot$ are formulae.
-  \item Negation: If $\phi$ is a formula, then so is $\overline{\phi}$.
+  \item Negation: If $\phi$ is a formula, then so is $\lnot{\phi}$.
   \item Binary connectives: If $\phi, \psi$ are formulae, then so are
     $(\phi \land \psi)$, $(\phi \lor \psi)$, and $(\phi \to \psi)$.
 \end{itemize}
@@ -7246,7 +7246,7 @@ is a formula involving three variables $x,y,z$.
 \paragraph{Special connectives} In addition to the standard connectives, we define some special connectives that are often useful:
 
 \begin{itemize}
-    \item \emph{Implication}: $\phi \to \psi \equiv \overline{\phi} \lor \psi$
+    \item \emph{Implication}: $\phi \to \psi \equiv \lnot{\phi} \lor \psi$
     \item \emph{Biconditional} (or \emph{equivalence}): $\phi \leftrightarrow \psi \equiv (\phi \to \psi) \land (\psi \to \phi)$
 \end{itemize}
 
@@ -7254,13 +7254,13 @@ is a formula involving three variables $x,y,z$.
 Notice here that we purely define the syntax of propositional logic, which allows us to construct valid formulae. We will discuss the semantics or meanings of formulae next (\autoref{sec:propositional-semantics}).
 \end{commentbox}
 
-\subsection{Conjunctive Normal Form (CNF)} A formula is in CNF if it is a \emph{conjunction} of  \emph{clauses}, where each clause is a \emph{disjunction} of \emph{literals}, where a literal is either a variable $p$ or its negation $\overline{p}$. 
+\subsection{Conjunctive Normal Form (CNF)} A formula is in CNF if it is a \emph{conjunction} of  \emph{clauses}, where each clause is a \emph{disjunction} of \emph{literals}, where a literal is either a variable $p$ or its negation $\lnot{p}$. 
 
 \begin{example}
 \[
-(x \lor y) \land (\overline{x} \lor z)
+(x \lor y) \land (\lnot{x} \lor z)
 \]
-is in CNF. Each clause $(x \lor y)$, $(\overline{x} \lor z)$ is a disjunction of literals.
+is in CNF. Each clause $(x \lor y)$, $(\lnot{x} \lor z)$ is a disjunction of literals.
 \end{example}
 
 
@@ -7284,7 +7284,7 @@ Transform the following formula into CNF:
 \section{Semantics}\label{sec:propositional-semantics}
 
 A logical formula in propositional logic has a truth value, which can be either \texttt{True} or \texttt{False}. 
-For example, the formula $x \lor \overline{x}$ is always \texttt{True}, while the formula $x \land y$ is \texttt{True} if both $x$ and $y$ are \texttt{True}, and \texttt{False} otherwise.
+For example, the formula $x \lor \lnot{x}$ is always \texttt{True}, while the formula $x \land y$ is \texttt{True} if both $x$ and $y$ are \texttt{True}, and \texttt{False} otherwise.
 This is the \emph{semantics} of the formula.
 
 An \emph{assignment} $\sigma$ maps each formula to $\texttt{True}$ or $\texttt{False}$.
@@ -7292,7 +7292,7 @@ The truth value of a formula is defined recursively:
 \begin{align*}
   \sigma(\top) &\quad = \texttt{True}, \\
   \sigma(\bot) &\quad = \texttt{False}, \\
-  \sigma(\overline{\phi}) = \texttt{True} &\quad \text{iff } \sigma(\phi) = \texttt{False}, \\
+  \sigma(\lnot{\phi}) = \texttt{True} &\quad \text{iff } \sigma(\phi) = \texttt{False}, \\
   \sigma(\phi \land \psi) = \texttt{True} &\quad \text{iff } \sigma(\phi) = \texttt{True} \text{ and } \sigma(\psi) = \texttt{True}, \\
   \sigma(\phi \lor \psi) = \texttt{True} &\quad \text{iff } \sigma(\phi) = \texttt{True} \text{ or } \sigma(\psi) = \texttt{True}, \\
   \sigma(\phi \to \psi) = \texttt{True} &\quad \text{iff } \sigma(\phi) = \texttt{False} \text{ or } \sigma(\psi) = \texttt{True}.
@@ -7323,12 +7323,12 @@ evaluate its truth value under all $2^3=8$ possible assignments of $x,y,z$.
 
 \noindent The formula
 \[
-(x) \land (\overline{x})
+(x) \land (\lnot{x})
 \]
 is unsatisfiable (no assignment works).
 In contrast,
 \[
-(x \lor \overline{x})
+(x \lor \lnot{x})
 \]
 is valid.
 \end{example}
@@ -7366,11 +7366,11 @@ Provide a satisfying assignment if it exists.
 
 \subsection{Validity Checking}\label{sec:validity-checking}
 By~\autoref{def:sat-validity}, a formula $\alpha$ is valid if all assignments satisfy it.
-This is equivalent to saying that its negation $\overline{\alpha}$ is unsatisfiable (no assignment satisfies it), i.e., 
+This is equivalent to saying that its negation $\lnot{\alpha}$ is unsatisfiable (no assignment satisfies it), i.e., 
 \[
-\text{valid}(\alpha) \iff \text{unsat}(\overline{\alpha})
+\text{valid}(\alpha) \iff \text{unsat}(\lnot{\alpha})
 \]  
-Thus, to check the validity of $\alpha$, we can use a SAT solver to check that $\overline{\alpha}$ is \unsat{}.
+Thus, to check the validity of $\alpha$, we can use a SAT solver to check that $\lnot{\alpha}$ is \unsat{}.
 
 %We can use a SAT solver to check if a formula $\alpha$ is valid (no satisfying assignment) by checking that its \emph{negation}, $\overline{\alpha}$, is \emph{not} satisfiabile. 
 
@@ -8522,7 +8522,7 @@ Compared to software, NNs are often much larger in size (e.g., billions of param
 \autoref{fig:alg} shows the \tool{} algorithm, which takes as input the formula $\alpha$ representing the ReLU-based DNN $N$ and the formulae $\phi_{in}\Rightarrow \phi_{out}$ representing the property $\phi$ to be proved.
 Internally, \tool{} checks the satisfiability of the formula given in~\autoref{eq:nnv2}
 \begin{equation*}
-  \alpha \land \phi_{in} \land \overline{\phi_{out}}.
+  \alpha \land \phi_{in} \land \lnot{\phi_{out}}.
 \end{equation*}
 \tool{} returns \texttt{unsat} if the formula unsatisfiable, indicating  that $\phi$ is a valid property of $N$, and \texttt{sat} if it is satisfiable, indicating the $N$ is not a valid property.
 
@@ -8545,7 +8545,7 @@ From the given network, \tool{} first creates Boolean variables representing the
 
 
 \begin{example}
-For the DNN in~\autoref{fig:dnn}, \tool{} creates two status variables $v_3,v_4$ for neurons $x_3,x_4$, respectively, and two initial clauses $v_3\lor \overline{v_3}$ and $v_4 \lor \overline{v_4}$. The assignment $\{x_3=T, x_4=F \}$ creates the constraint $0.5x_1-0.5x_2-1>0 \land x_1 + x_2 -2 \le 0$.
+For the DNN in~\autoref{fig:dnn}, \tool{} creates two status variables $v_3,v_4$ for neurons $x_3,x_4$, respectively, and two initial clauses $v_3\lor \lnot{v_3}$ and $v_4 \lor \lnot{v_4}$. The assignment $\{x_3=T, x_4=F \}$ creates the constraint $0.5x_1-0.5x_2-1>0 \land x_1 + x_2 -2 \le 0$.
 \end{example}
 
 
