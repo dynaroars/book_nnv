@@ -7366,15 +7366,11 @@ Provide a satisfying assignment if it exists.
 
 \subsection{Validity Checking}\label{sec:validity-checking}
 By~\autoref{def:sat-validity}, a formula $\alpha$ is valid if all assignments satisfy it.
-This is equivalent to saying that its negation $\lnot{\alpha}$ is unsatisfiable (no assignment satisfies it), i.e., 
+This is equivalent to saying that its negation $\lnot{\alpha}$ is unsatisfiable (no assignment satisfies $\lnot{\alpha}$), i.e., 
 \[
 \text{valid}(\alpha) \iff \text{unsat}(\lnot{\alpha})
 \]  
-Thus, to check the validity of $\alpha$, we can use a SAT solver to check that $\lnot{\alpha}$ is \unsat{}.
-
-%We can use a SAT solver to check if a formula $\alpha$ is valid (no satisfying assignment) by checking that its \emph{negation}, $\overline{\alpha}$, is \emph{not} satisfiabile. 
-
-
+Thus, to check that $\alpha$ is valid, we can use a SAT solver to check that $\lnot{\alpha}$ is \unsat{}.
 
 
 
@@ -7404,11 +7400,10 @@ These steps repeat until DPLL finds  a satisfying assignment and returns \texttt
 
 
 The \emph{Decide} step selects an unassigned variable and assigns it a truth value.
-Decision is the main source for branching---state space exploration---in DPLL.
-The reason is that these operations use random choices or heuristics (e.g., VSIDS~\cite{moskewicz2001chaff}) to select the variable and truth value. 
-Value assignments can be \emph{wrong} (e.g., $x$ should be False but is assigned True), leading to conflicts later on. 
+Decision is the main source for the state space explosion in DPLL because it uses random choices or heuristics (e.g., VSIDS~\cite{moskewicz2001chaff}) to select the variable and truth value. 
+Thus, value assignments can be \emph{wrong} (e.g., $x$ should be False but is assigned True), leading to conflicts later on. 
 
-This assignment creates a new \emph{decision level}.
+In addition, value assignment creates a new \emph{decision level}. In the beginning, the decision level is 0 (no decisions made yet). Each time a new variable is assigned, the decision level increases by 1.  Decision level is used to manage backtracking and erasing assignments discussed later.
 
 \begin{example}[Simple Decision]
 Consider the CNF:
@@ -7443,7 +7438,9 @@ BCP detects \emph{unit clauses}, i.e., clauses with exactly one unassigned liter
 and all other literals set to False. Such clauses force the remaining literal to be
 assigned True. 
 
-BCP is very useful because it can deduce variable assignments directly without making decisions (guesses), which could be wrong. For example, if we have the clause $(\lnot x_1 \lor x_2)$ and we know $x_1$ is True, then we don't need to guess $x_2$; it must be True to satisfy the clause.
+BCP is very useful because it can determine variable assignments directly without using Decide, which can guesses wrong. For example, if we have the clause $(\lnot x_1 \lor x_2)$ and we know $x_1$ is True, then we don't need to guess $x_2$; it must be True to satisfy the clause.
+
+BCP is often invoked after each decision to propagate the consequences of the assignment.
 
 \begin{example}[Single Propagation]
 \[
