@@ -4,6 +4,9 @@ In this PA you will implement an neural network (NN) verifier using symbolic exe
 
 You will use Python and the Z3 SMT solver (\autoref{sec:z3}) for this assignment. \textbf{Do not} use external libraries or any extra tools.
 
+Finally, you will need to answer some questions about your implementation and findings in the provided \texttt{README} template. \url{https://github.com/dynaroars/book_nnv/blob/main/pa/templates/README_PA1.md}
+
+
 \subsection{Part1: Symbolic Execution}
 
 Consider the following fully-connected network with 2 inputs, 2 hidden layers, and 2 outputs.
@@ -192,65 +195,65 @@ Using traditional SE, you would have 2 paths,  e.g., path 1: \texttt{x+y > 0 \&\
 % z3.solve(f5)  #check if f5 is satisfiable,  should be yes 
 % \end{lstlisting}
 
-\item Using \texttt{Tensorflow Keras} (or \texttt{Pytorch})
+% \item Using \texttt{Tensorflow Keras} (or \texttt{Pytorch})
 
-In my example above, I create a DNN using simple Python lists.  But you can also use \texttt{Tensorflow Keras} (or \texttt{Pytorch}) to create a DNN.  It might be simpler that way as then you can reuse existing methods from these Python packages.  You will still need to implement symbolic execution, just that instead the input DNN being Python lists, they are now Tensorflow or Pytorch.  Also note that if you use \texttt{tensorflow} or \texttt{pytorch}, then be sure to indicate what packages are needed to run your program in the \textbf{README} file, i.e., \texttt{pip install ...}.
+% In my example above, I create a DNN using simple Python lists.  But you can also use \texttt{Tensorflow Keras} (or \texttt{Pytorch}) to create a DNN.  It might be simpler that way as then you can reuse existing methods from these Python packages.  You will still need to implement symbolic execution, just that instead the input DNN being Python lists, they are now Tensorflow or Pytorch.  Also note that if you use \texttt{tensorflow} or \texttt{pytorch}, then be sure to indicate what packages are needed to run your program in the \textbf{README} file, i.e., \texttt{pip install ...}.
 
-Below is the tensorflow representation of the DNN example above. 
+% Below is the tensorflow representation of the DNN example above. 
 
-\begin{lstlisting}[language=Python]
-import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
-from tensorflow.keras import activations
+% \begin{lstlisting}[language=Python]
+% import tensorflow as tf
+% from tensorflow import keras
+% from tensorflow.keras.models import Sequential
+% from tensorflow.keras.layers import Dense
+% from tensorflow.keras import activations
 
-model = Sequential()
+% model = Sequential()
 
-# layer 0: nodes n00, n01
-model.add(Dense(units=2,
-                input_shape=(2, ),    # 2 inputs (i.e., i0, i1 in the Figure)
-                activation=activations.relu,  # relu activation
-                kernel_initializer=tf.constant_initializer(
-                    [[1.0, 1.0],  # weights of n00
-                    [-1.0, 1.0]  # weights of n01
-                    ]),
-                bias_initializer=tf.constant_initializer(
-                    [[0.0],  # bias of n00
-                    [0.0]]  # bias of n01
-                ), 
-                dtype='float64'
-                ))
+% # layer 0: nodes n00, n01
+% model.add(Dense(units=2,
+%                 input_shape=(2, ),    # 2 inputs (i.e., i0, i1 in the Figure)
+%                 activation=activations.relu,  # relu activation
+%                 kernel_initializer=tf.constant_initializer(
+%                     [[1.0, 1.0],  # weights of n00
+%                     [-1.0, 1.0]  # weights of n01
+%                     ]),
+%                 bias_initializer=tf.constant_initializer(
+%                     [[0.0],  # bias of n00
+%                     [0.0]]  # bias of n01
+%                 ), 
+%                 dtype='float64'
+%                 ))
 
-# layer 1: nodes n10, n11
-model.add(Dense(units=2,
-                activation=activations.relu,
-                kernel_initializer=tf.constant_initializer(
-                    [[0.5, -0.5], [-0.2, 0.1]]),
-                bias_initializer=tf.constant_initializer([[0.0], [0.0]]),
-                dtype='float64'
-                ))
+% # layer 1: nodes n10, n11
+% model.add(Dense(units=2,
+%                 activation=activations.relu,
+%                 kernel_initializer=tf.constant_initializer(
+%                     [[0.5, -0.5], [-0.2, 0.1]]),
+%                 bias_initializer=tf.constant_initializer([[0.0], [0.0]]),
+%                 dtype='float64'
+%                 ))
 
-# last layer: nodes represent outputs o0, o1
-model.add(Dense(units=2,
-                activation=None,  # no activation function for output nodes
-                kernel_initializer=tf.constant_initializer(
-                    [[1.0, -1.0], [-1.0, 1.0]]), # weights of o0, o1
-                bias_initializer=tf.constant_initializer([[0.0], [0.0]]),  # bias of o0, o1
-                dtype='float64'
-                ))
-\end{lstlisting}
+% # last layer: nodes represent outputs o0, o1
+% model.add(Dense(units=2,
+%                 activation=None,  # no activation function for output nodes
+%                 kernel_initializer=tf.constant_initializer(
+%                     [[1.0, -1.0], [-1.0, 1.0]]), # weights of o0, o1
+%                 bias_initializer=tf.constant_initializer([[0.0], [0.0]]),  # bias of o0, o1
+%                 dtype='float64'
+%                 ))
+% \end{lstlisting}
 \end{enumerate}
 
 \subsection{Part 2: Evaluation}
 In this part you will show that symbolic execution \emph{does not} scale on large DNNs.
 
 \begin{enumerate}
-    \item You will create a function \texttt{create\_random} that takes as input a list of positive integers representing the sizes of the neurons \texttt{[\#inputs, \#neurons, ..., \#outputs]}, and create a neural network of that size with \emph{random} weights and bias (e.g., between say $-5$ and $5$).
-    \item You will run symbolic execution on this network as you did in PA1, get its results, and time the solving process.
-    \item You will do this for various sizes of neurons until you feel that your computer cannot handle it anymore (e.g., until it takes more than a minute or two).
+    \item You will create a function \texttt{create\_random} that takes as input a list of positive integers representing the shape of the networks \texttt{[\#inputs, \#neurons, ..., \#outputs]}, and create a neural network of that size with \emph{random} weights and bias (e.g., between say $-5$ and $5$).
+    \item You will run symbolic execution on this network as you did in Part 1, get its results, and time the solving process.
+    \item You will do this for various sizes of networks \textbf{until your computer cannot handle it anymore} (e.g., until it takes more than a minute or two).
     \item You will \textbf{save these networks} because you will reuse them to measure and compare execution time using abstraction in Part 2.
-    \item Finally, you will plot the results: the $x$-axis will show the size of the neurons (for simplicity, the product of all numbers in the input list) and the $y$-axis shows the time.
+    \item Finally, you will plot the results: the $x$-axis will show the size of the networks (for simplicity, the product of all numbers in the input list) and the $y$-axis shows the time.
 \end{enumerate}
 
 Feel free to be creative in this process (e.g., play around with different sizes/layers), and discuss your findings in the \texttt{README} file. Below gives some code example:
@@ -280,7 +283,8 @@ Your program must have the following:
 \begin{enumerate}
 \item a function \texttt{my\_symbolic\_execution(dnn)} that 
     \begin{itemize}
-    \item takes as input the DNN, whose specifications are given as example above (or using \texttt{tensorflow} or \texttt{pytorch})
+    \item takes as input the DNN, whose specifications are given as example above.
+    % \item takes as input the DNN, whose specifications are given as example above (or using \texttt{tensorflow} or \texttt{pytorch})
         \begin{itemize}
         \item This goes without saying: do not hard-code the DNN in your program (e.g., do not hardcode the example given above in your code).  Your program should work with any DNN input.
         \end{itemize}
@@ -329,8 +333,9 @@ You can be as creative as you want, but your SE must not run for too long and mu
     \item takes as input the list \code{sizes} and returns a DNN of that size as descibed above.
 \end{itemize}
 \item a testing function \code{test3()} that runs \code{create\_random} on various sizes of DNNs, runs \code{my\_symbolic\_execution} on them as you did with \code{test()} and \code{test2()} above, and time the execution.
-\item a plot (in pdf, png, or jpeg) showing the scalability of \code{my\_symbolic\_execution} on various DNNs
-\item in the \code{README}, write your observation and conclusion about the scalability of symbolic execution.  You must refer to the plot and describe it to support your conclusion.
+\item a plot (in pdf, png, or jpeg) showing the scalability of \code{my\_symbolic\_execution} on various DNNs. You need to use \textbf{at least 25 DNNs of different sizes} to generate the plot, a plot with very few datapoints will not be sufficient to show the scalability trend.
+% Moved to README template
+% \item in the \code{README}, write your observation and conclusion about the scalability of symbolic execution.  You must refer to the plot and describe it to support your conclusion.
 % \item \textbf{BONUS}: as you will see, SE does not scale. Come up with ways to improve it and implement it in a new function \code{my\_symbolic\_execution\_optimize(dnn)}. Then compare its scalability with \code{my\_symbolic\_execution(dnn)} using the same DNNs created in \code{test3()}.  Discuss your new SE and result findings in the \code{README} file (see below for details).
 
 \end{enumerate}
@@ -343,29 +348,31 @@ You must submit a \textbf{zip file} containing the following files. Use the foll
 \item the zip file must be named \code{pa1-yourname.zip} (1 submission per group)
 \item One single main source file \code{se.py}. Indicate in the \code{README} file on how I can run it.
     \begin{itemize}
-    \item your file should include at least a \code{my\_symbolic\_execution} function and the test functions \code{test}, \code{test2()}, and \code{test3()} as indicated above
+    \item your file should include at least a \code{my\_symbolic\_execution} function and the test functions \code{test()}, \code{test2()}, and \code{test3()} as indicated above
     \end{itemize}
-\item a \code{README.txt} or \code{README.md} file
-\item 2 screen shots showing how (1) you start your program (e.g., the commands used to run your program) and (2) the end of the run (e.g., of your program on the terminal screen)
-\item Nothing else, do not include any binary files or anything else.
+\item a comepleted \code{README.md} file. You \emph{must} use the provided template and answer all questions in there.
+% Moved to README template
+% \item 2 screen shots showing how (1) you start your program (e.g., the commands used to run your program) and (2) the end of the run (e.g., of your program on the terminal screen)
+\item Nothing else, do not include any binary files or other directory like \code{\_\_pycache\_\_}, \code{.venv}.
 \end{enumerate}
 
-The \code{README} file should be a \textit{plain ASCII text file} or \textit{Markdown file}. DO NOT submit a Word, RTF, HTML, etc. The \code{README} should include the following:
+% The \code{README} file should be a \textit{plain ASCII text file} or \textit{Markdown file}. DO NOT submit a Word, RTF, HTML, etc. The \code{README} should include the following:
+% moved to README template
+% \begin{enumerate}
+% \item \textbf{Complete run} show how you run your program \textbf{AND} its complete outputs, e.g.,
 
-\begin{enumerate}
-\item \textbf{Complete run} show how you run your program \textbf{AND} its complete outputs, e.g.,
+% \begin{lstlisting}[language=bash]
+% python3 se.py   # this should execute both test() and test2 and show all outputs 
+% ....            # (something similar to the outputs for the complete example above)
+% \end{lstlisting}
 
-\begin{lstlisting}[language=bash]
-python3 se.py   # this should execute both test() and test2 and show all outputs 
-....            # (something similar to the outputs for the complete example above)
-\end{lstlisting}
-
-\item \textbf{Answer the following questions about your SE} in your \code{README} file
-    \begin{enumerate}[label=(\alph*)]
-    \item Briefly describe your SE algorithm
-    \item What do you think the most difficult part of this assignment?  (e.g., programming symbolic execution, using Z3, dealing with scalability,etc)
-    \item What advice do you give other students (e.g., students in this class next year) about this PA?
-    \end{enumerate}
+% Moved to README template
+% \item \textbf{Answer the following questions about your SE} in your \code{README} file
+%     \begin{enumerate}[label=(\alph*)]
+%     \item Briefly describe your SE algorithm
+%     \item What do you think the most difficult part of this assignment?  (e.g., programming symbolic execution, using Z3, dealing with scalability,etc)
+%     \item What advice do you give other students (e.g., students in this class next year) about this PA?
+%     \end{enumerate}
 
 
 % \item \textbf{BONUS}: if you did the bonus, then include \code{my\_symbolic\_execution\_optimize(dnn)} in \code{se.py}, and include in your \code{README} file:
@@ -374,3 +381,23 @@ python3 se.py   # this should execute both test() and test2 and show all outputs
 %     \item Discuss your findings and results (e.g., plots, runtime differences, etc)
 %     \end{enumerate}
 \end{enumerate}
+
+
+\subsection{Grading Rubric (out of 30 points)}
+
+\begin{itemize}
+\item 12 points — for complete SE implementation.
+    \begin{itemize}
+        \item 4 points for \texttt{my\_symbolic\_execution}
+        \item 2 points for \texttt{test1}
+        \item 2 points for \texttt{test2}
+        \item 4 points for \texttt{create\_random} and \texttt{test3}
+    \end{itemize}
+\item 2 points — for code quality and submission format.
+\item 16 points — for completing the \texttt{README} file.
+    \begin{itemize}
+        \item 4 points for Part 1 
+        \item 10 points for Part 2 (plot and discussion)
+        \item 2 points for the running instructions and screenshots
+    \end{itemize}
+\end{itemize}

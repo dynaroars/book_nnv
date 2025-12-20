@@ -20,7 +20,7 @@ A:
 
 ## **Part 2 (10)**
 
-### Scalability plots (Use at least 25 randomly generated DNNs of variouse size and dimensionalities)
+### Scalability plots (Use at least 25 randomly generated DNNs of variouse sizes)
 *[Put your plots here]*
 
 ### Q1: What scalability trend did you observe? Use the plots to support your answer. 
@@ -35,7 +35,7 @@ A:
 
 A: 
 
-### Q4: What are some factors that might impact the running time (e.g., # of layers in the DNN? )? Why? 
+### Q4: Based on your intuition, what are some factors that might impact the run time (e.g., number of layers in the DNN, the specific property being verified)? Why?
 
 A: 
 
