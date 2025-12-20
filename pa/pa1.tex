@@ -246,7 +246,7 @@ model.add(Dense(units=2,
 In this part you will show that symbolic execution \emph{does not} scale on large DNNs.
 
 \begin{enumerate}
-    \item You will create a function \texttt{create\_random} that takes as input a list of positive integers representing the sizes of the neurons \texttt{[\#inputs, \#ofnumbers, \#ofneurons, ..., \#outputs]}, and create a neural network of that size with \emph{random} weights and bias (e.g., between say $-5$ and $5$).
+    \item You will create a function \texttt{create\_random} that takes as input a list of positive integers representing the sizes of the neurons \texttt{[\#inputs, \#neurons, ..., \#outputs]}, and create a neural network of that size with \emph{random} weights and bias (e.g., between say $-5$ and $5$).
     \item You will run symbolic execution on this network as you did in PA1, get its results, and time the solving process.
     \item You will do this for various sizes of neurons until you feel that your computer cannot handle it anymore (e.g., until it takes more than a minute or two).
     \item You will \textbf{save these networks} because you will reuse them to measure and compare execution time using abstraction in Part 2.
@@ -331,7 +331,7 @@ You can be as creative as you want, but your SE must not run for too long and mu
 \item a testing function \code{test3()} that runs \code{create\_random} on various sizes of DNNs, runs \code{my\_symbolic\_execution} on them as you did with \code{test()} and \code{test2()} above, and time the execution.
 \item a plot (in pdf, png, or jpeg) showing the scalability of \code{my\_symbolic\_execution} on various DNNs
 \item in the \code{README}, write your observation and conclusion about the scalability of symbolic execution.  You must refer to the plot and describe it to support your conclusion.
-\item \textbf{BONUS}: as you will see, SE does not scale. Come up with ways to improve it and implement it in a new function \code{my\_symbolic\_execution\_optimize(dnn)}. Then compare its scalability with \code{my\_symbolic\_execution(dnn)} using the same DNNs created in \code{test3()}.  Discuss your new SE and result findings in the \code{README} file (see below for details).
+% \item \textbf{BONUS}: as you will see, SE does not scale. Come up with ways to improve it and implement it in a new function \code{my\_symbolic\_execution\_optimize(dnn)}. Then compare its scalability with \code{my\_symbolic\_execution(dnn)} using the same DNNs created in \code{test3()}.  Discuss your new SE and result findings in the \code{README} file (see below for details).
 
 \end{enumerate}
 
@@ -368,9 +368,9 @@ python3 se.py   # this should execute both test() and test2 and show all outputs
     \end{enumerate}
 
 
-\item \textbf{BONUS}: if you did the bonus, then include \code{my\_symbolic\_execution\_optimize(dnn)} in \code{se.py}, and include in your \code{README} file:
-    \begin{enumerate}[label=(\alph*)]
-    \item Briefly describe your new SE algorithm
-    \item Discuss your findings and results (e.g., plots, runtime differences, etc)
-    \end{enumerate}
+% \item \textbf{BONUS}: if you did the bonus, then include \code{my\_symbolic\_execution\_optimize(dnn)} in \code{se.py}, and include in your \code{README} file:
+%     \begin{enumerate}[label=(\alph*)]
+%     \item Briefly describe your new SE algorithm
+%     \item Discuss your findings and results (e.g., plots, runtime differences, etc)
+%     \end{enumerate}
 \end{enumerate}
