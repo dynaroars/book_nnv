@@ -1,2 +1,2 @@
 # book_nnv
-[Designing a DNN Verifier](https://roars.dev/book_nnv/book.pdf)
+[Introduction to Neural Network Verification](https://roars.dev/book_nnv/book.pdf)
