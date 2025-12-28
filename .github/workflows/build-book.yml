@@ -60,6 +60,10 @@ jobs:
           mkdir -p _site
           cp book.pdf _site/
 
+      - name: Setup redirect
+        run: |
+          echo '<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=book.pdf"></head></html>' > ./_site/index.html
+
       - name: Upload to github page
         uses: actions/upload-pages-artifact@v3
         with:
