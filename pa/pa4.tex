@@ -207,33 +207,40 @@ return UNSAT
 Now you have all the components to buid the verifier. You need to follow the following naming conventions for your implementation:
 \begin{enumerate}
     \item A single python file \code{verify.py} that accepts three command line arguments, and run the verification. This provides a unified interface for us to test your implementation.
-        \begin{listlisting}[language=bash]
+        \begin{lstlisting}[language=bash]
         python verify.py [path/to/network.onnx] [path/to/property.vnnlib] [timeout_in_seconds]
 
         E.g.
         python verify.py acasxu/Network1_1.onnx acasxu/Property7.vnnlib 116
         Would run the verifier on the given network and property with a timeout of 116 seconds.
-        \end{listlisting}
+        \end{lstlisting}
         Your output should be either \code{UNSAT}, \code{SAT}, or \code{TIMEOUT}. If the output is \code{SAT}, you should also print the counterexample found.
     \item You actual implementation should be in \code{p4.py}.
+\end{enumerate}
 
     
 \subsection{Part 4: Verifying ACAS XU benchmarks}
-Download the ACAS XU benchmarks from \url{https://github.com/dynaroars/neuralbench/tree/main/instances/acasxu}.
+Download the ACAS XU benchmarks from \url{https://github.com/dynaroars/neuralbench/tree/main/instances/acasxu}. 
 In this folder, you will find the following files/folders:
 \begin{itemize}
     \item Folder \texttt{onnx}: contains the ONNX networks
     \item Folder \texttt{vnnlib}: contains the VNNLIB properties
     \item File \texttt{instances.csv}: contains list of instances of the ACAS XU benchmarks, where each line is a tuple of (network path, property path, timeout in seconds).
 \end{itemize}
+You can use \texttt{acasxu\_instances\_w\_ground\_truth.csv} instead of the \texttt{instances.csv} in the repo.
+It contains the same instances as \texttt{instances.csv}, but also includes the ground truth results for each instance.
+Its avaliable from \url{https://github.com/dynaroars/book_nnv/blob/main/code/pa4/acasxu_instances_w_ground_truth.csv}
+
 
 Your task is to:
 \begin{enumerate}
     \item enumerate first 90 instances in \texttt{instances.csv} and verify the properties, the rest are optional.
     \item report the result for each instance, either, UNSAT, SAT, or TIMEOUT.
     \item some timeouts are expected, we do not expect your verifier to verify all instances.
-    \item check the results with the ground truth at \url{https://github.com/dynaroars/book_nnv/blob/main/code/pa4/acasxu_ground_truth.csv}.
+    \item check the results with the ground truth at \url{https://github.com/dynaroars/book_nnv/blob/main/code/pa4/acasxu_instances_w_ground_truth.csv}.
 \end{enumerate}
+
+You should debug your implementation using a few instances first before running all 90 instances, as the complete run may take a long time.
 
 % Note that, you can also double check the ground truths to check whether the instances are SAT (counterexample exists).
 % If that is the case, using abstraction alone will never return "verified", you will need a way to find a counterexample.
