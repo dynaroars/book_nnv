@@ -13,6 +13,9 @@ This PA has three main parts:
     \item evaluate the precision and scalability of BaB compared to pure abstract interpretation and symbolic execution.
 \end{enumerate}
 
+A README template is provided. Please answer the questions in the template and include it in your submission. \url{https://github.com/dynaroars/book_nnv/blob/main/pa/templates/README_PA3.md}
+
+
 \subsection{Part 1: Branch and Bound Algorithm Framework}
 
 BaB systematically explores the space by maintaining a queue of subproblems and iteratively refining them until verification is complete or a counterexample is found.
@@ -118,12 +121,11 @@ def deduce(self, input_lower, input_upper, property_fn):
     return prune_result == UNKNOWN
 \end{lstlisting}
 
-\subsubsection{Attack Function (Optional)}
+\subsubsection{Attack Function}
 
 The \texttt{attack} function finds a counterexample using an adversarial attack.
-This function is optional, you can choose to implement it or not. 
-If you choose to implement it, you can use random sampling or adversarial attacks like PGD, FGSM, etc.
-If not, you can simply return None.
+% This function is optional, you can choose to implement it or not. 
+You can use simpler approch like random sampling, or more advanced approach like PGD, FGSM, etc.
 
 \begin{lstlisting}[language=Python]
 def attack(self, input_lower, input_upper, property_fn):
@@ -291,8 +293,14 @@ def prune(self, output_lower, output_upper, property_fn):
 \end{lstlisting}
 
 \subsection{Part 2: Evaluation}
-
-Use the same DNN from PA2 (\autoref{sec:pa2}) for testing.
+% Use the same DNN from PA2 (\autoref{sec:pa2}) for testing.
+\begin{itemize}
+    \item Make sure you use the same set of DNNs and properties for the evaluation of both abstraction methods and the symbolic execution for fair comparison.
+    \item Use at least 30 diverse DNN and property pairs in your evaluation.
+    \item All text in your plots must be legible.
+    \item If the DNNs you use are too small or too few to show the trend, you will receive a low score.
+    \item Answer the questions in the README template.
+\end{itemize}
 \subsubsection{Test Your Implementation}
 
 This function is used to test whether your BaB implementation is correct. 
@@ -342,42 +350,61 @@ For each testcase, you should:
             \item Symbolic execution time/result (PA1 \autoref{sec:pa1})
             \item Pure abstraction time/result (PA2 \autoref{sec:pa2})
             \item BaB verification time/result  
+            \item Use appropriate timeouts (e.g., 30s)
         \end{itemize}
     \item Plot results showing precision vs scalability trade-offs
     \item Analyze when BaB is most beneficial
 \end{enumerate}
 
-\subsubsection{Discussion Questions}
+% \subsubsection{Discussion Questions}
 
-Address the following in your README:
+% Address the following in your README:
+
+% \begin{enumerate}
+% \item \textbf{Precision vs Efficiency}: How does BaB balance precision and efficiency compared to pure abstraction and symbolic execution?
+
+% \item \textbf{Branching Strategy}: How does your input splitting strategy affect verification performance? 
+
+% \item \textbf{Abstraction Choice}: What are the trade-offs between interval and zonotope abstraction in BaB?
+
+% \item \textbf{Optimization Opportunities}: What improvements could make your BaB implementation more efficient?
+% \end{enumerate}
+
+\subsection{What to Turn In}
+
+You must submit a \textbf{zip file} containing the following files. Use the following names:
 
 \begin{enumerate}
-\item \textbf{Precision vs Efficiency}: How does BaB balance precision and efficiency compared to pure abstraction and symbolic execution?
-
-\item \textbf{Branching Strategy}: How does your input splitting strategy affect verification performance? 
-
-\item \textbf{Abstraction Choice}: What are the trade-offs between interval and zonotope abstraction in BaB?
-
-\item \textbf{Optimization Opportunities}: What improvements could make your BaB implementation more efficient?
+\item The zip file must be named \code{pa3-[yourname/groupname].zip} (1 submission per group)
+\item One single main source file \code{pa3.py}. Indicate in the \code{README} file on how I can run it.
+    \begin{itemize}
+    \item Your code should use the provided class/function signatures as indicated above. E.g., \code{BranchAndBound}, \code{deduce}, \code{decide}, \code{bound}, \code{prune}...
+    \end{itemize}
+\item A completed \code{README.md} file. You \emph{must} use the provided template and answer all questions in it.
+% Moved to README template
+% \item 2 screen shots showing how (1) you start your program (e.g., the commands used to run your program) and (2) the end of the run (e.g., of your program on the terminal screen)
+\item Nothing else, do not include any binary files or other directory like \code{\_\_pycache\_\_}, \code{.venv}.
 \end{enumerate}
+
 
 \subsection{Grading Rubric (out of 30 points)}
 
 \begin{itemize}
-\item 20 points — Core BaB implementation
+\item 12 points — Core BaB implementation
     \begin{itemize}
-    \item 5 points for correct \texttt{verify} algorithm implementation
-    \item 5 points for \texttt{branch} function with proper input splitting
-    \item 5 points for \texttt{bound} function integration with PA2 abstractions
-    \item 5 points for \texttt{prune} function with correct pruning logic
+    \item 3 points for correct \texttt{verify} algorithm implementation
+    \item 3 points for \texttt{branch} function with proper input splitting
+    \item 3 points for \texttt{bound} function integration with PA2 abstractions
+    \item 3 points for \texttt{prune} function with correct pruning logic
     \end{itemize}
-\item 10 points — Analysis and documentation
-    \begin{itemize}
-    \item 2 points for testing your implementation
-    \item 2 points for \texttt{bab\_vs\_z3}
-    \item 2 points for \texttt{bab\_vs\_abstraction}
-    \item 4 points for answers to discussion questions
-    \end{itemize}
+\item 16 points — for completed README with evaluation and analysis
+    % \begin{itemize}
+    % \item 2 points for testing your implementation
+    % \item 2 points for \texttt{bab\_vs\_z3}
+    % \item 2 points for \texttt{bab\_vs\_abstraction}
+    % \item 4 points for answers to discussion questions
+    % \end{itemize}
+\item 2 points — for code quality and submission format.
 % \item \textbf{BONUS} (up to 5 extra points) — Advanced improvements
 %     \begin{itemize}
 %     \item 5 points for implementing alternative branching strategies

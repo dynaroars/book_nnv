@@ -294,8 +294,8 @@ class ReluTransformer(nn.Module):
 \begin{itemize}
     \item Make sure you use the same set of DNNs for the evaluation of both abstraction methods and the symbolic execution for fair comparison.
     \item Same requirement as PA1: use at least 25 DNNs of varying sizes (number of layers, number of neurons per layer, etc.) in your evaluation.
-    \item A good proxy of precision is the width of the output bounds (i.e., upper - lower), but you can be creative with other metrics as well. Make sure to document your metric in the README.
-    \item Make sure all text in your plots are legible.
+    \item A good proxy of precision is the width of the output bounds (i.e., upper - lower), but you can be creative with other metrics as well. 
+    \item All text in your plots must be legible.
     \item If the DNNs you use are too small or too few to show the trend, you will receive a low score.
     % \item Compare the precision and scalability trade-offs between interval/zonotope abstraction with Symbolic Execution.
     % \item How to improve the precision of your abstract domains?
@@ -308,12 +308,12 @@ class ReluTransformer(nn.Module):
 You must submit a \textbf{zip file} containing the following files. Use the following names:
 
 \begin{enumerate}
-\item the zip file must be named \code{pa2-yourname.zip} (1 submission per group)
+\item The zip file must be named \code{pa2-[yourname/groupname].zip} (1 submission per group)
 \item One single main source file \code{pa2.py}. Indicate in the \code{README} file on how I can run it.
     \begin{itemize}
-    \item your code should use the provided class/function signatures as indicated above. E.g., \code{LinearTransformer}, \code{ReluTransformer}, \code{IntervalAbstraction}, \code{ZonotopeAbstraction}, \code{zonotope}, \code{concrete}.
+    \item Your code should use the provided class/function signatures as indicated above. E.g., \code{LinearTransformer}, \code{ReluTransformer}, \code{IntervalAbstraction}, \code{ZonotopeAbstraction}, \code{zonotope}, \code{concrete}.
     \end{itemize}
-\item a comepleted \code{README.md} file. You \emph{must} use the provided template and answer all questions in there.
+\item A completed \code{README.md} file. You \emph{must} use the provided template and answer all questions in it.
 % Moved to README template
 % \item 2 screen shots showing how (1) you start your program (e.g., the commands used to run your program) and (2) the end of the run (e.g., of your program on the terminal screen)
 \item Nothing else, do not include any binary files or other directory like \code{\_\_pycache\_\_}, \code{.venv}.
