@@ -203,22 +203,85 @@ while len(properties): # make sure to verify all sub-properties
 return UNSAT
 \end{lstlisting}
 
-\subsection{Part 3: Verifying ACAS XU benchmarks}
+\subsection{Part 3: Putting Everything Together}
+Now you have all the components to buid the verifier. You need to follow the following naming conventions for your implementation:
+\begin{enumerate}
+    \item A single python file \code{verify.py} that accepts three command line arguments, and run the verification. This provides a unified interface for us to test your implementation.
+        \begin{lstlisting}[language=bash]
+        python verify.py [path/to/network.onnx] [path/to/property.vnnlib] [timeout_in_seconds]
 
-Download ACAS XU benchmarks from \url{https://github.com/dynaroars/neuralbench/tree/main/instances/acasxu}.
+        E.g.
+        python verify.py acasxu/Network1_1.onnx acasxu/Property7.vnnlib 116
+        Would run the verifier on the given network and property with a timeout of 116 seconds.
+        \end{lstlisting}
+        Your output should be either \code{UNSAT}, \code{SAT}, or \code{TIMEOUT}. If the output is \code{SAT}, you should also print the counterexample found.
+    \item You actual implementation should be in \code{p4.py}.
+\end{enumerate}
+
+    
+\subsection{Part 4: Verifying ACAS XU benchmarks}
+Download the ACAS XU benchmarks from \url{https://github.com/dynaroars/neuralbench/tree/main/instances/acasxu}. 
 In this folder, you will find the following files/folders:
 \begin{itemize}
     \item Folder \texttt{onnx}: contains the ONNX networks
     \item Folder \texttt{vnnlib}: contains the VNNLIB properties
     \item File \texttt{instances.csv}: contains list of instances of the ACAS XU benchmarks, where each line is a tuple of (network path, property path, timeout in seconds).
 \end{itemize}
+You can use \texttt{acasxu\_instances\_w\_ground\_truth.csv} instead of the \texttt{instances.csv} in the repo.
+It contains the same instances as \texttt{instances.csv}, but also includes the ground truth results for each instance.
+Its avaliable from \url{https://github.com/dynaroars/book_nnv/blob/main/code/pa4/acasxu_instances_w_ground_truth.csv}
+
 
 Your task is to:
 \begin{enumerate}
-    \item enumerate first 45 instances in \texttt{instances.csv} and verify the properties, the rest are optional.
+    \item enumerate first 90 instances in \texttt{instances.csv} and verify the properties, the rest are optional.
     \item report the result for each instance, either, UNSAT, SAT, or TIMEOUT.
-    \item check the results with the ground truth at \url{https://github.com/dynaroars/book_nnv/blob/main/code/pa4/acasxu_ground_truth.csv}.
+    \item some timeouts are expected, we do not expect your verifier to verify all instances.
+    \item check the results with the ground truth at \url{https://github.com/dynaroars/book_nnv/blob/main/code/pa4/acasxu_instances_w_ground_truth.csv}.
 \end{enumerate}
 
-Note that, you can also double check the ground truths to check whether the instances are SAT (counterexample exists).
-If that is the case, using abstraction alone will never return "verified", you will need a way to find a counterexample.
+You should debug your implementation using a few instances first before running all 90 instances, as the complete run may take a long time.
+
+% Note that, you can also double check the ground truths to check whether the instances are SAT (counterexample exists).
+% If that is the case, using abstraction alone will never return "verified", you will need a way to find a counterexample.
+
+
+
+
+\subsection{What to Turn In}
+You must submit a \textbf{zip file} containing the following files. Use the following names:
+
+\begin{enumerate}
+    \item The zip file must be named \code{pa4-[yourname/groupname].zip} (1 submission per group)
+    \item If you imported anything from your previous PAs, please include those files as well (e.g., \code{p1.py}). We will not run your code if they are missing and you will lose points.
+    \item One \code{verify.py} file as described above.
+    \item A completed \code{README.md} file. You \emph{must} use the provided template and answer all questions in it.
+    \item It is recommended include any logs or results your verifier generated in a seperate folder. You can name the folder as you like, e.g., \code{results/}.
+        \begin{itemize}
+            \item This is not mandatory, but it will show that you have done the experiments and help us to grade your PA.
+        \end{itemize}
+    \item If you used any additional scripts/files as needed to help your with Part 4, include those as well. Also include instructions on how to use those scripts/files in the \code{README.md} file.
+    % Moved to README template
+    % \item 2 screen shots showing how (1) you start your program (e.g., the commands used to run your program) and (2) the end of the run (e.g., of your program on the terminal screen)
+    \item Nothing else, do not include any binary files or other directory like \code{\_\_pycache\_\_}, \code{.venv}.
+\end{enumerate}
+
+
+
+\subsection{Grading Rubric (out of 30 points)}
+\begin{itemize}
+\item 20 points — Verifier implementation
+    \begin{itemize}
+        \item 4 points — for parsing ONNX networks correctly
+        \item 4 points — for parsing VNNLIB properties correctly
+        \item 6 points — for implementing the verifier (\code{verify.py})
+        \item 6 points — for running your verifier on ACAS XU benchmarks (first 90 instances)
+    \end{itemize}
+\item 10 points — for completed README with analysis
+    % \begin{itemize}
+    % \item 2 points for testing your implementation
+    % \item 2 points for \texttt{bab\_vs\_z3}
+    % \item 2 points for \texttt{bab\_vs\_abstraction}
+    % \item 4 points for answers to discussion questions
+    % \end{itemize}
+\end{itemize}
