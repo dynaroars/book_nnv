@@ -35,14 +35,13 @@ jobs:
           latexmk -pdf -interaction=nonstopmode -halt-on-error book.tex
           bibtex book || true
           latexmk -pdf -interaction=nonstopmode -halt-on-error book.tex
-          mv book.pdf docs/book.pdf
 
       - name: Verify PDF
         run: |
-          if [ ! -f docs/book.pdf ]; then
+          if [ ! -f book.pdf ]; then
             echo "No PDF produced!"
             exit 1
-          elif ! pdfinfo docs/book.pdf >/dev/null 2>&1; then
+          elif ! pdfinfo book.pdf >/dev/null 2>&1; then
             echo "PDF seems corrupted!"
             exit 1
           fi
