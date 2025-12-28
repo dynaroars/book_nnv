@@ -211,8 +211,8 @@ Now you have all the components to buid the verifier. You need to follow the fol
         python verify.py [path/to/network.onnx] [path/to/property.vnnlib] [timeout_in_seconds]
 
         E.g.
-        python verify.py acasxu/Network1_1.onnx acasxu/Property7.vnnlib 120
-        Would run the verifier on the given network and property with a timeout of 120 seconds.
+        python verify.py acasxu/Network1_1.onnx acasxu/Property7.vnnlib 116
+        Would run the verifier on the given network and property with a timeout of 116 seconds.
         \end{listlisting}
         Your output should be either \code{UNSAT}, \code{SAT}, or \code{TIMEOUT}. If the output is \code{SAT}, you should also print the counterexample found.
     \item You actual implementation should be in \code{p4.py}.
@@ -231,7 +231,7 @@ Your task is to:
 \begin{enumerate}
     \item enumerate first 90 instances in \texttt{instances.csv} and verify the properties, the rest are optional.
     \item report the result for each instance, either, UNSAT, SAT, or TIMEOUT.
-    \item some timeouts are expected, we do not expect you to verify all instances.
+    \item some timeouts are expected, we do not expect your verifier to verify all instances.
     \item check the results with the ground truth at \url{https://github.com/dynaroars/book_nnv/blob/main/code/pa4/acasxu_ground_truth.csv}.
 \end{enumerate}
 
