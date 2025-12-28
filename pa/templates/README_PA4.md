@@ -4,13 +4,17 @@ Name:
 Section: 
 
 
-### **Performance on ACAS Xu Benchmark**: Describe your verifier's performance on the ACAS Xu benchmark. Include the total number of instances solved correctly versus those that timed out. For the solved instances, report the count and percentage of SAT vs. UNSAT results.
+### Describe your verifier's performance on the ACAS Xu benchmark. Include the total number of instances solved correctly versus those that timed out. For the solved instances, report the count and percentage of SAT vs. UNSAT results.
 
 A:
 
-### **Analysis**: What is your interpretation of these results? Analyze the data in your own way. If your verifier returned any unsound (incorrect) results, identify them and discuss the potential causes.
+### What is your interpretation of these results? Analyze the results in your own way. 
 
 A: 
+
+### If your verifier returned any unsound (incorrect) results, identify them and discuss the potential causes.
+
+A:
 
 ### What was the most challenging part of this assignment?
 
