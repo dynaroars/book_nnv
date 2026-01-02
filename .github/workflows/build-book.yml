@@ -1,0 +1,81 @@
+name: Build LaTeX book
+
+on:
+  push:
+    branches: ["main"]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build-pdf:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install lightweight TeX Live
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            texlive-latex-recommended \
+            texlive-latex-extra \
+            texlive-fonts-recommended \
+            texlive-science \
+            texlive-lang-english \
+            texlive-xetex \
+            latexmk \
+            ghostscript \
+            poppler-utils
+
+      - name: Build book
+        run: |
+          echo "Building book..."
+          latexmk -pdf -interaction=nonstopmode -halt-on-error book.tex
+          bibtex book || true
+          latexmk -pdf -interaction=nonstopmode -halt-on-error book.tex
+      - name: Verify PDF
+        run: |
+          if [ ! -f book.pdf ]; then
+            echo "No PDF produced!"
+            exit 1
+          elif ! pdfinfo book.pdf >/dev/null 2>&1; then
+            echo "PDF seems corrupted!"
+            exit 1
+          fi
+          echo "book.pdf built successfully."
+
+      # - name: Upload artifact
+      #   if: success()
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: book
+      #     path: book.pdf
+
+      - name: Prep dir
+        run: |
+          mkdir -p _site
+          cp book.pdf _site/
+
+      - name: Setup redirect
+        run: |
+          echo '<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=book.pdf"></head></html>' > ./_site/index.html
+
+      - name: Upload to github page
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./_site
+          
+  deploy:
+    needs: build-pdf
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
