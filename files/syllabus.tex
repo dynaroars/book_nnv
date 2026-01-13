@@ -30,10 +30,8 @@
 \textbf{Instructor:} & \href{https://roars.dev}{ThanhVu Nguyen} & & &  & \textbf{Email:} &  \href{mailto:tvn@gmu.edu}{tvn@gmu.edu} (Canvas is preferred)\\
 \textbf{Office Hr:} & (email to set appointment)& & & & \textbf{Place:} & Zoom or ENGR 4430\\
   \hline
-\textbf{GTA:} & TBD& & &  & \textbf{Email:} &  \href{mailto:tbd@gmu.edu}{tbd@gmu.edu}\\
-\textbf{Office Hr:} & TBD  & & & & \textbf{Place:} & in-person or Zoom (email for info) \\
-%  \hline
-%\textbf{UTA:} & Josabeth Zelalem Hailu & & &  & \textbf{Email:} &  \href{mailto:jhailu2@gmu.edu}{jhailu2@gmu.edu}\\
+\textbf{Grader} & Jahnvi & & &  & \textbf{Email:} &  \href{mailto:j20@gmu.edu}{j20@gmu.edu}\\
+\textbf{Office Hr:} &  (email to set appointment  & & & & \textbf{Place:} &  Zoom (email for info) \\
 \bottomrule
 \end{tabular}
 \end{minipage}
@@ -41,20 +39,18 @@
 \section{Description}
 
 \paragraph{Course Overview}
-This special topic course is a \textbf{research seminar} on the application of \emph{Formal Method} (FM) techniques to AI and Software Engineering (SWE) problems, with a focus on \emph{Deep Neural Networks} (DNNs) verification and assurance..  AI, in particular DNNs, have emerged as an effective approach for solving challenging real-world problems. %Among many others, they have been used for image recognition, autonomous driving, airplane collision control,
-power grid control, fake news detection, drug synthesis and discovery, 
-and COVID-19 detection and diagnosis.
+This special topic course is a \textbf{research seminar} on the application of \emph{Formal Method} (FM) techniques to AI and Software Engineering (SWE) problems, with a focus on \emph{Deep Neural Networks} (DNNs) verification and assurance.
+AI, in particular DNNs, have emerged as an effective approach for solving challenging real-world problems.
 However, just like traditional software, DNNs can have ``bugs'', e.g., producing unexpected results on inputs that are different from those in training data, and be attacked, e.g., small perturbations to the inputs by a malicious adversary or even sensorial imperfections result in misclassification.
-These issues, which have been observed in many DNNs and demonstrated in the real world,  naturally raise the question of how DNNs should be tested, validated, and ultimately \emph{verified} to meet the requirements of relevant robustness or safety standards.
+%These issues, which have been observed in many DNNs and demonstrated in the real world,  naturally raise the question of how DNNs should be tested, validated, and ultimately \emph{verified} to meet the requirements of relevant robustness or safety standards.
 
-In this class, we will learn various techniques and tools to verify software, and treat DNNs as special software systems. We will cover topics including the applications of verification, testing, analysis, constraint solving, and abstraction
-techniques to DNNS such as Feedforward Neural Networks
-(FNNs), Residual Networks (ResNet), and Convolutional Neural Networks
-(CNNs). We will focus on scalable and precise techniques that can deal with large, real-world DNNS.
+In this class, we will learn various techniques and tools to \emph{formally verify} software, and by treating DNNs as special software systems we can apply these techniques to DNNs.
+We will cover formal method topics in specification formalizations, constraint solving, and abstraction, and apply them DNNS such as Feedforward Neural Networks
+(FNNs), Residual Networks (ResNet), and Convolutional Neural Networks (CNNs). We will focus on scalable and precise techniques that can deal with large, real-world DNNS.
 
-The course will focus on active research areas in formal software and DNN reasoning,
-but the specific topics will be largely determined by a
-combination of instructor fiat and the interests of the students.
+% The course will focus on active research areas in formal software and DNN reasoning,
+% but the specific topics will be largely determined by a
+% combination of instructor fiat and the interests of the students.
 
 \paragraph{Learning Outcomes}
 
@@ -63,9 +59,9 @@ By the end of the course, students will gain a solid understanding of FM and the
 \subsection{Learning Outcomes}
 
 \begin{itemize}
-\item \textbf{Understanding of AI Verification Techniques and Tools}: Students will gain a deep understanding of FM verification concepts, techniques, and tools. They will learn how to apply these techniques to various types of neural networks, including FNNs, REsNets, CNNs, and RNNs.  The student will also learn how to use existing tools to analyze and verify DNNs.
+\item \textbf{Understanding of Verification Techniques and Tools}: Students will gain a deep understanding of FM/SWE verification concepts, techniques, and tools. They will learn how to apply these techniques to various types of neural networks, including FNNs, REsNets, CNNs, and RNNs.  The student will also learn how to use existing tools to analyze and verify DNNs.
 
-\item \textbf{In-Depth Understanding}: For the final project, students will delve into DNN verification. They will not only understand the theory but also be able to provide concrete examples and \emph{implement} the technique themselves, gaining a comprehensive understanding of the topic.  
+\item \textbf{In-Depth Understanding}: For the programming assignments, students will delve into DNN verification. They will not only understand the theory but also be able to provide concrete examples and \emph{implement} the technique themselves, gaining a comprehensive understanding of the topic.  
 
 \item \textbf{Strengthen knowledge in Linear Algebra, AI/ML, and Programming}: Students will develop or strengthen their foundational knowledge in linear algebra and AI/ML, making them well-prepared to tackle advanced topics and real-world problems in AI safety. 
 Programming assignments will require students to implement AI analysis techniques in Python. This will improve their programming skills and their ability to apply theoretical concepts to practical problems.
@@ -83,7 +79,7 @@ Programming assignments will require students to implement AI analysis technique
 \begin{itemize}
 \item No prerequisite courses. However, basic knowledge in linear algebra and AI/ML, e.g., CS 580, is strongly recommended
 \item Programming knowledge (Python): we will use Python for assignments and projects.
-\item \emph{Important}: This class does \emph{not} assume prior knowledge of any AI or deep learning topics, e.g., how NNs are created and trained, as all background material will be provided. It also does not teach these topics and instead focuses on formal analysis of given NNs.
+\item \emph{Important}: This class does \emph{not} assume prior knowledge of any AI, ML, or deep learning topics, e.g., how NNs are created and trained, as all background material will be provided. It also does not teach these topics and instead focuses on formal analysis of given NNs.
 \end{itemize}
 
 \subsection{Course Materials}
@@ -230,15 +226,8 @@ When explicitly stated by the instructor, Generative AI tools are allowed on the
 
 \subsection{Learning Disabilities}
 
-Disability Services at George Mason University is committed to providing equitable access to learning opportunities for all students by upholding the laws that ensure equal treatment of people with disabilities. If you are seeking accommodations for this class, please first visit \url{https://ds.gmu.edu/} for detailed information about the Disability Services registration process. Then please discuss your approved accommodations with me. Disability Services is located in Student Union Building I (SUB I), Suite 2500. Email: \href{mailto:ods@gmu.edu}{ods@gmu.edu} | Phone: (703) 993-2474
+Disability Services at George Mason University is committed to providing equitable access to learning opportunities for all students by upholding the laws that ensure equal treatment of people with disabilities. If you are seeking accommodations for this class, please first visit \url{https://ds.gmu.edu/} for detailed information about the Disability Services registration process. Then please discuss your approved accommodations with me. Disability Services is located in Student Union Building I (SUB I), Suite 2500. Email: \href{mailto:ods@gmu.edu}{ods@gmu.edu} | Phone: (703) 993-2474.
 
 
 \end{document} 
 
-
-
-For next year:  
-- do not allow missing example completely and just do make up 
-- dot not allow late submission 
-- do not do online quiz 
-- for make up,  a week after the grade is released
