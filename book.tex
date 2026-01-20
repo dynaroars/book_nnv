@@ -7447,34 +7447,6 @@ It would then check whether these constraints are satisfiable. In this case, the
 
 
 
-
-% ### How SAT/SMT Solving Thinks
-
-% SAT/SMT-based techniques encode the program and the **negation of the property** as constraints.
-
-% For `clip`, the tool encodes:
-
-% * The program logic
-% * The assertion: “output < 0 or output > 10”
-
-% Then it asks:
-
-% > Is this formula satisfiable?
-
-% If the answer is **unsatisfiable**, the property is proved.
-% If **satisfiable**, the solver produces a concrete counterexample.
-
-% ### Strengths and Limitations
-
-% * Fully automated
-% * Produces counterexamples
-% * Can handle real arithmetic
-% * May struggle with scalability
-
-% SAT/SMT solving is central to modern neural network verification tools.
-
-
-
 \paragraph{Abstract Interpretation}
 Abstract interpretation (AbsInt) analyzes a program by automatically computing \emph{over-approximations} of its behavior. Instead of tracking exact values, AbsInt tracks abstract properties such as ranges or signs of variables, e.g., instead of saying ``x = 5'', AbsInt might say ``x is in [0, 10]'' or ``x is non-negative''. Because AbsInt is fully automated and works with over-approximations, it is efficient and scales well to large programs. However, this comes at the cost of precision. AbsInt may produce false positives (reporting potential violations that are not real bugs) due to the over-approximation.
 
