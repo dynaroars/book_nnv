@@ -160,7 +160,7 @@
 %\newcommand{\mysubtitle}{A Handbook for Navigating CS PhD Admissions in the U.S.}
 \newcommand{\mybookaddress}{\href{https://roars.dev/book_nnv/book.pdf}{https://roars.dev/book_nnv/book.pdf}}
 \newcommand{\mybookgithub}{https://code.roars.dev/book_nnv}
-\newcommand{\me}{ThanhVu (Vu) Nguyen and Hai Duong}
+\newcommand{\me}{}
 \newcommand{\institute}{George Mason University}
 
 \newtcolorbox{mybox}{
@@ -738,7 +738,7 @@ Popular activation functions used in NNs include ReLU, Sigmoid, Tanh, and Softma
 
 \subsection{ReLU (Rectified Linear Unit)}\label{sec:relu}
 
-ReLU is a widely used activation function in NNs. It is defined as:
+ReLU is a widely used activation function in neural networks. It is defined as:
 
 \[
 \relu{x} = \max(0, x) =
@@ -948,27 +948,25 @@ This means that softmax maps the input vector $x$ to a probability distribution 
 \end{example}
 
 \begin{example}\label{ex:z3-dnn}
-Use Z3 to encode the DNN in~\autoref{fig:dnn} and compute its output $x5$ for the input $(x_1, x_2) = (2.0, 0.5)$.
+Use Z3 to encode the DNN in~\autoref{fig:dnn} and compute its output $x_5$ for the input $(x_1, x_2) = (2.0, 0.5)$.
 
-\begin{lstlisting}[language=python]
-    import z3
+\begin{lstlisting}[language=python,multicols=2]
+#setup the network
+x1 = z3.Real(`x1')
+x2 = z3.Real(`x2')
+x3 = -0.5*x1 + 0.5*x2 + 1.0    
+x3_ = z3.If(x3 <= 0, 0, x3)  # ReLU
+x4 = 0.5*x1 + -0.5*x2 + -1.0
+x4_ = z3.If(x4 <= 0, 0, x4)  # ReLU
+x5 = -1.0*x3_ + 1.0*x4_ - 1.0
 
-    #setUB the network
-    x1 = z3.Real(`x1')
-    x2 = z3.Real(`x2')
-    x3 = -0.5*x1 + 0.5*x2 + 1.0
-    x3_ = z3.If(x3 <= 0, 0, x3)  # ReLU
-    x4 = 0.5*x1 + -0.5*x2 + -1.0
-    x4_ = z3.If(x4 <= 0, 0, x4)  # ReLU
-    x5 = -1.0*x3_ + 1.0*x4_ - 1.0
-
-    #check output on given input
-    s = z3.Solver()
-    s.add(x1 == 2.0, x2 == 0.5)
-    if s.check() == z3.sat:
-        m = s.model()
-        print("Output x5 is ", m.evaluate(x5))
-\end{lstlisting}
+#check output on given input
+s = z3.Solver()
+s.add(x1 == 2.0, x2 == 0.5)
+if s.check() == z3.sat:
+    m = s.model()
+    print("Output x5 is ", m.evaluate(x5))
+\end{lstlisting} 
 \end{example}
 
 \section{Neural Network Architectures and Layers}
@@ -976,7 +974,7 @@ Use Z3 to encode the DNN in~\autoref{fig:dnn} and compute its output $x5$ for th
 NNs vary in architecture depending on how information flows through them and how computations are structured. Most common models are variations of the \emph{feedforward network}, with additional structures or constraints layered on top. ~\autoref{tab:nn-types} summarizes several common NN architectures and their typical application domains.
 
 
-\begin{table}[ht]
+\begin{table}[h]
 \caption{Popular NN Architectures and Applications}\label{tab:nn-types}
 \centering
 \small
@@ -1338,7 +1336,7 @@ graph example_nn {
 
 \chapter{Properties}\label{chap:properties}
 
-Similar to software programs (\autoref{chap:nn-vs-software}), neural networks (NNs) have desirable properties to ensure the network behaves as expected. These could be specific to the applications modeled by the network, e.g., safety properties for a network modelling a collision avoidance system, or general properties that are desired by all networks, e.g., robustness to small perturbations in the input data.
+Similar to traditional software systems, neural networks (NNs) have desirable properties to ensure the network behaves as expected. These could be specific to the applications modeled by the network, e.g., safety properties for a network modelling a collision avoidance system, or general properties that are desired by all networks, e.g., robustness to small perturbations in the input data.
 
 Below we will discuss properties that are relevant to the verification of NNs. Specifically, these properties can be
 expressed in a formal language supported by a DNN verifier. Additional properties can be found in the literature~\cite{seshia2018formal}.
@@ -3368,11 +3366,7 @@ u_2 &= 2 + (|1.0| + |0.2|) = 3.2.
 %   }
 
 %   % Labels
-% %<<<<<<< HEAD
-% %  \node[blue!70!black] at (1.2,1.8) {\small corner-based view};
-% %=======
 %   \node[blue!70!black] at (1.2,2.0) {\small Corner-based view};
-% %>>>>>>> 2cfddab7333b5cd686921149b6294ce8261c1eb7
 %   \node at (1.2,-0.4) {\small Defined by vertices};
 % \end{scope}
 
@@ -7219,10 +7213,178 @@ Thus, the property in~\autoref{eq:prop1} is \emph{not valid} for the DNN in~\aut
 \renewcommand{\appendixname}{Background}
 \appendix
 
+\chapter{Formal Methods}\label{chap:formal-methods}
+
+Neural network verification (NNV) is a rising topic that applies \emph{formal methods} (FM) to machine learning systems, particularly neural networks (NN).  This chapter explains what FM are, how verification differs from testing and debugging, and key concepts such as specifications, soundness, and completeness. It provides the foundational knowledge about formal methods necessary to understand NNV.
+
+\section{What Are Formal Methods (FM)?}
+
+FM are techniques for analyzing systems, e.g., computer software, using \emph{mathematically precise models and reasoning}. In FM the behavior of a program is described and analyzed using logic and mathematics rather than informal reasoning or empirical testing. This allows formal methods to provide \emph{guarantees} about system properties. For example, an FM might prove that a sorting algorithm always produces a correctly ordered list for any input list
+
+To motivate the need for FM, consider a simple function that computes the absolute value of an integer, where the goal is to show that the function always returns a non-negative number.
+
+\begin{lstlisting}[language=Python, caption={Absolute value function}, label={lst:abs_val}]
+def abs_val(x):
+    if x >= 0:
+        return x
+    else:
+        return -x
+\end{lstlisting}
+
+We might \emph{test} \code{abs\_val} by running it on a few inputs:
+
+\begin{lstlisting}
+abs_val(3) = 3
+abs_val(-5) = 5
+abs_val(0) = 0
+...
+\end{lstlisting}
+
+The program works correctly on these inputs, returning non-negative numbers. We could run many more tests with different inputs to increase our confidence. However, we can never test all possible integers, and therefore cannot be certain that the function works correctly for all possible inputs.
+This is precisely where bugs can hide, and why testing---no matter how extensive---alone cannot provide absolute guarantees about program correctness. 
+
+An FM would instead reason directly about the structure of the code and atempts to prove the statement:
+
+\begin{equation}\label{eq:abs_val_nonneg}
+ \text{For all integers}~x, \text{abs\_val}(x) \geq 0.
+\end{equation}
+
+If FM can prove this statement, we have a mathematical guarantee that the function behaves correctly for \emph{all integers}---not just the ones we happened to test.
+Thus, FM are about this kind of reasoning. They aim to establish \emph{guarantees} and \emph{proofs}, not probabilities or empirical evidence.
+
+% ---
+
+\section{Specifications}
+
+At the heart of every FM is a \emph{specification}---a precise description of what it means for a system to be correct (or safe, or robust, etc.). A specification defines the properties we want to verify about a system.
+
+Software engineers often write specifications informally in natural language. However, these informal specifications are often ambiguous and imprecise, making them vulnerable to misinterpretation and error. 
+For example, we might say: the system should be ``fast'' or ``robust.'' But what does that mean exactly? How fast is fast enough? What kinds of perturbations count as robust?  Or for a simple sorting algorithm, we might say: it should ``sort the list correctly.'' But what does ``correctly'' mean? Should it be sorted in ascending or descending order? Should it handle duplicate values?
+
+\begin{problem} 
+    Give the formal specification for a sorting function \code{sort(l1)} that takes a list of integers \code{l1} and returns a list of integers \code{l2}. The specification should define what it means for the output \code{l2} to be a correct sorting of the input \code{l1}.
+\end{problem}    
+
+In contrast, a formal specification must be \emph{unambiguous} and \emph{mathematically expressible}---typically using logic. It precisely defines the conditions under which the system is considered correct.
+
+For example, an informal specification would say``Small changes to the input image shouldn't cause the neural network to change its classification result'', while a formal specification of robustness would instead say:
+
+% > For a specific input image x, for all images x′ such that the distance between x and x′ is at most ε, the network’s output label for x′ must be the same as for x.
+
+% This statement is precise. It defines exactly what inputs are allowed and exactly what behavior is required. Because of this precision, it can be proved or disproved.
+
+% Without a specification like this, verification cannot even begin. Formal methods do not answer the question “Is this system good?” They answer the question “Does this system satisfy this specific property?”
+
+% ---
+
+% ## 3. Testing, Debugging, and Verification: A Fundamental Difference
+
+% Many students believe verification is simply testing taken to an extreme. This is incorrect. Testing, debugging, and verification answer different questions.
+
+% ### Testing
+
+% Testing evaluates a system by running it on a **finite set of concrete inputs**. In software engineering, this includes unit tests and integration tests. In machine learning, this includes validation and test datasets.
+
+% For example, suppose we train a neural network to recognize handwritten digits. We might test it on 10,000 labeled images and observe that it achieves 99% accuracy. This result tells us that the model performs well on those images. It does not tell us how the model behaves on inputs we did not test.
+
+% The key limitation of testing is that it can only sample the input space. For neural networks, the input space is usually enormous or continuous, making exhaustive testing impossible.
+
+% ### Debugging
+
+% Debugging is what we do after a test fails. We inspect the system, identify the cause of the failure, modify the system, and test again. Debugging improves systems, but it does not provide guarantees. It fixes known failures, not unknown ones.
+
+% ### Verification
+
+% Verification asks a fundamentally different question:
+
+% > Does the system satisfy the specification for **all possible inputs**?
+
+% Instead of running the system on selected inputs, verification reasons symbolically about its behavior. If verification succeeds, the result is a guarantee: the property holds for every input allowed by the specification.
+
+% Consider a neural network controlling the speed of a drone. Testing might involve simulating many flight scenarios. Verification might instead prove the statement:
+
+% > For all sensor readings within specified ranges, the commanded speed never exceeds a safe maximum.
+
+% This guarantee applies even to scenarios that were never simulated or imagined.
+
+% This is why formal verification is used in safety-critical systems and why neural network verification has become important as learned models are deployed in such settings.
+
+% ---
+
+% ## 4. Soundness and Completeness
+
+% Two core concepts in formal methods are **soundness** and **completeness**. These describe the reliability of a verification technique.
+
+% A verification method is **sound** if every property it claims to prove is actually true. In other words, a sound verifier never lies. If it says “this property holds,” then the property truly holds.
+
+% A verification method is **complete** if it can prove every true property. That is, if the property holds, the verifier will always succeed in proving it.
+
+% In practice, most verification tools cannot be both sound and complete for complex systems. Neural network verification problems are computationally hard, involving nonlinear functions and high-dimensional spaces. As a result, many NNV tools are designed to be sound but incomplete. They may fail to prove some true properties, but they will never incorrectly prove a false one.
+
+% This tradeoff is intentional. In safety-critical contexts, a false proof is unacceptable. An inconclusive result is inconvenient but safe.
+
+% ---
+
+% ## 5. Formal Methods Techniques in Practice
+
+% Formal methods encompass several families of techniques, each suited to different kinds of systems.
+
+% **Model checking** explores a system’s state space to determine whether undesirable states are reachable. It has been extremely successful in hardware verification and communication protocols but struggles with systems that involve continuous values.
+
+% **Theorem proving** uses logical inference to prove correctness properties. It is highly expressive but often requires significant human guidance.
+
+% **SAT and SMT solving** reduce verification problems to questions of logical satisfiability. Modern SAT and SMT solvers are highly optimized and form the backbone of many verification tools. Neural network verification heavily relies on these solvers to reason about constraints induced by network layers and activation functions.
+
+% **Abstract interpretation** analyzes systems by computing over-approximations of their behavior. It sacrifices precision in exchange for scalability while maintaining soundness.
+
+% Neural network verification combines ideas from SMT solving, optimization, and abstract interpretation to handle the numerical and nonlinear nature of neural networks.
+
+% ---
+
+% ## 6. Neural Network Verification as Formal Verification
+
+% Neural networks are often viewed as opaque or mysterious, but from a formal methods perspective, they are deterministic mathematical functions. Once trained, a neural network computes a fixed function from inputs to outputs.
+
+% This makes neural networks amenable to formal reasoning. A verification problem for a neural network typically asks whether the function computed by the network satisfies a given specification for all inputs in a specified region.
+
+% If the property holds, the verifier produces a proof. If it does not hold, the verifier produces a **counterexample**—a specific input that violates the property. This counterexample is not a heuristic or guess; it is a mathematically valid witness showing that the property is false.
+
+% This structure mirrors classical formal verification exactly. Neural network verification is not a new paradigm—it is a new application domain for established formal methods ideas.
+
+% ---
+
+% ## 7. Why Formal Methods Matter for Machine Learning
+
+% Machine learning systems are increasingly deployed in real-world settings where failures can cause harm. In such settings, average-case performance metrics like accuracy are insufficient. Rare failures matter precisely because they are rare and unexpected.
+
+% Testing can reveal many problems, but it cannot rule out all possible failures. Formal methods provide a way to reason about worst-case behavior and to establish guarantees that testing cannot.
+
+% Neural network verification exists because learned models are now used in contexts where guarantees matter. It provides tools for answering questions that testing alone cannot answer.
+
+% ---
+
+% ## 8. Limits of Formal Methods
+
+% Formal methods do not solve all problems. Verification can only reason about the model and specification provided. If the specification is incomplete or unrealistic, the guarantees are limited.
+
+% Verification does not ensure that a model is well-trained, unbiased, or appropriate for its task. It ensures only that the model satisfies the specified properties.
+
+% Understanding these limits is part of understanding formal methods. They provide precise answers to precise questions—not vague assurances.
+
+% ---
+
+% ## 9. Summary
+
+% Formal methods provide mathematically rigorous techniques for reasoning about system behavior. Verification differs fundamentally from testing and debugging by offering guarantees rather than empirical confidence. Neural network verification is a direct extension of these ideas to machine-learned models.
+
+% With this background, the reader is now prepared to study the concrete neural network verification techniques presented in the rest of this book.
+
+
+
 
 \chapter{Logics}\label{chap:logics}
 
-The field of neural network verification (NNV) relies heavily on two fundamental areas:
+The topic of neural network verification (NNV) relies heavily on two fundamental areas: 
 \emph{logic} (to formalize and reason about properties as logical formulae) and \emph{optimization} (to formulate and reason about numerical constraints).
 This part provides the necessary background on both topics in detail, starting with propositional logic and satisfiability, and then moving to linear and mixed-integer programming.
 
@@ -9295,11 +9457,19 @@ Although restarting may seem like an engineering aspect, it plays a crucial role
 \chapter{Schedule}\label{chap:schedule}
 
 \begin{itemize}
-    \item Week 1 (Aug 27): Introduction (videos of neural networks, basic terminologies and concepts).
+    \item Week 1 (Aug 27): 
+    \begin{itemize}
+        \item Introduction (basic terminologies and concepts).
+        \item Videos of neural networks 
+        \begin{itemize}
+            \item But what is a neural network?~\cite{3blue1brown2017neuralnetworks}
+            \item Large Language Models~\cite{3blue1brown2017llms}
+        \end{itemize}
+    \end{itemize}
     \item Week 2 (Sept 3):
     \begin{itemize}
     \item HW due: Post a short introduction about yourself on Canvas
-    \item Topics: Background on Logic~\autoref{chap:propositional-logic} and Linear Programming~\autoref{chap:lp}
+    \item Topics: Background on Logic~\autoref{chap:logic} and Linear Programming~\autoref{chap:lp}
     \item Quiz: no quiz this week
     \end{itemize}
     \item Week 3 (Sept 10):
