@@ -7251,12 +7251,11 @@ Thus, FM are about this kind of reasoning. They aim to establish \emph{guarantee
 
 % ---
 
-\section{Specifications}
+\section{Specifications}\label{sec:fm-spec}
 
-At the heart of every FM is a \emph{specification}---a precise description of what it means for a system to be correct (or safe, or robust, etc.). A specification defines the properties we want to verify about a system.
+At the heart of FM is a \emph{specification}---a precise description of what it means for a system to be correct (or safe, or robust, etc.). A specification defines the properties we want to verify about a system.
 
-Software engineers often write specifications informally in natural language. However, these informal specifications are often ambiguous and imprecise, making them vulnerable to misinterpretation and error. 
-For example, we might say: the system should be ``fast'' or ``robust.'' But what does that mean exactly? How fast is fast enough? What kinds of perturbations count as robust?  Or for a simple sorting algorithm, we might say: it should ``sort the list correctly.'' But what does ``correctly'' mean? Should it be sorted in ascending or descending order? Should it handle duplicate values?
+Software engineers often write specifications informally in natural language, e.g., an algorithm should be ``corect'' and ``fast' or a web server should be ``robust against attacks''. However, these informal specifications are often ambiguous and imprecise, making them vulnerable to misinterpretation and error. For example, What is correct? how fast is fast enough? How much perturbation should a system be able to handle to be considered ``robust''?  
 
 \begin{problem} 
     Give the formal specification for a sorting function \code{sort(l1)} that takes a list of integers \code{l1} and returns a list of integers \code{l2}. The specification should define what it means for the output \code{l2} to be a correct sorting of the input \code{l1}.
@@ -7264,53 +7263,256 @@ For example, we might say: the system should be ``fast'' or ``robust.'' But what
 
 In contrast, a formal specification must be \emph{unambiguous} and \emph{mathematically expressible}---typically using logic. It precisely defines the conditions under which the system is considered correct.
 
-For example, an informal specification would say
+For example, a desirable property of neural networks used for image classification is being \emph{robust} to small perturbations of the input image.  For this property, an informal specification might say:
 
 \emph{``Small changes to the input image shouldn't cause the neural network to change its classification label''. }
 
-\noindent In contrast a formal specification of robustness would instead say:
+In contrast a formal specification of robustness would instead say:
 
-\emph{``For an input image $x$, for all images $x'$ such that the distance between $x$ and $x'$ is at most $\epsilon$, the network's output label for $x'$ must be the same as for $x$''}
+\emph{``For an input image $x$, for all images $x'$ such that the distance between $x$ and $x'$ is at most $\epsilon$, the output label of a network $N$ for $x'$ must be the same as for $x$''}
 
-% This statement is precise. It defines exactly what inputs are allowed and exactly what behavior is required. Because of this precision, it can be proved or disproved.
+This statement is more precise. It defines exactly what inputs are allowed (those within distance $\epsilon$ of $x$) and exactly what behavior is required (the output label must remain the same). Typically, we even go further and express this property in formal logic, e.g.,
 
-% Without a specification like this, verification cannot even begin. Formal methods do not answer the question “Is this system good?” They answer the question “Does this system satisfy this specific property?”
+\begin{equation}\label{eq:robustness}
+\forall x', \|x - x'\| \leq \epsilon \implies N(x') = N(x)
+\end{equation}
+
+Once having a formal specification like this, we can apply formal verification techniques to prove or disprove it.
+
+
+\section{FM Technique}
+% ## Formal Methods as Tools: Models, Specifications, and Reasoning
+
+At a high level, an FM technique is an algorithm and implemented as a tool (a program) that analyzes a system.  The FM tool takes as inputs
+\begin{itemize}
+    \item A \emph{specification} of the desired property of the system
+    \item A \emph{model} of the system to be analyzed
+\end{itemize}
+and applies a \emph{reasoning process} to determine whether the model satisfies the specification. The tool produces an \emph{outcome} indicating whether the property holds, does not hold, or is unknown.
+
+\paragraph{System Model}
+The FM tool takes as input a \emph{model} of the system to be analyzed. This model is a mathematical abstraction of the system's behavior. It may be a program written in a language such as C or Python, a neural network in ONNX format, or other representations such as state machines or transition systems. This model, e.g., the program, is created by the programmer and is intended to capture the desired specification (\autoref{sec:fm-spec}) of the system.  However, the model might contain bugs or inaccuracies that violate the intended specification, which is what the FM tool aims to detect.
+
+
+\begin{example}\label{ex:clip}
+For example, consider the following simple system that ``clips'' an input value into the range [0, 10]. This system is modeled by the following Python function:
+
+\begin{lstlisting}
+def clip(x):
+   if x < 0:
+       return 0
+   elif x > 10:
+       return 10
+   else:
+       return x    
+\end{lstlisting}
+\end{example}
+
+The formal specification of the system is: 
+
+\begin{equation}
+\forall x \in \mathbb{R}, 0 \leq clip(x) \leq 10.
+\end{equation}
+
+\paragraph{FM Reasoning Process}
+
+Once the model and specification are given, a FM tool applies a \emph{reasoning process}---an algorithm---to determine whether the model satisfies the specification. 
+
+% Different formal-methods techniques use different reasoning processes:
+
+% * Exploring all reachable states
+% * Constructing logical proofs
+% * Solving constraint systems
+% * Computing sound approximations
+
+% What matters is that the reasoning process is **well-defined**. Given the same inputs, the tool will always reason the same way.
 
 % ---
 
-% ## 3. Testing, Debugging, and Verification: A Fundamental Difference
+% ### Unambiguous Outcomes
 
-% Many students believe verification is simply testing taken to an extreme. This is incorrect. Testing, debugging, and verification answer different questions.
+Finally, the FM algorithm/tool produces one of the \emph{three} possible results:
+\begin{enumerate}
+\item Proved:  the model satisfies the specification. 
+\item Disproved: the model does not satisfy the specification. Typically a counterexample is also provided to show the violation (bug).
+\item Unknown: the tool cannot determine whether the model satisfies the specification.
+\end{enumerate}
+% ## Soundness and Completeness of Formal-Methods Tools
 
-% ### Testing
-
-% Testing evaluates a system by running it on a **finite set of concrete inputs**. In software engineering, this includes unit tests and integration tests. In machine learning, this includes validation and test datasets.
-
-% For example, suppose we train a neural network to recognize handwritten digits. We might test it on 10,000 labeled images and observe that it achieves 99% accuracy. This result tells us that the model performs well on those images. It does not tell us how the model behaves on inputs we did not test.
-
-% The key limitation of testing is that it can only sample the input space. For neural networks, the input space is usually enormous or continuous, making exhaustive testing impossible.
-
-% ### Debugging
-
-% Debugging is what we do after a test fails. We inspect the system, identify the cause of the failure, modify the system, and test again. Debugging improves systems, but it does not provide guarantees. It fixes known failures, not unknown ones.
-
-% ### Verification
-
-% Verification asks a fundamentally different question:
-
-% > Does the system satisfy the specification for **all possible inputs**?
-
-% Instead of running the system on selected inputs, verification reasons symbolically about its behavior. If verification succeeds, the result is a guarantee: the property holds for every input allowed by the specification.
-
-% Consider a neural network controlling the speed of a drone. Testing might involve simulating many flight scenarios. Verification might instead prove the statement:
-
-% > For all sensor readings within specified ranges, the commanded speed never exceeds a safe maximum.
-
-% This guarantee applies even to scenarios that were never simulated or imagined.
-
-% This is why formal verification is used in safety-critical systems and why neural network verification has become important as learned models are deployed in such settings.
+% Formal-methods tools are evaluated not by speed or convenience alone, but by two fundamental properties: **soundness** and **completeness**.
 
 % ---
+
+% ### Soundness
+
+% A formal-methods tool is **sound** if it never produces an incorrect proof.
+
+% Formally:
+
+% > If the tool says “the property holds,” then the property truly holds in the model.
+
+% Soundness is about **trustworthiness**.
+
+% In the `clip` example, a sound tool will never claim that the output is always between 0 and 10 unless this is mathematically true for all inputs.
+
+% Soundness is non-negotiable in safety-critical settings. A tool that is fast but unsound is worse than useless—it is dangerous.
+
+% ---
+
+% ### Completeness
+
+% A formal-methods tool is **complete** if it can prove every true property (within its domain).
+
+% Formally:
+
+% > If the property holds in the model, the tool is guaranteed to prove it.
+
+% Completeness is about **power**, not trust.
+
+% ---
+
+% ### The Tradeoff
+
+% In practice, most formal-methods tools are:
+
+% * **Sound but incomplete**
+
+% This means:
+
+% * They never lie
+% * But they may fail to prove some true properties
+
+% This tradeoff is intentional. For complex systems, achieving both soundness and completeness is often computationally infeasible.
+
+% For example, a tool might fail to prove that `clip(x)` always returns a value ≤ 10—not because the property is false, but because the tool’s reasoning technique is too conservative.
+
+% This result is acceptable. A false negative (failure to prove a true property) is inconvenient. A false positive (proving a false property) is unacceptable.
+
+% ---
+
+\section{Major Classes of Formal Methods Algorithms}
+
+% *(Using One Running Example)*
+
+We now introduce the major classes of formal-methods techniques. All of these techniques \emph{statically analyze}--- analyzing the program representation (e.g., code) without running the program---the model and specification to determine whether the property holds.
+
+We will use the `clip` function in~\autoref{ex:clip} as a running example demonstrate how each technique reasons about the same model and specification.
+
+
+
+\paragraph{Model Checking}
+
+Model checking (MC) works by \emph{exploring all possible states} of a system and checking whether \emph{bad states} which violate the specification are reachable. MC works well for systems with a finite number of states such as hardware designs and communication protocols because these systems have finite state spaces that can be exhaustively explored. However, MC struggles with systems involving continuous variables or infinite state spaces, e.g., a program with loops. 
+
+\begin{example}
+For \code{clip}, MC would build a state machine representing all possible execution paths of the program for different inputs. It would then check whether any path leads to a state where the output is < 0 or > 10. 
+A standard (naive) MC would struggle here because the number of states is infinite (the input $x$ is a real number). So MC would need to discretize or bound the input space, e.g., by considering only integer values of x from -1000 to 1000, to make the analysis feasible.
+\end{example}
+
+\paragraph{Interactive Theorem Proving}  
+An interactive theorem prover (ITP) or \emph{proof assistant} attempts to reason about the program using \emph{logical inference rules} to construct a formal proof that the specification holds for all possible inputs. The reason it is called ``interactive'' is that the user must guide the proof process by by providing lemmas, definitions, and strategies to help the prover construct the proof.  ITPs are powerful and can prove deep rich properties about programs. However, they may require significant human guidance to construct the proofs and do not scale well to large or complex systems. 
+
+\begin{example}
+For \code{clip}, a TP might reason as follows:
+\begin{enumerate}
+\item Case 1: If \code{x < 0}, \code{clip} returns 0, which is in $[0, 10]$
+\item Case 2: If \code{x > 10}, \code{clip} returns 10, which is in $[0, 10]$
+\item Case 3: Otherwise, $0 \leq x \leq 10$, \code{clip} returns \code{x}, which is in $[0, 10]$.
+\end{enumerate}
+\end{example}
+
+
+\paragraph{Satisfaiblity Checking (SAT) and Satisfaiblity Modulo Theories (SMT) Solving}
+SAT and SMT solving are automated techniques---also referred to as \emph{automatic theorem proving}---that reduce the verification problem to a question of \emph{logical satisfiability}. These solvers take as input a set of logical formulae representing the program and the \emph{negation} of the specification, and determine whether there exists an assignment of variables that makes the formulae true (satisfiable) or not (unsatisfiable). If the formulae are unsatisfiable, the property is proved. If satisfiable, the property is disproved, and the solver provides a concrete counterexample demonstrating the violation.
+
+SAT/SMT solving is crucial to modern formal methods and software verification tools due to its automation and ability to handle complex logical constraints. However, as we will see, pure SAT/SMT solving struggle with scalability for neural networks and thus leading to the development of hybrid techniques that combine SAT/SMT solving with other methods such as abstract interpretation.
+
+\begin{example}
+For \code{clip}, a SAT/SMT solver would encode the program as logical constraints: 
+
+\begin{align}
+    & (x < 0 \implies y = 0) \land \\
+    & (x > 10 \implies y = 10) \land \\
+    & (0 \leq x \leq 10 \implies y = x)
+\end{align}            
+
+and the negation of the specification
+
+\begin{equation}
+    (y < 0) \lor (y > 10)    
+\end{equation}
+
+It would then check whether these constraints are satisfiable. In this case, the solver would find that the constraints are unsatisfiable, proving that \code{clip} always returns a value in [0, 10].
+\end{example}
+
+
+
+
+% ### How SAT/SMT Solving Thinks
+
+% SAT/SMT-based techniques encode the program and the **negation of the property** as constraints.
+
+% For `clip`, the tool encodes:
+
+% * The program logic
+% * The assertion: “output < 0 or output > 10”
+
+% Then it asks:
+
+% > Is this formula satisfiable?
+
+% If the answer is **unsatisfiable**, the property is proved.
+% If **satisfiable**, the solver produces a concrete counterexample.
+
+% ### Strengths and Limitations
+
+% * Fully automated
+% * Produces counterexamples
+% * Can handle real arithmetic
+% * May struggle with scalability
+
+% SAT/SMT solving is central to modern neural network verification tools.
+
+
+
+\paragraph{Abstract Interpretation}
+Abstract interpretation (AbsInt) analyzes a program by automatically computing \emph{over-approximations} of its behavior. Instead of tracking exact values, AbsInt tracks abstract properties such as ranges or signs of variables, e.g., instead of saying ``x = 5'', AbsInt might say ``x is in [0, 10]'' or ``x is non-negative''. Because AbsInt is fully automated and works with over-approximations, it is efficient and scales well to large programs. However, this comes at the cost of precision. AbsInt may produce false positives (reporting potential violations that are not real bugs) due to the over-approximation.
+
+
+
+\begin{example}
+For \code{clip}, an AbsInt tool might reason:
+\begin{enumerate}
+    \item Input \code{x} is in $(-\infty, \infty)$ and output \code{y} is unknown initially.
+    \item After \code{if x < 0} branch, output \code{y} is in $[0, 0]$.
+    \item After \code{if x > 10} branch, output \code{y} is in $[10, 10]$.
+    \item After the else branch, output \code{y} is in $[0, 10]$.
+    \item Combining all branches, output \code{y} is in $[0, 10]$.
+\end{enumerate}
+\end{example}
+
+For neural network verification, AbsInt is often used to compute bounds on the outputs of neural network layers given bounds on the inputs. AbsInt is necessarily because neural networksare are very large and have complex nonlinear functions such as ReLU that are difficult to analyze exactly.
+
+
+
+% ---
+
+% ## Why This Matters for Neural Network Verification
+
+% Neural network verification tools follow the **same structure**:
+
+% * The neural network is the **model**
+% * Robustness or safety conditions are the **specification**
+% * SMT, abstract interpretation, or hybrid techniques perform the **reasoning**
+% * The result is **proved, disproved, or unknown**
+
+% Nothing about this framework is unique to neural networks. What is new is the complexity of the model.
+
+% Understanding formal methods at this level is essential before studying neural network verification algorithms.
+
+
+
+
 
 % ## 4. Soundness and Completeness
 
