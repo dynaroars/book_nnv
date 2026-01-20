@@ -7207,8 +7207,6 @@ Thus, the property in~\autoref{eq:prop1} is \emph{not valid} for the DNN in~\aut
 
 %\chapter{Conclusion}
 
-
-
 \part{Background\label{part:background}}
 \renewcommand{\appendixname}{Background}
 \appendix
@@ -7267,9 +7265,13 @@ For example, we might say: the system should be ``fast'' or ``robust.'' But what
 
 In contrast, a formal specification must be \emph{unambiguous} and \emph{mathematically expressible}---typically using logic. It precisely defines the conditions under which the system is considered correct.
 
-For example, an informal specification would say``Small changes to the input image shouldn't cause the neural network to change its classification result'', while a formal specification of robustness would instead say:
+For example, an informal specification would say
 
-% > For a specific input image x, for all images x′ such that the distance between x and x′ is at most ε, the network’s output label for x′ must be the same as for x.
+\emph{``Small changes to the input image shouldn't cause the neural network to change its classification label''. }
+
+\noindent In contrast a formal specification of robustness would instead say:
+
+\emph{``For an input image $x$, for all images $x'$ such that the distance between $x$ and $x'$ is at most $\epsilon$, the network's output label for $x'$ must be the same as for $x$''}
 
 % This statement is precise. It defines exactly what inputs are allowed and exactly what behavior is required. Because of this precision, it can be proved or disproved.
 
