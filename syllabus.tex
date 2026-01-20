@@ -1,0 +1,234 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage[colorlinks,pagebackref,pdfusetitle,urlcolor=blue,citecolor=blue,linkcolor=red,bookmarksnumbered,plainpages=false]{hyperref}
+\renewcommand{\figurename}{Fig.}
+\renewcommand{\tablename}{Tab.}
+\def\Section{\S}
+\renewcommand{\figureautorefname}{Fig.}
+\renewcommand{\tableautorefname}{Tab.}
+\makeatletter
+\renewcommand{\chapterautorefname}{\S\@gobble}
+\renewcommand{\sectionautorefname}{\S\@gobble}
+\renewcommand{\subsectionautorefname}{\S\@gobble}
+\renewcommand{\appendixautorefname}{\S\@gobble}
+
+\begin{document}
+\begin{center}
+{\Large \textsc{CS690/SWE699: Formal Reasoning in AI and Software Engineering (SWE)}}
+
+\vspace{0.1in}
+{\large Spring '26}
+\end{center}
+
+\begin{minipage}[t]{.75\textwidth}
+    \centering
+\begin{tabular}{llcccll}
+  \toprule
+  \textbf{Meetings:} & Tues 4:30PM -- 7:10PM  & & & & \textbf{Place:} & PLANET 224\\
+\textbf{Instructor:} & \href{https://roars.dev}{ThanhVu Nguyen} & & &  & \textbf{Email:} &  \href{mailto:tvn@gmu.edu}{tvn@gmu.edu} (Canvas is preferred)\\
+\textbf{Office Hr:} & (email to set appointment)& & & & \textbf{Place:} & Zoom or ENGR 4430\\
+  \hline
+\textbf{Grader} & Jahnvi & & &  & \textbf{Email:} &  \href{mailto:j20@gmu.edu}{j20@gmu.edu}\\
+%\textbf{Office Hr:} &  (email to set appointment  & & & & \textbf{Place:} &  Zoom (email for info) \\
+\bottomrule
+\end{tabular}
+\end{minipage}
+\section{Description}
+
+\paragraph{Course Overview}
+This special topic course is a \textbf{research seminar} on the application of \emph{Formal Method} (FM) techniques to AI and Software Engineering (SWE) problems, with a focus on \emph{Deep Neural Networks} (DNNs) verification and assurance.
+AI, in particular DNNs, have emerged as an effective approach for solving challenging real-world problems.
+However, just like traditional software, DNNs can have ``bugs'', e.g., producing unexpected results on inputs that are different from those in training data, and be attacked, e.g., small perturbations to the inputs by a malicious adversary or even sensorial imperfections result in misclassification.
+%These issues, which have been observed in many DNNs and demonstrated in the real world,  naturally raise the question of how DNNs should be tested, validated, and ultimately \emph{verified} to meet the requirements of relevant robustness or safety standards.
+
+In this class, we will learn various techniques and tools to \emph{formally verify} software, and by treating DNNs as special software systems we can apply these techniques to DNNs.
+We will cover formal method topics in specification formalizations, constraint solving, and abstraction, and apply them DNNS such as Feedforward Neural Networks
+(FNNs), Residual Networks (ResNet), and Convolutional Neural Networks (CNNs). We will focus on scalable and precise techniques that can deal with large, real-world DNNS.
+
+% The course will focus on active research areas in formal software and DNN reasoning,
+% but the specific topics will be largely determined by a
+% combination of instructor fiat and the interests of the students.
+
+\paragraph{Learning Outcomes}
+
+By the end of the course, students will gain a solid understanding of FM and their applications, particularly in the context of AI and software engineering. 
+
+\subsection{Learning Outcomes}
+
+\begin{itemize}
+\item \textbf{Understanding of Verification Techniques and Tools}: Students will gain a deep understanding of FM/SWE verification concepts, techniques, and tools. They will learn how to apply these techniques to various types of neural networks, including FNNs, REsNets, CNNs, and RNNs.  The student will also learn how to use existing tools to analyze and verify DNNs.
+
+\item \textbf{In-Depth Understanding}: For the programming assignments, students will delve into DNN verification. They will not only understand the theory but also be able to provide concrete examples and \emph{implement} the technique themselves, gaining a comprehensive understanding of the topic.  
+
+\item \textbf{Strengthen knowledge in Linear Algebra, AI/ML, and Programming}: Students will develop or strengthen their foundational knowledge in linear algebra, logics, and applications of FM to AI/ML.
+Programming assignments will require students to implement FM ideas and techniques in Python. This will improve their programming skills and their ability to apply theoretical concepts to practical problems.
+
+
+\item \textbf{Critical Reading and Evaluation}: Through weekly reading assignments, students will learn to evaluate both book chapters and research papers related to AI verification and analysis. They will be able to identify the problem addressed, its motivation, assess proposed solutions, and analyze the strengths and weaknesses of different approaches.
+
+\item \textbf{Presentation and Discussion Skills}: Students will have the opportunity to lead discussions and presenting their solutions. This will enhance their presentation and communication skills, as well as their ability to facilitate meaningful discussions among peers.
+
+\end{itemize}
+
+
+
+\subsection{Prerequisite}
+\begin{itemize}
+\item No prerequisite courses. However, basic knowledge in linear algebra and AI/ML, e.g., CS 580, is strongly recommended
+\item Programming knowledge (Python): we will use Python for assignments and projects.
+\item \emph{Important}: This class does \emph{not} assume prior knowledge of any AI, ML, or deep learning topics, e.g., how NNs are created and trained, as all background material will be provided. It also does not teach these topics and instead focuses on formal analysis of given NNs.
+\end{itemize}
+
+\subsection{Course Materials}
+\begin{itemize}
+    \item T. Nguyen and H. Duong, \href{https://roars.dev/nnv/book.pdf}{\emph{Introduction to Neural Network Verifiation}} (\textbf{Required}, free)
+
+
+    \item A. Albarghouthi. \href{https://arxiv.org/pdf/2109.10317}{\emph{Introduction to Neural Network Verification}}. 2021. (\textbf{Recommended}, free)
+
+    \item Other useful resources:
+\begin{itemize}
+  \item \href{https://neural-network-verification.com/}{Neural Network Verification Tutorial}
+  \item \href{https://publish.illinois.edu/ece598hz-fall2024/course-schedule/}{Advanced Topics in ML and Formal Methods (Grad level course at UIUC)}
+\end{itemize}
+
+\end{itemize}
+
+\subsection{Assignment Submission and Communication}
+
+We will use \textbf{Canvas} for communication and submitting assignments, and to keep track of grades (\autoref{sec:grading}).  
+It's the student's responsibility to ensure that your grade records are correct.
+
+There are two types of assignments in this course: hand-written assignments and code/programming assignments. 
+\textbf{DO NOT} submit link to an image, document, file; you will receive a 0 for the assignment if you submit a link.
+
+
+\paragraph{Hand-written Assignments} All assignments except programming ones (discussed below). Quizzes will be done in class on paper. Homework assignments will be done on paper (or tablet) and submitted as image or PDF files to Canvas. More details below.
+
+
+\paragraph{Code/Programming Assignments}  You will submit your \texttt{src code} files (Python files) and \texttt{README} file (in PDF or Markdown format) to Canvas. You can submit a single ZIP file containing all files. Instructions are provided in each assignment.
+
+
+
+
+
+
+% \section{Grading}
+% You will be evaluated based on
+% \begin{enumerate}
+% \item Participation: reading assignments, discussion, participation (20\%),
+% \item Quizzes: short quizzes at the end of class (30\%)
+% \item Programming assignments: 3--4 PA's (30\%),
+% \item Project: 1 final project (20\%)
+% \end{enumerate}
+
+
+
+
+
+% \section{Weekly Schedule}
+
+% This class is a group-based, \emph{in-person} offering. You need to be
+% present in class at class time. You will also need to schedule regular
+% meetings with your group.
+
+% Each week will cover a topic. Each
+% topic will follow roughly the same sequence of preparation and reading materials before class, in-class learning activities and homework/project assignments. Many of these activities will be group based.
+
+
+\section{Grading}\label{sec:grading}
+
+\begin{center}
+\begin{tabular}{lr}
+\textbf{Assignments} & \textbf{Percentage} \\
+\hline
+Participation & 5\% \\
+Homework (HW) Assignments & 35\% \\
+Quizzes & 40\% \\
+Programming Assignments (PAs) & 20\% \\
+\hline
+    \textbf{Total} & 100\% \\
+\end{tabular}
+\end{center}
+
+
+\paragraph{Scales}
+
+\begin{center}
+    \begin{tabular}{ll|ll|ll}
+    A+ & $\ge$ 97\% & A & $\ge$  93\% & A- & $\ge$
+    90\% \\
+    B+ & $\ge$  87\% & B & $\ge$  83\% & B- & $\ge$
+    80\% \\
+    C & $\ge$  70\% & D & $\ge$  60\% & F & $<$
+    60\% \\
+    \end{tabular}
+    \end{center}
+
+%\paragraph{Groups} For quizzes, you will work individually, but for HW and PAs you can team up with another student (a group of 2). You will need to submit a \emph{single group} solution for each assignment. You also need to include a statement of contributions from each group member. Once you form a group, you cannot change it and will work with your group on all assignments.  
+
+\paragraph{Individual Work} All work (quizzes, homework, programming assignments) must be done \emph{individually}. There is \emph{no} group work in this class.
+
+
+\subsection{Participation}
+
+I place great emphasis on peer learning and interactive engagement. The class is structured to leverage interactions to the largest extent possible. Often, there will be in-class exercises for every class. The in-class exercises will be closely related to an upcoming homework assignment.
+
+
+\subsection{Homework Assignments}\label{homework-assignments}
+
+There are weekly \emph{homework assignments}, which are given in \textbf{Schedule} section of the NNV book. Homework assignments are due \textbf{before class}, i.e., before 4:30 PM on the day we meet. Late submissions are \emph{not} accepted except in truly exceptional circumstances.
+
+\begin{itemize}
+    \item Homeworks to be written by hand (on paper, tablet, etc -- but must be handwritten). When done, you submit by taking a picture of your answers and submitting the picture (as a PDF or image file) to Canvas.
+\item You will be asked present their homework solution in class.
+\item There are \textbf{no make-ups} and \textbf{absolutely no late submissions} because we present solutions in class.
+%\item If work in group then everyone in the group gets the same credit.
+\end{itemize}
+
+
+
+\subsection{Quizzes}\label{weekly-quizzes}
+
+We will have a short quiz every week. Each quiz is worth 10 pts. The quiz will be based on the material covered in the previous weeks. Each quiz happens during class. \emph{You must be present to take the quiz}.  
+
+\begin{itemize}
+\item Quizzes will be \textbf{handwritten on papers, which are then submitted when you're done}, so be sure to bring writing materials to class.
+\item We will \textbf{drop your lowest two} quiz scores.
+\item \textbf{No make-ups} for missed quizzes.
+\end{itemize}
+
+
+\subsection{Programming Assignments (PA's)}
+
+This course consists of several Programming Assignments (PA's) in Python. These PAs are designed for you to practice and implement the techniques learned in class. \emph{All assignments have similar grading weights}.
+
+Your submissions will be evaluated for correctness, answers to solutions, and documentation. We will not attempt to fix broken
+submissions that fail to execute properly; only limited partial credit will be given in such situations. Assignments are due at \textbf{11:59pm} on the due date.
+
+
+\begin{itemize}
+\item \textbf{No late submissions}
+\end{itemize}
+
+
+
+\newpage
+\section{GMU Policies}
+\subsection{Honor Code}\label{sec:honor-code}
+
+As with all GMU courses, this class governed by the \href{https://academicstandards.gmu.edu}{GMU Honor Code}. In this course, all assignments carry with them an implicit statement that it is the sole work of the author.
+
+\subsection{Uses of AI Tools}
+
+When explicitly stated by the instructor, Generative AI tools are allowed on the named assignment. Students will be directed if and when citation or statement-of-usage direction is required. Use of these tools on any assignment not specified will be considered a violation of the academic standards policy. All academic standards violations will be reported using the Academic Standards Referral Form. 
+
+\subsection{Learning Disabilities}
+
+Disability Services at George Mason University is committed to providing equitable access to learning opportunities for all students by upholding the laws that ensure equal treatment of people with disabilities. If you are seeking accommodations for this class, please first visit \url{https://ds.gmu.edu/} for detailed information about the Disability Services registration process. Then please discuss your approved accommodations with me. Disability Services is located in Student Union Building I (SUB I), Suite 2500. Email: \href{mailto:ods@gmu.edu}{ods@gmu.edu} | Phone: (703) 993-2474.
+
+
+\end{document} 
+
