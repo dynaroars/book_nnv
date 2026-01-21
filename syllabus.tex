@@ -232,3 +232,44 @@ Disability Services at George Mason University is committed to providing equitab
 
 \end{document} 
 
+
+
+Binary search 
+
+methodBS(lst, x):  
+    # precondition
+
+%   if not_sort(lst): 
+%     raise Error("need sorted lst")
+
+    if not_sort(lst):
+        lst = sort(lst)
+
+  #lst is sorted
+  ...
+
+    # postcondition
+  return idx
+
+
+write specification of methodBS (e.g., what's the relationship btw the output idx and the inputs lst and x).  Let's assume using C or Java. 
+
+# precondition (things that we assume is true before invoking function)
+##- input lst is sorted
+
+
+# postcondition (things that are true after the function is invoked)
+# - if lst is not sorted then raise Error   
+# - if lst is not sorted then sort it
+- if x is not in lst, idx is -1 
+- if x is in the lst, 0 <= idx  <= |lst| - 1  &  lst[idx] == x
+
+
+% r = x /y 
+int div(x,y):
+
+    return z
+
+# post cond
+if (x or y) is NaN, then raise NaN exception
+if y == 0, then raise DivByZero exception     
