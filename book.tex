@@ -7399,15 +7399,20 @@ We will use the \code{clip} function in~\autoref{ex:clip} as a running example d
 
 \paragraph{Model Checking}
 
-Model checking (MC) works by \emph{exploring all possible states} of a system and checking whether \emph{bad states} which violate the specification are reachable. MC works well for systems with a finite number of states such as hardware designs and communication protocols because these systems have finite state spaces that can be exhaustively explored. However, MC struggles with systems involving continuous variables or infinite state spaces, e.g., a program with loops. 
+Model checking (MC) works by \emph{exploring all possible states} of a system and checking whether \emph{bad states} which violate the specification are reachable. 
+
+MC works well for systems with a finite number of states such as hardware designs and communication protocols because these systems have finite state spaces that can be exhaustively explored. However, MC struggles with systems involving continuous variables or infinite state spaces, e.g., a program with loops. 
 
 \begin{example}
 For \code{clip}, MC would build a state machine representing all possible execution paths of the program for different inputs. It would then check whether any path leads to a state where the output is < 0 or > 10. 
-A standard (naive) MC would struggle here because the number of states is infinite (the input $x$ is a real number). So MC would need to discretize or bound the input space, e.g., by considering only integer values of x from -1000 to 1000, to make the analysis feasible.
+
+A standard (na\"ive) MC would struggle here because the number of states is huge (the input $x$ is a real number). So MC would need to discretize or bound the input space, e.g., by considering only integer values of x from -1000 to 1000, to make the analysis feasible.
 \end{example}
 
 \paragraph{Interactive Theorem Proving}  
-An interactive theorem prover (ITP) or \emph{proof assistant} attempts to reason about the program using \emph{logical inference rules} to construct a formal proof that the specification holds for all possible inputs. The reason it is called ``interactive'' is that the user must guide the proof process by by providing lemmas, definitions, and strategies to help the prover construct the proof.  ITPs are powerful and can prove deep rich properties about programs. However, they may require significant human guidance to construct the proofs and do not scale well to large or complex systems. 
+An interactive theorem prover (ITP) or \emph{proof assistant} attempts to reason about the program using \emph{logical inference rules} to construct a formal proof that the specification holds for all possible inputs. The reason it is called ``interactive'' is that the user must guide the proof process by providing lemmas, definitions, and strategies to help the prover construct the proof.  
+
+ITPs are powerful and can prove deep rich properties about programs. However, they may require significant human guidance to construct the proofs and do not scale well to large or complex systems. 
 
 \begin{example}
 For \code{clip}, a TP might reason as follows:
@@ -7445,8 +7450,9 @@ It would then check whether these constraints are satisfiable. In this case, the
 
 
 \paragraph{Abstract Interpretation}
-Abstract interpretation (AbsInt) analyzes a program by automatically computing \emph{over-approximations} of its behavior. Instead of tracking exact values, AbsInt tracks abstract properties such as ranges or signs of variables, e.g., instead of saying ``x = 5'', AbsInt might say ``x is in [0, 10]'' or ``x is non-negative''. Because AbsInt is fully automated and works with over-approximations, it is efficient and scales well to large programs. However, this comes at the cost of precision. AbsInt may produce false positives (reporting potential violations that are not real bugs) due to the over-approximation.
+Abstract interpretation (AbsInt) analyzes a program by automatically computing \emph{over-approximations} of its behavior. Instead of tracking exact values, AbsInt tracks abstract properties such as ranges or signs of variables, e.g., instead of saying ``x = 5'', AbsInt might say ``x is in [0, 10]'' or ``x is non-negative''. 
 
+Because AbsInt is fully automated and uses over-approximations, it is efficient and scales well to large programs. However, overapproximation comes at the cost of precision: it can cause AbsInt to produce false positives by reporting potential violations that are not real bugs.
 
 
 \begin{example}
