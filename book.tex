@@ -7472,7 +7472,7 @@ For neural network verification, AbsInt is often used to compute bounds on the o
 
 \section{Soundness and Completeness}
 
-Two core concepts in formal methods are \emph{soundness} and \emph{completeness}. These describe the correctness and power of an FM algorithm.  
+Two core concepts in formal methods are \emph{soundness} and \emph{completeness}. These describe the correctness and power of an FM algorithm\footnote{Mike Hicks also wrote a good blog post on this topic: \url{http://www.pl-enthusiast.net/2017/10/23/what-is-soundness-in-static-analysis/}.}.  
 
 \begin{definition}
 An FM algorithm is \textbf{sound} if every property it claims to prove is actually true. In other words, if it says \emph{``this property holds in this system,''} then the property truly holds. Conversely, an FM algorithm is \textbf{unsound} if it can claim that a false property is true.
@@ -7485,7 +7485,6 @@ Two things to note about soundness:
     \item It is important to distinguish between an FM algorithm and its implementation (the software tool). An FM algorithm may be sound, but its implementation---typically written by human (or AI nowadays)---may contain bugs that cause it to produce unsound results. 
 \end{itemize}
 
-
 \begin{definition}
 An FM algorithm is \textbf{complete} if it can prove every true property. That is, if the property holds, the verifier will always be able to prove it. Conversely, an FM algorithm is \textbf{incomplete} if there exist true properties that it cannot prove.
 \end{definition}
@@ -7497,7 +7496,7 @@ Two things to note about completeness:
 \end{itemize}
 
 
-Obviously, the ideal FM algorithm is both sound and complete: it never claims a false property is true and can prove every true property. However, achieving both soundness and completeness is often computationally infeasible for complex systems. Thus, between soundness and completeness, soundness is typically prioritized in safety-critical settings because it is better to be unsure about a system (and say ``unknown'' or even claim that it is unsafe) than to incorrectly claim that it is safe when it is not. Thus, most practical FM algorithms are designed to be sound but incomplete.
+Ideally, FM algorithm should be both sound and complete: never prove a false property and can prove every true property. However,  we can only hope to achieve one of the two properties because achieving both is often computationally infeasible for complex systems. Between the two, soundness is typically prioritized in safety-critical settings because it is better to be unsure about a system (and say ``unknown'' or even claim that it is unsafe) than to incorrectly claim that it is safe when it is not. Thus, most practical FM algorithms are designed to be sound but incomplete.
 
 
 
