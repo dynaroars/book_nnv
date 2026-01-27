@@ -7212,13 +7212,13 @@ Thus, the property in~\autoref{eq:prop1} is \emph{not valid} for the DNN in~\aut
 
 \chapter{Formal Methods}\label{chap:formal-methods}
 
-Neural network verification (NNV) is a rising topic that applies \emph{formal methods} (FM) to machine learning systems, particularly neural networks (NN).  This chapter explains what FM are, how verification differs from testing and debugging, and key concepts such as specifications, soundness, and completeness. It provides the foundational knowledge about formal methods necessary to understand NNV.
+Neural network verification (NNV) is a rising topic that applies \emph{formal methods} (FM) to machine learning systems, particularly neural networks (NN).  This chapter explains what FM are, how verification differs from testing and debugging, and key concepts such as specifications and common FM techniques.
 
 \section{What Are Formal Methods (FM)?}
 
 FM are techniques for analyzing systems, e.g., computer software, using \emph{mathematically precise models and reasoning}. In FM the behavior of a program is described and analyzed using logic and mathematics rather than informal reasoning or empirical testing. This allows formal methods to provide \emph{guarantees} about system properties. For example, an FM might prove that a sorting algorithm always produces a correctly ordered list for any input list
 
-To motivate the need for FM, consider a simple function that computes the absolute value of an integer, where the goal is to show that the function always returns a non-negative number.
+\paragraph{Compared to Testing} To motivate the need for FM, consider a simple function that computes the absolute value of an integer, where the goal is to show that the function always returns a non-negative number.
 
 \begin{lstlisting}[language=Python, caption={Absolute value function}, label={lst:abs_val}]
 def abs_val(x):
@@ -7283,12 +7283,12 @@ Once having a formal specification like this, we can apply formal verification t
 \section{FM Techniques}
 % ## Formal Methods as Tools: Models, Specifications, and Reasoning
 
-At a high level, an FM technique is an algorithm and implemented as a tool (a program) that analyzes a system.  The FM tool takes as inputs
+At a high level, an FM technique is an algorithm, often implemented as a software tool that analyzes a system.  The FM tool takes as \emph{inputs}
 \begin{itemize}
-    \item A \emph{specification} of the desired property of the system
     \item A \emph{model} of the system to be analyzed
+    \item A \emph{specification} of the desired property of the system or program
 \end{itemize}
-and applies a \emph{reasoning process} to determine whether the model satisfies the specification. The tool produces an \emph{outcome} indicating whether the property holds, does not hold, or is unknown.
+and applies a \emph{reasoning process} to determine whether the model satisfies the specification. The tool produces an \emph{output} indicating whether the property holds, does not hold, or is unknown.
 
 \paragraph{System Model}
 The FM tool takes as input a \emph{model} of the system to be analyzed. This model is a mathematical abstraction of the system's behavior. It may be a program written in a language such as C or Python, a neural network in ONNX format, or other representations such as state machines or transition systems. This model, e.g., the program, is created by the programmer and is intended to capture the desired specification (\autoref{sec:fm-spec}) of the system.  However, the model might contain bugs or inaccuracies that violate the intended specification, which is what the FM tool aims to detect.
@@ -7332,7 +7332,7 @@ Finally, the FM algorithm/tool produces one of the \emph{three} possible results
 \begin{enumerate}
 \item Proved:  the model satisfies the specification. 
 \item Disproved: the model does not satisfy the specification. Typically a counterexample is also provided to show the violation (bug).
-\item Unknown: the tool cannot determine whether the model satisfies the specification.
+\item Unknown: the FM tool cannot determine whether the model satisfies the specification within its resource limits (e.g., time, memory).
 \end{enumerate}
 % ## Soundness and Completeness of Formal-Methods Tools
 
@@ -7387,7 +7387,7 @@ Finally, the FM algorithm/tool produces one of the \emph{three} possible results
 
 % ---
 
-\subsection{Major Classes of Formal Methods Algorithms}\label{sec:fm-techniques}
+\section{Major Classes of Formal Methods Algorithms}\label{sec:fm-techniques}
 
 % *(Using One Running Example)*
 
@@ -7470,93 +7470,34 @@ For neural network verification, AbsInt is often used to compute bounds on the o
 
 
 
-% ---
+\section{Soundness and Completeness}
 
-% ## Why This Matters for Neural Network Verification
+Two core concepts in formal methods are \emph{soundness} and \emph{completeness}. These describe the correctness and power of an FM algorithm.  
 
-% Neural network verification tools follow the **same structure**:
-
-% * The neural network is the **model**
-% * Robustness or safety conditions are the **specification**
-% * SMT, abstract interpretation, or hybrid techniques perform the **reasoning**
-% * The result is **proved, disproved, or unknown**
-
-% Nothing about this framework is unique to neural networks. What is new is the complexity of the model.
-
-% Understanding formal methods at this level is essential before studying neural network verification algorithms.
+\begin{definition}
+An FM algorithm is \textbf{sound} if every property it claims to prove is actually true. In other words, if it says \emph{``this property holds in this system,''} then the property truly holds. Conversely, an FM algorithm is \textbf{unsound} if it can claim that a false property is true.
+\end{definition}
 
 
+Two things to note about soundness:
+\begin{itemize}
+    \item While a sound FM algorithm never claims a false property is true, it may claims that a true property is false (i.e., it can give false counterexamples). Thus, an extremely conservative FM algorithm that claims every property is false is still sound. Similarly, an FM algorithm that returns ``unknown'' for every property is also sound. 
+    \item It is important to distinguish between an FM algorithm and its implementation (the software tool). An FM algorithm may be sound, but its implementation---typically written by human (or AI nowadays)---may contain bugs that cause it to produce unsound results. 
+\end{itemize}
 
 
+\begin{definition}
+An FM algorithm is \textbf{complete} if it can prove every true property. That is, if the property holds, the verifier will always be able to prove it. Conversely, an FM algorithm is \textbf{incomplete} if there exist true properties that it cannot prove.
+\end{definition}
 
-% ## 4. Soundness and Completeness
+Two things to note about completeness:
+\begin{itemize}
+    \item While a complete FM algorithm can prove every true property, it may also claim that a false property is true (i.e., it can produce false proofs). Thus, an extremely reckless (and not trustworth) FM algorithm that claims every property is true is still complete. Similarly, an FM algorithm that returns ``unknown'' for every property is also complete. 
+    \item As with soundness, it is important to distinguish between an FM algorithm and its implementation. An FM algorithm may be complete, but its implementation may contain bugs that cause it to produce incomplete results.
+\end{itemize}
 
-% Two core concepts in formal methods are **soundness** and **completeness**. These describe the reliability of a verification technique.
 
-% A verification method is **sound** if every property it claims to prove is actually true. In other words, a sound verifier never lies. If it says “this property holds,” then the property truly holds.
-
-% A verification method is **complete** if it can prove every true property. That is, if the property holds, the verifier will always succeed in proving it.
-
-% In practice, most verification tools cannot be both sound and complete for complex systems. Neural network verification problems are computationally hard, involving nonlinear functions and high-dimensional spaces. As a result, many NNV tools are designed to be sound but incomplete. They may fail to prove some true properties, but they will never incorrectly prove a false one.
-
-% This tradeoff is intentional. In safety-critical contexts, a false proof is unacceptable. An inconclusive result is inconvenient but safe.
-
-% ---
-
-% ## 5. Formal Methods Techniques in Practice
-
-% Formal methods encompass several families of techniques, each suited to different kinds of systems.
-
-% **Model checking** explores a system’s state space to determine whether undesirable states are reachable. It has been extremely successful in hardware verification and communication protocols but struggles with systems that involve continuous values.
-
-% **Theorem proving** uses logical inference to prove correctness properties. It is highly expressive but often requires significant human guidance.
-
-% **SAT and SMT solving** reduce verification problems to questions of logical satisfiability. Modern SAT and SMT solvers are highly optimized and form the backbone of many verification tools. Neural network verification heavily relies on these solvers to reason about constraints induced by network layers and activation functions.
-
-% **Abstract interpretation** analyzes systems by computing over-approximations of their behavior. It sacrifices precision in exchange for scalability while maintaining soundness.
-
-% Neural network verification combines ideas from SMT solving, optimization, and abstract interpretation to handle the numerical and nonlinear nature of neural networks.
-
-% ---
-
-% ## 6. Neural Network Verification as Formal Verification
-
-% Neural networks are often viewed as opaque or mysterious, but from a formal methods perspective, they are deterministic mathematical functions. Once trained, a neural network computes a fixed function from inputs to outputs.
-
-% This makes neural networks amenable to formal reasoning. A verification problem for a neural network typically asks whether the function computed by the network satisfies a given specification for all inputs in a specified region.
-
-% If the property holds, the verifier produces a proof. If it does not hold, the verifier produces a **counterexample**—a specific input that violates the property. This counterexample is not a heuristic or guess; it is a mathematically valid witness showing that the property is false.
-
-% This structure mirrors classical formal verification exactly. Neural network verification is not a new paradigm—it is a new application domain for established formal methods ideas.
-
-% ---
-
-% ## 7. Why Formal Methods Matter for Machine Learning
-
-% Machine learning systems are increasingly deployed in real-world settings where failures can cause harm. In such settings, average-case performance metrics like accuracy are insufficient. Rare failures matter precisely because they are rare and unexpected.
-
-% Testing can reveal many problems, but it cannot rule out all possible failures. Formal methods provide a way to reason about worst-case behavior and to establish guarantees that testing cannot.
-
-% Neural network verification exists because learned models are now used in contexts where guarantees matter. It provides tools for answering questions that testing alone cannot answer.
-
-% ---
-
-% ## 8. Limits of Formal Methods
-
-% Formal methods do not solve all problems. Verification can only reason about the model and specification provided. If the specification is incomplete or unrealistic, the guarantees are limited.
-
-% Verification does not ensure that a model is well-trained, unbiased, or appropriate for its task. It ensures only that the model satisfies the specified properties.
-
-% Understanding these limits is part of understanding formal methods. They provide precise answers to precise questions—not vague assurances.
-
-% ---
-
-% ## 9. Summary
-
-% Formal methods provide mathematically rigorous techniques for reasoning about system behavior. Verification differs fundamentally from testing and debugging by offering guarantees rather than empirical confidence. Neural network verification is a direct extension of these ideas to machine-learned models.
-
-% With this background, the reader is now prepared to study the concrete neural network verification techniques presented in the rest of this book.
-
+Obviously, the ideal FM algorithm is both sound and complete: it never claims a false property is true and can prove every true property. However, achieving both soundness and completeness is often computationally infeasible for complex systems. Thus, between soundness and completeness, soundness is typically prioritized in safety-critical settings because it is better to be unsure about a system (and say ``unknown'' or even claim that it is unsafe) than to incorrectly claim that it is safe when it is not. Thus, most practical FM algorithms are designed to be sound but incomplete.
 
 
 
