@@ -60,27 +60,28 @@ jobs:
       #     name: book
       #     path: book.pdf
 
-  #     - name: Prep dir
-  #       run: |
-  #         mkdir -p _site
-  #         cp book.pdf _site/
+      - name: Prep dir
+        run: |
+          mkdir -p _site
+          cp book.pdf _site/
 
-  #     - name: Setup redirect
-  #       run: |
-  #         echo '<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=book.pdf"></head></html>' > ./_site/index.html
+      - name: Setup redirect
+        run: |
+          echo '<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=book.pdf"></head></html>' > ./_site/index.html
 
-  #     - name: Upload to github page
-  #       uses: actions/upload-pages-artifact@v3
-  #       with:
-  #         path: ./_site
+      - name: Upload to github page
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./_site
           
-  # deploy:
-  #   needs: build-pdf
-  #   runs-on: ubuntu-latest
-  #   environment:
-  #     name: github-pages
-  #     url: ${{ steps.deployment.outputs.page_url }}
-  #   steps:
-  #     - name: Deploy to GitHub Pages
-  #       id: deployment
-  #       uses: actions/deploy-pages@v4
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: build-pdf
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
