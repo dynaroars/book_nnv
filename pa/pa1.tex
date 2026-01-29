@@ -1,6 +1,6 @@
 \section{PA1: Symbolic Execution of Neural Networks}\label{sec:pa1}
 
-In this PA you will implement an neural network (NN) verifier using symbolic execution (SE) as described in~\autoref{sec:se-smt}. You can consider NNs as a specific type of programs and thus can ``execute'' it.  SE runs the NN on symbolic inputs and returns symbolic outputs, i.e., a constraint representation.  You will represent the symbolic outputs as a logical formula and use a constraint solver to check \emph{assertions}, i.e., properties about the DNN. This PA has two parts: (1) implement SE on a given DNN, and (2) evaluate the scalability of your SE on various DNNs.
+In this PA you will be implementing a neural network (NN) verifier using symbolic execution (SE) as described in~\autoref{sec:se-smt}. You can consider NNs as a specific type of programs and thus can ``execute'' it.  SE runs the NN on symbolic inputs and returns symbolic outputs, i.e., a constraint representation.  You will represent the symbolic outputs as a logical formula and use a constraint solver to check \emph{assertions}, i.e., properties about the DNN. This PA has two parts: (1) implement SE on a given DNN, and (2) evaluate the scalability of your SE on various DNNs.
 
 You will use Python and the Z3 SMT solver (\autoref{sec:z3}) for this assignment. \textbf{Do not} use external libraries or any extra tools.
 
